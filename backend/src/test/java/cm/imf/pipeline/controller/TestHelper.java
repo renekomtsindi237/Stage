@@ -7,8 +7,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.util.UUID;
-
 /**
  * Fixtures partagées pour les tests @WebMvcTest.
  *
@@ -26,7 +24,6 @@ public final class TestHelper {
     public static Imf mockImf() {
         Imf imf = new Imf();
         imf.setId(1L);
-        imf.setUid(UUID.fromString("11111111-0000-0000-0000-000000000000"));
         imf.setCode("CAMCCUL");
         imf.setNom("Caisse Mutuelle du Cameroun");
         imf.setActif(true);
@@ -38,7 +35,6 @@ public final class TestHelper {
     public static User userWithRole(Role role) {
         User u = new User();
         u.setId(10L + role.ordinal());
-        u.setUid(UUID.randomUUID());
         u.setUsername(role.name().toLowerCase() + "_test");
         u.setPasswordHash("$2a$10$xxxx");
         u.setRole(role);

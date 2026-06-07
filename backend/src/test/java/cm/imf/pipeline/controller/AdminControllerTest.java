@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -29,13 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("AdminController — tests MockMvc (sécurité + fonctionnel)")
 class AdminControllerTest {
 
+    private static final UUID USER_UID = UUID.fromString("bbbbbbbb-0000-0000-0000-000000000001");
+
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @MockBean  AdminService adminService;
 
     private UserResponse sampleUser() {
-        return new UserResponse(1L, "jkamga", Role.ANALYSTE, "YD001", true,
-                null, OffsetDateTime.now());
+        return new UserResponse(
+                null, "jkamga", Role.ANALYSTE, "YD001", null, null,
+                null, null, null, true, false, null, null,
+                null, null, "fr", "auto",
+                true, true, false, false, false, 20);
     }
 
     @Test
@@ -74,7 +80,7 @@ class AdminControllerTest {
         mockMvc.perform(post("/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new CreateUserRequest("newuser", "SecurePass!1", Role.AGENT, "YD001"))))
+                                new CreateUserRequest("newuser", "SecurePass!1", null, Role.AGENT, "YD001", null, null, null))))
                 .andExpect(status().isCreated());
     }
 
@@ -92,11 +98,14 @@ class AdminControllerTest {
     @WithMockUser(roles = "DSI")
     @DisplayName("DELETE /api/admin/users/{id} — désactive utilisateur → 200")
     void deactivate_dsi_200() throws Exception {
-        UserResponse deactivated = new UserResponse(1L, "jkamga", Role.ANALYSTE, "YD001",
-                false, null, OffsetDateTime.now());
-        when(adminService.deactivate(1L)).thenReturn(deactivated);
+        UserResponse deactivated = new UserResponse(
+                null, "jkamga", Role.ANALYSTE, "YD001", null, null,
+                null, null, null, false, false, null, null,
+                null, null, "fr", "auto",
+                true, true, false, false, false, 20);
+        when(adminService.deactivate(any(UUID.class))).thenReturn(deactivated);
 
-        mockMvc.perform(delete("/admin/users/1"))
+        mockMvc.perform(delete("/admin/users/{uid}", USER_UID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.actif").value(false));
     }
@@ -105,9 +114,9 @@ class AdminControllerTest {
     @WithMockUser(roles = "DSI")
     @DisplayName("PATCH /api/admin/users/{id}/activate → 200 avec actif=true")
     void activate_dsi_200() throws Exception {
-        when(adminService.activate(1L)).thenReturn(sampleUser());
+        when(adminService.activate(any(UUID.class))).thenReturn(sampleUser());
 
-        mockMvc.perform(patch("/admin/users/1/activate"))
+        mockMvc.perform(patch("/admin/users/{uid}/activate", USER_UID))
                 .andExpect(status().isOk());
     }
 }
