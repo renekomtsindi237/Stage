@@ -50,11 +50,27 @@ class RecouvrementControllerTest {
 
     private DossierRecouvrementResponse dossierResponse(RecouvrementPhase phase) {
         return new DossierRecouvrementResponse(
-                1L, DOSSIER_UID, "PRE-2024-001", "Fomo Martin",
-                new BigDecimal("450000"), 95,
-                CategorieCobtac.DOUTEUSE,
-                new BigDecimal("25"), new BigDecimal("112500"),
-                phase, false, OffsetDateTime.now(), null);
+                DOSSIER_UID.toString(),   // uid
+                "PRE-2024-001",           // idPret
+                "Fomo Martin",            // nomClient
+                new BigDecimal("450000"), // montantImpaye
+                95,                       // joursRetard
+                CategorieCobtac.DOUTEUSE, // categorieCobtac
+                new BigDecimal("25"),     // tauxProvision
+                new BigDecimal("112500"), // montantProvision
+                null,                     // datePremiereEcheanceImpayee
+                null,                     // nomCaution
+                null,                     // telephoneCaution
+                null,                     // typeGarantie
+                BigDecimal.ZERO,          // fraisRecouvrement
+                phase,                    // phase
+                OffsetDateTime.now(),     // dateOuverture
+                null,                     // dateDerniereAction
+                null,                     // agentResponsableUsername
+                false,                    // clos
+                null,                     // dateCloture
+                null,                     // motifCloture
+                null);                    // updatedAt
     }
 
     private OuvrirDossierRequest ouvrirRequest() {
@@ -198,12 +214,12 @@ class RecouvrementControllerTest {
     // ── POST /recouvrement/dossiers/{uid}/actions ─────────────────────────────
 
     @Test
-    @DisplayName("POST …/actions → 201 pour action VISITE avec montant récupéré")
+    @DisplayName("POST …/actions → 201 pour action VISITE_TERRAIN avec montant récupéré")
     void ajouterAction_visite_retourne_201() throws Exception {
         ActionRecouvrementResponse action = new ActionRecouvrementResponse(
                 UUID.randomUUID(), DOSSIER_UID,
-                TypeActionRecouvrement.VISITE,
-                ResultatActionRecouvrement.SUCCES,
+                TypeActionRecouvrement.VISITE_TERRAIN,
+                ResultatActionRecouvrement.PAIEMENT_EFFECTUE,
                 "Client rencontré à domicile",
                 new BigDecimal("50000"),
                 OffsetDateTime.now(), "rr_test");
@@ -212,7 +228,7 @@ class RecouvrementControllerTest {
                 .thenReturn(action);
 
         String body = """
-                {"typeAction":"VISITE","resultat":"SUCCES",
+                {"typeAction":"VISITE_TERRAIN","resultat":"PAIEMENT_EFFECTUE",
                  "observation":"Client rencontré","montantRecupere":50000}
                 """;
 
@@ -221,8 +237,8 @@ class RecouvrementControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.typeAction").value("VISITE"))
-                .andExpect(jsonPath("$.data.resultat").value("SUCCES"))
+                .andExpect(jsonPath("$.data.typeAction").value("VISITE_TERRAIN"))
+                .andExpect(jsonPath("$.data.resultat").value("PAIEMENT_EFFECTUE"))
                 .andExpect(jsonPath("$.data.montantRecupere").value(50000));
     }
 
@@ -232,11 +248,27 @@ class RecouvrementControllerTest {
     @DisplayName("PUT …/clore → 200, dossier clos")
     void clore_dossier_retourne_200() throws Exception {
         DossierRecouvrementResponse clos = new DossierRecouvrementResponse(
-                1L, DOSSIER_UID, "PRE-2024-001", "Fomo Martin",
-                new BigDecimal("450000"), 95,
-                CategorieCobtac.DOUTEUSE,
-                new BigDecimal("25"), new BigDecimal("112500"),
-                RecouvrementPhase.RELANCE_AMIABLE, true, OffsetDateTime.now(), OffsetDateTime.now());
+                DOSSIER_UID.toString(),   // uid
+                "PRE-2024-001",           // idPret
+                "Fomo Martin",            // nomClient
+                new BigDecimal("450000"), // montantImpaye
+                95,                       // joursRetard
+                CategorieCobtac.DOUTEUSE, // categorieCobtac
+                new BigDecimal("25"),     // tauxProvision
+                new BigDecimal("112500"), // montantProvision
+                null,                     // datePremiereEcheanceImpayee
+                null,                     // nomCaution
+                null,                     // telephoneCaution
+                null,                     // typeGarantie
+                BigDecimal.ZERO,          // fraisRecouvrement
+                RecouvrementPhase.RELANCE_AMIABLE, // phase
+                OffsetDateTime.now(),     // dateOuverture
+                null,                     // dateDerniereAction
+                null,                     // agentResponsableUsername
+                true,                     // clos
+                OffsetDateTime.now(),     // dateCloture
+                "Remboursement intégral reçu", // motifCloture
+                null);                    // updatedAt
 
         when(recouvrementService.clore(eq(DOSSIER_UID), anyString(), any()))
                 .thenReturn(clos);
