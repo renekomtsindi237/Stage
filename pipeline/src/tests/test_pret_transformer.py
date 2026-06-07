@@ -16,6 +16,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
+
 from transformers.pret_transformer import (
     EcheanceInfo,
     PretTransformed,

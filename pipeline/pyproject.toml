@@ -1,6 +1,11 @@
 [tool.isort]
 profile = "black"
 line_length = 88
+known_first_party = [
+    "config", "exceptions", "database", "api_client",
+    "jobs", "extractors", "transformers", "loaders",
+    "logger", "ml", "scripts", "pipeline",
+]
 
 [tool.black]
 line-length = 88

@@ -8,6 +8,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+
 from exceptions import DataValidationError, TransformationError
 from transformers.collecte_transformer import (
     FactCollecte,

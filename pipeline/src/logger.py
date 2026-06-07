@@ -10,8 +10,9 @@ import sys
 from typing import Any
 
 import structlog
-from config import settings
 from structlog.types import EventDict, WrappedLogger
+
+from config import settings
 
 
 def _add_job_context(

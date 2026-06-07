@@ -17,6 +17,7 @@ import time
 from datetime import datetime
 
 import schedule
+
 from config import settings
 from exceptions import ConfigurationError, JobError, PipelineException
 from jobs.alertes_job import run_alertes_job

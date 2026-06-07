@@ -423,8 +423,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private prepareStatutPretsData(stats: ParStat[]): void {
     const statutCount = new Map<string, number>();
     stats.forEach((s) => {
-      const count = statutCount.get(s.statutPret) || 0;
-      statutCount.set(s.statutPret, count + 1);
+      const key = s.statutPret ?? "INCONNU";
+      const count = statutCount.get(key) || 0;
+      statutCount.set(key, count + 1);
     });
     this.statutPretsData = Array.from(statutCount.entries()).map(
       ([label, value]) => ({
@@ -467,8 +468,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         collectes: 0,
         remboursements: 0,
       };
-      existing.collectes += s.montantPret / 1_000_000;
-      existing.remboursements += s.montantRembourse / 1_000_000;
+      existing.collectes += (s.montantPret ?? 0) / 1_000_000;
+      existing.remboursements += (s.montantRembourse ?? 0) / 1_000_000;
       monthlyData.set(month, existing);
     });
     const sortedMonths = Array.from(monthlyData.keys()).sort();

@@ -8,6 +8,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from exceptions import (
     ColumnMissingError,
     EmptyDatasetError,

@@ -5,9 +5,10 @@ Toutes les variables sont lues depuis l'environnement (ou .env en dev).
 
 from __future__ import annotations
 
-from exceptions import ConfigurationError
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from exceptions import ConfigurationError
 
 
 class DatabaseSettings(BaseSettings):

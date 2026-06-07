@@ -8,6 +8,7 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from exceptions import JobError, SchemaNotFoundError
 from jobs.echeances_job import EcheancesJobResult, run_echeances_job
 

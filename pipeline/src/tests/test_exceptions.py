@@ -3,6 +3,7 @@ test_exceptions.py — Tests de la hiérarchie d'exceptions du pipeline.
 """
 
 import pytest
+
 from exceptions import (
     AuthenticationError,
     BackendAPIError,

@@ -98,6 +98,9 @@ export interface ParStat {
   tauxPar90Pct: number;
   encoursTotal: number;
   nbCreancesActives: number;
+  statutPret?: string;
+  montantPret?: number;
+  montantRembourse?: number;
 }
 
 export interface CollecteStat {
