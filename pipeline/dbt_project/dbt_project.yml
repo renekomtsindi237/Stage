@@ -1,0 +1,60 @@
+name: 'imf_pipeline'
+version: '2.0.0'
+config-version: 2
+
+profile: 'imf_pipeline'
+
+model-paths:   ["models"]
+analysis-paths: ["analyses"]
+test-paths:    ["tests"]
+seed-paths:    ["seeds"]
+macro-paths:   ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path:  "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  imf_pipeline:
+    staging:
+      +schema: staging
+      +materialized: table
+      +tags: ["staging"]
+
+    intermediate:
+      +schema: intermediate
+      +materialized: table
+      +tags: ["intermediate"]
+
+    mart:
+      +schema: dw
+      +materialized: table
+      +tags: ["mart"]
+      fact_collectes_epargne:
+        +materialized: incremental
+        +unique_key: uuid_mobile
+      fact_creances:
+        +materialized: incremental
+        +unique_key: ["imf_code", "id_pret", "date_snapshot"]
+      fact_actions_recouvrement:
+        +materialized: incremental
+        +unique_key: action_id_source
+      fact_prix_produits:
+        +materialized: incremental
+        +unique_key: ["code_produit", "zone_id", "date_prix", "source"]
+
+    ml:
+      +schema: ml
+      +materialized: table
+      +tags: ["ml", "features"]
+      features_client:
+        +materialized: incremental
+        +unique_key: ["imf_id", "client_id_externe", "periode_debut", "version_features"]
+
+vars:
+  date_debut_historique: '2023-01-01'
+  version_features: 'v1'
+  seuil_par30_jours: 30
+  seuil_par60_jours: 60
+  seuil_par90_jours: 90
+  seuil_par180_jours: 180

@@ -1,0 +1,87 @@
+@startuml sequence_violation_donnees
+!theme plain
+title Diagramme de séquence — Gestion des Violations de Données\n(Loi 2024/017 Cameroun — Art. 22 — Délai légal 72h)
+
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 150
+
+actor "DSI" as DSI
+participant "Interface\nViolations" as WEB
+participant "Service\nViolations" as CTRL
+database "Base de données\n(Violations)" as DB
+participant "Service\nNotifications\n(Temps réel + Mobile + Email)" as NOTIF
+participant "Diffusion\nTemps Réel" as SSE
+actor "Autres DSI\nde l'IMF" as DSI2
+
+== Étape 1 : Déclaration de la violation (art. 22 — délai légal 72h) ==
+
+DSI -> WEB : Remplit le formulaire de violation\n(type, gravité, description, catégories de données,\n mesures immédiates, nombre de personnes concernées)
+WEB -> CTRL : Soumet la déclaration de violation
+
+CTRL -> CTRL : Identifie le DSI déclarant
+CTRL -> CTRL : Calcule le temps écoulé depuis la découverte
+
+CTRL -> DB : Enregistre la violation\n(statut : déclarée, identifiant unique attribué)
+DB --> CTRL : Identifiant de la violation
+
+CTRL -> CTRL : Calcule le délai restant pour notifier l'autorité\n(72h depuis la découverte)
+note right of CTRL
+  Si le délai est dépassé :
+  → Alerte "DÉLAI LÉGAL DÉPASSÉ"
+  Obligation légale art. 22 §1
+end note
+
+== Étape 2 : Alertes immédiates (temps réel + mobile + email) ==
+
+CTRL -> SSE : Diffuse l'alerte à tous les DSI connectés\n(type de violation, gravité, délai restant)
+SSE --> DSI2 : Alerte temps réel — Violation déclarée
+
+CTRL -> NOTIF : Envoie une notification mobile aux DSI
+NOTIF --> DSI2 : Notification mobile — Violation grave déclarée
+
+CTRL -> NOTIF : Envoie un email détaillé au DSI déclarant\n(résumé complet, délai, actions requises)
+NOTIF --> DSI : Email de synthèse avec la procédure à suivre
+
+CTRL --> WEB : Déclaration enregistrée\n(identifiant, statut, délai restant, date limite)
+
+== Étape 3 : Suivi de l'investigation ==
+
+DSI -> WEB : Consulte la liste des violations
+WEB -> CTRL : Demande les violations en cours
+CTRL -> DB : Récupère les violations par statut
+DB --> CTRL : Liste des violations avec délai restant
+CTRL --> WEB : Violations classées par urgence
+
+DSI -> WEB : Met à jour l'avancement\n(investigation lancée)
+WEB -> CTRL : Signale le passage en investigation
+CTRL -> DB : Met à jour le statut de la violation\n(en investigation, mesures correctives notées)
+CTRL --> WEB : Statut mis à jour
+
+== Étape 4 : Notification à l'autorité de protection ==
+
+note over WEB, DB
+  Obligation légale : notifier l'autorité de protection
+  des données dans les 72h suivant la découverte.
+end note
+
+DSI -> WEB : Confirme l'envoi à l'autorité officielle
+WEB -> CTRL : Enregistre la confirmation de notification
+CTRL -> DB : Marque la violation comme notifiée à l'autorité\n(date, référence officielle)
+CTRL --> WEB : Notification à l'autorité confirmée
+
+== Étape 5 : Clôture avec rapport final ==
+
+DSI -> WEB : Rédige et soumet le rapport final
+WEB -> CTRL : Demande la clôture de la violation
+CTRL -> DB : Clôture la violation\n(rapport final, identité du clôturant, date de clôture)
+CTRL --> WEB : Violation clôturée et archivée
+
+== Étape 6 : Tableau de bord SLA (urgences) ==
+
+DSI -> WEB : Consulte les violations proches de l'échéance
+WEB -> CTRL : Demande les violations classées par urgence
+CTRL -> DB : Récupère les violations triées par délai restant
+DB --> CTRL : Violations les plus urgentes en premier
+CTRL --> WEB : Tableau de bord d'urgences — violations à traiter en priorité
+
+@enduml

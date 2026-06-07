@@ -1,0 +1,202 @@
+// ── Host component background ────────────────────────────────────────────────
+:host {
+  display: block;
+  background: #FAFBFC;  // Fond clair Blucash
+  min-height: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .page-subtitle { 
+    color: #6B7280;  // Gris pour sous-titres
+    font-size: 0.875rem; 
+    margin: 4px 0 0; 
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+}
+
+.form-card {
+  margin-bottom: 20px;
+
+  .kyc-form {
+    .form-section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #1A1A1A;  // Noir atténué pour les labels de section
+      margin: 16px 0 8px;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      mat-form-field { flex: 1 1 180px; }
+    }
+
+    .pep-toggle {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px 0;
+
+      .pep-hint { color: var(--color-warn); font-size: 0.75rem; }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+    }
+  }
+}
+
+.filters-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.full-width { width: 100%; }
+
+/* Client cell */
+.client-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .client-nom { 
+    font-weight: 700; 
+    font-size: 0.9rem; 
+    color: #000000;  // Noir pur pour les noms
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+  .client-id  { 
+    color: #6B7280;  // Gris pour les IDs
+    font-size: 0.75rem; 
+    font-family: monospace; 
+  }
+}
+
+.pep-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(239,68,68,.15);
+  color: #dc2626;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Niveau badges */
+.badge-niveau {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.niv-1 { background: rgba(6,182,212,.12);  color: #0891b2; }
+  &.niv-2 { background: rgba(99,102,241,.12); color: #4f46e5; }
+  &.niv-3 { background: rgba(239,68,68,.12);  color: #dc2626; }
+}
+
+.niveau-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .niveau-demande {
+    font-size: 0.72rem;
+    color: #6B7280;  // Gris pour texte secondaire
+    font-style: italic;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+}
+
+/* Statut KYC badges */
+.badge-statut-kyc {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.kyc-attente      { background: rgba(156,163,175,.15); color: #6b7280; }
+  &.kyc-soumis       { background: rgba(6,182,212,.15);   color: #0891b2; }
+  &.kyc-verif        { background: rgba(99,102,241,.15);  color: #4f46e5; }
+  &.kyc-complement   { background: rgba(234,179,8,.15);   color: #ca8a04; }
+  &.kyc-approuve     { background: rgba(34,197,94,.15);   color: #16a34a; }
+  &.kyc-rejete       { background: rgba(239,68,68,.15);   color: #dc2626; }
+  &.kyc-expire       { background: rgba(249,115,22,.15);  color: #ea580c; }
+  &.kyc-suspendu     { background: rgba(113,113,122,.15); color: #52525b; }
+}
+
+/* Score risque */
+.risque-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-bar {
+  width: 64px;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .3s;
+
+  &.risk-faible     { background: #16a34a; }
+  &.risk-moyen      { background: #ca8a04; }
+  &.risk-eleve      { background: #ea580c; }
+  &.risk-tres-eleve { background: #dc2626; }
+}
+
+.score-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.risk-faible     { color: #16a34a; }
+  &.risk-moyen      { color: #ca8a04; }
+  &.risk-eleve      { color: #ea580c; }
+  &.risk-tres-eleve { color: #dc2626; }
+}
+
+/* Expiration */
+.expire    { color: var(--color-warn);  font-weight: 600; }
+.expirant  { color: #ea580c; font-weight: 600; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  p { margin: 8px 0 0; }
+}
+
+.error-card { margin-bottom: 16px; }

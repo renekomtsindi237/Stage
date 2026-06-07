@@ -1,0 +1,90 @@
+@startuml sequence_rgpd_demande
+!theme plain
+title Diagramme de séquence — Exercice des droits RGPD\n(Loi 2024/017 Cameroun — Art. 37 à 43 — Délai légal 30 jours)
+
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 140
+
+actor "Utilisateur\n(Agent ou tout rôle)" as USER
+participant "Espace\n« Mes données »" as WEB
+participant "Gestion\nDroits RGPD" as CTRL
+participant "Registre\nDemandes" as REPO
+database "Base de données\n(Demandes, Consentements)" as DB
+participant "Tableau de bord\nDSI" as DSI_WEB
+participant "Administration\nRGPD" as ADMIN_CTRL
+actor "DSI" as DSI
+
+== Étape 1 : Soumission de la demande (art. 37 à 43) ==
+
+USER -> WEB : Accède à « Mes droits » et choisit le type de droit\n(Accès, Rectification, Effacement,\n Portabilité, Opposition, Limitation)
+WEB -> CTRL : Soumet la demande de droit
+CTRL -> CTRL : Identifie l'utilisateur connecté
+CTRL -> CTRL : Enregistre l'adresse IP de soumission\n(preuve légale art. 41)
+CTRL -> REPO : Crée la demande\n(délai de réponse : 30 jours à compter d'aujourd'hui)
+REPO -> DB : Enregistre la demande avec son identifiant unique\n(statut : soumise, échéance calculée)
+DB --> REPO : Demande créée
+CTRL --> WEB : Demande enregistrée\n(identifiant unique et date limite)
+
+== Étape 2 : Export des données personnelles (art. 37/43) ==
+
+USER -> WEB : Clique sur « Télécharger mes données »
+WEB -> CTRL : Demande l'export des données personnelles
+CTRL -> CTRL : Identifie l'utilisateur connecté
+CTRL -> DB : Récupère tous les consentements de l'utilisateur
+DB --> CTRL : Liste des consentements
+CTRL --> WEB : Export structuré des données personnelles\n(nom, email, rôle, institution, consentements, date de création)
+note right of WEB
+  Fichier JSON contenant toutes les
+  données personnelles de l'utilisateur.
+  Conforme au droit de portabilité (art. 43).
+end note
+
+== Étape 3 : Suivi de ses propres demandes ==
+
+USER -> WEB : Consulte « Mes demandes en cours »
+WEB -> CTRL : Demande la liste des demandes
+CTRL -> REPO : Recherche les demandes de l'utilisateur
+REPO -> DB : Lit toutes les demandes de cet utilisateur
+DB --> CTRL : Demandes avec leur état et délai restant
+CTRL --> WEB : Liste des demandes\n(type de droit, statut, jours restants)
+
+== Étape 4 : Traitement par le DSI (délai maximum 30 jours, art. 41) ==
+
+DSI -> DSI_WEB : Consulte les demandes en attente
+DSI_WEB -> ADMIN_CTRL : Récupère les demandes à traiter
+ADMIN_CTRL -> REPO : Recherche les demandes ouvertes de l'institution
+REPO -> DB : Lit les demandes par institution et statut
+DB --> ADMIN_CTRL : Liste des demandes avec délai restant
+ADMIN_CTRL --> DSI_WEB : Demandes classées par urgence
+
+DSI -> DSI_WEB : Traite la demande (accepte ou refuse)
+DSI_WEB -> ADMIN_CTRL : Enregistre la décision
+ADMIN_CTRL -> REPO : Vérifie que la demande est traitable
+REPO -> DB : Récupère la demande par son identifiant
+
+alt Demande déjà clôturée
+    ADMIN_CTRL --> DSI_WEB : Refus — cette demande est déjà clôturée
+else Traitement possible
+    ADMIN_CTRL -> DB : Met à jour la demande\n(statut : traitée, réponse, lien export si applicable,\nidentité du traitant, date de traitement)
+    ADMIN_CTRL --> DSI_WEB : Traitement enregistré avec succès
+end
+
+== Étape 5 : Détection des demandes en retard (alerte SLA) ==
+
+note over ADMIN_CTRL, DB
+  Consultation dédiée aux demandes ayant dépassé le délai légal
+  Accessible au DSI et aux administrateurs de la plateforme
+end note
+
+DSI_WEB -> ADMIN_CTRL : Consulte les demandes en retard
+ADMIN_CTRL -> REPO : Recherche les demandes non traitées hors délai
+REPO -> DB : Sélectionne les demandes non clôturées\ndont l'échéance est dépassée
+DB --> ADMIN_CTRL : Demandes en retard
+ADMIN_CTRL --> DSI_WEB : Liste avec nombre de jours de retard\net identité des demandeurs
+note right of DSI_WEB
+  Alerte visuelle (bandeau rouge) :
+  Délai légal de 30 jours dépassé
+  → Risque de sanction (art. 41 Loi 2024/017)
+end note
+
+@enduml

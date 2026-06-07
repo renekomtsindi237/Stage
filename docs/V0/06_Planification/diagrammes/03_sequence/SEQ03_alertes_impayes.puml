@@ -1,0 +1,74 @@
+@startuml SEQ03_alertes_impayes
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ03 — Génération Automatique des Alertes Impayés\nAirflow + Spring Boot + FCM + SMTP
+
+actor "Airflow Scheduler" as SCHED
+participant "DAG\ndag_alertes" as DAG
+participant "AlerteScript\n(Python)" as SCRIPT
+database "PostgreSQL\nDW + Staging" as PG
+participant "Spring Boot API\n(NotifEndpoint)" as SPRING
+participant "Firebase FCM" as FCM
+participant "Serveur SMTP" as SMTP
+actor "Responsable\nRecouvrement" as RR
+
+SCHED -> DAG : <b>Trigger</b> après succès dag_transform_dw\n(08h00 — dépendance Airflow)
+activate DAG
+
+DAG -> SCRIPT : <b>Exécute</b> Task: detect_impayes
+activate SCRIPT
+
+SCRIPT -> PG : <b>SELECT</b> prêts avec\njours_retard_max > seuil_alerte (30 jours)\nAND statut_alerte IS NULL OR 'ACTIVE'
+PG --> SCRIPT : [{id_pret: 42, client: "KAMGA Jean",\nmontant_en_retard: 125000, jours: 45}, ...]
+
+loop <b>Pour chaque créance en retard</b>
+
+  SCRIPT -> PG : <b>SELECT</b> alerte active\nexistante pour ce prêt aujourd'hui
+  PG --> SCRIPT : alerte existante ? (oui/non)
+
+  alt <b>Nouvelle alerte (première détection)</b>
+    SCRIPT -> PG : <b>INSERT INTO</b> staging.alertes_impayes\n{id_pret, jours_retard=45,\nmontant=125000, statut='ACTIVE'}
+    PG --> SCRIPT : id_alerte = 101
+
+    SCRIPT -> SPRING : <b>POST</b> /internal/notify-alerte\n{alerte_id: 101, zone_id: 3}
+    activate SPRING
+    SPRING -> PG : <b>SELECT</b> FCM tokens des RR\nassignés à la zone 3
+    PG --> SPRING : [fcm_token_RR1, fcm_token_RR2]
+
+    SPRING -> FCM : <b>send()</b> Message FCM\n{title: "ALERTE IMPAYÉ",\nbody: "Prêt #42 — KAMGA Jean\n45 jours de retard",\ndata: {pret_id: 42}}
+    FCM --> SPRING : {message_id: "fcm_ok_xxx"}
+    FCM --> RR : 📱 Push notification reçue
+
+    SPRING -> SMTP : <b>sendMail()</b>\nTo: rr@imf.cm\nSubjet: ALERTE — Prêt #42\nen retard de 45 jours
+    SMTP --> RR : 📧 Email reçu
+
+    SPRING -> PG : <b>UPDATE</b> alertes\nSET notif_push_sent=TRUE,\nnotif_email_sent=TRUE
+    deactivate SPRING
+
+  else <b>Alerte déjà existante (mise à jour)</b>
+    SCRIPT -> PG : <b>UPDATE</b> staging.alertes_impayes\nSET jours_retard = jours_retard + 1
+  end
+
+end
+
+SCRIPT -> PG : <b>UPDATE</b> alertes_impayes SET statut='CLÔTUREE'\nWHERE id_pret IN (prêts devenus soldés)
+note right PG : Clôture automatique\nalertesrésolues
+
+SCRIPT --> DAG : Rapport: {nouvelles: N,\nmises_a_jour: M, cloturees: K}
+deactivate SCRIPT
+
+DAG --> SCHED : Task <b>dag_alertes</b> → SUCCESS ✓
+deactivate DAG
+
+@enduml

@@ -1,0 +1,85 @@
+@startuml activite_collecte_epargne
+!theme plain
+title Diagramme d'activité — Collecte d'Épargne Terrain (Hors Ligne en Priorité)\nCycle complet : saisie → synchronisation → validation → pipeline
+
+skinparam activityBorderColor #2C7BE5
+skinparam activityBackgroundColor #EBF2FF
+skinparam swimlaneBorderColor #888888
+
+|Agent Terrain (Flutter)|
+start
+:Ouvre l'application mobile;
+:Saisit la collecte :\n- Montant collecté\n- Identifiant du client\n- Mode de paiement (espèces / mobile money)\n- Date et heure de collecte\n- Position GPS (si consentement accordé);
+:L'application génère un identifiant unique\n(protection contre les doublons);
+:Enregistre localement;
+
+if (Connexion internet disponible ?) then (oui)
+    :Tente une synchronisation immédiate;
+else (non — mode hors ligne)
+    :Met en file d'attente;
+    :Collecte supplémentaire possible\n(autant que nécessaire sans connexion);
+    :Reprend dès que la connexion est rétablie;
+endif
+
+|Application Mobile (Flutter)|
+:Prépare le lot de collectes à synchroniser\n(identifiant unique, montant, client, agence...);
+
+|Serveur Spring Boot|
+:Réceptionne le lot de synchronisation;
+
+repeat
+    :Vérifie si cette collecte existe déjà en base;
+    if (Doublon détecté ?) then (oui)
+        :Identifie comme doublon (aucune action nécessaire);
+    else (nouvelle collecte)
+        :Enregistre la collecte\n(statut : soumise, en attente de validation);
+        :Ingère dans la couche de données brutes;
+    endif
+repeat while (Collectes restantes dans le lot ?) is (oui)
+-> non;
+
+:Renvoie le bilan de synchronisation\n(acceptées, doublons, rejetées);
+
+|Agent Terrain (Flutter)|
+:Marque les collectes comme synchronisées;
+:Reçoit la confirmation;
+
+|Superviseur (Angular)|
+:Consulte les collectes à valider;
+:Examine les collectes soumises\n(montant, client, agent, agence);
+
+if (Collecte valide ?) then (oui)
+    :Valide la collecte;
+
+    |Serveur Spring Boot|
+    :Marque la collecte comme validée;
+    :Notifie l'agent en temps réel;
+
+    |Agent Terrain (Flutter)|
+    :Reçoit la notification : "Collecte validée ✓";
+else (non — anomalie détectée)
+    :Rejette la collecte avec un motif;
+
+    |Serveur Spring Boot|
+    :Marque la collecte comme rejetée;
+    :Notifie l'agent en temps réel;
+
+    |Agent Terrain (Flutter)|
+    :Reçoit la notification de rejet avec le motif;
+    :Corrige et resoumet si nécessaire;
+endif
+
+|Pipeline Automatique (toutes les 2 heures)|
+:Récupère les données reçues à traiter;
+:Nettoie et valide les données\n(dédoublonnage, enrichissement);
+:Calcule les indicateurs de performance\n(par agent, agence, cycle de collecte);
+:Vérifie les objectifs de collecte\n(taux de réalisation, écart par rapport à l'objectif);
+:Génère des alertes si le taux est inférieur au seuil;
+:Notifie la mise à jour du tableau de bord;
+
+|Superviseur (Angular)|
+:Tableau de bord mis à jour\n(montant total, nombre de clients, taux de réalisation);
+
+stop
+
+@enduml

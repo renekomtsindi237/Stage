@@ -1,0 +1,131 @@
+// ── Host component background ────────────────────────────────────────────────
+:host {
+  display: block;
+  background: #FAFBFC;  // Fond clair Blucash
+  min-height: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .page-subtitle {
+    color: #6B7280;  // Gris moyen
+    font-size: 0.875rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    margin: 4px 0 0;
+  }
+}
+
+.form-card {
+  margin-bottom: 20px;
+
+  .ouvrir-form {
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      mat-form-field { flex: 1 1 200px; }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 8px;
+    }
+  }
+}
+
+.filters-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ref-pret {
+  font-weight: 600;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.caution-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #E6F0FF;  // Bleu Blucash très pâle
+  color: #0066FF;  // Bleu Blucash
+  font-size: 0.7rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  vertical-align: middle;
+}
+
+.provision-hint {
+  color: #9CA3AF;  // Gris moyen
+  font-size: 0.75rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+}
+
+.jours-retard {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* COBAC badges */
+.badge-cobac {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  white-space: nowrap;
+
+  &.cobac-surveillance  { background: #E6F9F3; color: #00D084; }  // Vert Blucash
+  &.cobac-douteuse      { background: #FFF4E6; color: #FF9500; }  // Orange Blucash
+  &.cobac-litigieuse    { background: #FFE6E6; color: #FF3B30; }  // Rouge Blucash
+  &.cobac-contentieuse  { background: #FFE6E6; color: #FF3B30; }  // Rouge Blucash
+}
+
+/* Phase badges */
+.badge-phase {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  white-space: nowrap;
+
+  &.phase-relance     { background: #E6F0FF; color: #0066FF; }  // Bleu Blucash
+  &.phase-mediation   { background: #E6F0FF; color: #0066FF; }  // Bleu Blucash
+  &.phase-demeure     { background: #FFF4E6; color: #FF9500; }  // Orange Blucash
+  &.phase-contentieux { background: #FFE6E6; color: #FF3B30; }  // Rouge Blucash
+  &.phase-reechelon   { background: #E6F9F3; color: #00D084; }  // Vert Blucash
+  &.phase-perte       { background: #F3F4F6; color: #6B7280; }  // Gris
+}
+
+.row-clos td { opacity: 0.65; }
+
+.full-width { width: 100%; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: #9CA3AF;  // Gris moyen
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  p { margin: 8px 0 0; }
+}
+
+.error-card { margin-bottom: 16px; }

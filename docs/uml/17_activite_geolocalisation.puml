@@ -1,0 +1,89 @@
+@startuml activite_geolocalisation
+!theme plain
+title Diagramme d'activité — Géolocalisation des Agents Terrain\n(Suivi GPS + Conformité RGPD art. 9/50 — Loi 2024/017)
+
+skinparam activityBorderColor #7D3C98
+skinparam activityBackgroundColor #F5EEF8
+
+|DSI (Configuration préalable)|
+start
+:Accorde le consentement GPS\npour chaque agent terrain\n(obligatoire avant tout suivi);
+:Enregistre l'autorisation\n(finalité : géolocalisation, consentement accordé);
+note right
+  Sans ce consentement, aucune position
+  ne peut être enregistrée (art. 9).
+end note
+
+|Agent Terrain (Application Mobile)|
+:Ouvre l'application mobile;
+:Le module de localisation en arrière-plan s'active\n(autorisations accordées sur Android/iOS);
+
+repeat
+    :Capte la position GPS actuelle\n(latitude, longitude, précision, altitude, vitesse);
+    :Envoie la position au serveur;
+
+    |Serveur Spring Boot|
+    :Identifie l'agent connecté et son institution;
+    :Transmet la position au service de gestion GPS;
+
+    |Service de Gestion GPS|
+    :Vérifie que le consentement de l'agent est actif;
+
+    if (Consentement valide ?) then (non)
+        :Refus — suivi non autorisé;
+        note right : L'agent ne peut pas\nêtre suivi sans consentement.
+        |Agent Terrain (Application Mobile)|
+        :Affiche le message "Suivi GPS non autorisé";
+    else (oui)
+        |Service de Gestion GPS|
+        :Met à jour la dernière position connue de l'agent\n(latitude, longitude, horodatage);
+        :Enregistre la position dans l'historique\n(trajet complet conservé);
+        :Diffuse la mise à jour en temps réel\n(superviseurs avec carte ouverte);
+
+        |Superviseur (Interface Cartographique)|
+        :Reçoit la mise à jour en temps réel;
+        :Déplace le repère de l'agent sur la carte;
+    endif
+
+repeat while (Application ouverte ?) is (oui, toutes les 5 min)
+-> non — application fermée;
+
+|Superviseur (Angular)|
+fork
+    :Consulte la carte en temps réel\n(filtre éventuel par agence);
+
+    |Service de Gestion GPS|
+    :Sélectionne les agents ayant envoyé\nune position dans les 15 dernières minutes;
+    :Renvoie les positions actives;
+
+    |Superviseur (Angular)|
+    :Affiche tous les agents actifs\n(repères verts — actifs, repères gris — hors ligne);
+
+fork again
+    :Consulte le trajet journalier d'un agent\n(date sélectionnée);
+
+    |Service de Gestion GPS|
+    :Récupère jusqu'à 500 points GPS de la journée\n(dans l'ordre chronologique);
+    :Renvoie le trajet complet;
+
+    |Superviseur (Angular)|
+    :Affiche le trajet sur la carte\n(vérification de la couverture terrain);
+end fork
+
+|Agent Terrain (Application Mobile)|
+:Décide de désactiver le suivi\n(droit d'opposition RGPD art. 40);
+
+|Service de Gestion GPS|
+:Marque l'agent comme ne partageant plus sa position;
+note right
+  La dernière position reste conservée
+  pour la traçabilité, mais l'agent
+  disparaît de la carte en temps réel.
+end note
+
+|Agent Terrain (Application Mobile)|
+:Confirmation : "Suivi GPS désactivé";
+
+stop
+
+@enduml

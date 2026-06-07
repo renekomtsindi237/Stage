@@ -1,0 +1,79 @@
+<header class="app-navbar">
+
+  <!-- Section Gauche -->
+  <div class="navbar-left">
+    <button mat-icon-button (click)="toggleSidenav.emit()" class="menu-toggle">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <div class="search-bar">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Rechercher un dossier, un prêt...">
+    </div>
+  </div>
+
+  <span class="navbar-spacer"></span>
+
+  <!-- Actions droite -->
+  <div class="navbar-actions">
+
+    <!-- Compteur utilisateurs en ligne (masqué si endpoint indisponible) -->
+    <div class="online-counter"
+         *ngIf="(onlineCount$ | async) as cnt"
+         matTooltip="Utilisateurs actuellement connectés">
+      <span class="online-dot"></span>
+      <span class="online-count">{{ cnt }} en ligne</span>
+    </div>
+
+    <!-- Cloche notifications -->
+    <button mat-icon-button class="nav-icon-btn notif-btn"
+            (click)="toggleNotifPanel()"
+            matTooltip="Notifications">
+      <mat-icon [matBadge]="(unreadCount$ | async) || null"
+                matBadgeColor="warn"
+                matBadgeSize="small"
+                aria-hidden="false">
+        notifications
+      </mat-icon>
+    </button>
+
+    <div class="nav-divider"></div>
+
+    <!-- Profil utilisateur avec menu dropdown -->
+    <div class="navbar-user" [matMenuTriggerFor]="profileMenu">
+      <div class="user-avatar-wrap" [class.user-avatar-wrap--super]="isSuperAdmin">
+        <img [src]="auth.getUserAvatar() || 'assets/photo_profil.jpg'"
+             [alt]="auth.getUsername()"
+             class="user-avatar-img">
+        <div class="status-indicator"></div>
+      </div>
+      <div class="user-info">
+        <span class="navbar-user-name">{{ auth.getUsername() }}</span>
+        <span class="navbar-user-role">{{ auth.getRole() }}</span>
+      </div>
+      <mat-icon class="user-caret">expand_more</mat-icon>
+    </div>
+
+    <mat-menu #profileMenu="matMenu" class="profile-menu-panel">
+      <button mat-menu-item (click)="openProfileMenu()">
+        <mat-icon>account_circle</mat-icon>
+        <span>Changer la photo</span>
+      </button>
+      <button mat-menu-item (click)="openChangePassword()" *ngIf="!isSuperAdmin">
+        <mat-icon>lock_reset</mat-icon>
+        <span>Changer le mot de passe</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()" class="menu-logout">
+        <mat-icon>logout</mat-icon>
+        <span>Se déconnecter</span>
+      </button>
+    </mat-menu>
+
+  </div>
+</header>
+
+<!-- Panneau notifications (teleporté hors du header pour z-index correct) -->
+<imf-notification-panel
+  *ngIf="showNotifPanel"
+  (closed)="showNotifPanel = false">
+</imf-notification-panel>

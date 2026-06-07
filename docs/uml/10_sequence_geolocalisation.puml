@@ -1,0 +1,88 @@
+@startuml sequence_geolocalisation
+!theme plain
+title Diagramme de séquence — Géolocalisation des Agents Terrain\n(Suivi GPS temps réel + Conformité RGPD art. 9/50)
+
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 140
+
+actor "Agent\nTerrain" as AGENT
+participant "Application\nMobile Flutter" as MOBILE
+participant "Service\nGPS Agents" as CTRL
+participant "Gestion\ndes Positions" as SVC
+database "Base de données\n(Utilisateurs, Positions,\nConsentements)" as DB
+participant "Notifications\nTemps Réel" as SSE
+actor "Responsable\nRecouvrement" as RESP
+actor "Directeur IMF" as DIR
+
+== Pré-requis : Consentement GPS accordé par le DSI (art. 9/50) ==
+
+note over CTRL, DB
+  Le DSI autorise le suivi GPS de chaque agent avant tout enregistrement.
+  Sans ce consentement, aucune position ne peut être enregistrée.
+end note
+
+== Phase 1 : Envoi de la position (toutes les 5 minutes) ==
+
+MOBILE -> MOBILE : Détecte la position GPS\n(latitude, longitude, précision, altitude, vitesse)
+MOBILE -> CTRL : Envoie la position actuelle de l'agent
+CTRL -> CTRL : Identifie l'agent connecté et son institution
+CTRL -> SVC : Transmet la position pour enregistrement
+
+SVC -> DB : Vérifie que le consentement GPS de l'agent est actif
+alt Consentement absent ou révoqué
+    DB --> SVC : Consentement non trouvé
+    SVC --> CTRL : Refus — consentement requis
+    CTRL --> MOBILE : Erreur — Suivi GPS non autorisé pour cet agent
+else Consentement valide
+    DB --> SVC : Consentement confirmé
+
+    SVC -> DB : Met à jour la dernière position connue de l'agent\n(latitude, longitude, horodatage)
+
+    SVC -> DB : Enregistre la position dans l'historique\n(pour consultation ultérieure)
+
+    SVC -> DB : Récupère les informations de l'agent et de son agence
+    DB --> SVC : Profil agent avec agence
+
+    SVC -> SSE : Diffuse la position en temps réel\n(à tous les superviseurs connectés)
+    SSE --> RESP : Carte actualisée — position de l'agent mise à jour
+    SSE --> DIR  : Carte actualisée — position de l'agent mise à jour
+
+    SVC --> CTRL : Position enregistrée avec succès
+    CTRL --> MOBILE : Position enregistrée
+end
+
+== Phase 2 : Carte temps réel (supervision) ==
+
+RESP -> CTRL : Demande les positions des agents actifs\n(éventuellement filtrées par agence)
+CTRL -> SVC : Récupère les positions actives
+SVC -> DB : Recherche les agents ayant envoyé\nune position au cours des 15 dernières minutes
+DB --> SVC : Liste des agents actifs avec leur position
+SVC --> CTRL : Positions des agents actifs
+CTRL --> RESP : Toutes les positions actives sur la carte\n(agents hors ligne non affichés)
+
+== Phase 3 : Consultation du trajet journalier ==
+
+DIR -> CTRL : Demande le trajet d'un agent pour une journée donnée
+CTRL -> CTRL : Identifie l'agent par son identifiant
+CTRL -> SVC : Récupère l'historique des positions
+SVC -> DB : Lit toutes les positions de la journée\n(jusqu'à 500 points GPS, dans l'ordre chronologique)
+DB --> SVC : Trajet complet de la journée
+SVC --> CTRL : Points GPS du trajet
+CTRL --> DIR : Trajet affiché sur la carte\n(vérification de la couverture terrain)
+
+== Phase 4 : Désactivation du partage (droit d'opposition RGPD) ==
+
+AGENT -> MOBILE : Demande à arrêter d'être suivi
+MOBILE -> CTRL : Désactive le partage de position
+CTRL -> CTRL : Identifie l'agent connecté
+CTRL -> SVC : Désactive le partage
+SVC -> DB : Marque l'agent comme ne partageant plus sa position
+note right of SVC
+  La dernière position reste conservée en base
+  pour la traçabilité, mais l'agent disparaît
+  de la carte en temps réel.
+end note
+SVC --> CTRL : Partage désactivé
+CTRL --> MOBILE : Partage GPS désactivé avec succès
+
+@enduml

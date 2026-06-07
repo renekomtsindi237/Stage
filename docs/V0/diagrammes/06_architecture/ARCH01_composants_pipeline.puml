@@ -1,0 +1,120 @@
+@startuml ARCH01_composants_pipeline
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam componentBackgroundColor #EEF4FF
+skinparam componentBorderColor #4A6CF7
+skinparam componentArrowColor #555555
+skinparam componentArrowThickness 1.5
+skinparam databaseBackgroundColor #E8F5E9
+skinparam databaseBorderColor #2E7D32
+skinparam packageBackgroundColor #FAFAFA
+skinparam packageBorderColor #BDBDBD
+skinparam Padding 8
+
+title ARCH01 — Diagramme de Composants — Pipeline de Données\nCouche Data Engineering (Python · Airflow · dbt · PostgreSQL · Superset)
+
+package "Zone Dépôt Sources" #FFF9C4 {
+  [MTN_YYYYMMDD.csv] as MTN_FILE
+  [ORANGE_YYYYMMDD.csv] as OM_FILE
+  [CBS_export.csv] as CBS_FILE
+  [AGENT_collectes.xlsx] as AGENT_FILE
+}
+
+package "Conteneur Docker — Pipeline" #E3F2FD {
+
+  package "Orchestration — Apache Airflow" #EDE7F6 {
+    [Airflow WebServer\n:8080] as AW
+    [Airflow Scheduler] as AS
+    [Airflow Worker\n(LocalExecutor)] as AWK
+  }
+
+  package "Ingestion — Python Scripts" #E8F5E9 {
+    [IngestMTN\n(mtn_source.py)] as IMTN
+    [IngestOrange\n(orange_source.py)] as IOM
+    [IngestCBS\n(cbs_source.py)] as ICBS
+    [IngestAgents\n(agent_source.py)] as IAGT
+    [Deduplicator\n(dedup.py)] as DEDUP
+    [SchemaValidator\n(validator.py)] as VALID
+  }
+
+  package "Transformation — dbt Core" #FCE4EC {
+    [staging models\n(stg_*.sql)] as STG_DBT
+    [intermediate models\n(int_*.sql)] as INT_DBT
+    [mart models\n(fact_*.sql, dim_*.sql)] as MART_DBT
+    [reporting models\n(v_kpi_*.sql)] as RPT_DBT
+    [dbt Tests\n(schema.yml)] as DBT_TEST
+  }
+
+  package "Calcul & Alertes" #FFF3E0 {
+    [PARCalculator\n(par_calc.py)] as PARC
+    [AlertManager\n(alert_mgr.py)] as ALERTM
+    [PipelineLogger\n(logger.py)] as LOG
+  }
+
+  package "Stockage — PostgreSQL :5432" #E8F5E9 {
+    database "Schéma raw\n(données brutes)" as RAW
+    database "Schéma staging\n(données nettoyées)" as STAGING
+    database "Schéma dw\n(entrepôt étoile)" as DW
+    database "Schéma reporting\n(vues matérialisées)" as RPT
+    database "Schéma airflow\n(métadonnées)" as META
+  }
+
+  package "Visualisation — Apache Superset :8088" #E3F2FD {
+    [Superset WebApp] as SUP
+    [Dashboard Collectes] as DASH1
+    [Dashboard Recouvrement] as DASH2
+    [Dashboard Exécutif] as DASH3
+  }
+
+}
+
+' ===== Flux Ingestion =====
+MTN_FILE  --> IMTN
+OM_FILE   --> IOM
+CBS_FILE  --> ICBS
+AGENT_FILE --> IAGT
+
+IMTN  --> DEDUP
+IOM   --> DEDUP
+ICBS  --> DEDUP
+IAGT  --> DEDUP
+DEDUP --> VALID
+VALID --> RAW
+
+' ===== Flux Transformation =====
+RAW --> STG_DBT
+STG_DBT --> STAGING
+STAGING --> INT_DBT
+INT_DBT --> MART_DBT
+MART_DBT --> DW
+DW --> RPT_DBT
+RPT_DBT --> RPT
+MART_DBT --> DBT_TEST
+
+' ===== Flux Calcul =====
+DW --> PARC
+PARC --> ALERTM
+ALERTM --> STAGING
+
+' ===== Flux Superset =====
+RPT --> SUP
+SUP --> DASH1
+SUP --> DASH2
+SUP --> DASH3
+
+' ===== Orchestration Airflow =====
+AS --> AWK
+AWK --> IMTN
+AWK --> IOM
+AWK --> ICBS
+AWK --> IAGT
+AWK --> STG_DBT
+AWK --> MART_DBT
+AWK --> PARC
+AWK --> ALERTM
+AWK --> LOG
+
+LOG --> META
+AW --> META
+
+@enduml

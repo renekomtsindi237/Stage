@@ -1,0 +1,257 @@
+@startuml ARCH06_MLD
+title ARCH06 — Modèle Logique des Données (MLD)\nSchéma relationnel — Plateforme Pipeline IMF Cameroun
+
+skinparam linetype ortho
+skinparam backgroundColor #FAFAFA
+skinparam entity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  HeaderBackgroundColor #0D47A1
+  HeaderFontColor white
+}
+skinparam note {
+  BackgroundColor #FFF9C4
+  BorderColor #F9A825
+}
+
+' ══════════════════════════════════════════════
+' RÉFÉRENTIELS
+' ══════════════════════════════════════════════
+entity "zones" as ZONE {
+  <u>id_zone</u> : VARCHAR(20) PK
+  ==
+  nom_zone : VARCHAR(100) NOT NULL
+  region : VARCHAR(100)
+  type_zone : VARCHAR(20)
+  ' CHECK: URBAIN, SEMI_URBAIN, RURAL
+}
+
+entity "produits_credit" as PRODUIT {
+  <u>id_produit</u> : VARCHAR(20) PK
+  ==
+  nom_produit : VARCHAR(100) NOT NULL
+  taux_interet : NUMERIC(5,2) NOT NULL
+  duree_max_mois : INTEGER NOT NULL
+  montant_min : NUMERIC(15,2)
+  montant_max : NUMERIC(15,2)
+  actif : BOOLEAN DEFAULT TRUE
+}
+
+entity "utilisateurs" as USER {
+  <u>id_user</u> : BIGSERIAL PK
+  ==
+  username : VARCHAR(50) UNIQUE NOT NULL
+  password_hash : VARCHAR(255) NOT NULL
+  role : VARCHAR(30) NOT NULL
+  ' CHECK: DIRECTEUR, RESPONSABLE_RECOUVREMENT,
+  '        ANALYSTE, DSI, AGENT
+  fcm_token : VARCHAR(255)
+  #id_zone : VARCHAR(20) FK → zones
+  actif : BOOLEAN DEFAULT TRUE
+  last_login : TIMESTAMP
+  created_at : TIMESTAMP DEFAULT NOW()
+}
+
+entity "refresh_tokens" as RTOKEN {
+  <u>id</u> : BIGSERIAL PK
+  ==
+  #id_user : BIGINT FK → utilisateurs
+  token_hash : VARCHAR(255) UNIQUE NOT NULL
+  expires_at : TIMESTAMP NOT NULL
+  created_at : TIMESTAMP DEFAULT NOW()
+}
+
+' ══════════════════════════════════════════════
+' CLIENTS & AGENTS
+' ══════════════════════════════════════════════
+entity "clients" as CLIENT {
+  <u>id_client</u> : VARCHAR(30) PK
+  ==
+  nom : VARCHAR(100) NOT NULL
+  prenom : VARCHAR(100)
+  telephone : VARCHAR(20) UNIQUE
+  #id_zone : VARCHAR(20) FK → zones
+  date_adhesion : DATE
+  date_creation : TIMESTAMP DEFAULT NOW()
+  date_modification : TIMESTAMP
+}
+
+entity "agents" as AGENT {
+  <u>id_agent</u> : VARCHAR(30) PK
+  ==
+  nom : VARCHAR(100) NOT NULL
+  prenom : VARCHAR(100)
+  telephone : VARCHAR(20)
+  agence : VARCHAR(100)
+  #id_zone : VARCHAR(20) FK → zones
+  #id_user : BIGINT FK → utilisateurs
+  ' (0,1) : un agent terrain a un compte USER optionnel
+  actif : BOOLEAN DEFAULT TRUE
+  date_creation : TIMESTAMP DEFAULT NOW()
+}
+
+' ══════════════════════════════════════════════
+' PRÊTS & ÉCHÉANCES
+' ══════════════════════════════════════════════
+entity "prets" as PRET {
+  <u>id_pret</u> : VARCHAR(30) PK
+  ==
+  #id_client : VARCHAR(30) FK → clients NOT NULL
+  #id_agent : VARCHAR(30) FK → agents NOT NULL
+  #id_produit : VARCHAR(20) FK → produits_credit NOT NULL
+  montant_octroye : NUMERIC(15,2) NOT NULL
+  date_decaissement : DATE NOT NULL
+  date_echeance_finale : DATE NOT NULL
+  nombre_echeances : INTEGER NOT NULL
+  statut : VARCHAR(20) NOT NULL
+  ' CHECK: ACTIF, EN_RETARD, EN_RECOUVREMENT, SOLDE, PERTE
+  date_creation : TIMESTAMP DEFAULT NOW()
+  date_modification : TIMESTAMP
+}
+
+entity "echeances" as ECHEANCE {
+  <u>id_echeance</u> : BIGSERIAL PK
+  ==
+  #id_pret : VARCHAR(30) FK → prets NOT NULL
+  numero_echeance : INTEGER NOT NULL
+  date_echeance : DATE NOT NULL
+  montant_du : NUMERIC(15,2) NOT NULL
+  statut : VARCHAR(20) NOT NULL
+  ' CHECK: EN_ATTENTE, PARTIELLEMENT_PAYEE, SOLDEE, EN_RETARD
+}
+
+' ══════════════════════════════════════════════
+' TRANSACTIONS & REMBOURSEMENTS
+' ══════════════════════════════════════════════
+entity "transactions_mm" as TRANSACTION {
+  <u>id_transaction</u> : VARCHAR(50) PK
+  ==
+  reference_externe : VARCHAR(100) UNIQUE
+  date_transaction : TIMESTAMP NOT NULL
+  montant : NUMERIC(15,2) NOT NULL
+  operateur : VARCHAR(10) NOT NULL
+  ' CHECK: MTN, ORANGE
+  numero_expediteur : VARCHAR(20)
+  statut_transaction : VARCHAR(20)
+  hash_dedup : VARCHAR(64) UNIQUE NOT NULL
+  nom_fichier_source : VARCHAR(255)
+  date_ingestion : TIMESTAMP DEFAULT NOW()
+}
+
+entity "remboursements" as REMBOURSEMENT {
+  <u>id_remboursement</u> : BIGSERIAL PK
+  ==
+  #id_echeance : BIGINT FK → echeances NOT NULL
+  #id_transaction : VARCHAR(50) FK → transactions_mm
+  ' (0,1) : peut être saisi manuellement sans transaction mobile
+  date_paiement : DATE NOT NULL
+  montant_paye : NUMERIC(15,2) NOT NULL
+  canal_paiement : VARCHAR(20) NOT NULL
+  ' CHECK: MTN, ORANGE, ESPECES, VIREMENT
+  date_creation : TIMESTAMP DEFAULT NOW()
+}
+
+' ══════════════════════════════════════════════
+' COLLECTES TERRAIN
+' ══════════════════════════════════════════════
+entity "collectes_terrain" as COLLECTE {
+  <u>id_collecte</u> : VARCHAR(50) PK
+  ' Format : COL-AAAA-NNNNN (généré Flutter)
+  ==
+  #id_agent : VARCHAR(30) FK → agents NOT NULL
+  #id_pret : VARCHAR(30) FK → prets NOT NULL
+  #id_client : VARCHAR(30) FK → clients NOT NULL
+  date_collecte : DATE NOT NULL
+  montant_collecte : NUMERIC(15,2) NOT NULL
+  canal_paiement : VARCHAR(20) NOT NULL
+  ' CHECK: MTN, ORANGE, ESPECES, VIREMENT
+  reference_transaction : VARCHAR(100)
+  statut : VARCHAR(20) NOT NULL
+  ' CHECK: SOUMISE, CONFIRMEE, DOUBLON, REJETEE
+  observation : TEXT
+  latitude : NUMERIC(10,7)
+  longitude : NUMERIC(10,7)
+  date_soumission : TIMESTAMP DEFAULT NOW()
+}
+
+' ══════════════════════════════════════════════
+' ALERTES
+' ══════════════════════════════════════════════
+entity "alertes_impayes" as ALERTE {
+  <u>id_alerte</u> : BIGSERIAL PK
+  ==
+  #id_pret : VARCHAR(30) FK → prets NOT NULL
+  date_generation : TIMESTAMP DEFAULT NOW()
+  jours_retard : INTEGER NOT NULL
+  montant_en_retard : NUMERIC(15,2) NOT NULL
+  statut_alerte : VARCHAR(20) NOT NULL
+  ' CHECK: ACTIVE, CLOTUREE, ESCALADEE
+  fcm_sent : BOOLEAN DEFAULT FALSE
+  email_sent : BOOLEAN DEFAULT FALSE
+  date_cloture : TIMESTAMP
+  date_modification : TIMESTAMP
+  CONSTRAINT uq_alerte_pret_active UNIQUE (id_pret, statut_alerte)
+  ' (une seule alerte ACTIVE par prêt)
+}
+
+' ══════════════════════════════════════════════
+' JOURNAL INGESTIONS (audit)
+' ══════════════════════════════════════════════
+entity "journal_ingestions" as JOURNAL {
+  <u>id</u> : BIGSERIAL PK
+  ==
+  dag_id : VARCHAR(100) NOT NULL
+  dag_run_id : VARCHAR(200) NOT NULL
+  nom_fichier : VARCHAR(255)
+  source : VARCHAR(20) NOT NULL
+  ' CHECK: MTN, ORANGE, CBS, TERRAIN
+  nb_lignes_lues : INTEGER
+  nb_inserts : INTEGER
+  nb_doublons : INTEGER
+  nb_erreurs : INTEGER
+  statut : VARCHAR(20) NOT NULL
+  ' CHECK: SUCCESS, PARTIAL, FAILED
+  message_erreur : TEXT
+  debut_ingestion : TIMESTAMP
+  fin_ingestion : TIMESTAMP DEFAULT NOW()
+}
+
+' ══════════════════════════════════════════════
+' CARDINALITÉS
+' ══════════════════════════════════════════════
+ZONE ||--o{ CLIENT : "réside dans (1,N)"
+ZONE ||--o{ AGENT  : "affecté à (1,N)"
+ZONE |o--o{ USER   : "responsable de (0,1 / 0,N)"
+
+PRODUIT ||--o{ PRET : "classifie (1,N)"
+CLIENT  ||--o{ PRET : "souscrit (1,N)"
+AGENT   ||--o{ PRET : "gère (1,N)"
+
+PRET ||--o{ ECHEANCE : "décomposé en (1,N)"
+ECHEANCE ||--o{ REMBOURSEMENT : "soldée par (1,N)"
+TRANSACTION |o--o{ REMBOURSEMENT : "liée à (0,1)"
+
+AGENT ||--o{ COLLECTE : "effectue (1,N)"
+PRET  ||--o{ COLLECTE : "alimentée par (0,N)"
+CLIENT |o--o{ COLLECTE : "référencée dans"
+
+PRET ||--o{ ALERTE : "génère (0,N)"
+
+USER ||--o{ RTOKEN : "possède (1,N)"
+AGENT |o--|| USER : "associé à (0,1)"
+
+note bottom of REMBOURSEMENT
+  id_transaction est nullable :
+  les remboursements en espèces
+  (ESPECES) n'ont pas de référence
+  de transaction mobile money.
+end note
+
+note bottom of COLLECTE
+  id_collecte généré par Flutter :
+  format COL-AAAA-NNNNN
+  Déduplication via UNIQUE constraint
+  sur (reference_transaction, date_collecte)
+end note
+
+@enduml

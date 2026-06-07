@@ -1,0 +1,90 @@
+@startuml SEQ05_authentification_web
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ05 — Authentification Web (Angular → Spring Boot)\nFlux JWT : Login + Refresh + Déconnexion
+
+actor "Utilisateur" as USER
+participant "Navigateur\n(Angular)" as ANG
+participant "AuthService\n(Angular)" as AUTHSVC
+participant "JwtInterceptor\n(Angular)" as INTER
+participant "Spring Boot\nAuthController" as SPRING
+database "PostgreSQL\nusers + refresh_tokens" as PG
+
+== Connexion initiale ==
+
+USER -> ANG : Saisit username + password\n(formulaire /login)
+ANG -> AUTHSVC : login({username, password})
+AUTHSVC -> SPRING : <b>POST</b> /api/auth/login\n{"username": "jkamga", "password": "***"}
+activate SPRING
+
+SPRING -> PG : <b>SELECT</b> users WHERE username = 'jkamga'
+PG --> SPRING : {id, username, password_hash, role}
+
+SPRING -> SPRING : <b>BCrypt.matches()</b>\nCompare password avec hash stocké
+
+alt <b>Authentification réussie</b>
+  SPRING -> SPRING : <b>JwtTokenProvider.generate()</b>\naccessToken (15 min)\nrefreshToken (7 jours)
+
+  SPRING -> PG : <b>INSERT INTO</b> refresh_tokens\n{user_id, token_hash, expires_at}
+
+  SPRING --> AUTHSVC : <b>200 OK</b>\n{"accessToken": "eyJ...",\n "refreshToken": "r_xxx",\n "role": "ANALYSTE",\n "username": "jkamga"}
+  deactivate SPRING
+
+  AUTHSVC -> ANG : Stocke accessToken (sessionStorage)\net refreshToken (localStorage)
+  ANG --> USER : Redirige vers /dashboard
+
+else <b>Authentification échouée</b>
+  SPRING --> AUTHSVC : <b>401 Unauthorized</b>\n{"message": "Identifiants incorrects"}
+  AUTHSVC --> USER : Affiche message d'erreur
+end
+
+== Requête API avec JWT ==
+
+USER -> ANG : Navigue vers /recouvrement
+ANG -> INTER : Intercepte requête HTTP
+INTER -> INTER : Lit accessToken depuis sessionStorage
+INTER -> SPRING : <b>GET</b> /api/kpi/par\nAuthorization: Bearer eyJ...
+SPRING --> ANG : <b>200 OK</b> {data...}
+
+== Renouvellement du token (token expiré) ==
+
+ANG -> SPRING : <b>GET</b> /api/kpi/collectes\nAuthorization: Bearer <JWT expiré>
+SPRING --> ANG : <b>401 Unauthorized</b> {"error": "Token expiré"}
+
+ANG -> INTER : Intercepte le 401
+note over INTER : [max 1 retry]\nSi le refresh échoue à son tour,\nrediriger vers /login sans boucle
+INTER -> SPRING : <b>POST</b> /api/auth/refresh\n{"refreshToken": "r_xxx"}
+activate SPRING
+SPRING -> PG : <b>SELECT</b> refresh_tokens\nWHERE token_hash = ? AND expires_at > NOW()
+PG --> SPRING : Token valide
+
+SPRING -> SPRING : Génère nouveau accessToken (15 min)
+SPRING --> INTER : <b>200 OK</b> {"accessToken": "eyJ_new..."}
+deactivate SPRING
+
+INTER -> ANG : Stocke nouveau accessToken
+INTER -> SPRING : Rejoue requête initiale\nGET /api/kpi/collectes\nAuthorization: Bearer eyJ_new...
+SPRING --> ANG : <b>200 OK</b> {data...}
+
+== Déconnexion ==
+
+USER -> ANG : Clic "Déconnexion"
+ANG -> SPRING : <b>POST</b> /api/auth/logout\n{refreshToken: "r_xxx"}
+SPRING -> PG : <b>DELETE FROM</b> refresh_tokens\nWHERE token_hash = ?
+PG --> SPRING : OK
+SPRING --> ANG : <b>200 OK</b>
+ANG -> ANG : Efface sessionStorage + localStorage
+ANG --> USER : Redirige vers /login
+
+@enduml

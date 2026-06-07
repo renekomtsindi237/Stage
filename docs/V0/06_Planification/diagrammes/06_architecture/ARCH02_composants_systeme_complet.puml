@@ -1,0 +1,141 @@
+@startuml ARCH02_composants_systeme_complet
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam componentBackgroundColor #EEF4FF
+skinparam componentBorderColor #4A6CF7
+skinparam componentArrowColor #555555
+skinparam componentArrowThickness 2
+skinparam databaseBackgroundColor #E8F5E9
+skinparam databaseBorderColor #2E7D32
+skinparam packageBackgroundColor #FAFAFA
+skinparam packageBorderColor #BDBDBD
+skinparam Padding 8
+
+title ARCH02 — Diagramme de Composants — Système Complet\nPipeline · Spring Boot · Angular · Flutter
+
+' ===== COUCHE 1 : SOURCES =====
+package "Couche 0 — Sources Externes" #FFF9C4 {
+  [CBS Export] as CBS
+  [MTN Mobile Money] as MTN
+  [Orange Money] as OM
+  [Agents Terrain] as AGT
+}
+
+' ===== COUCHE 1 : PIPELINE =====
+package "Couche 1 — Pipeline (Docker)" #E8EAF6 {
+  [Apache Airflow] as AIRFLOW
+  [Scripts Python\n(Ingestion + Alertes)] as PY
+  [dbt Core\n(Transformation)] as DBT
+
+  package "PostgreSQL" {
+    database "raw" as RAW
+    database "staging" as STG
+    database "dw" as DW
+    database "reporting" as RPT
+  }
+
+  [Apache Superset\n:8088] as SUPERSET
+}
+
+' ===== COUCHE 2 : BACKEND =====
+package "Couche 2 — Backend Spring Boot (Docker)" #E8F5E9 {
+  [Nginx\n:80 / :443\n(Reverse Proxy)] as NGINX
+  [AuthController\n/api/auth/**] as AUTH_CTRL
+  [KpiController\n/api/kpi/**] as KPI_CTRL
+  [CollecteController\n/api/collectes/**] as COL_CTRL
+  [AlerteController\n/api/alertes/**] as ALE_CTRL
+  [Spring Security\n(JwtFilter + RBAC)] as SEC
+  [NotificationService\n(FCM + SMTP)] as NOTIF
+  [Firebase Admin SDK] as FB_SDK
+}
+
+' ===== COUCHE 3 : WEB =====
+package "Couche 3 — Frontend Web Angular" #E3F2FD {
+  [Angular SPA\n(dist/ servi par Nginx)] as ANG
+  [AuthModule\n(Login + JWT)] as ANG_AUTH
+  [DashboardCollectes] as ANG_COL
+  [DashboardRecouvrement] as ANG_REC
+  [DashboardExecutif] as ANG_EXEC
+  [AlertesModule] as ANG_ALE
+  [AdminModule\n(DSI seulement)] as ANG_ADM
+}
+
+' ===== COUCHE 4 : MOBILE =====
+package "Couche 4 — App Mobile Flutter" #FCE4EC {
+  [Flutter App\n(Android / iOS)] as FLT
+  [AuthFeature\n(Login + JWT Secure)] as FLT_AUTH
+  [SaisieCollecte\n(Formulaire + Offline)] as FLT_SAI
+  [DashboardMobile\n(KPIs + Charts)] as FLT_DASH
+  [AlertesFeature\n(Liste + Détail)] as FLT_ALE
+  [SyncService\n(ConnectivityPlus)] as FLT_SYNC
+  database "SQLite Local\n(sqflite)" as SQLITE
+}
+
+' ===== SERVICES EXTERNES =====
+package "Services Externes" #FFF3E0 {
+  [Firebase FCM\n(Google Cloud)] as FCM
+  [Serveur SMTP] as SMTP
+}
+
+' ===== FLUX PIPELINE =====
+CBS  --> PY
+MTN  --> PY
+OM   --> PY
+AGT  --> PY
+PY   --> RAW
+AIRFLOW --> PY
+AIRFLOW --> DBT
+DBT  --> STG
+DBT  --> DW
+DW   --> RPT
+RPT  --> SUPERSET
+
+' ===== FLUX BACKEND =====
+DW   --> KPI_CTRL : JDBC (lecture)
+STG  --> COL_CTRL : JDBC (R/W)
+STG  --> ALE_CTRL : JDBC (R/W)
+
+NGINX --> ANG : Sert les fichiers statiques
+NGINX --> AUTH_CTRL : Proxy /api/auth
+NGINX --> KPI_CTRL  : Proxy /api/kpi
+NGINX --> COL_CTRL  : Proxy /api/collectes
+NGINX --> ALE_CTRL  : Proxy /api/alertes
+
+SEC --> AUTH_CTRL
+SEC --> KPI_CTRL
+SEC --> COL_CTRL
+SEC --> ALE_CTRL
+
+NOTIF --> FB_SDK
+FB_SDK --> FCM
+NOTIF --> SMTP
+ALE_CTRL --> NOTIF
+
+' ===== FLUX ANGULAR =====
+ANG --> ANG_AUTH
+ANG --> ANG_COL
+ANG --> ANG_REC
+ANG --> ANG_EXEC
+ANG --> ANG_ALE
+ANG --> ANG_ADM
+ANG_AUTH --> NGINX : HTTPS REST + JWT
+ANG_COL  --> NGINX : GET /api/kpi/collectes
+ANG_REC  --> NGINX : GET /api/kpi/par
+ANG_ALE  --> NGINX : GET/PUT /api/alertes
+
+' ===== FLUX FLUTTER =====
+FLT --> FLT_AUTH
+FLT --> FLT_SAI
+FLT --> FLT_DASH
+FLT --> FLT_ALE
+FLT --> FLT_SYNC
+FLT_AUTH --> NGINX : HTTPS POST /api/auth/login
+FLT_SAI  --> NGINX : HTTPS POST /api/collectes
+FLT_DASH --> NGINX : HTTPS GET /api/kpi/dashboard-summary
+FLT_ALE  --> NGINX : HTTPS GET/PUT /api/alertes
+FLT_SAI  --> SQLITE : Stockage offline
+FLT_SYNC --> SQLITE : SELECT PENDING_SYNC
+FLT_SYNC --> NGINX : Sync → POST /api/collectes
+FCM --> FLT : Push notifications
+
+@enduml

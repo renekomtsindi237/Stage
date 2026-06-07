@@ -1,0 +1,81 @@
+@startuml activite_rgpd_demande
+!theme plain
+title Diagramme d'activité — Gestion des Demandes RGPD\n(Loi 2024/017 Cameroun — Art. 37 à 43 — Délai légal 30 jours)
+
+skinparam activityBorderColor #C0392B
+skinparam activityBackgroundColor #FADBD8
+
+|Utilisateur (tout rôle)|
+start
+:Accède à l'espace "Mes droits"\n(menu profil → Données personnelles);
+
+:Choisit le type de droit à exercer :
+- Art. 37 : Accès à ses données
+- Art. 38 : Rectification
+- Art. 39 : Effacement (droit à l'oubli)
+- Art. 40 : Opposition au traitement
+- Art. 41 : Limitation du traitement
+- Art. 43 : Portabilité des données;
+
+:Soumet la demande de droit;
+
+|Serveur Spring Boot|
+:Enregistre la preuve de soumission\n(adresse IP, date et heure — art. 41);
+:Crée la demande\n(statut : soumise, échéance dans 30 jours);
+
+|Utilisateur (tout rôle)|
+:Reçoit la confirmation avec la date limite;
+:Peut suivre l'avancement de sa demande;
+
+== Traitement par le DSI ==
+
+|Tâche planifiée (automatique)|
+:Vérifie chaque nuit les demandes en retard;
+
+if (Demande non traitée depuis plus de 30 jours ?) then (oui)
+    :Consigne l'alerte dans les journaux;
+    :Affiche une alerte rouge sur le tableau de bord DSI;
+else (non)
+    :Aucune action;
+endif
+
+|DSI|
+:Consulte les demandes en attente de traitement;
+:Liste des demandes classées par urgence;
+
+:Examine la demande :\n- Type de droit demandé\n- Données concernées\n- Identité du demandeur;
+
+if (Demande légitime ?) then (oui)
+    :Prépare la réponse appropriée;
+
+    if (Accès aux données ou portabilité demandés) then
+        :Génère le fichier export des données personnelles\n(toutes les données de l'utilisateur);
+        :Génère un lien de téléchargement temporaire\n(valable 7 jours);
+        :Marque la demande comme traitée\n(avec réponse et lien de téléchargement);
+    elseif (Effacement demandé) then
+        :Applique l'anonymisation ou la suppression\ndes données personnelles concernées;
+        :Marque la demande comme traitée\n(données anonymisées confirmé);
+    elseif (Rectification demandée) then
+        :Corrige les données incorrectes en base;
+        :Marque la demande comme traitée\n(données corrigées confirmé);
+    elseif (Opposition ou limitation demandées) then
+        :Révoque le ou les consentements concernés;
+        :Marque la demande comme traitée\n(opposition enregistrée);
+    endif
+else (non — motif légal de refus)
+    :Marque la demande comme refusée\n(motif légal obligatoire);
+endif
+
+|Serveur Spring Boot|
+:Enregistre la décision\n(date de traitement, identité du traitant, réponse);
+
+|Utilisateur (tout rôle)|
+:Consulte le statut de sa demande;
+:Voit la décision (traitée ou refusée);
+if (Export disponible ?) then (oui)
+    :Télécharge ses données\n(lien valable 7 jours);
+endif
+
+stop
+
+@enduml

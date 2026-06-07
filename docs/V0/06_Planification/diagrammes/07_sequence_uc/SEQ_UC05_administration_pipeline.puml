@@ -1,0 +1,212 @@
+@startuml SEQ_UC05_administration_pipeline
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam sequenceGroupBackgroundColor #F5F5F5
+skinparam sequenceGroupBorderColor #9E9E9E
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceBoxBorderColor #4A6CF7
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ_UC05 — Administration du Pipeline (DSI)\nSurveillance · Déclenchement manuel · Backfill · Configuration\n<size:11><color:#555>Architecture conteneurisée Docker Compose — Airflow 2.8 + PostgreSQL 15</color></size>
+
+' ===== ACTEURS =====
+actor "DSI\n(Web Airflow UI)" as DSI
+
+' ===== CONTENEUR : nginx =====
+box "🐳 nginx (:80/:443)\n[Reverse Proxy]" #FFF9C4
+  participant "Nginx\n[Proxy /airflow/* → airflow-webserver:8080\nProxy /api/* → springboot:8080]" as NGINX
+end box
+
+' ===== CONTENEUR : airflow-webserver =====
+box "🐳 airflow-webserver (:8080 interne)" #EDE7F6
+  participant "Airflow Web UI\n[Flask / Gunicorn\nREST API interne]" as AWU
+end box
+
+' ===== CONTENEUR : airflow-scheduler =====
+box "🐳 airflow-scheduler" #EDE7F6
+  participant "Airflow Scheduler\n[DagBag + TaskInstance\nHeartbeat: 5s]" as AS
+  participant "DagBag\n[dag_ingest_mtn\ndag_ingest_orange\ndag_ingest_cbs\ndag_ingest_agents\ndag_transform_dw\ndag_alertes]" as DAGS
+end box
+
+' ===== CONTENEUR : python-scripts =====
+box "🐳 python-scripts\n(volume /dags partagé)" #E8EAF6
+  participant "IngestMTN\n[mtn_source.py]" as IMTN
+  participant "IngestOrange\n[orange_source.py]" as IOM
+  participant "IngestCBS\n[cbs_source.py]" as ICBS
+  participant "dbt CLI\n[dbt run / dbt test]" as DBT
+  participant "AlertManager\n[alert_mgr.py]" as ALERTM
+end box
+
+' ===== CONTENEUR : postgres-pipeline =====
+box "🐳 postgres-pipeline (:5432)" #E8F5E9
+  database "airflow_db\n(metadata Airflow)" as AIRFLOW_DB
+  database "raw / staging\n/ dw / reporting\n(données IMF)" as PG_IMF
+end box
+
+' ===== CONTENEUR : springboot =====
+box "🐳 springboot-api (:8080 interne)" #E3F2FD
+  participant "AdminController\n[GET/POST /api/admin/*\n@PreAuthorize DSI]" as CTRL_ADMIN
+  participant "UserService\n[@Service]" as SVC_USER
+  participant "UserRepository\n[@Repository]" as REPO_USER
+end box
+
+' =================================================
+' ÉTAPE 1 — AUTHENTIFICATION DSI AIRFLOW
+' =================================================
+== 🔐 ÉTAPE 1 — Connexion DSI à l'interface Airflow ==
+
+DSI -> NGINX : HTTPS GET https://imf-plateforme.cm/airflow/
+NGINX -> AWU : Proxy → airflow-webserver:8080\nGET /airflow/
+
+AWU -> DSI : HTTP 200 Page de login Airflow\n(Airflow RBAC — rôle Admin configuré)
+
+DSI -> NGINX : HTTPS POST /airflow/login\n{username: "dsi_admin", password: "..."}
+NGINX -> AWU : POST /airflow/login
+AWU -> AIRFLOW_DB : SELECT username, password_hash\nFROM ab_user\nWHERE username = 'dsi_admin'
+AIRFLOW_DB --> AWU : {id, password_hash, roles: ['Admin']}
+AWU -> AWU : bcrypt.verify(password, hash) → OK
+AWU --> DSI : HTTP 302 Redirect → /airflow/home\n(Session cookie airflow_session)
+
+AWU -> AIRFLOW_DB : SELECT dag_id, is_paused, last_run,\nnext_run, state, tags\nFROM dag, dag_run\nLIMIT 20
+AIRFLOW_DB --> AWU : État de tous les DAGs
+AWU --> DSI : Dashboard Airflow\n(liste des DAGs + état + dernière exécution)
+
+' =================================================
+' ÉTAPE 2 — SURVEILLANCE DES DAGS
+' =================================================
+== 📊 ÉTAPE 2 — Surveillance de l'état des DAGs ==
+
+DSI -> NGINX : HTTPS GET /airflow/dags/dag_transform_dw/grid
+NGINX -> AWU : Proxy GET /dags/dag_transform_dw/grid
+
+AWU -> AIRFLOW_DB : SELECT dr.run_id, dr.state,\ndr.start_date, dr.end_date,\ndr.execution_date\nFROM dag_run dr\nWHERE dr.dag_id = 'dag_transform_dw'\nORDER BY dr.start_date DESC\nLIMIT 30
+AIRFLOW_DB --> AWU : 30 dernières exécutions
+
+AWU -> AIRFLOW_DB : SELECT ti.task_id, ti.state,\nti.start_date, ti.duration,\nti.try_number\nFROM task_instance ti\nWHERE ti.dag_id = 'dag_transform_dw'\nAND ti.run_id = 'scheduled__2026-03-31T06:00:00'
+AIRFLOW_DB --> AWU : États de toutes les tâches du run
+
+AWU --> DSI : Grid view — mosaïque d'états\n(SUCC: vert, FAIL: rouge, RUNNING: jaune)
+
+DSI -> NGINX : HTTPS GET /airflow/dags/dag_transform_dw/\ntask-instances/transform_dbt_staging/log\n?run_id=...&try_number=1
+NGINX -> AWU : GET logs task
+AWU -> AIRFLOW_DB : SELECT log_url FROM task_instance\nWHERE task_id = 'transform_dbt_staging'
+AIRFLOW_DB --> AWU : Log file path\n(volume /opt/airflow/logs/)
+AWU --> DSI : Logs temps réel (streaming)\n[2026-03-31 07:00:01] INFO dbt run --select staging.*\n[2026-03-31 07:02:14] INFO 3 of 3 OK\n[2026-03-31 07:02:14] INFO Finished running 3 models
+
+' =================================================
+' ÉTAPE 3 — DÉCLENCHEMENT MANUEL D'UN DAG
+' =================================================
+== ▶️ ÉTAPE 3 — Déclenchement manuel du pipeline (rattrapage) ==
+
+note over DSI : Le DSI remarque que dag_ingest_mtn\na échoué hier (2026-03-30)\n→ déclenche un rattrapage manuel
+
+DSI -> NGINX : HTTPS POST /airflow/api/v1/dags/dag_ingest_mtn/dagRuns\n{conf: {source_date: "2026-03-30"},\n note: "Rattrapage J-1 — fichier MTN reçu en retard"}
+NGINX -> AWU : POST /api/v1/dags/dag_ingest_mtn/dagRuns
+
+AWU -> AWU : Vérifie rôle Admin / Op\n(session cookie)
+AWU -> AIRFLOW_DB : INSERT INTO dag_run\n{dag_id: 'dag_ingest_mtn',\nrun_id: 'manual__2026-03-31T09:30:00',\nrun_type: 'manual',\nexecution_date: '2026-03-30T06:00:00',\nconf: {source_date: '2026-03-30'},\nstate: 'queued'}
+AIRFLOW_DB --> AWU : dag_run créé
+
+AWU --> DSI : HTTP 200\n{dag_run_id: "manual__2026-03-31T09:30:00",\nstate: "queued"}
+
+AS -> AIRFLOW_DB : Heartbeat scan\nSELECT * FROM dag_run\nWHERE state = 'queued'
+AIRFLOW_DB --> AS : dag_run manual__2026-03-31T09:30:00
+
+AS -> DAGS : Instancie dag_ingest_mtn\navec execution_date=2026-03-30
+
+DAGS -> IMTN : execute Task: ingest_mtn\nparams: {source_date: 2026-03-30}
+IMTN -> PG_IMF : Lecture MTN_20260330.csv\n(volume /data/sources/mtn/)\n→ normalisation + déduplication SHA-256\nINSERT INTO raw.transactions_mtn\nON CONFLICT (hash_dedup) DO NOTHING
+PG_IMF --> IMTN : {insérées: 231, doublons: 0}
+
+IMTN --> DAGS : Task ingest_mtn → SUCCESS ✓
+
+AS -> AIRFLOW_DB : UPDATE task_instance SET state='success'\nWHERE task_id='ingest_mtn'\nUPDATE dag_run SET state='success'
+AS --> AWU : DAG run terminé
+AWU --> DSI : 🟢 dag_ingest_mtn → SUCCESS\n(notification via polling ou WebSocket)
+
+' =================================================
+' ÉTAPE 4 — BACKFILL (Recalcul historique)
+' =================================================
+== 🔄 ÉTAPE 4 — Backfill : recalcul PAR sur les 7 derniers jours ==
+
+note over DSI : Suite à une correction de la formule PAR\n→ recalcul nécessaire sur 7 jours
+
+DSI -> NGINX : HTTPS POST /airflow/api/v1/dags/dag_transform_dw/dagRuns\n{conf: {backfill: true,\n date_debut: "2026-03-24",\n date_fin: "2026-03-30"}}
+note right DSI : En production, le backfill\ns'exécute via CLI dans le conteneur :\nairflow dags backfill \\\n  dag_transform_dw \\\n  -s 2026-03-24 -e 2026-03-30
+
+NGINX -> AWU : POST /api/v1/dags/dag_transform_dw/dagRuns
+
+loop <b>Pour chaque date de 2026-03-24 à 2026-03-30</b>
+  AWU -> AIRFLOW_DB : INSERT INTO dag_run\n{run_type: 'backfill',\nexecution_date: date_j,\nstate: 'queued'}
+  AS -> DAGS : Exécute dag_transform_dw\navec execution_date = date_j
+
+  DAGS -> DBT : dbt run --select fact_par_quotidien\n--vars "{execution_date: date_j}"
+  DBT -> PG_IMF : CTE calcul PAR30/PAR90\npour date_j (depuis staging)\n→ DELETE puis INSERT dw.fact_par_quotidien\nWHERE date_id = date_j_format
+
+  DAGS -> DBT : dbt run --select reporting.v_kpi_recouvrement
+  DBT -> PG_IMF : REFRESH MATERIALIZED VIEW\nreporting.v_kpi_recouvrement
+  PG_IMF --> DBT : Vue rafraîchie ✓
+
+  DAGS -> ALERTM : detect_impayes(date=date_j)
+  ALERTM -> PG_IMF : Recalcul alertes impayées\npour date_j
+end
+
+AWU --> DSI : Backfill terminé\n7 runs dag_transform_dw → SUCCESS ✓
+
+' =================================================
+' ÉTAPE 5 — CONFIGURATION CONNEXION SOURCE
+' =================================================
+== ⚙️ ÉTAPE 5 — Configuration d'une nouvelle connexion source (MTN API) ==
+
+DSI -> NGINX : HTTPS POST /airflow/api/v1/connections\n{conn_id: "mtn_sftp_prod",\n conn_type: "sftp",\n host: "sftp.mtn.cm",\n login: "imf_user",\n password: "...",\n port: 22,\n extra: {timeout: 30}}
+NGINX -> AWU : POST /api/v1/connections
+
+AWU -> AWU : Chiffre le mot de passe\n(Fernet encryption — AIRFLOW__CORE__FERNET_KEY)
+AWU -> AIRFLOW_DB : INSERT INTO connection\n{conn_id: 'mtn_sftp_prod',\ncrypted_password: '...',\n...}
+AIRFLOW_DB --> AWU : connexion créée
+
+AWU --> DSI : HTTP 200\n{conn_id: "mtn_sftp_prod", status: "created"}
+
+DSI -> NGINX : HTTPS POST /airflow/api/v1/connections/mtn_sftp_prod/test
+NGINX -> AWU : POST test connexion
+AWU -> AWU : Teste SFTP handshake\nvers sftp.mtn.cm:22
+AWU --> DSI : HTTP 200 {status: "ok",\nmessage: "Connection successful"}
+
+' =================================================
+' ÉTAPE 6 — GESTION UTILISATEURS API (Spring Boot)
+' =================================================
+== 👤 ÉTAPE 6 — Administration des utilisateurs plateforme (Spring Boot) ==
+
+DSI -> NGINX : HTTPS POST /api/admin/users\n{username: "agent_terrain_08",\n password: "...",\n role: "AGENT",\n zoneId: 5,\n fcmToken: null}\nAuthorization: Bearer <JWT_DSI>
+NGINX -> CTRL_ADMIN : Proxy POST /api/admin/users\n→ springboot:8080
+
+CTRL_ADMIN -> CTRL_ADMIN : @PreAuthorize("hasRole('DSI')")\nJwtFilter valide JWT
+CTRL_ADMIN -> SVC_USER : createUser(request)
+SVC_USER -> SVC_USER : BCrypt.hash(password, 12)\nvalidateRole(AGENT) ✓\nvalidateZone(zoneId=5) ✓
+SVC_USER -> REPO_USER : save(user)
+REPO_USER -> PG_IMF : INSERT INTO staging.users\n{username: 'agent_terrain_08',\npassword_hash: '$2a$12$...',\nrole: 'AGENT', id_zone: 5,\nactif: TRUE}
+PG_IMF --> REPO_USER : id_user = 34
+REPO_USER --> SVC_USER : User{id:34}
+SVC_USER --> CTRL_ADMIN : UserResponse{id:34, role:"AGENT"}
+CTRL_ADMIN --> NGINX : HTTP 201 Created
+NGINX --> DSI : ✓ Utilisateur créé — id: 34
+
+DSI -> NGINX : HTTPS GET /api/admin/users?role=AGENT\nAuthorization: Bearer <JWT_DSI>
+NGINX -> CTRL_ADMIN : GET /api/admin/users
+CTRL_ADMIN -> SVC_USER : listUsersByRole("AGENT")
+SVC_USER -> REPO_USER : findByRole("AGENT")
+REPO_USER -> PG_IMF : SELECT id_user, username, role,\nid_zone, actif, last_login\nFROM staging.users\nWHERE role = 'AGENT'\nORDER BY id_zone, username
+PG_IMF --> REPO_USER : 12 agents actifs
+REPO_USER --> CTRL_ADMIN : List<UserResponse>
+CTRL_ADMIN --> NGINX : HTTP 200 JSON
+NGINX --> DSI : Liste des 12 agents\navec zone + statut
+
+@enduml

@@ -1,0 +1,250 @@
+@startuml CLS04_Angular_WebApp
+title CLS04 — Couche Web Angular\nPlateforme Pipeline IMF Cameroun
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 11
+skinparam packageStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam class {
+  BackgroundColor #E8F5E9
+  BorderColor #388E3C
+  HeaderBackgroundColor #2E7D32
+  HeaderFontColor white
+}
+skinparam package {
+  BackgroundColor #F1F8E9
+  BorderColor #558B2F
+}
+
+' ══════════════════════════════════════════════
+' MODELS / DTOs
+' ══════════════════════════════════════════════
+package "Models (DTOs)" <<Rectangle>> {
+  class UserDto {
+    +id : number
+    +username : string
+    +role : string
+    +zoneId : number | null
+  }
+  class ParStatsDto {
+    +zoneId : number
+    +nomZone : string
+    +tauxPar30 : number
+    +tauxPar90 : number
+    +encoursTotal : number
+    +dateId : string
+  }
+  class CollecteDto {
+    +id : number | null
+    +clientId : string
+    +pretId : string
+    +montantCollecte : number
+    +canalPaiement : string
+    +referenceTransaction : string
+    +dateCollecte : string
+    +statut : string
+  }
+  class AlerteDto {
+    +id : number
+    +pretId : string
+    +clientNom : string
+    +joursRetard : number
+    +montantEnRetard : number
+    +statutAlerte : string
+    +dateGeneration : string
+  }
+  class DashboardSummaryDto {
+    +totalCollectes : number
+    +par30 : number
+    +par90 : number
+    +nbAlertesActives : number
+    +tendancePar30 : TrendPoint[]
+  }
+  class TrendPoint {
+    +date : string
+    +valeur : number
+  }
+}
+
+' ══════════════════════════════════════════════
+' CORE — Interceptors & Guards
+' ══════════════════════════════════════════════
+package "Core" <<Rectangle>> {
+  class JwtInterceptor {
+    -retryInProgress : boolean
+    +intercept(req, next) : Observable<HttpEvent>
+    -addAuthHeader(req, token) : HttpRequest
+    -handle401(req, next) : Observable<HttpEvent>
+  }
+  note right of JwtInterceptor
+    [max 1 retry] sur refresh
+    pour éviter boucle infinie
+  end note
+
+  class ErrorInterceptor {
+    +intercept(req, next) : Observable<HttpEvent>
+    -handleError(err : HttpErrorResponse) : void
+  }
+
+  class AuthGuard {
+    +canActivate(route, state) : boolean | UrlTree
+  }
+
+  class RoleGuard {
+    +canActivate(route, state) : boolean | UrlTree
+    -extractRequiredRoles(route) : string[]
+  }
+}
+
+' ══════════════════════════════════════════════
+' MODULE AUTH
+' ══════════════════════════════════════════════
+package "AuthModule" <<Rectangle>> {
+  class AuthService {
+    -currentUser : UserDto | null
+    +login(username, password) : Observable<UserDto>
+    +logout() : void
+    +refreshAccessToken() : Observable<string>
+    +getAccessToken() : string | null
+    +getCurrentUser() : UserDto | null
+    +isAuthenticated() : boolean
+    +hasRole(role : string) : boolean
+    -storeTokens(access, refresh) : void
+    -clearTokens() : void
+  }
+
+  class LoginComponent {
+    -form : FormGroup
+    -loading : boolean
+    -errorMsg : string | null
+    +onSubmit() : void
+  }
+}
+
+' ══════════════════════════════════════════════
+' MODULE DASHBOARD
+' ══════════════════════════════════════════════
+package "DashboardModule" <<Rectangle>> {
+  class KpiService {
+    +getDashboardSummary() : Observable<DashboardSummaryDto>
+    +getParStats(dateDebut, dateFin) : Observable<ParStatsDto[]>
+    +getCollecteStats(agentId?) : Observable<CollecteDto[]>
+  }
+
+  class DashboardComponent {
+    -summary : DashboardSummaryDto | null
+    -loading : boolean
+    +ngOnInit() : void
+    +onRefresh() : void
+  }
+
+  class ParChartComponent {
+    +parStats : ParStatsDto[]
+    -chartOptions : object
+    +ngOnChanges() : void
+  }
+
+  class KpiCardComponent {
+    +label : string
+    +value : number
+    +unit : string
+    +trend : number | null
+  }
+}
+
+' ══════════════════════════════════════════════
+' MODULE ALERTES
+' ══════════════════════════════════════════════
+package "AlertesModule" <<Rectangle>> {
+  class AlerteService {
+    +getAlertes(statut?) : Observable<AlerteDto[]>
+    +cloturerAlerte(id : number) : Observable<void>
+    +escaladerAlerte(id : number) : Observable<void>
+  }
+
+  class AlertesListComponent {
+    -alertes : AlerteDto[]
+    -filtre : string
+    -loading : boolean
+    +ngOnInit() : void
+    +onCloturer(id : number) : void
+    +onEscalader(id : number) : void
+    +onFiltreChange(statut : string) : void
+  }
+}
+
+' ══════════════════════════════════════════════
+' MODULE COLLECTES
+' ══════════════════════════════════════════════
+package "CollectesModule" <<Rectangle>> {
+  class CollecteService {
+    +soumettre(collecte : CollecteDto) : Observable<CollecteDto>
+    +getMesCollectes() : Observable<CollecteDto[]>
+  }
+
+  class SaisieCollecteComponent {
+    -form : FormGroup
+    -submitting : boolean
+    +onSubmit() : void
+    +onReset() : void
+  }
+
+  class MesCollectesComponent {
+    -collectes : CollecteDto[]
+    +ngOnInit() : void
+  }
+}
+
+' ══════════════════════════════════════════════
+' MODULE ADMIN
+' ══════════════════════════════════════════════
+package "AdminModule" <<Rectangle>> {
+  class AdminDashboardComponent {
+    +ngOnInit() : void
+  }
+
+  class PipelineStatusComponent {
+    -dagStatus : object[]
+    +ngOnInit() : void
+    +onTriggerDag(dagId : string) : void
+  }
+}
+
+' ══════════════════════════════════════════════
+' ROUTING
+' ══════════════════════════════════════════════
+class AppRoutingModule {
+  +routes : Routes
+  ' /login → AuthModule
+  ' /dashboard → DashboardModule [AuthGuard]
+  ' /alertes → AlertesModule [RoleGuard: RR, DSI, DG]
+  ' /collectes → CollectesModule [RoleGuard: AGENT]
+  ' /admin → AdminModule [RoleGuard: DSI]
+}
+
+' ══════════════════════════════════════════════
+' RELATIONS
+' ══════════════════════════════════════════════
+LoginComponent --> AuthService : appelle login()
+AuthGuard --> AuthService : vérifie isAuthenticated()
+RoleGuard --> AuthService : vérifie hasRole()
+JwtInterceptor --> AuthService : lit / rafraîchit token
+
+DashboardComponent --> KpiService
+ParChartComponent --> KpiService
+DashboardComponent --> DashboardSummaryDto
+ParChartComponent --> ParStatsDto
+
+AlertesListComponent --> AlerteService
+AlertesListComponent --> AlerteDto
+
+SaisieCollecteComponent --> CollecteService
+MesCollectesComponent --> CollecteService
+SaisieCollecteComponent --> CollecteDto
+
+AppRoutingModule --> AuthGuard : applique
+AppRoutingModule --> RoleGuard : applique
+
+DashboardSummaryDto --> TrendPoint : contient
+
+@enduml

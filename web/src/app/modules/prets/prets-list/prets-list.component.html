@@ -1,0 +1,190 @@
+<div class="blucash-page-container">
+
+  <!-- En-tête de page -->
+  <div class="blucash-page-header">
+    <h1 class="page-title">Portefeuille de Prêts</h1>
+    <p class="page-subtitle">Gérez et suivez l'ensemble de vos prêts en temps réel</p>
+  </div>
+
+  <!-- Cartes de statistiques -->
+  <div class="blucash-stats-grid">
+    <div class="blucash-stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper blue">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+      </div>
+      <div class="stat-value">{{ getStatCount('ACTIF') }}</div>
+      <div class="stat-label">Prêts Actifs</div>
+    </div>
+
+    <div class="blucash-stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper orange">
+          <mat-icon>schedule</mat-icon>
+        </div>
+      </div>
+      <div class="stat-value">{{ getStatCount('EN_RETARD') }}</div>
+      <div class="stat-label">En Retard</div>
+    </div>
+
+    <div class="blucash-stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper red">
+          <mat-icon>warning</mat-icon>
+        </div>
+      </div>
+      <div class="stat-value">{{ getStatCount('EN_RETARD_GRAVE') }}</div>
+      <div class="stat-label">Retard Grave</div>
+    </div>
+
+    <div class="blucash-stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper green">
+          <mat-icon>done_all</mat-icon>
+        </div>
+      </div>
+      <div class="stat-value">{{ getStatCount('SOLDE') }}</div>
+      <div class="stat-label">Soldés</div>
+    </div>
+  </div>
+
+  <!-- Barre de filtres -->
+  <div class="blucash-filters-bar">
+    <div class="filter-group">
+      <label>Statut :</label>
+      <mat-form-field appearance="outline">
+        <mat-select [(ngModel)]="statutFiltre" (selectionChange)="onFiltreChange()">
+          <mat-option *ngFor="let s of statutOptions" [value]="s.value">
+            {{ s.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="search-field">
+      <mat-form-field appearance="outline">
+        <mat-label>Rechercher</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Client, référence, agence..." 
+               [(ngModel)]="searchTerm" (input)="onSearchChange()">
+        <button mat-icon-button matSuffix *ngIf="searchTerm" 
+                (click)="searchTerm=''; onSearchChange()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div class="blucash-error-banner" *ngIf="error">
+    <mat-icon>error_outline</mat-icon>
+    <span>Impossible de charger les prêts. Veuillez réessayer.</span>
+  </div>
+
+  <!-- Skeleton de chargement -->
+  <div class="blucash-table-container" *ngIf="loading && prets.length === 0">
+    <app-skeleton type="table" [count]="8"></app-skeleton>
+  </div>
+
+  <!-- Table des prêts -->
+  <div class="blucash-table-container" *ngIf="!loading || prets.length > 0">
+    <mat-progress-bar mode="indeterminate" *ngIf="loading && prets.length > 0"></mat-progress-bar>
+
+    <table mat-table [dataSource]="prets">
+      
+      <ng-container matColumnDef="idPret">
+        <th mat-header-cell *matHeaderCellDef>Référence</th>
+        <td mat-cell *matCellDef="let p">
+          <a [routerLink]="['/prets', p.idPret]" class="cell-link">
+            {{ p.idPret }}
+          </a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="nomClient">
+        <th mat-header-cell *matHeaderCellDef>Client</th>
+        <td mat-cell *matCellDef="let p">
+          <div class="cell-avatar">
+            <div class="avatar">{{ getInitials(p.nomClient) }}</div>
+            <span class="avatar-text">{{ p.nomClient }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="nomAgence">
+        <th mat-header-cell *matHeaderCellDef>Agence</th>
+        <td mat-cell *matCellDef="let p">
+          <div class="cell-with-icon">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ p.nomAgence }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="montantPret">
+        <th mat-header-cell *matHeaderCellDef>Montant</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="cell-amount">{{ p.montantPret | number:'1.0-0' }} FCFA</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="joursRetard">
+        <th mat-header-cell *matHeaderCellDef>Retard</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="blucash-badge" 
+                [ngClass]="{
+                  'badge-success': p.joursRetard === 0,
+                  'badge-warning': p.joursRetard > 0 && p.joursRetard < 90,
+                  'badge-danger': p.joursRetard >= 90
+                }">
+            <span class="badge-dot"></span>
+            {{ p.joursRetard }} jour(s)
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="statutPret">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="blucash-badge" 
+                [ngClass]="{
+                  'badge-info': p.statutPret === 'ACTIF',
+                  'badge-warning': p.statutPret === 'EN_RETARD',
+                  'badge-danger': p.statutPret === 'EN_RETARD_GRAVE',
+                  'badge-gray': p.statutPret === 'SOLDE'
+                }">
+            {{ getStatutLabel(p.statutPret) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let p">
+          <button mat-icon-button [routerLink]="['/prets', p.idPret]" 
+                  matTooltip="Voir les détails">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      
+      <tr class="mat-row" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">
+          <div class="blucash-empty-state">
+            <mat-icon>account_balance_wallet</mat-icon>
+            <p class="empty-title">Aucun prêt trouvé</p>
+            <p class="empty-subtitle">Essayez de modifier vos filtres de recherche</p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator [length]="total" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50]"
+                   (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+  </div>
+
+</div>

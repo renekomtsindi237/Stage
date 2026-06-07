@@ -1,0 +1,66 @@
+@startuml ETT02_cycle_alerte
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam state {
+  BackgroundColor #FCE4EC
+  BorderColor #C62828
+  FontSize 12
+  ArrowColor #555555
+  ArrowThickness 1.5
+}
+
+title ETT02 — Cycle de Vie d'une Alerte Impayé\nDiagramme d'états
+
+[*] --> ACTIVE : Détection créance en retard\n(dag_alertes quotidien)\njours_retard > seuil_configurable
+
+state ACTIVE {
+  [*] --> notifiee
+  notifiee : Push FCM + email envoyés
+  notifiee --> surveillee : Le lendemain
+  surveillee : Jours_retard incrémenté
+  surveillee --> surveillee : Pas de paiement reçu
+}
+
+ACTIVE : Alerte en cours de traitement\nstatut = ACTIVE
+ACTIVE : --
+ACTIVE : entry / INSERT alertes_impayes
+ACTIVE : entry / Envoi push FCM au RR
+ACTIVE : entry / Envoi email SMTP
+ACTIVE : do / Mise à jour jours_retard (quotidien)
+
+ACTIVE --> ACTIVE : [72h sans action reçue]\nRe-notification RR (push + email)
+ACTIVE --> CLÔTUREE : Prêt soldé détecté\n(capital_restant_du = 0)
+ACTIVE --> CLÔTUREE : Clôture manuelle par RR\n(PUT /api/alertes/{id} statut=CLOTUREE)
+ACTIVE --> ESCALADEE : jours_retard > 90\n(passage PAR90 automatique)
+ACTIVE --> ESCALADEE : Escalade manuelle par RR\n(PUT /api/alertes/{id} statut=ESCALADEE)
+
+state ESCALADEE {
+  [*] --> direction_notifiee
+  direction_notifiee : Directeur notifié (push + email)
+  direction_notifiee --> en_decision
+  en_decision : Attente décision comité
+}
+
+ESCALADEE : Alerte transmise à la direction\nstatut = ESCALADEE
+ESCALADEE : --
+ESCALADEE : entry / Notification push Directeur (FCM)
+ESCALADEE : entry / Réunion comité de crédit planifiée
+ESCALADEE : do / Suivi procédure write-off éventuel
+
+ESCALADEE --> CLÔTUREE : Recouvrement réussi\n(paiement post-procédure)
+ESCALADEE --> CLÔTUREE : Write-off acté\n(perte comptabilisée)
+
+state CLÔTUREE {
+  [*] --> archivee
+  archivee : Données conservées pour stats
+}
+
+CLÔTUREE : Alerte terminée\nstatut = CLÔTUREE
+CLÔTUREE : --
+CLÔTUREE : entry / date_cloture = NOW()
+CLÔTUREE : entry / Archivage pour statistiques historiques
+CLÔTUREE : entry / Mise à jour score risque client
+
+CLÔTUREE --> [*]
+
+@enduml

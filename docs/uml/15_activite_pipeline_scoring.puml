@@ -1,0 +1,99 @@
+@startuml activite_pipeline_scoring
+!theme plain
+title Diagramme d'activité — Pipeline de Scoring MCRS\n(Apprentissage Automatique — Exécution quotidienne à 07h30)
+
+skinparam activityBorderColor #1A5276
+skinparam activityBackgroundColor #D6EAF8
+
+|Planificateur Airflow|
+start
+:Déclenche le pipeline de scoring à 07h30;
+
+|Préparation des Données (dbt)|
+:Calcule la régularité des collectes de chaque client\n(tendance sur 3 mois, fenêtre glissante de 52 semaines);
+:Enregistre les variables comportementales\n(dans le réservoir de données clients);
+
+:Calcule les facteurs de contexte externe\n(prix des marchés MINCOMMERCE, météo zone client,\nindicateurs économiques BEAC/INS);
+:Enregistre les variables externes\n(dans le réservoir de données clients);
+
+:Assemble le profil complet de chaque client\n(43 variables : comportement + profil + contexte);
+
+|Pipeline Automatique|
+:Charge le modèle de scoring validé et actif;
+
+if (Modèle disponible ?) then (non)
+    :Alerte critique — aucun modèle actif;
+    :Notifie le DSI par email;
+    stop
+else (oui)
+    :Modèle prêt à l'emploi;
+endif
+
+:Récupère les profils du jour à scorer;
+:Prépare les données pour le calcul en lot;
+
+|Modèle de Scoring MCRS|
+repeat
+    :Traite un groupe de 500 clients;
+    :Calcule le score de régularité des collectes (CRS)\n(fiabilité des versements — poids 35%);
+    :Calcule le score de remboursement (RPS)\n(probabilité de défaut — poids 45%);
+    :Calcule le score de contexte (CSI)\n(prix marchés + météo + indicateurs macro — poids 20%);
+    :Score final MCRS = 0,35×CRS + 0,45×RPS + 0,20×CSI;
+    :Calcule l'intervalle de confiance du score\n(borne basse 5% et borne haute 95%);
+
+    if (Score < 0,40) then
+        :Classe de risque : FAIBLE;
+    elseif (Score < 0,60) then
+        :Classe de risque : MODÉRÉ;
+    elseif (Score < 0,75) then
+        :Classe de risque : ÉLEVÉ;
+    else
+        :Classe de risque : CRITIQUE;
+    endif
+
+    :Enregistre le score et la classification\n(score composite, probabilité de défaut à 30 et 90 jours);
+repeat while (Groupes restants ?) is (oui)
+-> non;
+
+|Modèle de Scoring MCRS|
+:Calcule la contribution de chaque variable au score\n(top 10 variables par client pour explication humaine);
+:Enregistre les explications de chaque score\n(variable, contribution, rang d'importance);
+
+|Pipeline Automatique|
+:Identifie les clients en risque critique (score > 0,75);
+:Crée une alerte "Risque de défaut imminent"\n(urgence : critique);
+
+:Identifie les baisses de collecte importantes (> 20%);
+:Crée une alerte "Baisse des collectes détectée"\n(urgence : haute);
+
+:Identifie les dégradations rapides de score (> 15% en 30 jours);
+:Crée une alerte "Dégradation rapide"\n(urgence : moyenne);
+
+|Notifications (Temps réel + Mobile)|
+:Notifie la mise à jour du tableau de bord\n(diffusion temps réel à tous les connectés);
+:Envoie les notifications mobiles aux équipes\n(nombre de clients en risque critique);
+
+|Directeur / Responsable Recouvrement|
+:Tableau de bord actualisé en temps réel;
+:Notification reçue sur mobile;
+
+|Pipeline Automatique|
+:Évalue la stabilité du modèle\n(compare la distribution des scores\nd'aujourd'hui à celle d'il y a 90 jours);
+
+if (Dérive significative détectée ?) then (oui)
+    :Journalise l'alerte de dérive;
+    :Déclenche le réentraînement du modèle\n(en arrière-plan — validation humaine requise\navant mise en production);
+    note right
+        Le modèle concurrent est entraîné
+        mais ne remplace l'actuel qu'après
+        validation manuelle du DSI.
+    end note
+else (modèle stable)
+    :Modèle stable — aucun réentraînement nécessaire;
+endif
+
+:Met à jour le journal du modèle\n(date du dernier scoring, indicateur de stabilité);
+
+stop
+
+@enduml

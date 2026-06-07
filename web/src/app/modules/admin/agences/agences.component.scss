@@ -1,0 +1,473 @@
+// ── Host component background ────────────────────────────────────────────────
+:host {
+  display: block;
+  background: #FAFBFC;  // Fond clair Blucash
+  min-height: 100%;
+}
+
+.agences-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ── En-tête ──────────────────────────────────────────────────────────────────
+.agences-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0D9488, #14B8A6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(13,148,136,0.3);
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: #fff;
+    }
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin: 0 0 4px;
+    color: #000000;  // Noir pur pour les titres
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+
+  .header-subtitle {
+    font-size: 0.9rem;
+    color: #6B7280;  // Gris pour texte secondaire
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+
+  .header-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, rgba(13,148,136,0.1), rgba(20,184,166,0.1));
+    border: 1px solid rgba(13,148,136,0.3);
+    border-radius: 12px;
+    color: #0D9488;
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// ── Section création ─────────────────────────────────────────────────────────
+.create-section {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border) !important;
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 24px;
+
+  .section-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(13,148,136,0.1), rgba(20,184,166,0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: #0D9488;
+    }
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    color: #000000;  // Noir pur pour les titres
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: #6B7280;  // Gris pour texte secondaire
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+}
+
+.create-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: start;
+  background: #FFFFFF;  // Fond blanc pur
+}
+
+.modern-field {
+  ::ng-deep .mat-mdc-form-field-icon-prefix {
+    padding-right: 12px;
+    color: #0066FF;  // Icône bleue Blucash
+  }
+}
+
+.form-action {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+
+.btn-create {
+  border-radius: var(--radius-md) !important;
+  background: linear-gradient(135deg, #0D9488, #14B8A6) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  gap: 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  height: 56px;
+  padding: 0 24px !important;
+  transition: all 0.2s ease;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  mat-spinner { display: inline-block; }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(13,148,136,0.35) !important;
+  }
+}
+
+// ── États ─────────────────────────────────────────────────────────────────────
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border) !important;
+  text-align: center;
+
+  .empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(20,184,166,0.08));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+      color: #0D9488;
+      opacity: 0.6;
+    }
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+}
+
+// ── Grille des agences ────────────────────────────────────────────────────────
+.agences-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.agence-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border) !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
+  }
+}
+
+.card-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  &.active-gradient {
+    background: linear-gradient(135deg, #0D9488, #14B8A6);
+  }
+
+  &.inactive-gradient {
+    background: linear-gradient(135deg, #64748B, #94A3B8);
+  }
+
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: #fff;
+    }
+  }
+
+  .card-badge {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    &.badge-active .badge-dot {
+      animation: pulse 2s infinite;
+    }
+  }
+}
+
+.card-content {
+  padding: 20px 24px;
+  flex: 1;
+}
+
+.agence-nom {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 16px;
+  color: #000000;  // Noir pur pour les noms
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+}
+
+.agence-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #1A1A1A;  // Noir atténué pour le texte
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #0066FF;  // Bleu Blucash pour les icônes
+    flex-shrink: 0;
+  }
+
+  &.detail-muted {
+    color: #6B7280;  // Gris pour texte secondaire
+    font-style: italic;
+    mat-icon { color: #9CA3AF; }  // Gris moyen pour icônes
+  }
+}
+
+// ── Actions carte ────────────────────────────────────────────────────────────
+.card-actions {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-toggle {
+  flex: 1;
+  border-radius: var(--radius-md) !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  gap: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  mat-spinner { display: inline-block; }
+
+  &.btn-deactivate {
+    border-color: #F59E0B !important;
+    color: #F59E0B !important;
+    &:hover:not(:disabled) { background: rgba(245,158,11,0.08) !important; }
+  }
+
+  &.btn-activate {
+    border-color: #0D9488 !important;
+    color: #0D9488 !important;
+    &:hover:not(:disabled) { background: rgba(13,148,136,0.08) !important; }
+  }
+}
+
+.btn-delete {
+  color: var(--color-error, #EF4444) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(239,68,68,0.08) !important;
+  }
+
+  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+}
+
+// ── Confirmation suppression ──────────────────────────────────────────────────
+.confirm-delete {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  background: rgba(239,68,68,0.04);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+
+  .confirm-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #EF4444;
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    min-width: 140px;
+  }
+
+  .confirm-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-confirm-yes {
+    border-color: #EF4444 !important;
+    color: #EF4444 !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    border-radius: var(--radius-md) !important;
+    gap: 4px;
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    &:hover { background: rgba(239,68,68,0.08) !important; }
+  }
+
+  .btn-confirm-no {
+    border-color: var(--color-border) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-md) !important;
+    gap: 4px;
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    &:hover { background: var(--color-surface) !important; }
+  }
+}
+
+// ── Animations ────────────────────────────────────────────────────────────────
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .agences-container { padding: 16px; }
+
+  .agences-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .create-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-action { width: 100%; .btn-create { width: 100%; } }
+
+  .agences-grid {
+    grid-template-columns: 1fr;
+  }
+}

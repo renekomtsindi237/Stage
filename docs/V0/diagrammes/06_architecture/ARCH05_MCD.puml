@@ -1,0 +1,142 @@
+@startuml ARCH05_MCD
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam entityBackgroundColor #EEF4FF
+skinparam entityBorderColor #4A6CF7
+skinparam entityFontSize 12
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title ARCH05 — Modèle Conceptuel des Données (MCD)\nPlateforme IMF Cameroun
+
+entity "ZONE" as ZONE {
+  * id_zone : INTEGER
+  --
+  nom_zone : VARCHAR(100)
+  region : VARCHAR(100)
+  type_zone : VARCHAR(20)\n  {URBAIN, SEMI_URBAIN, RURAL}
+}
+
+entity "CLIENT" as CLIENT {
+  * id_client : INTEGER
+  --
+  nom : VARCHAR(100)
+  prenom : VARCHAR(100)
+  telephone : VARCHAR(20)
+  date_adhesion : DATE
+  date_creation : TIMESTAMP
+  date_modification : TIMESTAMP
+}
+
+entity "AGENT" as AGENT {
+  * id_agent : INTEGER
+  --
+  nom : VARCHAR(100)
+  prenom : VARCHAR(100)
+  telephone : VARCHAR(20)
+  agence : VARCHAR(100)
+  actif : BOOLEAN
+}
+
+entity "PRODUIT_CREDIT" as PRODUIT {
+  * id_produit : INTEGER
+  --
+  nom_produit : VARCHAR(150)
+  taux_interet : NUMERIC(5,2)
+  duree_max_mois : INTEGER
+  montant_min : NUMERIC(15,2)
+  montant_max : NUMERIC(15,2)
+}
+
+entity "PRET" as PRET {
+  * id_pret : INTEGER
+  --
+  montant_octroye : NUMERIC(15,2)
+  date_decaissement : DATE
+  date_echeance_finale : DATE
+  nombre_echeances : INTEGER
+  statut : VARCHAR(30)
+  date_creation : TIMESTAMP
+  date_modification : TIMESTAMP
+}
+
+entity "ECHEANCE" as ECHEANCE {
+  * id_echeance : INTEGER
+  --
+  numero_echeance : INTEGER
+  date_echeance : DATE
+  montant_du : NUMERIC(15,2)
+  statut : VARCHAR(20)
+}
+
+entity "TRANSACTION\nMOBILE MONEY" as TRANSACTION {
+  * id_transaction : INTEGER
+  --
+  reference_externe : VARCHAR(100)
+  date_transaction : TIMESTAMP
+  montant : NUMERIC(15,2)
+  operateur : VARCHAR(20)\n  {MTN, ORANGE}
+  numero_expediteur : VARCHAR(20)
+  statut_transaction : VARCHAR(20)
+  hash_dedup : VARCHAR(64)
+}
+
+entity "REMBOURSEMENT" as REMBOURSEMENT {
+  * id_remboursement : INTEGER
+  --
+  date_paiement : DATE
+  montant_paye : NUMERIC(15,2)
+  canal_paiement : VARCHAR(30)
+  reference_transaction : VARCHAR(100)
+  ' FK → TRANSACTION (nullable si espèces)
+}
+
+entity "COLLECTE\nTERRAIN" as COLLECTE {
+  * id_collecte : INTEGER
+  --
+  date_collecte : DATE
+  montant_collecte : NUMERIC(15,2)
+  mode_paiement : VARCHAR(30)
+  observation : VARCHAR(500)
+}
+
+entity "ALERTE\nIMPAYE" as ALERTE {
+  * id_alerte : INTEGER
+  --
+  date_generation : DATE
+  jours_retard : INTEGER
+  montant_en_retard : NUMERIC(15,2)
+  statut_alerte : VARCHAR(20)\n  {ACTIVE, CLOTUREE, ESCALADEE}
+  date_cloture : DATE
+  fcm_sent : BOOLEAN
+  email_sent : BOOLEAN
+  date_modification : TIMESTAMP
+}
+
+entity "USER\n(Plateforme)" as USER {
+  * id_user : INTEGER
+  --
+  username : VARCHAR(50)
+  password_hash : VARCHAR(255)
+  role : VARCHAR(30)
+  fcm_token : VARCHAR(500)
+  actif : BOOLEAN
+}
+
+' ===== RELATIONS =====
+AGENT  |o--o| USER        : "correspond à\n(0,1)—(0,1)"
+CLIENT ||--o{ PRET        : "souscrit\n(1,n)"
+PRODUIT ||--o{ PRET       : "classifie\n(1,n)"
+PRET ||--|{ ECHEANCE      : "décomposé en\n(1,n)"
+AGENT }o--o{ PRET         : "gère\n(0,n)—(0,1)"
+ECHEANCE ||--o{ REMBOURSEMENT : "soldée par\n(1,n)"
+REMBOURSEMENT ||--o| TRANSACTION : "liée à\n(0,1)"
+PRET ||--o{ ALERTE        : "génère\n(1,n)"
+AGENT ||--o{ COLLECTE     : "effectue\n(1,n)"
+PRET ||--o{ COLLECTE      : "alimentée par\n(0,n)"
+CLIENT }|--|| ZONE        : "réside dans\n(n,1)"
+AGENT  }|--|| ZONE        : "affecté à\n(n,1)"
+USER   }|--o| ZONE        : "responsable de\n(n,0..1)"
+
+@enduml

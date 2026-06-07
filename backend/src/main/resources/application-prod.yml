@@ -1,0 +1,87 @@
+server:
+  tomcat:
+    threads:
+      max: 400          # 200 par défaut — insuffisant avec SSE + pics d'agents
+      min-spare: 20
+    max-connections: 4000
+    accept-count: 200
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain,text/xml
+    min-response-size: 2048
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB}?sslmode=${POSTGRES_SSL_MODE:require}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 30         # 20 insuffisant pour les pics de sync terrain
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000   # alerte si une connexion n'est pas rendue sous 60s
+      data-source-properties:
+        ssl: true
+        sslmode: require
+  jpa:
+    show-sql: false
+    open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:465}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+
+logging:
+  level:
+    cm.imf: INFO
+    org.springframework: WARN
+    root: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] %-5level [%thread] %logger{36} - %msg%n"
+  file:
+    name: /var/log/imf/backend.log
+
+imf:
+  pipeline:
+    firebase-enabled: ${FIREBASE_ENABLED:true}
+    firebase-credentials-path: ${FIREBASE_CREDENTIALS_PATH:/run/secrets/firebase-credentials.json}
+    internal-api-key: ${INTERNAL_API_KEY}
+    dw-schema: ${DW_SCHEMA:dw}
+    staging-schema: ${STAGING_SCHEMA:staging}
+    scheduler:
+      token-cleanup-ms: 3600000
+      cache-evict-cron: "0 0 2 * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+  server:
+    port: 8081    # actuator sur port interne, non exposé par nginx
+
+jwt:
+  access-token-expiration-ms: ${JWT_ACCESS_EXP_MS:900000}      # 15 min
+  refresh-token-expiration-ms: ${JWT_REFRESH_EXP_MS:604800000} # 7 jours
+
+app:
+  security:
+    cookie-secure: true

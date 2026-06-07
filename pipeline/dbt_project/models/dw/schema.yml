@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Dimension date pré-générée 2020–2030"
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+      - name: date_valeur
+        tests: [unique, not_null]
+      - name: annee
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 2020
+              max_value: 2030
+      - name: mois
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 12
+      - name: jour_semaine
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 7
+
+  - name: dim_client
+    description: "Dimension client consolidée depuis CBS"
+    columns:
+      - name: id_client_source
+        tests: [unique, not_null]
+
+  - name: dim_agence
+    description: "Dimension agence"
+    columns:
+      - name: id_agence
+        tests: [unique, not_null]
+      - name: nom_agence
+        tests: [not_null]
+
+  - name: dim_produit
+    description: "Dimension produit financier"
+    columns:
+      - name: id_produit
+        tests: [unique, not_null]
+      - name: nom_produit
+        tests: [not_null]
+
+  - name: dim_agent
+    description: "Dimension agent de terrain"
+    columns:
+      - name: id_agent
+        tests: [unique, not_null]
+      - name: nom_agent
+        tests: [not_null]
+
+  - name: fact_collectes
+    description: "Faits collectes — MTN + Orange + Terrain"
+    columns:
+      - name: id_source
+        tests: [unique, not_null]
+      - name: montant
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: canal
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['MTN', 'ORANGE', 'TERRAIN_MOBILE', 'TERRAIN_ESPECES']
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+
+  - name: fact_remboursements
+    description: "Faits remboursements — snapshot quotidien par prêt"
+    columns:
+      - name: id_pret
+        tests: [not_null]
+      - name: statut_pret
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ACTIF', 'EN_RETARD', 'SOLDE', 'WRITE_OFF']
+      - name: jours_retard
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0

@@ -1,0 +1,52 @@
+@startuml ARCH04_contexte_SI
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam rectangleBackgroundColor #EEF4FF
+skinparam rectangleBorderColor #4A6CF7
+skinparam componentArrowColor #555555
+skinparam componentArrowThickness 2
+skinparam Padding 10
+
+title ARCH04 — Diagramme de Contexte SI\nPlateforme IMF — Acteurs et flux externes
+
+rectangle "Plateforme IMF\n(Startup Tech)\nSystème développé" as SYSTEM #E8F5E9 {
+  rectangle "Pipeline\nde données" as PIPELINE #EDE7F6
+  rectangle "Backend API\nSpring Boot" as BACKEND #E8F5E9
+  rectangle "App Web\nAngular" as WEB #E3F2FD
+  rectangle "App Mobile\nFlutter" as MOBILE #FCE4EC
+}
+
+' ===== ACTEURS EXTERNES =====
+rectangle "Core Banking System\n(CBS)\n[Système existant IMF]" as CBS #FFF9C4
+rectangle "MTN Mobile Money\n[Opérateur télécom]" as MTN #FFF9C4
+rectangle "Orange Money\n[Opérateur télécom]" as OM #FFF9C4
+rectangle "Firebase FCM\n[Google Cloud]" as FCM #FFF3E0
+rectangle "Serveur Email\nSMTP\n[Infrastructure IT]" as SMTP #FFF3E0
+
+rectangle "Directeur Général\n[IMF — Client]" as DG #FFE0B2
+rectangle "Responsable\nRecouvrement\n[IMF — Client]" as RR #FFE0B2
+rectangle "Analyste Data\n[IMF — Client]" as AD #FFE0B2
+rectangle "DSI / Admin\n[IMF — Client]" as DSI #FFE0B2
+rectangle "Agent de Terrain\n[IMF — Client]" as AT #FFE0B2
+
+' ===== FLUX ENTRANTS =====
+CBS --> PIPELINE : Export CSV\nprêts + remboursements\n(quotidien)
+MTN --> PIPELINE : Relevé transactions CSV\n(quotidien)
+OM  --> PIPELINE : Relevé transactions CSV\n(quotidien)
+
+' ===== FLUX SORTANTS =====
+BACKEND --> FCM  : Push notifications\n(Firebase Admin SDK)
+BACKEND --> SMTP : Alertes email\n(SMTP TLS)
+FCM --> AT : 📱 Notification push\n(alerte impayé)
+FCM --> RR : 📱 Notification push\n(alerte impayé)
+FCM --> DG : 📱 Notification push\n(escalade)
+
+' ===== ACTEURS HUMAINS =====
+DG  --> WEB    : Dashboard exécutif\n(HTTPS navigateur)
+DG  --> MOBILE : KPIs mobile\n(app Flutter)
+RR  --> WEB    : Dashboard recouvrement\n+ gestion alertes
+AD  --> WEB    : Dashboards analytiques\n+ export CSV
+DSI --> WEB    : Admin utilisateurs\n+ monitoring pipeline
+AT  --> MOBILE : Saisie collectes terrain\n(online + offline)
+
+@enduml

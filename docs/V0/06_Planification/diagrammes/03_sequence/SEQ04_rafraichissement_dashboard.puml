@@ -1,0 +1,63 @@
+@startuml SEQ04_rafraichissement_dashboard
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ04 — Rafraîchissement Dashboards & Consultation KPIs\nAngular → Spring Boot → PostgreSQL
+
+actor "Utilisateur\n(Analyste/Directeur)" as USER
+participant "Navigateur\n(Angular App)" as ANG
+participant "KpiService\n(Angular)" as SVC
+participant "Spring Boot API\n(:8080)" as SPRING
+participant "KpiController\n(@RestController)" as CTRL
+participant "KpiService\n(Java)" as JAVASVC
+database "PostgreSQL\nschéma reporting" as PG
+
+USER -> ANG : Ouvre dashboard Collectes\n(http://serveur:80/collectes)
+
+ANG -> ANG : <b>AuthGuard</b> vérifie JWT\nen localStorage/sessionStorage
+
+ANG -> SPRING : <b>GET</b> /api/kpi/collectes\n?dateDebut=2026-01-01&dateFin=2026-03-31\n&zoneId=2\nAuthorization: Bearer <JWT>
+activate SPRING
+
+SPRING -> SPRING : <b>JwtAuthFilter</b>\nValide signature + expiration JWT
+
+SPRING -> SPRING : <b>@PreAuthorize</b>\nVérifie rôle ANALYSTE ou DIRECTEUR ou RR
+
+SPRING -> CTRL : Route vers KpiController.getCollectes()
+activate CTRL
+
+CTRL -> JAVASVC : kpiService.getCollecteStats(params)
+activate JAVASVC
+
+JAVASVC -> PG : <b>SELECT</b> FROM reporting.v_kpi_collectes\nWHERE date_complete BETWEEN ? AND ?\nAND zone_id = ?\nORDER BY date_complete
+note right PG : Vue matérialisée\npré-agrégée\n→ réponse < 200ms
+
+PG --> JAVASVC : ResultSet (agrégés par jour/zone/canal)
+
+JAVASVC -> JAVASVC : <b>mapToDto()</b>\nResultSet → KpiCollectesResponse
+
+deactivate JAVASVC
+CTRL --> SPRING : KpiCollectesResponse
+deactivate CTRL
+
+SPRING --> ANG : <b>200 OK</b>\n{\n  "totalCollectes": 1245,\n  "montantTotal": 87300000,\n  "tauxMobileMoney": 0.68,\n  "series": [...]\n}
+deactivate SPRING
+
+ANG -> SVC : Reçoit données JSON
+SVC -> ANG : <b>Mise à jour composants</b>\n(Chart.js : graphiques\nAngular Material : tableaux)
+
+ANG --> USER : Dashboard affiché\n(graphiques + KPIs + filtres)
+
+note over USER, PG : Chaque filtre (zone, période, agent)\ndéclenche un nouvel appel GET /api/kpi/*\n→ Angular HttpClient + RxJS debounce 300ms
+
+@enduml

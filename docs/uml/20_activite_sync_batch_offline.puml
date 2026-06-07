@@ -1,0 +1,86 @@
+@startuml activite_sync_batch_offline
+!theme plain
+title Diagramme d'activité — Synchronisation par Lots (Hors Ligne)\n(Déduplication par identifiant unique — Collectes Épargne Terrain)
+
+skinparam activityBorderColor #1A5276
+skinparam activityBackgroundColor #D6EAF8
+
+|Application Mobile Flutter (Gestionnaire de Synchronisation)|
+start
+:Connexion internet rétablie\n(détection automatique par l'application);
+:Charge les collectes en attente de synchronisation\ndepuis la mémoire locale\n(statut : en attente de synchronisation);
+
+if (File d'attente vide ?) then (oui)
+    :Aucune action nécessaire;
+    stop
+else (non)
+    :Prépare le lot à synchroniser\n(identifiant unique, montant, client, agence,\ncycle, mode de paiement, coordonnées GPS...);
+endif
+
+:Envoie le lot au serveur\n(maximum 50 collectes par envoi);
+
+|Serveur Spring Boot|
+:Vérifie l'identité de l'agent connecté\n(jeton d'accès sécurisé);
+:Réceptionne le lot de collectes;
+
+|Service de Traitement des Collectes|
+repeat
+    :Extrait la collecte suivante du lot;
+
+    :Vérifie si cette collecte existe déjà en base\n(recherche par identifiant unique mobile);
+
+    if (Doublon détecté ?) then (oui)
+        :Identifie comme doublon\n(la collecte est déjà enregistrée);
+    else (nouvelle collecte)
+        :Vérifie que l'agence de rattachement existe\n(contrôle de l'appartenance à l'institution);
+
+        if (Agence valide ?) then (non)
+            :Marque la collecte comme rejetée\n(agence inconnue ou hors institution);
+        else (oui)
+            :Identifie le cycle de collecte correspondant;
+            :Enregistre la collecte en base\n(statut : soumise, en attente de validation,\nidentifiant unique, montant, client,\nagence, agent, coordonnées GPS);
+            :Ingère dans la couche de données brutes;
+            :Marque la collecte comme acceptée;
+        endif
+    endif
+
+repeat while (Collectes restantes dans le lot ?) is (oui)
+-> non;
+
+:Compile le bilan de synchronisation\n(total, acceptées, doublons, rejetées);
+
+|Serveur Spring Boot|
+:Renvoie le bilan à l'application;
+
+|Application Mobile Flutter (Gestionnaire de Synchronisation)|
+:Traite les résultats reçus :;
+
+fork
+    :Marque les collectes ACCEPTÉES\n→ synchronisées en mémoire locale;
+fork again
+    :Marque les DOUBLONS\n→ synchronisés (déjà présents en base);
+fork again
+    :Collectes REJETÉES → erreur\n→ alerte à l'agent avec le motif;
+end fork
+
+if (Autres lots en attente ?) then (oui)
+    :Soumet le lot suivant\n(retour au début de la synchronisation);
+else (non — tout synchronisé)
+    :Notification locale "Synchronisation terminée\n(N collectes envoyées avec succès)";
+endif
+
+== Consultation des collectes non synchronisées ==
+
+|Agent Terrain (Flutter)|
+:Consulte ses collectes encore en attente\n(non encore intégrées par le pipeline);
+
+|Service de Traitement des Collectes|
+:Recherche les collectes de l'agent\nnon encore traitées par le pipeline\n(dans l'ordre antichronologique);
+:Renvoie la liste des collectes non traitées;
+
+|Agent Terrain (Flutter)|
+:Visualise les collectes\nen attente de traitement automatique;
+
+stop
+
+@enduml

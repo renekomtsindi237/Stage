@@ -1,0 +1,288 @@
+@startuml classes_domaine
+!theme plain
+title Diagramme de classes — Domaine Métier\nCollectes Épargne & Recouvrement Créances (IMF)
+
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #2C7BE5
+skinparam classHeaderBackgroundColor #EBF2FF
+
+' ── Multi-tenant ────────────────────────────────────────────────────────────
+class Imf {
+    +id : Long
+    +code : String
+    +nom : String
+    +typeImf : String {COOPERATIVE,MFI_CAT1,MFI_CAT2,MUTUELLE}
+    +maxDocumentKycOctets : Long
+    +niveauKycMinimal : String
+    +maxTentativesConnexion : Integer
+    +actif : Boolean
+}
+
+class Agence {
+    +id : Long
+    +imf : Imf
+    +codeAgence : String
+    +nomAgence : String
+    +ville : String
+    +region : String
+    +zoneId : String
+    +latitude : BigDecimal
+    +longitude : BigDecimal
+}
+
+class User {
+    +id : Long
+    +imf : Imf
+    +username : String
+    +passwordHash : String
+    +role : Role {SUPER_ADMIN,DIRECTEUR,RESPONSABLE_RECOUVREMENT,ANALYSTE,DSI,AGENT}
+    +zoneId : String
+    +agence : Agence
+    +latitude : Double
+    +longitude : Double
+    +prefLangue : String
+    +actif : Boolean
+    +lastLogin : OffsetDateTime
+}
+
+' ── Collectes Épargne ────────────────────────────────────────────────────────
+class CycleCollecte {
+    +id : Long
+    +imf : Imf
+    +agence : Agence
+    +nomCycle : String
+    +periodicite : String {QUOTIDIEN,HEBDOMADAIRE,BIMENSUEL,MENSUEL}
+    +dateDebut : LocalDate
+    +dateFin : LocalDate
+    +objectifMontant : BigDecimal
+    +objectifNbTransactions : Integer
+    +actif : Boolean
+}
+
+class CollecteEpargne {
+    +id : Long
+    +uuidMobile : UUID {unique, déduplication}
+    +imf : Imf
+    +agence : Agence
+    +cycle : CycleCollecte
+    +agent : User
+    +clientIdExterne : String
+    +montantCollecte : BigDecimal
+    +dateCollecte : LocalDate
+    +heureCollecte : LocalTime
+    +canalPaiement : String {ESPECES,MTN,ORANGE,WAVE}
+    +referenceTransaction : String
+    +latitude : BigDecimal
+    +longitude : BigDecimal
+    +statut : String {SOUMISE,VALIDEE,DOUBLON,REJETEE}
+    +syncedAt : OffsetDateTime
+    +validatedBy : User
+    +soumettre() : void
+    +valider(motif : String) : void
+}
+
+class ObjectifCollecte {
+    +id : Long
+    +cycle : CycleCollecte
+    +agent : User
+    +objectifMontant : BigDecimal
+    +objectifNbTransactions : Integer
+    +realiseMontant : BigDecimal
+    +realiseNbTransactions : Integer
+    +tauxRealisationMontant : BigDecimal {computed}
+    +mettreAJourRealise() : void
+}
+
+' ── Clients Informels ────────────────────────────────────────────────────────
+class ClientInformel {
+    +id : Long
+    +imf : Imf
+    +clientIdExterne : String
+    +nomComplet : String
+    +telephonePrincipal : String
+    +zoneId : String
+    +secteurPrincipal : String {AGRICOLE,COMMERCE,ARTISANAT,ELEVAGE}
+    +sousSecteur : String
+    +revenuMensuelEstime : BigDecimal
+    +marchePrincipal : String
+    +latitudeActivite : BigDecimal
+    +longitudeActivite : BigDecimal
+    +activitesProduits : List<ClientActiviteProduit>
+}
+
+class ProduitGenerique {
+    +id : Long
+    +codeProduit : String {unique}
+    +nomProduit : String
+    +categorie : String {CEREALE,TUBERCULE,OLEAGINEUX,BETAIL,...}
+    +uniteMesureRef : String
+    +saisonnalite : Boolean
+    +moisSaisonHaute : int[]
+    +zonesProduction : String[]
+}
+
+class ClientActiviteProduit {
+    +id : Long
+    +client : ClientInformel
+    +produit : ProduitGenerique
+    +estProduitPrincipal : Boolean
+    +volumeHabituel : BigDecimal
+    +revenuMensuelProduit : BigDecimal
+    +moisActivite : int[]
+}
+
+' ── Données Externes ────────────────────────────────────────────────────────
+class PrixProduit {
+    +id : Long
+    +produit : ProduitGenerique
+    +zoneId : String
+    +datePrix : LocalDate
+    +prixUnitaire : BigDecimal
+    +uniteMesure : String
+    +source : String {AGENT_TERRAIN,MINCOMMERCE,BEAC,...}
+    +fiabilite : Short {1-5}
+}
+
+class FacteurMacro {
+    +id : Long
+    +indicateur : String {TAUX_INFLATION,COURS_EUR_XAF,...}
+    +valeur : BigDecimal
+    +dateObservation : LocalDate
+    +source : String
+}
+
+class DonneeMeteo {
+    +id : Long
+    +zoneId : String
+    +dateObservation : LocalDate
+    +temperatureMoy : BigDecimal
+    +precipitationMm : BigDecimal
+    +indiceSecheresse : String {NORMAL,SECHERESSE_LEGERE,...}
+}
+
+' ── Créances & Recouvrement ─────────────────────────────────────────────────
+class Creance {
+    +id : Long
+    +imf : Imf
+    +agence : Agence
+    +idPretExterne : String
+    +clientIdExterne : String
+    +clientInformel : ClientInformel
+    +montantInitial : BigDecimal
+    +montantImpaye : BigDecimal
+    +joursRetard : int
+    +categoriePar : String {COURANT,PAR30,PAR60,PAR90,PAR180,PERTE}
+    +classeRisqueCobac : String {A,B,C,D,E}
+    +tauxProvisionCobac : BigDecimal
+    +montantProvision : BigDecimal
+    +statut : String {ACTIVE,RECOUVREMENT_AMIABLE,...}
+    +agentResponsable : User
+    +calculerProvision() : BigDecimal
+    +classifierPar() : String
+}
+
+class DossierRecouvrement {
+    +id : Long
+    +imf : Imf
+    +creance : Creance
+    +clientInformel : ClientInformel
+    +phase : String {RELANCE_AMIABLE,MISE_EN_DEMEURE,CONTENTIEUX,...}
+    +montantImpaye : BigDecimal
+    +joursRetard : int
+    +agentResponsable : User
+    +clos : Boolean
+    +dateCloture : OffsetDateTime
+    +prioriteScoring : BigDecimal
+    +actions : List<ActionRecouvrement>
+    +changerPhase(phase : String) : void
+    +clore(motif : String) : void
+}
+
+class ActionRecouvrement {
+    +id : Long
+    +dossier : DossierRecouvrement
+    +typeAction : String {APPEL,SMS,VISITE,MISE_EN_DEMEURE,...}
+    +dateAction : OffsetDateTime
+    +agent : User
+    +resultat : String {CONTACT,PAS_JOINT,PROMESSE,...}
+    +promesseDate : LocalDate
+    +promesseMontant : BigDecimal
+    +referenceTransaction : String
+    +observation : String
+}
+
+class PromessePaiement {
+    +id : Long
+    +creance : Creance
+    +actionRecouvrement : ActionRecouvrement
+    +agent : User
+    +datePromesse : LocalDate
+    +montantPromis : BigDecimal
+    +dateEcheancePromesse : LocalDate
+    +statut : String {EN_ATTENTE,HONOREE,PARTIELLEMENT_HONOREE,ROMPUE}
+    +montantRecu : BigDecimal
+    +verifierEcheance() : void
+}
+
+' ── Scoring ML ───────────────────────────────────────────────────────────────
+class ClientScore <<ml>> {
+    +id : Long
+    +imfId : Long
+    +clientIdExterne : String
+    +scoreCrs : BigDecimal
+    +scoreRps : BigDecimal
+    +scoreCsi : BigDecimal
+    +scoreMcrs : BigDecimal
+    +classeRisque : String {FAIBLE,MODERE,ELEVE,CRITIQUE}
+    +probabiliteDefaut30j : BigDecimal
+    +probabiliteDefaut90j : BigDecimal
+    +scoreMcrsIcBas : BigDecimal
+    +scoreMcrsIcHaut : BigDecimal
+    +actionRecommandee : String
+    +prioriteRecouvrement : Short
+    +scoredAt : OffsetDateTime
+}
+
+class ShapExplanation <<ml>> {
+    +id : Long
+    +score : ClientScore
+    +featureName : String
+    +shapValue : BigDecimal
+    +featureValue : String
+    +rangImportance : Short
+    +signe : Char {+,-}
+}
+
+' ── Relations ───────────────────────────────────────────────────────────────
+Imf "1" *-- "n" Agence
+Imf "1" *-- "n" User
+Imf "1" *-- "n" CycleCollecte
+Imf "1" *-- "n" CollecteEpargne
+Imf "1" *-- "n" Creance
+Imf "1" *-- "n" ClientInformel
+
+Agence "0..1" o-- "n" CollecteEpargne
+Agence "0..1" o-- "n" CycleCollecte
+Agence "0..1" o-- "n" Creance
+
+CycleCollecte "1" *-- "n" ObjectifCollecte
+CycleCollecte "1" o-- "n" CollecteEpargne
+
+User "1" o-- "n" CollecteEpargne : agent
+User "1" o-- "n" ObjectifCollecte : agent
+User "1" o-- "n" DossierRecouvrement : responsable
+
+ClientInformel "1" *-- "n" ClientActiviteProduit
+ClientActiviteProduit "n" --> "1" ProduitGenerique
+ProduitGenerique "1" o-- "n" PrixProduit
+
+Creance "1" o-- "0..1" DossierRecouvrement
+Creance "1" o-- "0..1" ClientInformel
+Creance "1" *-- "n" PromessePaiement
+DossierRecouvrement "1" *-- "n" ActionRecouvrement
+ActionRecouvrement "1" o-- "0..1" PromessePaiement
+
+ClientScore "1" *-- "n" ShapExplanation
+Creance ..> ClientScore : consulte
+
+@enduml

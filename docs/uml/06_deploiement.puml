@@ -1,0 +1,145 @@
+@startuml deploiement
+!theme plain
+title Diagramme de déploiement — Infrastructure Docker Compose\nIMF Pipeline — Environnements Dev / Staging / Production
+
+skinparam nodeStyle rectangle
+skinparam node {
+    BorderColor #2C7BE5
+    BackgroundColor #F0F6FF
+}
+
+' ══════════════════════════════════════════════════════════════════
+' CLIENTS EXTERNES
+' ══════════════════════════════════════════════════════════════════
+
+node "Poste Agent Terrain\n(Android / iOS)" as FLUTTER_APP {
+    artifact "Application Flutter\n(SQLite hors ligne + sync manager\n+ GPS arrière-plan)" as FLUTTER_SRC
+}
+
+node "Poste Directeur / DSI / Analyste\n(Navigateur Web)" as BROWSER {
+    artifact "Chrome / Firefox\n(SPA Angular — cookie sécurisé)" as BROWSER_SRC
+}
+
+cloud "Firebase FCM\n(Google Cloud)" as FCM_CLOUD {
+    artifact "Service Push FCM\n(tokens enregistrés par agent)" as FCM_SVC
+}
+
+cloud "Sources Données Externes\n(APIs tierces)" as EXT_CLOUD {
+    artifact "MINCOMMERCE\nBEAC / INS\nOpen-Meteo\nExport CBS (SFTP)" as EXT_APIS
+}
+
+' ══════════════════════════════════════════════════════════════════
+' SERVEUR APPLICATIF — DOCKER COMPOSE
+' ══════════════════════════════════════════════════════════════════
+
+node "Serveur Applicatif\n(Ubuntu 24.04 LTS — 8 vCPU / 16 Go RAM)" as HOST {
+
+    node "Réseau Docker\nimf_network (bridge)" as NET {
+
+        ' ── Reverse Proxy ──────────────────────────────────────────
+        node "nginx:alpine\nPort :80 / :443\n(Terminaison TLS)" as NGINX {
+            artifact "nginx.conf\n(proxy, compression, cache statiques\nlimite de débit : 100 req/s)" as NGINX_CONF
+        }
+
+        ' ── Frontend Web ───────────────────────────────────────────
+        node "web\nNode 20 Alpine\n(dev: ng serve :4200 | prod: nginx :80)" as ANGULAR {
+            artifact "SPA Angular 17\ndist/imf-web/\n(modules lazy, i18n FR/EN\nthème clair/sombre)" as DIST
+        }
+
+        ' ── Backend Spring Boot ─────────────────────────────────────
+        node "backend\nSpring Boot 3.3 — Java 21\nPort :8080 (interne)" as SPRING {
+            artifact "imf-pipeline.jar\n(fat jar — Spring Boot)" as JAR
+            component "Sécurité Spring\n(JWT cookie, RBAC @PreAuthorize)" as SEC
+            component "TenantContext\n(ThreadLocal — isolation IMF)" as TEN
+            component "JPA / Hibernate\n(migrations Flyway V1→V28)" as JPA
+            component "Registre SSE\n(événements temps réel par rôle)" as SSE_EMT
+            component "Cache Spring\n(Redis — JWT + KPI TTL 5min)" as CACHE
+            component "Firebase Admin SDK\n(notifications push agents)" as FCM_SDK
+        }
+
+        ' ── Base de données ─────────────────────────────────────────
+        node "postgres:16\nPort :5432 (interne)" as PG_NODE {
+            database "imf_db\n(UTF-8, locale fr_CM)" {
+                component "app.*\n(21 tables — multi-tenant\nimf_id sur chaque table)" as SCH_APP
+                component "raw.*\n(ingestion brute CBS\ncollectes non traitées)" as SCH_RAW
+                component "staging.*\n(dbt — données nettoyées)" as SCH_STG
+                component "dw.*\n(data warehouse — agrégats)" as SCH_DW
+                component "ml.*\n(feature store 43 dimensions\nscores clients + SHAP\nalertes prédictives)" as SCH_ML
+                component "reporting.*\n(vues Metabase\nperformances IMF)" as SCH_REP
+            }
+            note right : Volume : stage_postgres_data\nSauvegarde : pg_dump quotidien (cron)
+        }
+
+        ' ── Cache Redis ─────────────────────────────────────────────
+        node "redis:7\nPort :6379 (interne)" as REDIS_NODE {
+            database "Cache Redis" {
+                component "Liste noire JWT\n(jetons révoqués)" as REDIS_JWT
+                component "Cache KPI\n(TTL 5 min — collectes/créances)" as REDIS_KPI
+                component "Sessions actives\n(suivi présence en ligne)" as REDIS_SESS
+            }
+            note right : Volume : stage_redis_data\nPersistance AOF
+        }
+
+        ' ── Airflow ─────────────────────────────────────────────────
+        node "airflow-webserver\nAirflow 2.9 — Port :8081 (interne)" as AIR_WEB {
+            artifact "DAGs Python :\nTraitement collectes (*/2h)\nRecouvrement (06h00)\nDonnées externes (04h00)\nScoring ML (07h30)\nEntraînement (dimanche)" as DAGS
+        }
+
+        node "airflow-scheduler\n(Celery Beat)" as AIR_SCHED {
+            component "Planificateur\n(expressions cron)" as SCHED
+        }
+
+        node "airflow-worker\n(Celery Worker — 2 réplicas)" as AIR_WORKER {
+            component "Python 3.11\nXGBoost 2.0, SHAP 0.44\npsycopg2, pandas, dbt-core" as WORKER_LIBS
+            artifact "Modèles ML\n/ml/models/*.pkl (XGBoost)\n/data/cbs/incoming (exports CBS)\n/data/prix/ (prix FAO/MINCOMMERCE)" as ML_VOLS
+        }
+
+        ' ── dbt ─────────────────────────────────────────────────────
+        node "dbt-runner\n(Python 3.11 sidecar)" as DBT_NODE {
+            artifact "Projet dbt\nmodels/staging/*\nmodels/intermediate/*\nmodels/mart/*\nmodels/ml/*\n(43 features client)" as DBT_MODELS
+        }
+
+        ' ── Metabase ────────────────────────────────────────────────
+        node "metabase:v0.50\nPort :3000 (interne)" as META {
+            artifact "Tableaux de bord\n(reporting.v_performance_imf\nreporting.v_suivi_collectes\nreporting.v_tableau_bord)" as META_DASH
+        }
+
+        ' ── RabbitMQ (Celery broker) ─────────────────────────────────
+        node "rabbitmq:3-management\nPort :5672 (interne)" as MQ {
+            component "Courtier de messages Celery\n(files de tâches Airflow)" as MQ_BROKER
+        }
+    }
+}
+
+' ══════════════════════════════════════════════════════════════════
+' CONNEXIONS RÉSEAU
+' ══════════════════════════════════════════════════════════════════
+
+FLUTTER_APP --> NGINX : HTTPS :443\n(synchronisation collectes\net envoi position GPS)
+BROWSER --> NGINX : HTTPS :443\n(SPA Angular + appels API)
+NGINX --> ANGULAR : HTTP (fichiers statiques SPA)
+NGINX --> SPRING : Requêtes HTTP proxy\n(API versionnée /api/v1/ et pipeline interne /internal/)
+
+SPRING --> PG_NODE : JDBC :5432 (JPA Hibernate)
+SPRING --> REDIS_NODE : :6379 (Cache Spring)
+SPRING --> FCM_CLOUD : HTTPS (Firebase Admin SDK)
+FCM_CLOUD --> FLUTTER_APP : Notification push agent
+
+AIR_WEB --> PG_NODE : Base Airflow Metadata (:5432)
+AIR_SCHED --> AIR_WORKER : Dispatch Celery (RabbitMQ)
+AIR_SCHED --> MQ : Publication des tâches
+MQ --> AIR_WORKER : Consommation des tâches
+AIR_WORKER --> PG_NODE : :5432 (lecture/écriture pipeline)
+AIR_WORKER --> DBT_NODE : Lance les transformations dbt
+AIR_WORKER --> EXT_CLOUD : HTTPS récupération APIs / SFTP CBS
+AIR_WORKER --> SPRING : Notification interne\n(scores calculés, alertes ML prêts)
+DBT_NODE --> PG_NODE : :5432 (profiles.yml)
+META --> PG_NODE : :5432 (vues reporting.*)
+
+note bottom of HOST
+  docker-compose.dev.yml     → Rechargement à chaud, ports exposés localement
+  docker-compose.staging.yml → Images taguées, pas de hot reload
+  docker-compose.prod.yml    → TLS Let's Encrypt, limites ressources,\n                             healthchecks, restart: always
+end note
+
+@enduml

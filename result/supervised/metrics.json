@@ -1,0 +1,56 @@
+{
+  "paradigme": "supervisé",
+  "algorithme": "XGBoost + calibration isotonique (Platt)",
+  "n_train": 12946,
+  "n_test": 3237,
+  "n_features": 30,
+  "ratio_defaut_train": 0.449,
+  "cv_walk_forward": [
+    {
+      "fold": 1,
+      "auc_roc": 0.8233,
+      "gini": 0.6467,
+      "brier": 0.17,
+      "f1": 0.6869
+    },
+    {
+      "fold": 2,
+      "auc_roc": 0.8174,
+      "gini": 0.6348,
+      "brier": 0.1712,
+      "f1": 0.7008
+    },
+    {
+      "fold": 3,
+      "auc_roc": 0.8097,
+      "gini": 0.6195,
+      "brier": 0.1768,
+      "f1": 0.7119
+    },
+    {
+      "fold": 4,
+      "auc_roc": 0.8233,
+      "gini": 0.6466,
+      "brier": 0.1693,
+      "f1": 0.7089
+    },
+    {
+      "fold": 5,
+      "auc_roc": 0.8117,
+      "gini": 0.6234,
+      "brier": 0.175,
+      "f1": 0.7039
+    }
+  ],
+  "test": {
+    "auc_roc": 0.8119,
+    "gini": 0.6237,
+    "ks": 0.474,
+    "brier": 0.2018,
+    "f1": 0.6996,
+    "precision": 0.7111,
+    "rappel": 0.6884
+  },
+  "shap_top10": {},
+  "generated_at": "2026-05-25T12:56:47.773555"
+}

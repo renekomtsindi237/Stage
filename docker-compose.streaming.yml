@@ -1,0 +1,209 @@
+# docker-compose.streaming.yml — Couche streaming : Kafka + Schema Registry + Kafka UI
+# Usage : docker compose -f docker-compose.dev.yml -f docker-compose.streaming.yml up -d
+# Ou standalone : docker compose -f docker-compose.streaming.yml up -d
+#
+# Broker Kafka en mode KRaft (sans Zookeeper) — Kafka 3.7 / Confluent 7.6
+# Topics IMF créés automatiquement au démarrage via kafka-init
+
+services:
+
+  # ── Kafka Broker (KRaft mode — pas de Zookeeper) ──────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: imf_kafka
+    hostname: kafka
+    restart: unless-stopped
+    networks:
+      - imf_dev_network
+    ports:
+      - "9092:9092"    # clients internes (Docker network)
+      - "9093:9093"    # clients externes (localhost dev)
+    environment:
+      # KRaft — mode sans Zookeeper (Kafka 3.x)
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9094
+      # Topics & réplication (single-broker dev)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      # Rétention : 7 jours dev, 30 jours prod
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_RETENTION_BYTES: 1073741824   # 1 GB
+      KAFKA_LOG_SEGMENT_BYTES: 104857600      # 100 MB
+      # Cluster ID (généré une seule fois)
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      # JVM
+      KAFKA_HEAP_OPTS: "-Xmx512m -Xms256m"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ── Initialisation des topics IMF ─────────────────────────────────────────
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: imf_kafka_init
+    networks:
+      - imf_dev_network
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Creation des topics IMF Pipeline...'
+
+      # Topics de collecte
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.collectes.confirmed \
+        --partitions 6 --replication-factor 1 \
+        --config retention.ms=604800000
+
+      # Alertes risque MCRS
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.alertes.risque \
+        --partitions 3 --replication-factor 1 \
+        --config retention.ms=2592000000
+
+      # ML Scoring (demandes/résultats)
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.ml.scoring.requests \
+        --partitions 6 --replication-factor 1 \
+        --config retention.ms=86400000
+
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.ml.scoring.results \
+        --partitions 6 --replication-factor 1 \
+        --config retention.ms=2592000000
+
+      # Créances et recouvrement
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.creances.evenements \
+        --partitions 3 --replication-factor 1 \
+        --config retention.ms=604800000
+
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.recouvrement.actions \
+        --partitions 3 --replication-factor 1 \
+        --config retention.ms=2592000000
+
+      # KPI temps-réel (Flink output)
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.kpi.agents.realtime \
+        --partitions 6 --replication-factor 1 \
+        --config retention.ms=3600000
+
+      # Dead Letter Queue (messages en erreur)
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists \
+        --topic imf.dlq \
+        --partitions 1 --replication-factor 1 \
+        --config retention.ms=604800000
+
+      echo 'Topics crees avec succes !'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+    restart: on-failure
+
+  # ── Confluent Schema Registry ─────────────────────────────────────────────
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+    container_name: imf_schema_registry
+    hostname: schema-registry
+    restart: unless-stopped
+    networks:
+      - imf_dev_network
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL: BACKWARD
+    depends_on:
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/subjects || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 45s
+
+  # ── Kafka UI (monitoring topics, consumer groups, schémas) ────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: imf_kafka_ui
+    restart: unless-stopped
+    networks:
+      - imf_dev_network
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: imf-pipeline-dev
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9999
+      AUTH_TYPE: "LOGIN_FORM"
+      SPRING_SECURITY_USER_NAME: admin
+      SPRING_SECURITY_USER_PASSWORD: imf-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+
+  # ── Registre des schémas Avro (init) ─────────────────────────────────────
+  schema-init:
+    image: confluentinc/cp-schema-registry:7.6.1
+    container_name: imf_schema_init
+    networks:
+      - imf_dev_network
+    depends_on:
+      schema-registry:
+        condition: service_healthy
+    volumes:
+      - ./schemas/avro:/schemas/avro:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Enregistrement des schemas Avro IMF...'
+      REGISTRY=http://schema-registry:8081
+      AVRO_DIR=/schemas/avro
+
+      for schema_file in $AVRO_DIR/*.avsc; do
+        schema_name=$$(basename $$schema_file .avsc)
+        subject=\"$$schema_name-value\"
+        schema_content=$$(cat $$schema_file | tr -d '\\n' | sed 's/\"/\\\\\"/g')
+
+        echo \"Enregistrement : $$subject\"
+        curl -s -X POST -H 'Content-Type: application/vnd.schemaregistry.v1+json' \
+          --data \"{\\\"schema\\\": \\\"$$schema_content\\\"}\" \
+          $$REGISTRY/subjects/$$subject/versions > /dev/null 2>&1 || echo \"  -> Deja enregistre ou erreur\"
+      done
+
+      echo 'Schemas enregistres. Liste des subjects :'
+      curl -s $$REGISTRY/subjects
+      "
+    restart: on-failure
+
+volumes:
+  kafka_data:
+    driver: local
+
+networks:
+  imf_dev_network:
+    external: true

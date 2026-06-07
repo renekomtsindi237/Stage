@@ -1,0 +1,92 @@
+{
+  "default_threshold": 0.75,
+  "global": {
+    "auc_roc": 0.8092,
+    "f1": 0.7134,
+    "fpr": 0.2024,
+    "fnr": 0.3281,
+    "threshold": 0.75
+  },
+  "regions": [
+    {
+      "region_id": "REG03",
+      "region_name": "Centre",
+      "n": 181,
+      "threshold": 0.0852,
+      "auc_roc": 0.6569,
+      "f1": 0.464,
+      "fpr": 0.3841,
+      "fnr": 0.3256
+    },
+    {
+      "region_id": "REG04",
+      "region_name": "Littoral",
+      "n": 329,
+      "threshold": 0.2778,
+      "auc_roc": 0.7509,
+      "f1": 0.5837,
+      "fpr": 0.1847,
+      "fnr": 0.4299
+    },
+    {
+      "region_id": "REG05",
+      "region_name": "Ouest",
+      "n": 517,
+      "threshold": 0.75,
+      "auc_roc": 0.6712,
+      "f1": 0.5087,
+      "fpr": 0.1855,
+      "fnr": 0.5578
+    },
+    {
+      "region_id": "REG06",
+      "region_name": "Nord-Ouest",
+      "n": 530,
+      "threshold": 0.5833,
+      "auc_roc": 0.7867,
+      "f1": 0.6861,
+      "fpr": 0.2569,
+      "fnr": 0.3182
+    },
+    {
+      "region_id": "REG07",
+      "region_name": "Sud-Ouest",
+      "n": 556,
+      "threshold": 0.9153,
+      "auc_roc": 0.7913,
+      "f1": 0.7088,
+      "fpr": 0.1673,
+      "fnr": 0.3686
+    },
+    {
+      "region_id": "REG08",
+      "region_name": "Bamenda",
+      "n": 536,
+      "threshold": 0.9326,
+      "auc_roc": 0.8335,
+      "f1": 0.7595,
+      "fpr": 0.1667,
+      "fnr": 0.3221
+    },
+    {
+      "region_id": "REG09",
+      "region_name": "Est",
+      "n": 392,
+      "threshold": 0.9833,
+      "auc_roc": 0.9131,
+      "f1": 0.8502,
+      "fpr": 0.0769,
+      "fnr": 0.2364
+    },
+    {
+      "region_id": "REG10",
+      "region_name": "Sud",
+      "n": 196,
+      "threshold": 0.6618,
+      "auc_roc": 0.8003,
+      "f1": 0.7243,
+      "fpr": 0.2121,
+      "fnr": 0.3093
+    }
+  ]
+}

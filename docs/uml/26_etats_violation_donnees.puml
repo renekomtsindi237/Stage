@@ -1,0 +1,81 @@
+@startuml etats_violation_donnees
+!theme plain
+title Diagramme d'état-transition — Violation de Données\n(Loi 2024/017 Art. 22 — Délai légal de notification : 72 heures)
+
+skinparam state {
+    BackgroundColor #FDF2F8
+    BorderColor #8E44AD
+    FontSize 12
+    ArrowColor #8E44AD
+}
+
+[*] --> DECLAREE : Violation déclarée par le DSI\n(dans les 72h suivant la découverte)
+
+DECLAREE : ● Violation déclarée — en cours d'évaluation
+DECLAREE : ○ Identité du déclarant enregistrée
+DECLAREE : ○ Date de découverte, type et gravité de la violation
+DECLAREE : ○ Alertes envoyées (temps réel + mobile + email)
+DECLAREE : ○ Compte à rebours de 72h déclenché
+
+state DECLAREE {
+    [*] --> NOTIF_NON_ENVOYEE
+    NOTIF_NON_ENVOYEE : Autorité de protection non encore notifiée
+    NOTIF_NON_ENVOYEE --> NOTIF_AUTORITE_ENVOYEE : Notification à l'autorité confirmée\n(référence officielle enregistrée)
+    NOTIF_AUTORITE_ENVOYEE : Notification à l'autorité confirmée
+}
+
+DECLAREE --> EN_INVESTIGATION : Mesures immédiates prises\nInvestigation technique lancée
+
+EN_INVESTIGATION : ● Enquête technique en cours
+EN_INVESTIGATION : ○ Origine de la violation identifiée
+EN_INVESTIGATION : ○ Étendue des données compromises évaluée
+EN_INVESTIGATION : ○ Mesures correctives en cours d'application
+
+state EN_INVESTIGATION {
+    [*] --> ANALYSE_EN_COURS
+    ANALYSE_EN_COURS --> CONTENU : Cause identifiée
+    CONTENU --> MESURES_APPLIQUEES : Correctifs déployés
+    MESURES_APPLIQUEES --> RAPPORT_REDIGE : Rapport final en cours de rédaction
+}
+
+EN_INVESTIGATION --> CLOTUREE : Investigation terminée\n(rapport final rédigé et validé)
+
+DECLAREE --> CLOTUREE : Violation mineure — clôturée rapidement\n(mesures immédiates suffisantes)
+
+CLOTUREE : ● Violation gérée et archivée
+CLOTUREE : ○ Rapport final consigné
+CLOTUREE : ○ Identité du clôturant enregistrée (traçabilité COBAC)
+CLOTUREE : ○ Date de clôture enregistrée
+CLOTUREE : ○ Conservation recommandée : 5 ans
+
+CLOTUREE --> [*]
+
+note right of DECLAREE
+  ⚠️ OBLIGATION LÉGALE ART. 22 §1
+  La déclaration à l'autorité de protection
+  des données doit intervenir dans les 72h
+  suivant la découverte.
+
+  En cas de dépassement, le système
+  affiche "DÉLAI LÉGAL DÉPASSÉ" et
+  la violation reste tracée.
+end note
+
+note right of EN_INVESTIGATION
+  Niveaux de gravité :
+  • FAIBLE — impact limité, données non sensibles
+  • MODÉRÉE — données personnelles exposées
+  • ÉLEVÉE — données sensibles, nombreuses personnes
+  • CRITIQUE — données financières, médicales, biométriques
+
+  Types de violation :
+  • Accès non autorisé
+  • Divulgation non intentionnelle
+  • Perte de données
+  • Modification non autorisée
+  • Chiffrement par rançongiciel (ransomware)
+end note
+
+note "Tableau de bord SLA dédié :\nListe les violations triées par urgence\n→ Alerte si délai 72h approche\nAccessible au DSI et aux administrateurs" as N1
+
+@enduml

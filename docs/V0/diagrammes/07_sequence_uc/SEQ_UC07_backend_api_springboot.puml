@@ -1,0 +1,250 @@
+@startuml SEQ_UC07_backend_api_springboot
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam sequenceGroupBackgroundColor #F5F5F5
+skinparam sequenceGroupBorderColor #9E9E9E
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceBoxBorderColor #4A6CF7
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ_UC07 — Backend API Spring Boot\nAuth JWT · RBAC · KPIs multi-sources · Collectes · FCM\n<size:11><color:#555>Architecture conteneurisée Docker — Spring Boot 3.2 · Java 17 · Spring Security</color></size>
+
+' ===== ACTEURS =====
+actor "Client Angular\n(Navigateur)" as ANG
+actor "Client Flutter\n(Mobile)" as FLT
+actor "Python AlertManager\n(Conteneur interne)" as PY
+
+' ===== CONTENEUR : nginx =====
+box "🐳 nginx (:80/:443)" #FFF9C4
+  participant "Nginx\n[Reverse Proxy\n/api/* → springboot:8080]" as NGINX
+end box
+
+' ===== CONTENEUR : springboot =====
+box "🐳 springboot-api (:8080 interne)" #E3F2FD
+  participant "JwtAuthFilter\n[OncePerRequestFilter\n— toute requête /api/*]" as JWT_FILTER
+  participant "AuthController\n[@RestController\n/api/auth/*]" as CTRL_AUTH
+  participant "KpiController\n[@RestController\n/api/kpi/*]" as CTRL_KPI
+  participant "CollecteController\n[@RestController\n/api/collectes]" as CTRL_COL
+  participant "AlerteController\n[@RestController\n/api/alertes]" as CTRL_ALE
+  participant "AdminController\n[@RestController\n/api/admin/*]" as CTRL_ADMIN
+  participant "JwtTokenProvider\n[JJWT 0.12\nHS256 / 15min / 7j]" as JWT_SVC
+  participant "UserDetailsService\n[Spring Security]" as UDS
+  participant "KpiService\n[@Service]" as SVC_KPI
+  participant "CollecteService\n[@Service]" as SVC_COL
+  participant "AlerteService\n[@Service]" as SVC_ALE
+  participant "NotificationService\n[FCM + SMTP]" as SVC_NOTIF
+  participant "KpiParRepository\n[@Repository — DW]" as REPO_KPI
+  participant "CollecteRepository\n[@Repository — staging]" as REPO_COL
+  participant "AlerteRepository\n[@Repository — staging]" as REPO_ALE
+  participant "UserRepository\n[@Repository — staging]" as REPO_USR
+  participant "Firebase Admin SDK\n[Java]" as FB_SDK
+end box
+
+' ===== CONTENEUR : postgres-pipeline =====
+box "🐳 postgres-pipeline (:5432)" #E8F5E9
+  database "staging\n(users, collectes,\nalertes, prets)" as STG
+  database "reporting\n(v_kpi_collectes\nv_kpi_recouvrement\nv_kpi_executif)" as RPT
+end box
+
+' ===== SERVICES EXTERNES =====
+boundary "Firebase FCM\n[Google Cloud]" as FCM_EXT
+boundary "Serveur SMTP\n[Email]" as SMTP_EXT
+
+' =================================================
+' ÉTAPE 1 — CHAÎNE DE FILTRES SPRING SECURITY
+' =================================================
+== 🔐 ÉTAPE 1 — Chaîne de filtres Spring Security (toute requête /api/*) ==
+
+note over JWT_FILTER : JwtAuthFilter s'exécute\nSUR CHAQUE requête /api/*\navant d'atteindre le contrôleur
+
+ANG -> NGINX : HTTPS GET /api/kpi/par\nAuthorization: Bearer <JWT>
+NGINX -> JWT_FILTER : HTTP GET /api/kpi/par\nAuthorization: Bearer <JWT>
+
+JWT_FILTER -> JWT_FILTER : Extrait "Bearer <token>"\ndu header Authorization
+
+alt <b>Token présent</b>
+  JWT_FILTER -> JWT_SVC : validateToken(token)
+  JWT_SVC -> JWT_SVC : Jwts.parserBuilder()\n.setSigningKey(SECRET_KEY)\n.parseClaimsJws(token)\n→ vérifie signature HMAC-SHA256\n→ vérifie expiration (exp claim)
+
+  alt <b>Token valide</b>
+    JWT_SVC --> JWT_FILTER : Claims {sub:"user_rr",\nroles:["RESPONSABLE_RECOUVREMENT"],\nagentId:null, zoneId:3}
+    JWT_FILTER -> UDS : loadUserByUsername("user_rr")
+    UDS -> STG : SELECT id_user, role, actif\nFROM staging.users\nWHERE username = 'user_rr'
+    STG --> UDS : {role: RESPONSABLE_RECOUVREMENT, actif: true}
+    UDS --> JWT_FILTER : UserDetails (GrantedAuthority: ROLE_RESPONSABLE_RECOUVREMENT)
+    JWT_FILTER -> JWT_FILTER : SecurityContextHolder\n.setAuthentication(\n  UsernamePasswordAuthenticationToken)\n→ auth propagée dans la requête
+    JWT_FILTER -> CTRL_KPI : Passe la requête au contrôleur
+
+  else <b>Token expiré ou signature invalide</b>
+    JWT_SVC --> JWT_FILTER : JwtException
+    JWT_FILTER --> NGINX : HTTP 401 Unauthorized\n{error: "TOKEN_EXPIRED"}
+    NGINX --> ANG : HTTPS 401\n→ Angular intercepteur → refresh token
+  end
+
+else <b>Pas de header Authorization</b>
+  JWT_FILTER -> JWT_FILTER : Aucun token\n→ SecurityContext vide\nSi endpoint protégé → 401
+  JWT_FILTER --> NGINX : HTTP 401 (si route protégée)
+end
+
+' =================================================
+' ÉTAPE 2 — AUTHENTIFICATION (LOGIN + REFRESH)
+' =================================================
+== 🔑 ÉTAPE 2 — Authentification JWT (login + refresh token) ==
+
+FLT -> NGINX : HTTPS POST /api/auth/login\n{username: "agent_08", password: "pass123"}
+NGINX -> CTRL_AUTH : POST /api/auth/login\n(endpoint public — pas de JwtAuthFilter)
+
+CTRL_AUTH -> UDS : loadUserByUsername("agent_08")
+UDS -> STG : SELECT * FROM staging.users WHERE username = 'agent_08'
+STG --> UDS : {password_hash, role:'AGENT', id_zone:3, id_agent:8}
+UDS --> CTRL_AUTH : UserDetails
+CTRL_AUTH -> CTRL_AUTH : BCryptPasswordEncoder\n.matches(password, hash) → true
+
+CTRL_AUTH -> JWT_SVC : generateAccessToken(user)\ngenerateRefreshToken(user)
+JWT_SVC -> JWT_SVC : accessToken = Jwts.builder()\n  .setSubject("agent_08")\n  .claim("roles", ["AGENT"])\n  .claim("agentId", 8)\n  .claim("zoneId", 3)\n  .setExpiration(now + 15min)\n  .signWith(SECRET_KEY, HS256)\n  .compact()\nrefreshToken = UUID.randomUUID()\n  (7j — stocké en base)
+JWT_SVC -> STG : INSERT INTO staging.refresh_tokens\n{user_id: 8, token_hash: SHA256(refresh),\nexpires_at: now+7j, device_info: "Flutter"}
+STG --> JWT_SVC : OK
+JWT_SVC --> CTRL_AUTH : {accessToken, refreshToken, expiresIn: 900}
+CTRL_AUTH --> NGINX : HTTP 200 JSON
+NGINX --> FLT : HTTPS 200 {accessToken, refreshToken, role:"AGENT"}
+
+' --- Refresh ---
+FLT -> NGINX : HTTPS POST /api/auth/refresh\n{refreshToken: "uuid-..."}
+NGINX -> CTRL_AUTH : POST /api/auth/refresh
+CTRL_AUTH -> JWT_SVC : refreshAccessToken(refreshToken)
+JWT_SVC -> STG : SELECT user_id FROM staging.refresh_tokens\nWHERE token_hash = SHA256(?) AND expires_at > NOW()\nAND revoked = FALSE
+STG --> JWT_SVC : user_id = 8 ✓
+JWT_SVC -> JWT_SVC : Génère nouveau accessToken (15min)
+JWT_SVC --> CTRL_AUTH : {accessToken: new_token}
+CTRL_AUTH --> NGINX : HTTP 200 {accessToken}
+NGINX --> FLT : HTTPS 200
+
+' =================================================
+' ÉTAPE 3 — RBAC : CONTRÔLE DES ACCÈS PAR RÔLE
+' =================================================
+== 🛡️ ÉTAPE 3 — RBAC Spring Security (@PreAuthorize) ==
+
+note over CTRL_KPI : Exemple : ANALYSTE tente d'accéder\nà /api/admin/* (réservé DSI)
+
+ANG -> NGINX : HTTPS GET /api/admin/users\nAuthorization: Bearer <JWT_ANALYSTE>
+NGINX -> JWT_FILTER : GET /api/admin/users
+JWT_FILTER -> JWT_FILTER : Token valide ✓\nrole = ANALYSTE → SecurityContext
+JWT_FILTER -> CTRL_ADMIN : passe la requête
+
+CTRL_ADMIN -> CTRL_ADMIN : @PreAuthorize("hasRole('DSI')")\nMethodSecurityInterceptor évalue\nSecurityContext.getAuthentication()\n→ ANALYSTE ≠ DSI → AccessDeniedException
+CTRL_ADMIN --> NGINX : HTTP 403 Forbidden\n{error: "ACCESS_DENIED",\nmessage: "Rôle DSI requis"}
+NGINX --> ANG : HTTPS 403
+
+note over CTRL_KPI : Tableau des accès RBAC :\n• /api/auth/* → PUBLIC\n• GET /api/kpi/* → DIRECTEUR, RR, ANALYSTE\n• POST /api/collectes → AGENT\n• /api/alertes → RR, DIRECTEUR, AGENT (sa zone)\n• /api/admin/* → DSI uniquement\n• /internal/* → IP whitelist (python-scripts)
+
+' =================================================
+' ÉTAPE 4 — RÉCUPÉRATION KPIs MULTI-SOURCES
+' =================================================
+== 📊 ÉTAPE 4 — Agrégation KPIs multi-sources (CBS + MTN + Orange + Agents) ==
+
+ANG -> NGINX : HTTPS GET /api/kpi/dashboard-summary\nAuthorization: Bearer <JWT_DIRECTEUR>
+NGINX -> JWT_FILTER : passe au filtre
+JWT_FILTER -> CTRL_KPI : role DIRECTEUR ✓
+
+CTRL_KPI -> CTRL_KPI : @PreAuthorize("hasRole('DIRECTEUR')")
+CTRL_KPI -> SVC_KPI : getDashboardSummary()
+
+par
+  SVC_KPI -> REPO_KPI : findLatestPar()
+  REPO_KPI -> RPT : SELECT taux_par30, taux_par90,\nencours_total, nb_prets_actifs\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete = CURRENT_DATE - 1
+  note right RPT : Données CBS\n(prêts + remboursements\nde toutes zones)
+  RPT --> REPO_KPI : {par30:0.083, par90:0.031,\nencours:625M XAF, nb_prets:1250}
+
+  SVC_KPI -> REPO_KPI : findTotalCollectesMois()
+  REPO_KPI -> RPT : SELECT SUM(montant_total),\nSUM(nb_mobile_money) / COUNT(*)\nFROM reporting.v_kpi_collectes\nWHERE date_complete >= DATE_TRUNC('month', CURRENT_DATE)
+  note right RPT : Données MTN + Orange\n+ Agents terrain\n(unifiées par dbt)
+  RPT --> REPO_KPI : {total:87.3M XAF, pct_mobile:0.68}
+
+  SVC_KPI -> REPO_ALE : countActiveAlertes()
+  REPO_ALE -> STG : SELECT COUNT(*) FROM staging.alertes_impayes\nWHERE statut_alerte = 'ACTIVE'
+  STG --> REPO_ALE : 47 alertes actives
+
+  SVC_KPI -> REPO_KPI : findPar30Trend(days=30)
+  REPO_KPI -> RPT : SELECT date_complete, taux_par30\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete >= CURRENT_DATE - 30\nORDER BY date_complete ASC
+  RPT --> REPO_KPI : [{date, par30} × 30 jours]
+end
+
+SVC_KPI -> SVC_KPI : DashboardSummaryResponse.builder()\n  .par30(0.083).par90(0.031)\n  .totalCollectes(87_300_000L)\n  .tauxMobileMoney(0.68)\n  .nbAlertes(47).nbPretsActifs(1250)\n  .trendPar30(trend30j)\n  .build()
+SVC_KPI --> CTRL_KPI : DashboardSummaryResponse
+CTRL_KPI --> NGINX : HTTP 200 JSON (gzip)
+NGINX --> ANG : HTTPS 200 JSON
+
+' =================================================
+' ÉTAPE 5 — ENREGISTREMENT COLLECTE TERRAIN
+' =================================================
+== 📥 ÉTAPE 5 — Enregistrement collecte terrain (POST /api/collectes) ==
+
+FLT -> NGINX : HTTPS POST /api/collectes\n{client_id:12, pret_id:45,\nmontant:125000, canal:"MTN_MOBILE_MONEY",\nreference:"REF-MTN-20260401-XYZ"}\nAuthorization: Bearer <JWT_AGENT>
+NGINX -> JWT_FILTER : POST /api/collectes
+JWT_FILTER -> CTRL_COL : role AGENT ✓\nagentId = 8 (claim JWT)
+
+CTRL_COL -> CTRL_COL : @PreAuthorize("hasRole('AGENT')")\n@Valid CollecteRequest validation\n(montant > 0, canal non null, ref non null)
+CTRL_COL -> SVC_COL : enregistrerCollecte(request, agentId=8)
+
+SVC_COL -> REPO_COL : existsByReferenceTransaction("REF-MTN-...")
+REPO_COL -> STG : SELECT 1 FROM staging.collectes_terrain\nWHERE reference_transaction = 'REF-MTN-20260401-XYZ'\nAND date_collecte = CURRENT_DATE
+STG --> REPO_COL : 0 lignes → pas de doublon
+
+SVC_COL -> REPO_COL : save(collecte)
+REPO_COL -> STG : INSERT INTO staging.collectes_terrain\n{agent_id:8, client_id:12, pret_id:45,\ndate_collecte:2026-04-01, montant:125000,\ncanal:'MTN_MOBILE_MONEY',\nreference:'REF-MTN-20260401-XYZ',\nstatut:'CONFIRME',\ncreated_at: NOW()}
+STG --> REPO_COL : id_collecte = 789
+REPO_COL --> SVC_COL : CollecteTerrain{id:789}
+SVC_COL -> SVC_COL : Génère référence interne\n"COL-" + year + "-" + id = "COL-2026-789"
+SVC_COL --> CTRL_COL : CollecteResponse{id:"COL-2026-789", statut:"CONFIRME"}
+CTRL_COL --> NGINX : HTTP 201 Created\nLocation: /api/collectes/789
+NGINX --> FLT : HTTPS 201 {id:"COL-2026-789"}
+
+' =================================================
+' ÉTAPE 6 — NOTIFICATION FCM + EMAIL (endpoint interne)
+' =================================================
+== 🔔 ÉTAPE 6 — Envoi notification push FCM + email (depuis Python) ==
+
+PY -> NGINX : HTTPS POST /internal/notify-alerte\n{alerte_id:101, zone_id:3,\n pret_id:42, jours_retard:45,\n montant:125_000}\nX-Internal-Token: <shared_secret>
+note left PY : Endpoint interne\naccessible uniquement depuis\nle réseau Docker (IP whitelist)\nPas de JWT — token partagé
+
+NGINX -> CTRL_ALE : POST /internal/notify-alerte\n(réseau Docker interne seulement)
+CTRL_ALE -> CTRL_ALE : Valide X-Internal-Token\n(BCrypt compare avec env var)
+CTRL_ALE -> SVC_ALE : processNotification(alerteId=101)
+SVC_ALE -> REPO_ALE : findById(101)
+REPO_ALE -> STG : SELECT ai.*, p.id_pret, c.nom,\nc.telephone, z.nom_zone\nFROM staging.alertes_impayes ai\nJOIN staging.prets p ON ai.id_pret = p.id_pret\nJOIN staging.clients c ON p.id_client = c.id_client\nJOIN staging.zones z ON c.id_zone = z.id_zone\nWHERE ai.id_alerte = 101
+STG --> REPO_ALE : AlerteDetail{pret:#42, client:KAMGA Jean,\njours:45, montant:125000, zone:Douala Nord}
+REPO_ALE --> SVC_ALE : AlerteImpaye
+
+SVC_ALE -> SVC_NOTIF : sendAlertNotification(alerte, zoneId=3)
+SVC_NOTIF -> REPO_USR : findUsersToNotify(zoneId=3,\nroles=['RESPONSABLE_RECOUVREMENT','DIRECTEUR'])
+REPO_USR -> STG : SELECT fcm_token, email, role\nFROM staging.users\nWHERE id_zone = 3\nAND role IN ('RESPONSABLE_RECOUVREMENT','DIRECTEUR')\nAND actif = TRUE AND fcm_token IS NOT NULL
+STG --> REPO_USR : [{RR: fcm_token_RR, email_RR},\n{DG: fcm_token_DG}]
+REPO_USR --> SVC_NOTIF : List<UserNotifTarget>
+
+fork
+  SVC_NOTIF -> FB_SDK : FirebaseMessaging.getInstance()\n.send(Message.builder()\n  .setToken(fcm_token_RR)\n  .setNotification(Notification.builder()\n    .setTitle("🚨 ALERTE IMPAYÉ")\n    .setBody("Prêt #42 — KAMGA Jean\n45j — 125 000 XAF")\n    .build())\n  .putData("type","ALERTE_IMPAYE")\n  .putData("alerte_id","101")\n  .build())
+  FB_SDK -> FCM_EXT : HTTPS POST\nhttps://fcm.googleapis.com/v1/messages:send\n{Authorization: Bearer <service_account_token>}
+  FCM_EXT --> FB_SDK : {name: "projects/.../messages/0:..."}
+  FB_SDK --> SVC_NOTIF : messageId ✓
+
+fork again
+  SVC_NOTIF -> SMTP_EXT : JavaMailSender.send(\nto: email_RR,\nsubject: "ALERTE IMPAYÉ — Prêt #42",\nbody: HTML template\n{client, jours, montant, zone})
+  SMTP_EXT --> SVC_NOTIF : Email envoyé ✓
+end fork
+
+SVC_NOTIF -> REPO_ALE : updateNotifStatus(id=101, fcmSent=true, emailSent=true)
+REPO_ALE -> STG : UPDATE staging.alertes_impayes\nSET fcm_sent=TRUE, email_sent=TRUE\nWHERE id_alerte = 101
+STG --> REPO_ALE : OK
+SVC_NOTIF --> CTRL_ALE : NotificationResult{fcm:OK, email:OK}
+CTRL_ALE --> NGINX : HTTP 200 {status:"sent"}
+NGINX --> PY : HTTP 200 {fcm_sent:true, email_sent:true}
+
+@enduml

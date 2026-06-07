@@ -1,0 +1,270 @@
+@startuml CLS02_backend_springboot
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam classBackgroundColor #E8F5E9
+skinparam classBorderColor #2E7D32
+skinparam classArrowColor #555555
+skinparam classArrowThickness 1.5
+skinparam Padding 8
+
+title CLS02 — Diagramme de Classes — Backend Spring Boot\nEntités JPA + Services + Controllers
+
+' ===== ENTITÉS JPA =====
+class User <<@Entity>> {
+  - id : Long <<@Id>>
+  - username : String <<@Column unique>>
+  - passwordHash : String
+  - role : Role <<@Enumerated>>
+  - fcmToken : String
+  - zoneId : Integer
+  - actif : boolean
+  - lastLogin : LocalDateTime
+  - createdAt : LocalDateTime
+  + getAuthorities() : Collection
+}
+
+enum Role {
+  DIRECTEUR
+  RESPONSABLE_RECOUVREMENT
+  ANALYSTE
+  DSI
+  AGENT
+}
+
+class Pret <<@Entity>> {
+  - id : Long <<@Id>>
+  - idClient : Integer
+  - idAgent : Integer
+  - idProduit : Integer
+  - montantOctroye : BigDecimal
+  - dateDecaissement : LocalDate
+  - dateEcheanceFinale : LocalDate
+  - nombreEcheances : Integer
+  - statut : StatutPret <<@Enumerated>>
+}
+
+enum StatutPret {
+  ACTIF
+  EN_RETARD
+  EN_RECOUVREMENT
+  SOLDE
+  PERTE
+}
+
+class CollecteTerrain <<@Entity>> {
+  - id : Long <<@Id>>
+  - agentId : Integer
+  - clientId : Integer
+  - pretId : Integer
+  - dateCollecte : LocalDate
+  - montantCollecte : BigDecimal
+  - canalPaiement : CanalPaiement <<@Enumerated>>
+  - referenceTransaction : String
+  - observation : String
+  - statut : StatutCollecte <<@Enumerated>>
+  - createdAt : LocalDateTime
+}
+
+enum CanalPaiement {
+  MTN_MOBILE_MONEY
+  ORANGE_MONEY
+  ESPECES
+  VIREMENT
+}
+
+class AlerteImpaye <<@Entity>> {
+  - id : Long <<@Id>>
+  - pretId : Integer
+  - dateGeneration : LocalDate
+  - joursRetard : Integer
+  - montantEnRetard : BigDecimal
+  - statutAlerte : StatutAlerte <<@Enumerated>>
+  - dateCloture : LocalDate
+  - fcmSent : boolean
+  - emailSent : boolean
+}
+
+enum StatutAlerte {
+  ACTIVE
+  CLOTUREE
+  ESCALADEE
+}
+
+class FactParQuotidien <<@Entity @Immutable>> {
+  - id : Long <<@Id>>
+  - dateId : Integer
+  - zoneId : Integer
+  - produitId : Integer
+  - encoursTotal : BigDecimal
+  - encoursPar30 : BigDecimal
+  - encoursPar90 : BigDecimal
+  - tauxPar30 : BigDecimal
+  - tauxPar90 : BigDecimal
+  - nbPretsActifs : Integer
+  - nbPretsEnRetard : Integer
+}
+
+class Echeance <<@Entity>> {
+  - id : Long <<@Id>>
+  - pretId : String
+  - numeroEcheance : Integer
+  - dateEcheance : LocalDate
+  - montantDu : BigDecimal
+  - statut : StatutEcheance <<@Enumerated>>
+}
+
+enum StatutEcheance {
+  EN_ATTENTE
+  PARTIELLEMENT_PAYEE
+  SOLDEE
+  EN_RETARD
+}
+
+enum StatutCollecte {
+  SOUMISE
+  CONFIRMEE
+  DOUBLON
+  REJETEE
+}
+
+class RefreshToken <<@Entity>> {
+  - id : Long <<@Id>>
+  - user : User <<@ManyToOne>>
+  - tokenHash : String <<@Column unique>>
+  - expiresAt : LocalDateTime
+  - createdAt : LocalDateTime
+}
+
+' ===== REPOSITORIES =====
+interface UserRepository <<@Repository>> {
+  + findByUsername(username: String) : Optional<User>
+  + findByZoneIdAndRoleIn(zoneId, roles) : List<User>
+}
+
+interface CollecteRepository <<@Repository>> {
+  + findByAgentId(agentId: int) : List<CollecteTerrain>
+  + existsByReferenceTransactionAndDateCollecte(ref, date) : boolean
+}
+
+interface AlerteRepository <<@Repository>> {
+  + findByStatutAlerte(statut) : List<AlerteImpaye>
+  + findByPretIdAndStatutAlerte(pretId, statut) : Optional<AlerteImpaye>
+  + countByStatutAlerte(statut) : long
+}
+
+interface KpiParRepository <<@Repository>> {
+  + findByDateIdOrderByZoneId(dateId) : List<FactParQuotidien>
+  + findTopNDaysTrend(nDays: int) : List<FactParQuotidien>
+}
+
+' ===== SERVICES =====
+class AuthService <<@Service>> {
+  - userRepository : UserRepository
+  - passwordEncoder : BCryptPasswordEncoder
+  - jwtProvider : JwtTokenProvider
+  - refreshTokenRepo : RefreshTokenRepository
+  + login(request: LoginRequest) : AuthResponse
+  + refresh(refreshToken: String) : AuthResponse
+  + logout(refreshToken: String) : void
+}
+
+class KpiService <<@Service>> {
+  - kpiParRepository : KpiParRepository
+  - collecteRepository : CollecteRepository
+  + getParStats(dateDebut, dateFin, zoneId) : KpiParResponse
+  + getCollecteStats(params) : KpiCollectesResponse
+  + getDashboardSummary() : DashboardSummaryResponse
+}
+
+class AlerteService <<@Service>> {
+  - alerteRepository : AlerteRepository
+  - notificationService : NotificationService
+  + getActiveAlertes() : List<AlerteResponse>
+  + cloturerAlerte(id: long) : AlerteResponse
+  + escaladerAlerte(id: long) : AlerteResponse
+  + triggerAlerteDetection(alertes: List) : void
+}
+
+class NotificationService <<@Service>> {
+  - firebaseMessaging : FirebaseMessaging
+  - userRepository : UserRepository
+  - smtpConfig : SmtpConfig
+  + sendPushToZone(zoneId: int, alerte: AlerteImpaye) : void
+  + sendEmailAlerte(alerte: AlerteImpaye, recipient: String) : void
+  + registerFcmToken(userId: long, token: String) : void
+}
+
+class CollecteService <<@Service>> {
+  - collecteRepository : CollecteRepository
+  + enregistrerCollecte(request: CollecteRequest, agentId: int) : CollecteResponse
+  + getCollectesAgent(agentId: int) : List<CollecteResponse>
+  + checkDuplicate(ref: String, date: LocalDate) : boolean
+}
+
+' ===== CONTROLLERS =====
+class AuthController <<@RestController>> {
+  - authService : AuthService
+  + login(@RequestBody req) : ResponseEntity<AuthResponse>
+  + refresh(@RequestBody req) : ResponseEntity<AuthResponse>
+  + logout(@RequestBody req) : ResponseEntity<Void>
+}
+
+class KpiController <<@RestController>> {
+  - kpiService : KpiService
+  + getParStats(@RequestParam ...) : ResponseEntity<KpiParResponse>
+  + getCollecteStats(@RequestParam ...) : ResponseEntity<...>
+  + getDashboardSummary() : ResponseEntity<DashboardSummaryResponse>
+}
+
+class AlerteController <<@RestController>> {
+  - alerteService : AlerteService
+  + getAlertes(@RequestParam statut) : ResponseEntity<List<AlerteResponse>>
+  + getAlerte(@PathVariable id) : ResponseEntity<AlerteResponse>
+  + updateAlerte(@PathVariable id, @RequestBody req) : ResponseEntity<AlerteResponse>
+}
+
+class CollecteController <<@RestController>> {
+  - collecteService : CollecteService
+  + enregistrerCollecte(@RequestBody req) : ResponseEntity<CollecteResponse>
+  + getMesCollectes() : ResponseEntity<List<CollecteResponse>>
+}
+
+' ===== SÉCURITÉ =====
+class JwtTokenProvider <<@Component>> {
+  - secretKey : String
+  - accessTokenExpiry : long = 900000
+  - refreshTokenExpiry : long = 604800000
+  + generateAccessToken(user: UserDetails) : String
+  + generateRefreshToken() : String
+  + validateToken(token: String) : boolean
+  + extractUsername(token: String) : String
+  + extractRole(token: String) : String
+}
+
+' ===== RELATIONS =====
+User --> Role
+Pret --> StatutPret
+CollecteTerrain --> CanalPaiement
+AlerteImpaye --> StatutAlerte
+
+AuthController --> AuthService
+KpiController --> KpiService
+AlerteController --> AlerteService
+CollecteController --> CollecteService
+
+AuthService --> UserRepository
+AuthService --> JwtTokenProvider
+KpiService --> KpiParRepository
+AlerteService --> AlerteRepository
+AlerteService --> NotificationService
+CollecteService --> CollecteRepository
+
+UserRepository ..> User : manages
+CollecteRepository ..> CollecteTerrain : manages
+AlerteRepository ..> AlerteImpaye : manages
+KpiParRepository ..> FactParQuotidien : reads
+Echeance --> StatutEcheance
+CollecteTerrain --> StatutCollecte
+RefreshToken --> User : "@ManyToOne"
+
+@enduml

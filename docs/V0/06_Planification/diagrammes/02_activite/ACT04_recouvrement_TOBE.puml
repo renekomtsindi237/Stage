@@ -1,0 +1,85 @@
+@startuml ACT04_recouvrement_TOBE
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam activity {
+  BackgroundColor #E8F5E9
+  BorderColor #2E7D32
+  FontSize 12
+  DiamondBackgroundColor #E3F2FD
+  DiamondBorderColor #1565C0
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title ACT04 — Processus Recouvrement\nSituation Cible (TO-BE) — Automatisé
+
+|#E8F5E9| Airflow Pipeline |
+|#F3E5F5| Spring Boot API |
+|#FFF9C4| Flutter / Email |
+|#FCE4EC| Responsable Recouvrement |
+|#E3F2FD| Agent de Terrain (Flutter) |
+|#FFFDE7| Client |
+
+start
+
+|Airflow Pipeline|
+:Déclenchement dag_alertes\nà 08h00 (après transformation DW);
+:Calcul PAR30 et PAR90\nquotidien (par zone, produit, agent);
+:Détection créances\nau-delà du seuil configurable;
+
+if (Nouvelles créances\nPAR30 détectées ?) then (Oui)
+
+  |Spring Boot API|
+  :INSERT INTO staging.alertes_impayes\n(id_pret, jours_retard, montant, statut=ACTIVE);
+  :Récupérer FCM tokens\ndes RR assignés à la zone;
+
+  fork
+    |Flutter / Email|
+    :Envoi email SMTP\nau responsable recouvrement;
+  fork again
+    |Flutter / Email|
+    :Envoi push notification FCM\n(app Flutter — fond ou premier plan);
+  end fork
+
+  |Responsable Recouvrement|
+  :Reçoit notification\n(email + push mobile);
+  :Consulte dashboard\nRecouvrement (Angular web\nou Flutter mobile);
+  :Sélectionne client\nen retard;
+
+  |Agent de Terrain (Flutter)|
+  :Reçoit notification push\nFCM sur son téléphone;
+  :Ouvre détail de l'alerte\n(app Flutter);
+  :Se déplace chez le client;
+
+  |Client|
+  if (Client peut\npayer ?) then (Oui)
+    :Effectue paiement\n(MTN / Orange / espèces);
+    |Agent de Terrain (Flutter)|
+    :Saisit la collecte\ndans Flutter (formulaire);
+    |Spring Boot API|
+    :POST /api/collectes\n→ PostgreSQL staging;
+    :Pipeline reprend\nla collecte à J+1;
+    :Alerte clôturée\nautomatiquement;
+    |Responsable Recouvrement|
+    :Dashboard mis à jour\n(PAR recalculé à J+1);
+  else (Non)
+    |Responsable Recouvrement|
+    if (Retard > 90 jours ?) then (Oui)
+      :Escalade au Directeur\n(alerte statut = ESCALADEE);
+      |Spring Boot API|
+      :Notification push\nau Directeur;
+      :Décision write-off;
+    else (Non)
+      :Alerte maintenue active\n(re-notifiée demain);
+    endif
+  endif
+
+else (Non — aucune créance)
+  :Aucune action requise;
+
+endif
+
+stop
+
+@enduml

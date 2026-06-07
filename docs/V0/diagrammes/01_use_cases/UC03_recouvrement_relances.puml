@@ -1,0 +1,66 @@
+@startuml UC03_recouvrement_relances
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 11
+}
+skinparam actor {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title UC03 — Recouvrement et Relances\nPlateforme IMF Cameroun
+
+left to right direction
+
+actor "Responsable\nRecouvrement" as RR
+actor "Directeur Général" as DG
+actor "Serveur Email\n(SMTP)" as SMTP <<système>>
+actor "Firebase FCM\n(Push)" as FCM <<système>>
+actor "Spring Boot\n(Scheduler)" as SCH <<système>>
+
+rectangle "UC03 — Recouvrement et Relances" {
+
+  usecase "UC03.1\nDétecter créances\néchues (PAR30/90)\nautomatiquement" as UC0301
+  usecase "UC03.2\nGénérer alerte\nimpayé (stockage\nDB + notification)" as UC0302
+  usecase "UC03.3\nEnvoyer notification\nemail (SMTP)\nresponsable recouvrement" as UC0303
+  usecase "UC03.4\nEnvoyer notification\npush FCM\n(app mobile)" as UC0304
+  usecase "UC03.5\nConsulter liste\nalertes actives\n(web + mobile)" as UC0305
+  usecase "UC03.6\nConfigurer seuil\nd'alerte\n(30 / 60 / 90 jours)" as UC0306
+  usecase "UC03.7\nClôturer une alerte\n(recouvrement réussi)" as UC0307
+  usecase "UC03.8\nEscalader une alerte\n(passage PAR90)" as UC0308
+  usecase "UC03.9\nConsulter historique\ndes relances et alertes" as UC0309
+
+}
+
+' Acteurs humains
+RR  --> UC0305
+RR  --> UC0306
+RR  --> UC0307
+RR  --> UC0308
+RR  --> UC0309
+DG  --> UC0305
+DG  --> UC0308
+
+' Acteurs systèmes
+SCH --> UC0301
+UC0302 --> SMTP : <<include>>
+UC0302 --> FCM  : <<include>>
+SMTP   <-- UC0303
+FCM    <-- UC0304
+
+' Inclusions
+UC0301 ..> UC0302 : <<include>>
+UC0302 ..> UC0303 : <<include>>
+UC0302 ..> UC0304 : <<include>>
+UC0305 ..> UC0307 : <<extend>>
+UC0305 ..> UC0308 : <<extend>>
+UC0308 ..> UC0303 : <<include>>
+
+@enduml

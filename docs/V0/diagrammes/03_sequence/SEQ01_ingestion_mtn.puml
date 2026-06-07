@@ -1,0 +1,67 @@
+@startuml SEQ01_ingestion_mtn
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceBoxBorderColor #4A6CF7
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ01 — Ingestion Quotidienne Transactions MTN Mobile Money\nPipeline Python / Apache Airflow
+
+actor "Airflow Scheduler" as SCHED
+participant "DAG\ndag_ingest_mtn" as DAG
+participant "IngestScript\n(Python)" as SCRIPT
+participant "Dossier sources\n/data/sources/mtn/" as FS
+database "PostgreSQL\nschéma raw" as RAW
+participant "Pipeline Logger" as LOG
+
+SCHED -> DAG : <b>Trigger</b> cron 0 6 * * *\n(06h00 chaque matin)
+activate DAG
+
+DAG -> SCRIPT : <b>Exécute</b> Task: load_mtn_csv
+activate SCRIPT
+
+SCRIPT -> FS : <b>scan()</b> fichiers MTN_YYYYMMDD.csv\nnon encore traités
+FS --> SCRIPT : [MTN_20260331.csv]
+
+loop <b>Pour chaque fichier CSV</b>
+
+  SCRIPT -> FS : <b>read_csv()</b> fichier
+  FS --> SCRIPT : DataFrame\n(N lignes brutes)
+
+  SCRIPT -> SCRIPT : <b>normalize_columns()</b>\nRenommage colonnes\n→ format standard interne
+
+  SCRIPT -> SCRIPT : <b>cast_types()</b>\ndate_transaction → TIMESTAMP\nmontant → DECIMAL(15,2)
+
+  SCRIPT -> SCRIPT : <b>compute_dedup_hash()</b>\nSHA256(ref_ext + date + montant + operateur)\npour chaque ligne
+
+  SCRIPT -> SCRIPT : <b>drop_duplicates()</b>\nDéduplication intra-fichier\n(subset=['hash_dedup'])
+
+  SCRIPT -> RAW : <b>INSERT INTO</b> raw.transactions_mtn\n<b>ON CONFLICT</b> (hash_dedup) <b>DO NOTHING</b>
+  note right RAW : Déduplication inter-fichiers\ngérée par contrainte UNIQUE
+
+  RAW --> SCRIPT : {inserted: N, skipped: M}
+
+  SCRIPT -> FS : <b>move()</b> fichier\n→ /data/archives/mtn/
+
+end
+
+SCRIPT -> LOG : <b>log_ingestion()</b>\nsource='MTN', inserted=N,\nduplicates=M, errors=0, duration=T
+activate LOG
+LOG -> RAW : INSERT INTO raw.pipeline_log
+deactivate LOG
+
+SCRIPT --> DAG : Rapport: {total_inserted: N,\ntotal_duplicates: M, status: SUCCESS}
+deactivate SCRIPT
+
+DAG --> SCHED : <b>Task MTN</b> → SUCCESS ✓
+deactivate DAG
+
+@enduml

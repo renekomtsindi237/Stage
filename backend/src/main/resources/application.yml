@@ -1,0 +1,120 @@
+spring:
+  application:
+    name: imf-pipeline-backend
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:imf_db}?sslmode=${POSTGRES_SSL_MODE:disable}
+    username: ${POSTGRES_USER:imf_user}
+    password: ${POSTGRES_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      data-source-properties:
+        ssl: ${POSTGRES_SSL_ENABLED:false}
+        sslmode: ${POSTGRES_SSL_MODE:disable}
+
+  jpa:
+    hibernate:
+      ddl-auto: none            # Flyway gère le schéma
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: app
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: app
+    out-of-order: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:noreply@imf.cm}
+    password: ${SMTP_PASSWORD:changeme}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# JWT
+jwt:
+  secret: ${JWT_SECRET:imf_jwt_secret_key_change_in_production_minimum_256_bits}
+  access-token-expiry-ms: 900000        # 15 minutes
+  refresh-token-expiry-ms: 604800000    # 7 jours
+
+# Firebase
+firebase:
+  credentials-path: ${FIREBASE_CREDENTIALS_PATH:/run/secrets/firebase-credentials.json}
+  enabled: ${FIREBASE_ENABLED:true}
+
+# Spring Boot API interne (pour pipeline Python)
+internal:
+  api-key: ${SPRING_API_KEY:changeme_internal_api_key}
+
+# OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# Cache KPI
+imf:
+  cache:
+    kpi-ttl-seconds: 3600     # 1h
+  pipeline:
+    dw-schema: dw
+    staging-schema: staging
+    ml-api-url: ${ML_API_URL:http://ml-api:8090}
+    ml-api-timeout-seconds: ${ML_API_TIMEOUT_SECONDS:5}
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+
+app:
+  security:
+    cookie-secure: false   # true en prod (application-prod.yml)
+    rate-limit:
+      max-attempts: 5      # tentatives max par IP sur la fenêtre glissante
+      window-seconds: 60   # durée de la fenêtre (secondes)
+  upload:
+    dir: ${UPLOAD_DIR:/uploads}
+    max-size-mb: 2
+
+# Kafka / Avro
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+  schema-registry-url: ${KAFKA_SCHEMA_REGISTRY_URL:http://localhost:8081}
+  consumer:
+    group-id: ${KAFKA_CONSUMER_GROUP_ID:imf-backend-spring}
+
+management:
+  health:
+    mail:
+      enabled: false  # pas de serveur SMTP en dev
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    cm.imf: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.apache.kafka: WARN

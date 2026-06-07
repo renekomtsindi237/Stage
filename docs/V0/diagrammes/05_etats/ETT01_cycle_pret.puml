@@ -1,0 +1,95 @@
+@startuml ETT01_cycle_pret
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam state {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 12
+  ArrowColor #555555
+  ArrowThickness 1.5
+}
+skinparam stateDiagram {
+  BackgroundColor #FAFAFA
+}
+
+title ETT01 — Cycle de Vie d'un Prêt\nDiagramme d'états
+
+[*] --> ACTIF : Décaissement du prêt\n(date_decaissement = TODAY)
+
+state ACTIF {
+  [*] --> surveillance
+  surveillance : Remboursements attendus\njours_retard = 0
+  surveillance --> surveillance : Remboursement reçu\nà temps (δ=0)
+}
+
+ACTIF : Prêt en cours\njours_retard = 0\nstatut = ACTIF
+ACTIF : --
+ACTIF : entry / Créer échéancier complet
+ACTIF : entry / Initialiser capital_restant_du
+ACTIF : do / Surveiller dates d'échéances
+
+ACTIF --> EN_RETARD : Échéance impayée détectée\n(pipeline quotidien J+1)\ndate_echeance < TODAY\nAND montant_restant > 0
+
+ACTIF --> SOLDE : Dernier remboursement reçu\nAND capital_restant_du = 0
+
+state EN_RETARD {
+  [*] --> par30
+  par30 : 1 à 30 jours de retard
+  par30 --> par60 : > 30 jours
+  par60 : 31 à 60 jours de retard
+  par60 --> par90 : > 60 jours
+  par90 : 61 à 90+ jours de retard
+}
+
+EN_RETARD : Au moins une échéance impayée\njours_retard ∈ [1, ∞[\nstatut = EN_RETARD
+EN_RETARD : --
+EN_RETARD : entry / Générer alerte impayé
+EN_RETARD : entry / Envoyer push FCM + email
+EN_RETARD : do / Incrémenter jours_retard quotidiennement
+EN_RETARD : do / Surveiller relances agents
+
+EN_RETARD --> ACTIF : Remboursement total des arriérés\n(jours_retard revient à 0)
+EN_RETARD --> SOLDE : Paiement intégral reçu\n(capital_restant_du = 0)
+EN_RETARD --> EN_RECOUVREMENT : jours_retard > 90\n(PAR90 atteint)
+
+state EN_RECOUVREMENT {
+  [*] --> procedure
+  procedure : Procédure recouvrement engagée
+  procedure --> relance : Agent assigné
+  relance : Relances multiples
+}
+
+EN_RECOUVREMENT : Créance en procédure légale / intensive\njours_retard > 90\nstatut = EN_RECOUVREMENT
+EN_RECOUVREMENT : --
+EN_RECOUVREMENT : entry / Escalade au Directeur
+EN_RECOUVREMENT : entry / Notification push Directeur
+EN_RECOUVREMENT : do / Suivi procédure de recouvrement
+EN_RECOUVREMENT : do / Reporting mensuel write-off potentiel
+
+EN_RECOUVREMENT --> SOLDE : Recouvrement réussi\n(paiement intégral ou accord partiel)
+EN_RECOUVREMENT --> PERTE : Jugé irrécouvrable\n(décision Directeur + Comité)
+
+state SOLDE {
+  SOLDE : capital_restant_du = 0
+}
+
+SOLDE : Prêt entièrement remboursé\nencours = 0\nstatut = SOLDE
+SOLDE : --
+SOLDE : entry / Clôturer toutes alertes actives
+SOLDE : entry / Mise à jour historique client
+SOLDE : entry / Recalcul score risque client (amélioration)
+
+state PERTE {
+  PERTE : Write-off comptable enregistré
+}
+
+PERTE : Perte définitive comptabilisée\nmontant passé en perte (write-off)\nstatut = PERTE
+PERTE : --
+PERTE : entry / Clôturer alertes
+PERTE : entry / Enregistrement comptable perte
+PERTE : entry / Impact négatif score risque client
+
+SOLDE --> [*]
+PERTE --> [*]
+
+@enduml

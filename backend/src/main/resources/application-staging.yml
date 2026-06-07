@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:staging-db}:${POSTGRES_PORT:5432}/${POSTGRES_DB:imf_staging}?sslmode=${POSTGRES_SSL_MODE:require}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      data-source-properties:
+        ssl: true
+        sslmode: require
+  jpa:
+    show-sql: false
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+logging:
+  level:
+    cm.imf: INFO
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%X{requestId}] %-5level %logger{36} - %msg%n"
+
+imf:
+  pipeline:
+    firebase-enabled: ${FIREBASE_ENABLED:false}
+    internal-api-key: ${INTERNAL_API_KEY}
+    dw-schema: ${DW_SCHEMA:dw}
+    staging-schema: ${STAGING_SCHEMA:staging}
+    scheduler:
+      token-cleanup-ms: 3600000
+      cache-evict-cron: "0 0 2 * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized

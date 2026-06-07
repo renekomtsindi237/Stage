@@ -1,0 +1,90 @@
+@startuml activite_kyc
+!theme plain
+title Diagramme d'activité — Vérification KYC Client\n(Connaissance du Client — Ouverture → Validation finale)
+
+skinparam activityBorderColor #1E8449
+skinparam activityBackgroundColor #D5F5E3
+
+|Agent / DSI|
+start
+:Initie une vérification KYC pour un client\n(identifiant externe, nom, type de client);
+
+|Serveur Spring Boot|
+:Vérifie l'absence de dossier existant\n(un seul dossier par client autorisé);
+
+if (Dossier KYC déjà existant ?) then (oui)
+    :Refus — dossier en double;
+    |Agent / DSI|
+    :Consulte le dossier existant;
+    stop
+else (non)
+    :Crée le dossier KYC\n(en cours de constitution);
+endif
+
+|Agent / DSI|
+:Prépare et téléverse les documents requis;
+
+repeat
+    :Sélectionne le type de document\n(CNI, passeport, acte de naissance,\njustificatif de domicile, registre de commerce...);
+    :Envoie le fichier (JPEG/PNG/PDF, taille maximale 5 Mo);
+
+    |Serveur Spring Boot|
+    :Vérifie le format et la taille du fichier;
+    :Sauvegarde le document sur le serveur;
+    :Enregistre les informations du document\n(type, emplacement, statut : soumis);
+
+    |Agent / DSI|
+repeat while (Document supplémentaire à ajouter ?) is (oui)
+-> non;
+
+:Lance le processus de vérification;
+
+|Serveur Spring Boot|
+:Crée la tâche de vérification d'identité;
+:Enregistre la vérification\n(en attente d'examen par le DSI);
+:Notifie le DSI par alerte temps réel et notification mobile;
+
+|DSI|
+:Reçoit l'alerte "Dossier KYC à vérifier";
+:Ouvre et consulte le dossier complet\n(documents + informations + vérifications);
+:Examine chaque document;
+
+loop Pour chaque vérification (identité, adresse, activité...)
+    if (Document conforme ?) then (oui)
+        :Marque la vérification comme validée\n(avec commentaire si nécessaire);
+    else (document non conforme)
+        :Marque la vérification comme rejetée\n(motif de refus et champs concernés);
+    endif
+
+    |Serveur Spring Boot|
+    :Enregistre la décision de vérification;
+end
+
+|Serveur Spring Boot|
+:Analyse le résultat de toutes les vérifications;
+
+if (Toutes les vérifications sont validées ?) then (oui)
+    :Marque le dossier KYC comme validé\n(date de validation enregistrée);
+    :Notifie l'agent — "KYC client validé ✓";
+
+    |Agent / DSI|
+    :Dossier KYC VALIDÉ\n→ Le client peut ouvrir un compte ou bénéficier d'un prêt;
+    stop
+
+else (au moins une vérification rejetée)
+    :Marque le dossier comme rejeté;
+    :Notifie l'agent — "KYC refusé — documents non conformes";
+
+    |Agent / DSI|
+    :Informe le client des pièces manquantes ou non conformes;
+    :Collecte les nouveaux documents;
+
+    if (Réouverture du dossier possible ?) then (oui)
+        :Retour à l'étape de téléversement des documents;
+    else (non)
+        :Dossier définitivement rejeté;
+        stop
+    endif
+endif
+
+@enduml

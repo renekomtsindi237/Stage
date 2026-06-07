@@ -1,0 +1,64 @@
+@startuml UC02_portefeuille_creances
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 11
+}
+skinparam actor {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title UC02 — Suivi du Portefeuille de Créances (PAR)\nPlateforme IMF Cameroun
+
+left to right direction
+
+actor "Responsable\nRecouvrement" as RR
+actor "Analyste Data" as AD
+actor "Directeur Général" as DG
+actor "Core Banking\nSystem (CBS)" as CBS <<système>>
+
+rectangle "UC02 — Suivi du portefeuille de créances" {
+
+  usecase "UC02.1\nCalculer le PAR30\n(quotidien, par zone\net produit)" as UC0201
+  usecase "UC02.2\nCalculer le PAR90\n(quotidien, par zone\net produit)" as UC0202
+  usecase "UC02.3\nCalculer le taux\nde recouvrement\n(par agent / zone)" as UC0203
+  usecase "UC02.4\nCalculer le score\nde risque client\n(règles métier)" as UC0204
+  usecase "UC02.5\nVisualiser l'évolution\ndu PAR (graphique\ntendance)" as UC0205
+  usecase "UC02.6\nConsulter la liste\ndes prêts en retard\n(avec jours retard)" as UC0206
+  usecase "UC02.7\nFiltrer par zone,\nagent, produit\net période" as UC0207
+  usecase "UC02.8\nExporter la liste\ncréances à risque\n(CSV)" as UC0208
+  usecase "UC02.9\nCalculer le taux\nde défaut mensuel\n(write-off ratio)" as UC0209
+
+}
+
+' Acteurs humains
+RR --> UC0205
+RR --> UC0206
+RR --> UC0207
+RR --> UC0208
+AD --> UC0203
+AD --> UC0204
+AD --> UC0208
+AD --> UC0209
+DG --> UC0205
+
+' Acteurs systèmes
+CBS --> UC0201
+CBS --> UC0202
+CBS --> UC0203
+
+' Inclusions / Extensions
+UC0201 ..> UC0205 : <<include>>
+UC0202 ..> UC0205 : <<include>>
+UC0205 ..> UC0207 : <<extend>>
+UC0206 ..> UC0207 : <<extend>>
+UC0206 ..> UC0208 : <<extend>>
+
+@enduml

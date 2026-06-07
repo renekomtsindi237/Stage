@@ -1,0 +1,415 @@
+<!-- ── Bannière mustChangePassword ── -->
+<div class="must-change-banner" *ngIf="profile?.mustChangePassword" @fadeInUp>
+  <mat-icon>warning_amber</mat-icon>
+  <div>
+    <strong>Changement de mot de passe requis</strong>
+    <span>Votre compte nécessite un nouveau mot de passe. Veuillez le mettre à jour ci-dessous.</span>
+  </div>
+</div>
+
+<!-- ── En-tête ── -->
+<div class="profile-header" @reveal>
+  <div class="header-text">
+    <h1>Mon profil</h1>
+    <p class="page-sub">Gérez vos informations et la sécurité de votre compte</p>
+  </div>
+</div>
+
+<!-- ── Skeleton ── -->
+<ng-container *ngIf="loading">
+  <div class="profile-grid">
+    <div class="card sk-card">
+      <div class="sk-avatar-lg"></div>
+      <div class="sk-lines">
+        <div class="sk-line sk-lg"></div>
+        <div class="sk-line sk-sm"></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="card sk-card sk-card-tall">
+        <div class="sk-lines">
+          <div class="sk-line sk-full"></div>
+          <div class="sk-line sk-lg"></div>
+          <div class="sk-line sk-sm"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── Erreur chargement ── -->
+<div class="load-error" *ngIf="errorLoad && !loading">
+  <mat-icon>error_outline</mat-icon>
+  <p>Impossible de charger le profil.</p>
+  <button mat-stroked-button (click)="loadProfile()">Réessayer</button>
+</div>
+
+<!-- ── Contenu ── -->
+<div class="profile-grid" *ngIf="!loading && profile" @fadeInUp>
+
+  <!-- ══ Carte identité ══ -->
+  <div class="card identity-card">
+
+    <!-- Hero avatar -->
+    <div class="identity-hero">
+      <div class="avatar-wrap" [class.avatar-uploading]="avatarUploading">
+        <img [src]="avatarPreview || 'assets/photo_profil.jpg'"
+             [alt]="profile.username"
+             class="avatar-img">
+        <div class="avatar-overlay" *ngIf="avatarUploading">
+          <mat-spinner diameter="28"></mat-spinner>
+        </div>
+        <button class="avatar-edit-btn"
+                (click)="pickAvatar()"
+                [disabled]="avatarUploading"
+                matTooltip="Changer la photo">
+          <mat-icon>photo_camera</mat-icon>
+        </button>
+      </div>
+      <div class="identity-info">
+        <h2 class="identity-name">{{ profile.username }}</h2>
+        <span class="role-chip"
+              [class.chip-super]="profile.role === 'SUPER_ADMIN'"
+              [class.chip-dsi]="profile.role === 'DSI'"
+              [class.chip-default]="profile.role !== 'SUPER_ADMIN' && profile.role !== 'DSI'">
+          {{ roleLabel(profile.role) }}
+        </span>
+        <div class="identity-meta" *ngIf="profile.imfNom">
+          <mat-icon>corporate_fare</mat-icon>
+          <span>{{ profile.imfNom }} <em>({{ profile.imfCode }})</em></span>
+        </div>
+        <div class="identity-meta" *ngIf="profile.zoneId">
+          <mat-icon>location_on</mat-icon>
+          <span>Zone {{ profile.zoneId }}</span>
+        </div>
+        <div class="identity-meta" *ngIf="profile.email">
+          <mat-icon>mail_outline</mat-icon>
+          <span>{{ profile.email }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Erreur avatar -->
+    <div class="feedback error avatar-feedback" *ngIf="avatarError" @fadeInUp>
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ avatarError }}</span>
+    </div>
+
+    <!-- Méta-données -->
+    <div class="account-meta">
+      <div class="meta-row">
+        <span class="meta-label">
+          <mat-icon>circle</mat-icon>
+          Statut
+        </span>
+        <span class="status-chip" [class.chip-active]="profile.actif" [class.chip-off]="!profile.actif">
+          <span class="chip-dot"></span>
+          {{ profile.actif ? 'Actif' : 'Inactif' }}
+        </span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">
+          <mat-icon>calendar_today</mat-icon>
+          Membre depuis
+        </span>
+        <span class="meta-value">{{ formatDate(profile.createdAt) }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">
+          <mat-icon>access_time</mat-icon>
+          Dernière connexion
+        </span>
+        <span class="meta-value">{{ formatDate(profile.lastLogin) }}</span>
+      </div>
+    </div>
+
+    <!-- Action supprimer avatar -->
+    <div class="avatar-actions" *ngIf="avatarPreview && !avatarUploading">
+      <button class="btn-remove-avatar" (click)="removeAvatar()">
+        <mat-icon>delete_outline</mat-icon>
+        Supprimer la photo
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══ Colonne droite ══ -->
+  <div class="right-col">
+
+    <!-- ── Carte sécurité ── -->
+    <div class="card security-card" *ngIf="!isSuperAdmin">
+
+      <div class="card-header">
+        <div class="card-icon-wrap">
+          <mat-icon>lock</mat-icon>
+        </div>
+        <div>
+          <h3>Sécurité</h3>
+          <p>Modifier votre mot de passe de connexion</p>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="feedback success" *ngIf="pwdSuccess" @fadeInUp>
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ pwdSuccess }}</span>
+      </div>
+      <div class="feedback error" *ngIf="pwdError" @fadeInUp>
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ pwdError }}</span>
+      </div>
+
+      <form [formGroup]="pwdForm" (ngSubmit)="submitChangePassword()" class="pwd-form">
+
+        <!-- Mot de passe actuel -->
+        <div class="field-group">
+          <label class="field-label">Mot de passe actuel</label>
+          <div class="field-wrap" [class.field-error]="pwdForm.get('currentPassword')?.invalid && pwdForm.get('currentPassword')?.touched">
+            <mat-icon class="field-icon">lock_outline</mat-icon>
+            <input class="field-input"
+                   formControlName="currentPassword"
+                   [type]="showCurrentPwd ? 'text' : 'password'"
+                   placeholder="Votre mot de passe actuel"
+                   autocomplete="current-password">
+            <button type="button" class="field-eye" (click)="showCurrentPwd = !showCurrentPwd">
+              <mat-icon>{{ showCurrentPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <span class="field-error-msg" *ngIf="pwdForm.get('currentPassword')?.invalid && pwdForm.get('currentPassword')?.touched">
+            Requis
+          </span>
+        </div>
+
+        <!-- Nouveau mot de passe -->
+        <div class="field-group">
+          <label class="field-label">Nouveau mot de passe</label>
+          <div class="field-wrap" [class.field-error]="pwdForm.get('newPassword')?.invalid && pwdForm.get('newPassword')?.touched">
+            <mat-icon class="field-icon">key</mat-icon>
+            <input class="field-input"
+                   formControlName="newPassword"
+                   [type]="showNewPwd ? 'text' : 'password'"
+                   placeholder="Minimum 8 caractères"
+                   autocomplete="new-password">
+            <button type="button" class="field-eye" (click)="showNewPwd = !showNewPwd">
+              <mat-icon>{{ showNewPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <!-- Barre de force -->
+          <div class="strength-wrap" *ngIf="pwdForm.get('newPassword')?.value">
+            <div class="strength-bar">
+              <div class="strength-fill"
+                   [class.weak]="getStrength() === 1"
+                   [class.medium]="getStrength() === 2"
+                   [class.strong]="getStrength() === 3"
+                   [style.width.%]="getStrength() * 33">
+              </div>
+            </div>
+            <span class="strength-label"
+                  [class.weak]="getStrength() === 1"
+                  [class.medium]="getStrength() === 2"
+                  [class.strong]="getStrength() === 3">
+              {{ getStrength() === 1 ? 'Faible' : getStrength() === 2 ? 'Moyen' : 'Fort' }}
+            </span>
+          </div>
+          <span class="field-error-msg" *ngIf="pwdForm.get('newPassword')?.hasError('minlength') && pwdForm.get('newPassword')?.touched">
+            Minimum 8 caractères
+          </span>
+        </div>
+
+        <!-- Confirmation -->
+        <div class="field-group">
+          <label class="field-label">Confirmer le nouveau mot de passe</label>
+          <div class="field-wrap" [class.field-error]="pwdForm.get('confirmPassword')?.invalid && pwdForm.get('confirmPassword')?.touched">
+            <mat-icon class="field-icon">check_circle_outline</mat-icon>
+            <input class="field-input"
+                   formControlName="confirmPassword"
+                   [type]="showConfirmPwd ? 'text' : 'password'"
+                   placeholder="Répétez le nouveau mot de passe"
+                   autocomplete="new-password">
+            <button type="button" class="field-eye" (click)="showConfirmPwd = !showConfirmPwd">
+              <mat-icon>{{ showConfirmPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <span class="field-error-msg" *ngIf="pwdForm.get('confirmPassword')?.hasError('mismatch') && pwdForm.get('confirmPassword')?.touched">
+            Les mots de passe ne correspondent pas
+          </span>
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="btn-save" [disabled]="pwdForm.invalid || pwdLoading">
+            <mat-spinner *ngIf="pwdLoading" diameter="18"></mat-spinner>
+            <mat-icon *ngIf="!pwdLoading">save</mat-icon>
+            <span>{{ pwdLoading ? 'Mise à jour...' : 'Mettre à jour' }}</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- ── Carte préférences ── -->
+    <div class="card prefs-card">
+
+      <div class="card-header">
+        <div class="card-icon-wrap prefs-icon">
+          <mat-icon>tune</mat-icon>
+        </div>
+        <div>
+          <h3>Préférences</h3>
+          <p>Personnalisez l'apparence et les notifications</p>
+        </div>
+        <!-- Feedback succès -->
+        <div class="prefs-saved" *ngIf="prefsSuccess" @fadeInUp>
+          <mat-icon>check_circle</mat-icon>
+          <span>Sauvegardé</span>
+        </div>
+        <mat-spinner *ngIf="prefsLoading" diameter="18" class="prefs-spinner"></mat-spinner>
+      </div>
+
+      <div class="prefs-body">
+
+        <!-- ─ Thème ─ -->
+        <div class="pref-section">
+          <div class="pref-section-label">
+            <mat-icon>palette</mat-icon>
+            Thème visuel
+          </div>
+          <div class="seg-buttons">
+            <button class="seg-btn"
+                    [class.active]="(profile.prefTheme || 'light') === 'light'"
+                    (click)="savePrefs({prefTheme: 'light'})">
+              <mat-icon>light_mode</mat-icon>
+              Clair
+            </button>
+            <button class="seg-btn"
+                    [class.active]="profile.prefTheme === 'dark'"
+                    (click)="savePrefs({prefTheme: 'dark'})">
+              <mat-icon>dark_mode</mat-icon>
+              Sombre
+            </button>
+            <button class="seg-btn"
+                    [class.active]="profile.prefTheme === 'auto'"
+                    (click)="savePrefs({prefTheme: 'auto'})">
+              <mat-icon>brightness_auto</mat-icon>
+              Auto
+            </button>
+          </div>
+        </div>
+
+        <!-- ─ Langue ─ -->
+        <div class="pref-section">
+          <div class="pref-section-label">
+            <mat-icon>language</mat-icon>
+            Langue
+          </div>
+          <div class="seg-buttons seg-2">
+            <button class="seg-btn"
+                    [class.active]="(profile.prefLangue || 'fr') === 'fr'"
+                    (click)="savePrefs({prefLangue: 'fr'})">
+              Français
+            </button>
+            <button class="seg-btn"
+                    [class.active]="profile.prefLangue === 'en'"
+                    (click)="savePrefs({prefLangue: 'en'})">
+              English
+            </button>
+          </div>
+        </div>
+
+        <!-- ─ Éléments par page ─ -->
+        <div class="pref-section">
+          <div class="pref-section-label">
+            <mat-icon>format_list_numbered</mat-icon>
+            Éléments par page
+          </div>
+          <div class="seg-buttons seg-2">
+            <button *ngFor="let s of PAGE_SIZES"
+                    class="seg-btn seg-btn-sm"
+                    [class.active]="(profile.elementsParPage || 20) === s"
+                    (click)="savePrefs({elementsParPage: s})">
+              {{ s }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ─ Notifications ─ -->
+        <div class="pref-section">
+          <div class="pref-section-label">
+            <mat-icon>notifications</mat-icon>
+            Notifications
+          </div>
+
+          <!-- Master switch -->
+          <div class="toggle-row toggle-master">
+            <div class="toggle-info">
+              <span class="toggle-title">Activer les notifications</span>
+              <span class="toggle-sub">Désactiver pour ignorer toutes les alertes</span>
+            </div>
+            <button class="toggle-btn"
+                    [class.on]="profile.notificationsActives"
+                    (click)="savePrefs({notificationsActives: !profile.notificationsActives})">
+              <span class="toggle-thumb"></span>
+            </button>
+          </div>
+
+          <!-- Sous-toggles (visibles uniquement si notifications actives) -->
+          <div class="sub-toggles" [class.disabled]="!profile.notificationsActives">
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-title">Alertes d'impayés</span>
+              </div>
+              <button class="toggle-btn"
+                      [class.on]="profile.notifAlertes"
+                      [disabled]="!profile.notificationsActives"
+                      (click)="savePrefs({notifAlertes: !profile.notifAlertes})">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-title">Collectes terrain</span>
+              </div>
+              <button class="toggle-btn"
+                      [class.on]="profile.notifCollectes"
+                      [disabled]="!profile.notificationsActives"
+                      (click)="savePrefs({notifCollectes: !profile.notifCollectes})">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-title">Synchronisation hors-ligne</span>
+              </div>
+              <button class="toggle-btn"
+                      [class.on]="profile.notifSync"
+                      [disabled]="!profile.notificationsActives"
+                      (click)="savePrefs({notifSync: !profile.notifSync})">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+
+            <div class="toggle-row" *ngIf="profile.role === 'DSI' || isSuperAdmin">
+              <div class="toggle-info">
+                <span class="toggle-title">Statuts pipeline</span>
+                <span class="toggle-sub">Technique / DSI</span>
+              </div>
+              <button class="toggle-btn"
+                      [class.on]="profile.notifPipeline"
+                      [disabled]="!profile.notificationsActives"
+                      (click)="savePrefs({notifPipeline: !profile.notifPipeline})">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /right-col -->
+
+</div>

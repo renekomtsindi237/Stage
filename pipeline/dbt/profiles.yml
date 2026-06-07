@@ -1,0 +1,21 @@
+imf_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host:     "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      port:     5432
+      user:     "{{ env_var('POSTGRES_USER', 'imf_user') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'imf_secret') }}"
+      dbname:   "{{ env_var('POSTGRES_DB',   'imf_pipeline') }}"
+      schema:   dbt_dev
+      threads:  4
+    prod:
+      type: postgres
+      host:     "{{ env_var('POSTGRES_HOST') }}"
+      port:     5432
+      user:     "{{ env_var('POSTGRES_USER') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      dbname:   "{{ env_var('POSTGRES_DB') }}"
+      schema:   dbt_prod
+      threads:  8

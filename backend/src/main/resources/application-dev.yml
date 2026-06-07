@@ -1,0 +1,53 @@
+# ── Base de données ─────────────────────────────────────────────────────────
+# Profil dev : PostgreSQL local (Docker ou installation native)
+# Pour utiliser Supabase en dev, remplacer l'url par jdbc:postgresql://<host>:5432/<db>?sslmode=require
+# et configurer les variables d'environnement Supabase dans .env.dev :
+#   SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD
+# Pour utiliser Supabase en dev, remplacer POSTGRES_SSL_MODE: disable par require
+# et configurer les variables d'environnement Supabase dans .env.dev
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:imf_db}}
+    username: ${SPRING_DATASOURCE_USERNAME:${POSTGRES_USER:imf_user}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${POSTGRES_PASSWORD:imf_dev_password}}
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  mail:
+    host: localhost
+    port: 1025       # MailHog ou Mailpit en dev
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+logging:
+  level:
+    cm.imf: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+  pattern:
+    console: "%d{HH:mm:ss} [%X{requestId}] %-5level %logger{36} - %msg%n"
+
+imf:
+  pipeline:
+    firebase-enabled: false
+    scheduler:
+      token-cleanup-ms: 3600000
+      cache-evict-cron: "0 0 2 * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches,env
+  endpoint:
+    health:
+      show-details: always

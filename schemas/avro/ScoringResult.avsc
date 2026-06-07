@@ -1,0 +1,22 @@
+{
+  "type": "record",
+  "name": "ScoringResult",
+  "namespace": "cm.imf.pipeline.events",
+  "doc": "Résultat du scoring MCRS retourné par le service FastAPI ML.",
+  "fields": [
+    {"name": "request_id",        "type": "string",  "doc": "Corrélation avec ScoringRequest"},
+    {"name": "client_id_externe", "type": "string"},
+    {"name": "imf_id",            "type": "int"},
+    {"name": "score_mcrs",        "type": "double"},
+    {"name": "score_crs",         "type": "double"},
+    {"name": "score_rps",         "type": "double"},
+    {"name": "score_csi",         "type": "double"},
+    {"name": "niveau_risque",     "type": "string",  "doc": "FAIBLE | MODERE | ELEVE | CRITIQUE"},
+    {"name": "cobac_classe",      "type": "string",  "doc": "A | B | C | D | E"},
+    {"name": "cobac_provision_taux", "type": "double"},
+    {"name": "alertes",           "type": {"type": "array", "items": "string"}},
+    {"name": "model_version",     "type": "string",  "default": "1.0.0"},
+    {"name": "timestamp_ms",      "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "latence_ms",        "type": ["null", "long"], "default": null}
+  ]
+}

@@ -1,0 +1,66 @@
+@startuml UC04_reporting_dashboards
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 11
+}
+skinparam actor {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title UC04 — Reporting & Tableaux de Bord (Application Web Angular)\nPlateforme IMF Cameroun
+
+left to right direction
+
+actor "Directeur Général" as DG
+actor "Responsable\nRecouvrement" as RR
+actor "Analyste Data" as AD
+
+rectangle "UC04 — Reporting et Tableaux de Bord (Web)" {
+
+  usecase "UC04.1\nS'authentifier\n(login JWT)" as UC0407
+  usecase "UC04.2\nConsulter dashboard\nCollectes Digitales\n(volume, canal, zone)" as UC0401
+  usecase "UC04.3\nConsulter dashboard\nRecouvrement\n(PAR30/90, alertes)" as UC0402
+  usecase "UC04.4\nConsulter dashboard\nExécutif\n(KPIs synthèse 1 page)" as UC0403
+  usecase "UC04.5\nFiltrer par\npériode (date début\n/ date fin)" as UC0404
+  usecase "UC04.6\nFiltrer par zone\ngeographique\noud par agent" as UC0405
+  usecase "UC04.7\nExporter données\nen CSV depuis\nle dashboard actif" as UC0406
+  usecase "UC04.8\nVisualiser graphiques\n(courbes, barres,\ncamembert)" as UC0408
+  usecase "UC04.9\nConsulter alertes\nactives en temps\nréel (badge)" as UC0409
+
+}
+
+' Relations acteurs humains
+DG --> UC0403
+DG --> UC0401
+DG --> UC0409
+RR --> UC0401
+RR --> UC0402
+RR --> UC0409
+AD --> UC0401
+AD --> UC0402
+AD --> UC0406
+
+' Inclusions obligatoires
+UC0401 ..> UC0407 : <<include>>
+UC0402 ..> UC0407 : <<include>>
+UC0403 ..> UC0407 : <<include>>
+UC0401 ..> UC0408 : <<include>>
+UC0402 ..> UC0408 : <<include>>
+
+' Extensions optionnelles
+UC0401 ..> UC0404 : <<extend>>
+UC0401 ..> UC0405 : <<extend>>
+UC0401 ..> UC0406 : <<extend>>
+UC0402 ..> UC0404 : <<extend>>
+UC0402 ..> UC0405 : <<extend>>
+UC0402 ..> UC0409 : <<extend>>
+
+@enduml

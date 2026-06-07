@@ -1,0 +1,35 @@
+{
+  "type": "record",
+  "name": "AlerteRisque",
+  "namespace": "cm.imf.pipeline.events",
+  "doc": "Alerte émise lorsque le score MCRS d'un client franchit un seuil critique.",
+  "fields": [
+    {"name": "event_id",          "type": "string"},
+    {"name": "alerte_id",         "type": "string",  "doc": "UUID de l'alerte"},
+    {"name": "client_id_externe", "type": "string"},
+    {"name": "imf_id",            "type": "int"},
+    {"name": "agence_id",         "type": "string"},
+    {"name": "region_id",         "type": "string"},
+    {"name": "score_mcrs",        "type": "double",  "doc": "Score MCRS [0,1] — plus élevé = plus risqué"},
+    {"name": "score_crs",         "type": "double",  "doc": "Collection Reliability Score"},
+    {"name": "score_rps",         "type": "double",  "doc": "Recovery Prediction Score (XGBoost)"},
+    {"name": "score_csi",         "type": "double",  "doc": "Client Solvency Index"},
+    {"name": "niveau_risque",     "type": {
+      "type": "enum", "name": "NiveauRisque",
+      "symbols": ["FAIBLE", "MODERE", "ELEVE", "CRITIQUE"]
+    }},
+    {"name": "cobac_classe",      "type": {
+      "type": "enum", "name": "ClasseCOBAC",
+      "symbols": ["A", "B", "C", "D", "E"]
+    }, "doc": "Classification COBAC EMF 01/02 CEMAC"},
+    {"name": "cobac_provision_taux", "type": "double", "doc": "Taux de provision COBAC (0.0-1.0)"},
+    {"name": "types_alertes",     "type": {"type": "array", "items": "string"}, "doc": "RISQUE_DEFAUT_IMMINENT, DETERIORATION_RAPIDE, BAISSE_COLLECTE_PERSISTANTE"},
+    {"name": "jours_retard",      "type": "int"},
+    {"name": "action_recommandee","type": {
+      "type": "enum", "name": "ActionRecouvrement",
+      "symbols": ["AUCUNE", "RELANCE_PREVENTIVE", "VISITE_TERRAIN", "MISE_EN_DEMEURE"]
+    }, "doc": "Action Q-Learning recommandée"},
+    {"name": "timestamp_ms",      "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "source",            "type": "string",  "doc": "dag_ml_scoring | api_ml | stream_flink"}
+  ]
+}

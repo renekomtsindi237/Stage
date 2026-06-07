@@ -1,0 +1,25 @@
+// ── Host component background ────────────────────────────────────────────────
+:host {
+  display: block;
+  background: #FAFBFC;  // Fond clair Blucash
+  min-height: 100%;
+}
+
+.loading-center { display: flex; justify-content: center; padding: 48px; }
+.detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.info-list {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  dt { 
+    font-weight: 600; 
+    color: #6B7280;  // Gris pour les labels
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+  dd { 
+    margin: 0; 
+    color: #1A1A1A;  // Noir atténué pour les valeurs
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+}

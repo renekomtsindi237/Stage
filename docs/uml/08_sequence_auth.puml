@@ -1,0 +1,79 @@
+@startuml sequence_auth_multitenant
+!theme plain
+title Diagramme de séquence — Authentification multi-tenant\nJetons d'accès sécurisés + Renouvellement automatique
+
+actor "Utilisateur\n(tout rôle)" as USER
+participant "Interface\nWeb Angular" as WEB
+participant "Passerelle\nnginx" as NGINX
+participant "Service\nAuthentification" as AUTH_CTRL
+participant "Vérification\nIdentité" as AUTH_SVC
+participant "Base Utilisateurs\net Institutions" as REPO
+participant "Générateur\nde Jetons" as JWT
+database "Base de données\n(Utilisateurs + Jetons)" as DB
+participant "Intercepteur\nAngular" as INTERCEPTOR
+
+== Connexion ==
+
+USER -> WEB : Saisit son identifiant et mot de passe
+WEB -> NGINX : Transmet la demande de connexion
+NGINX -> AUTH_CTRL : Achemine vers le service d'authentification
+AUTH_CTRL -> AUTH_SVC : Lance la vérification des identifiants
+AUTH_SVC -> REPO : Recherche l'utilisateur par son identifiant
+REPO -> DB : Consulte la base des utilisateurs
+DB --> REPO : Utilisateur avec son institution (IMF)
+
+AUTH_SVC -> AUTH_SVC : Vérifie le mot de passe\n(comparaison sécurisée avec le hachage stocké)
+alt Mot de passe incorrect
+    AUTH_SVC --> AUTH_CTRL : Identifiants invalides
+    AUTH_CTRL --> WEB : Erreur 401 — Identifiants incorrects
+else Authentification réussie
+    AUTH_SVC -> JWT : Génère le jeton d'accès\n(valable 15 minutes)
+    AUTH_SVC -> JWT : Génère le jeton de renouvellement\n(valable 7 jours)
+    AUTH_SVC -> DB : Enregistre le jeton de renouvellement\n(hachage sécurisé)
+    AUTH_SVC -> DB : Met à jour la date de dernière connexion
+    AUTH_SVC --> AUTH_CTRL : Réponse avec profil utilisateur\n(rôle, institution, changement de mot de passe requis)
+    AUTH_CTRL -> AUTH_CTRL : Pose les cookies sécurisés\n(httpOnly, inaccessibles au JavaScript)
+    AUTH_CTRL --> WEB : Connexion réussie\n(rôle, institution, expiration du jeton)
+
+    alt Changement de mot de passe obligatoire
+        WEB -> WEB : Redirige vers la page de changement de mot de passe
+    else
+        WEB -> WEB : Redirige vers le tableau de bord\n(selon le rôle de l'utilisateur)
+    end
+end
+
+== Requêtes authentifiées (cookie transmis automatiquement) ==
+
+WEB -> NGINX : Accède aux données\n(cookie d'accès envoyé automatiquement)
+NGINX -> INTERCEPTOR : Passe par la vérification du jeton
+INTERCEPTOR -> AUTH_CTRL : Transmet la requête avec le cookie
+AUTH_CTRL -> JWT : Valide le jeton d'accès
+JWT --> AUTH_CTRL : Identité et institution de l'utilisateur
+note right of AUTH_CTRL
+  L'institution est identifiée automatiquement
+  — toutes les données sont filtrées pour
+  ne montrer que celles de son IMF
+end note
+AUTH_CTRL --> WEB : Données de l'institution (filtrées)
+
+== Jeton expiré — Renouvellement automatique ==
+
+WEB -> NGINX : Accède aux données (jeton expiré)
+NGINX --> WEB : Non autorisé (jeton expiré)
+WEB -> INTERCEPTOR : Détecte l'expiration
+INTERCEPTOR -> NGINX : Demande un nouveau jeton d'accès\n(avec le jeton de renouvellement)
+NGINX -> AUTH_CTRL : Traite le renouvellement
+AUTH_CTRL -> AUTH_SVC : Vérifie le jeton de renouvellement
+AUTH_SVC -> DB : Recherche le jeton en base
+alt Jeton de renouvellement valide
+    AUTH_SVC -> JWT : Génère un nouveau jeton d'accès
+    AUTH_SVC --> AUTH_CTRL : Nouveau profil utilisateur
+    AUTH_CTRL -> AUTH_CTRL : Renouvelle le cookie d'accès
+    AUTH_CTRL --> INTERCEPTOR : Renouvellement réussi
+    INTERCEPTOR -> WEB : Rejoue automatiquement la requête initiale
+else Jeton de renouvellement expiré ou révoqué
+    AUTH_CTRL --> INTERCEPTOR : Non autorisé
+    INTERCEPTOR -> WEB : Efface les cookies et redirige vers la connexion
+end
+
+@enduml

@@ -1,0 +1,228 @@
+@startuml CLS03_flutter_app
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam classBackgroundColor #E8EAF6
+skinparam classBorderColor #3949AB
+skinparam classArrowColor #555555
+skinparam classArrowThickness 1.5
+skinparam Padding 8
+
+title CLS03 — Diagramme de Classes — Application Flutter\nArchitecture Riverpod + Repository Pattern
+
+' ===== MODELS (Dart) =====
+class UserModel {
+  + id : int
+  + username : String
+  + role : String
+  + fcmToken : String
+  + zoneId : int
+  + fromJson(json: Map) : UserModel <<factory>>
+  + toJson() : Map<String, dynamic>
+}
+
+class CollecteModel {
+  + id : String?
+  + clientId : int
+  + pretId : int
+  + montantCollecte : double
+  + canalPaiement : String
+  + referenceTransaction : String?
+  + dateCollecte : DateTime
+  + statut : SyncStatus
+  + observation : String?
+  + retryCount : int
+  + fromJson(json: Map) : CollecteModel <<factory>>
+  + toJson() : Map<String, dynamic>
+  + toLocalDb() : Map<String, dynamic>
+}
+
+enum SyncStatus {
+  PENDING_SYNC
+  SYNCED
+  DUPLICATE
+  SYNC_ERROR
+}
+
+class AlerteModel {
+  + id : int
+  + pretId : int
+  + clientNom : String
+  + joursRetard : int
+  + montantEnRetard : double
+  + statut : String
+  + dateGeneration : DateTime
+  + fromJson(json: Map) : AlerteModel <<factory>>
+  + isEscaladable() : bool
+}
+
+class KpiDashboardModel {
+  + totalCollectes : double
+  + par30 : double
+  + par90 : double
+  + nbAlertes : int
+  + trendPar30 : List<TrendPoint>
+  + lastUpdated : DateTime
+  + fromJson(json: Map) : KpiDashboardModel <<factory>>
+}
+
+class TrendPoint {
+  + date : DateTime
+  + value : double
+}
+
+' ===== REPOSITORIES =====
+abstract class BaseRepository {
+  # apiClient : ApiClient
+  # localDb : LocalDatabase
+}
+
+class AuthRepository {
+  - secureStorage : FlutterSecureStorage
+  + login(username, password) : Future<AuthResponse>
+  + refreshToken() : Future<String>
+  + logout() : Future<void>
+  + getStoredToken() : Future<String?>
+  + saveTokens(access, refresh) : Future<void>
+}
+
+class CollecteRepository {
+  + soumettreCollecte(collecte: CollecteModel) : Future<CollecteModel>
+  + getPendingSync() : Future<List<CollecteModel>>
+  + getMesCollectes() : Future<List<CollecteModel>>
+  + saveLocally(collecte: CollecteModel) : Future<void>
+  + updateSyncStatus(id, status: SyncStatus) : Future<void>
+}
+
+class KpiRepository {
+  + getDashboardSummary() : Future<KpiDashboardModel>
+  + getParStats(dateDebut, dateFin) : Future<List<KpiParData>>
+  + getCollecteStats(params) : Future<KpiCollectesData>
+}
+
+class AlerteRepository {
+  + getAlertes(statut: String?) : Future<List<AlerteModel>>
+  + getAlerte(id: int) : Future<AlerteModel>
+  + cloturerAlerte(id: int) : Future<void>
+  + escaladerAlerte(id: int) : Future<void>
+}
+
+' ===== PROVIDERS (Riverpod) =====
+class AuthProvider <<StateNotifier>> {
+  - authRepo : AuthRepository
+  - fcmService : FcmService
+  - state : AuthState
+  + login(username, password) : Future<void>
+  + logout() : Future<void>
+  + checkAuth() : Future<bool>
+}
+
+class DashboardProvider <<StateNotifier>> {
+  - kpiRepo : KpiRepository
+  - state : DashboardState
+  - cacheExpiry : Duration = 30min
+  + fetchData() : Future<void>
+  + refresh() : Future<void>
+  + isExpired() : bool
+}
+
+class CollecteProvider <<StateNotifier>> {
+  - collecteRepo : CollecteRepository
+  - state : CollecteFormState
+  + soumettre(collecte: CollecteModel) : Future<void>
+  + reset() : void
+}
+
+class SyncService <<StateNotifier>> {
+  - collecteRepo : CollecteRepository
+  - connectivity : Connectivity
+  - state : SyncState
+  + startListening() : void
+  + syncPending() : Future<SyncResult>
+  + onConnectivityChanged(result) : void
+}
+
+' ===== API CLIENT =====
+class ApiClient {
+  - dio : Dio
+  - baseUrl : String
+  - authRepo : AuthRepository
+  + get(endpoint: String, params: Map?) : Future<Response>
+  + post(endpoint: String, data: Map) : Future<Response>
+  + put(endpoint: String, data: Map) : Future<Response>
+  - onRequest(options, handler) : void
+  - onResponse(response, handler) : void
+  - onError(error, handler) : void
+  ' (intercepteur JWT : refresh auto si 401)
+}
+
+' ===== BASE DE DONNÉES LOCALE =====
+class LocalDatabase {
+  - _db : Database?
+  + open() : Future<void>
+  + insert(table: String, data: Map) : Future<int>
+  + query(table: String, where?, args?) : Future<List<Map>>
+  + update(table: String, data: Map, where, args) : Future<int>
+  + delete(table: String, where, args) : Future<int>
+}
+
+' ===== SERVICE NOTIFICATIONS =====
+class FcmService {
+  - firebaseMessaging : FirebaseMessaging
+  + initialize() : Future<void>
+  + getToken() : Future<String?>
+  + onForegroundMessage(message: RemoteMessage) : void
+  + onBackgroundMessage(message: RemoteMessage) : Future<void>
+  + onMessageOpenedApp(message: RemoteMessage) : void
+  + handleNavigation(data: Map) : void
+}
+
+' ===== SCREENS (Views) =====
+class LoginScreen {
+  - authProvider : AuthProvider
+  + build(context: BuildContext) : Widget
+  - onLogin() : Future<void>
+}
+
+class DashboardScreen {
+  - dashboardProvider : DashboardProvider
+  + build(context: BuildContext) : Widget
+}
+
+class SaisieCollecteScreen {
+  - collecteProvider : CollecteProvider
+  + build(context: BuildContext) : Widget
+  - onSubmit() : Future<void>
+}
+
+class AlertesScreen {
+  - alerteRepo : AlerteRepository
+  + build(context: BuildContext) : Widget
+}
+
+' ===== RELATIONS =====
+CollecteModel --> SyncStatus
+KpiDashboardModel --> TrendPoint
+
+AuthProvider --> AuthRepository
+AuthProvider --> FcmService : "initialise au login"
+DashboardProvider --> KpiRepository
+CollecteProvider --> CollecteRepository
+SyncService --> CollecteRepository
+
+AuthRepository --> ApiClient
+CollecteRepository --> ApiClient
+CollecteRepository --> LocalDatabase
+KpiRepository --> ApiClient
+AlerteRepository --> ApiClient
+
+LoginScreen --> AuthProvider
+DashboardScreen --> DashboardProvider
+SaisieCollecteScreen --> CollecteProvider
+AlertesScreen --> AlerteRepository
+
+BaseRepository <|-- AuthRepository
+BaseRepository <|-- CollecteRepository
+BaseRepository <|-- KpiRepository
+BaseRepository <|-- AlerteRepository
+
+@enduml

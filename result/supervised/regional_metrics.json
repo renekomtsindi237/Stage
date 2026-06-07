@@ -1,0 +1,58 @@
+{
+  "REG03": {
+    "region": "Est",
+    "n_clients": 181,
+    "taux_defaut": 0.2155,
+    "auc_roc": 0.6477,
+    "gini": 0.2954
+  },
+  "REG04": {
+    "region": "Extrême-Nord",
+    "n_clients": 329,
+    "taux_defaut": 0.459,
+    "auc_roc": 0.6883,
+    "gini": 0.3766
+  },
+  "REG05": {
+    "region": "Littoral",
+    "n_clients": 517,
+    "taux_defaut": 0.1702,
+    "auc_roc": 0.6909,
+    "gini": 0.3817
+  },
+  "REG06": {
+    "region": "Nord",
+    "n_clients": 530,
+    "taux_defaut": 0.5377,
+    "auc_roc": 0.7757,
+    "gini": 0.5515
+  },
+  "REG07": {
+    "region": "Nord-Ouest",
+    "n_clients": 556,
+    "taux_defaut": 0.4802,
+    "auc_roc": 0.7571,
+    "gini": 0.5142
+  },
+  "REG08": {
+    "region": "Ouest",
+    "n_clients": 536,
+    "taux_defaut": 0.4869,
+    "auc_roc": 0.8197,
+    "gini": 0.6394
+  },
+  "REG09": {
+    "region": "Sud",
+    "n_clients": 392,
+    "taux_defaut": 0.6429,
+    "auc_roc": 0.889,
+    "gini": 0.778
+  },
+  "REG10": {
+    "region": "Sud-Ouest",
+    "n_clients": 196,
+    "taux_defaut": 0.3367,
+    "auc_roc": 0.7955,
+    "gini": 0.5909
+  }
+}

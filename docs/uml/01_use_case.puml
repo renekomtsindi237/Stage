@@ -1,0 +1,122 @@
+@startuml use_case_imf_pipeline
+!theme plain
+title Diagramme de cas d'utilisation\nPipeline IMF — Collectes Épargne & Recouvrement Créances
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBorderColor #2C7BE5
+skinparam actorBorderColor #2C7BE5
+
+' ── Acteurs ────────────────────────────────────────────────────────────────
+actor "Agent Terrain" as AGENT
+actor "Responsable\nRecouvrement" as RESP_REC
+actor "Directeur IMF" as DIRECTEUR
+actor "Analyste\nDonnées" as ANALYSTE
+actor "SUPER_ADMIN" as ADMIN
+actor "Pipeline\nAirflow" as PIPELINE <<system>>
+actor "App Mobile\nFlutter" as MOBILE <<system>>
+actor "Sources\nExternes" as EXTERN <<system>>
+
+' ── Package Collectes Épargne ───────────────────────────────────────────────
+package "Collectes d'Épargne" {
+    usecase "Saisir une collecte\nterrain (offline)" as UC_SAISIR
+    usecase "Synchroniser batch\n(UUID dedup)" as UC_SYNC
+    usecase "Valider/Rejeter\nune collecte" as UC_VALIDER
+    usecase "Consulter KPI\ncollectes du jour" as UC_KPI_AGENT
+    usecase "Configurer cycle\nde collecte" as UC_CYCLE
+    usecase "Définir objectifs\npar agent/cycle" as UC_OBJECTIF
+    usecase "Consulter dashboard\ncollectes agence" as UC_DASH_COLLECT
+}
+
+' ── Package Recouvrement ────────────────────────────────────────────────────
+package "Recouvrement Créances" {
+    usecase "Consulter portefeuille\ncréances PAR" as UC_PAR
+    usecase "Gérer dossier\nrecouvrement" as UC_DOSSIER
+    usecase "Enregistrer action\nrecouvrement" as UC_ACTION
+    usecase "Créer accord\nrééchelonnement" as UC_RECH
+    usecase "Consulter score\nMCRS client" as UC_SCORE
+    usecase "Voir explications\nSHAP" as UC_SHAP
+    usecase "Recevoir alertes\nimpayés" as UC_ALERTES
+}
+
+' ── Package Données Externes ────────────────────────────────────────────────
+package "Données Externes" {
+    usecase "Saisir prix produit\nsur le marché" as UC_PRIX
+    usecase "Consulter tendances\nprix produits" as UC_TENDANCE
+    usecase "Consulter facteurs\nmacroéconomiques" as UC_MACRO
+}
+
+' ── Package Administration ──────────────────────────────────────────────────
+package "Administration" {
+    usecase "Créer/gérer IMF\nmulti-tenant" as UC_IMF
+    usecase "Créer utilisateurs\npar rôle" as UC_USER
+    usecase "Configurer seuils\nalertes IMF" as UC_CONFIG
+    usecase "Consulter logs\naudit" as UC_AUDIT
+    usecase "Exporter rapports\nPDF/Excel" as UC_EXPORT
+}
+
+' ── Package Pipeline ────────────────────────────────────────────────────────
+package "Pipeline Automatisé" {
+    usecase "Ingérer export CBS\n(quotidien)" as UC_CBS
+    usecase "Calculer PAR/\nProvisions COBAC" as UC_COBAC
+    usecase "Collecter données\nexternes (API)" as UC_EXT
+    usecase "Calculer features\nML (feature store)" as UC_FEAT
+    usecase "Scorer clients\nMCRS (XGBoost)" as UC_SCORING
+    usecase "Calculer benchmarks\ninter-agences" as UC_BENCH
+    usecase "Générer alertes\nprédictives" as UC_ALERTE_ML
+}
+
+' ── Relations Acteurs ──────────────────────────────────────────────────────
+AGENT --> UC_SAISIR
+AGENT --> UC_SYNC
+AGENT --> UC_KPI_AGENT
+AGENT --> UC_PRIX
+MOBILE --> UC_SAISIR
+MOBILE --> UC_SYNC
+
+RESP_REC --> UC_PAR
+RESP_REC --> UC_DOSSIER
+RESP_REC --> UC_ACTION
+RESP_REC --> UC_RECH
+RESP_REC --> UC_SCORE
+RESP_REC --> UC_SHAP
+RESP_REC --> UC_ALERTES
+
+DIRECTEUR --> UC_DASH_COLLECT
+DIRECTEUR --> UC_PAR
+DIRECTEUR --> UC_SCORE
+DIRECTEUR --> UC_TENDANCE
+DIRECTEUR --> UC_MACRO
+DIRECTEUR --> UC_BENCH
+DIRECTEUR --> UC_EXPORT
+DIRECTEUR --> UC_ALERTES
+
+ANALYSTE --> UC_TENDANCE
+ANALYSTE --> UC_MACRO
+ANALYSTE --> UC_SHAP
+ANALYSTE --> UC_FEAT
+
+ADMIN --> UC_IMF
+ADMIN --> UC_USER
+ADMIN --> UC_CONFIG
+ADMIN --> UC_AUDIT
+ADMIN --> UC_CYCLE
+ADMIN --> UC_OBJECTIF
+
+PIPELINE --> UC_CBS
+PIPELINE --> UC_COBAC
+PIPELINE --> UC_EXT
+PIPELINE --> UC_FEAT
+PIPELINE --> UC_SCORING
+PIPELINE --> UC_BENCH
+PIPELINE --> UC_ALERTE_ML
+
+EXTERN --> UC_EXT
+
+' ── Include / Extend ─────────────────────────────────────────────────────
+UC_VALIDER .> UC_SAISIR : <<include>>
+UC_SHAP .> UC_SCORE : <<extend>>
+UC_COBAC .> UC_CBS : <<include>>
+UC_ALERTE_ML .> UC_SCORING : <<include>>
+
+@enduml

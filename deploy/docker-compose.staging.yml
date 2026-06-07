@@ -1,0 +1,237 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# IMF Pipeline — Docker Compose Staging
+#
+# Entry point : http://VPS_IP:9090
+#
+# Ports hôte utilisés (aucun conflit avec ServantAssist) :
+#   9090  → nginx reverse proxy (entrée publique)
+#   9200  → Spring Boot backend  (host network)
+#   8090  → FastAPI ML API       (host network, port fixé dans Dockerfile)
+#   9202  → Airflow Webserver    (host network)
+#   8091  → Angular frontend     (host network, config nginx montée en volume)
+#   5433  → PostgreSQL           (bridge, 127.0.0.1 only)
+#   6380  → Redis                (bridge, 127.0.0.1 only)
+#
+# Images Docker (injectées depuis .env.staging) :
+#   GHCR_BASE=ghcr.io/<owner>/<repo>
+#
+# Secrets injectés par GitHub Actions dans .env.staging (jamais en git) :
+#   DB_PASSWORD, JWT_SECRET, AIRFLOW_FERNET_KEY, AIRFLOW_ADMIN_PASSWORD
+# ══════════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── PostgreSQL 16 ──────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: imf-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${DB_USER:-imf_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB:       ${DB_NAME:-imf_db}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - imf_pgdata:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-imf_user} -d ${DB_NAME:-imf_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Redis 7 ────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: imf-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Airflow init — one-shot (profil "init", exécuté par le pipeline) ────────
+  airflow-init:
+    image: ${GHCR_BASE}/imf-airflow:staging
+    container_name: imf-airflow-init
+    restart: "no"
+    profiles: [init]
+    network_mode: host
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR:              LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN:  postgresql+psycopg2://${DB_USER:-imf_user}:${DB_PASSWORD}@127.0.0.1:5433/${DB_AIRFLOW:-airflow_db}
+      AIRFLOW__CORE__FERNET_KEY:            ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__WEBSERVER__SECRET_KEY:       ${JWT_SECRET}
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        set -e
+        airflow db migrate
+        airflow users create \
+          --username "${AIRFLOW_ADMIN_USER:-admin}" \
+          --password "${AIRFLOW_ADMIN_PASSWORD}" \
+          --firstname Admin --lastname IMF \
+          --role Admin --email "${AIRFLOW_ADMIN_EMAIL:-admin@imf.local}" \
+          2>/dev/null || echo "Utilisateur déjà existant — OK"
+        echo "==> Airflow init terminé"
+
+  # ── Backend (Spring Boot / Java 17) ────────────────────────────────────────
+  backend:
+    image: ${GHCR_BASE}/imf-backend:staging
+    container_name: imf-backend
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE:           staging
+      SERVER_PORT:                      "9200"
+      SPRING_DATASOURCE_URL:            jdbc:postgresql://127.0.0.1:5433/${DB_NAME:-imf_db}
+      SPRING_DATASOURCE_USERNAME:       ${DB_USER:-imf_user}
+      SPRING_DATASOURCE_PASSWORD:       ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO:    validate
+      JWT_SECRET:                       ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS:             "http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:8091"
+    volumes:
+      - /ml/models:/ml/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "--max-time", "8", "http://localhost:9200/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 5
+
+  # ── ML API (FastAPI scoring / port 8090 fixé dans Dockerfile) ──────────────
+  ml-api:
+    image: ${GHCR_BASE}/imf-ml-api:staging
+    container_name: imf-ml-api
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-imf_user}:${DB_PASSWORD}@127.0.0.1:5433/${DB_NAME:-imf_db}
+      MODEL_PATH:   /ml/models/mcrs/champion
+      APP_ENV:      staging
+    volumes:
+      - /ml/models:/ml/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "--max-time", "8", "http://localhost:8090/model/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
+
+  # ── Airflow Webserver (port 9202) ──────────────────────────────────────────
+  airflow-webserver:
+    image: ${GHCR_BASE}/imf-airflow:staging
+    container_name: imf-airflow-webserver
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR:              LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN:  postgresql+psycopg2://${DB_USER:-imf_user}:${DB_PASSWORD}@127.0.0.1:5433/${DB_AIRFLOW:-airflow_db}
+      AIRFLOW__CORE__FERNET_KEY:            ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__WEBSERVER__SECRET_KEY:       ${JWT_SECRET}
+      AIRFLOW__WEBSERVER__WEB_SERVER_PORT:  "9202"
+      AIRFLOW__WEBSERVER__BASE_URL:         "http://${VPS_IP:-84.247.128.40}:9202"
+      AIRFLOW__CORE__DAGS_FOLDER:           /opt/airflow/dags
+      AIRFLOW__LOGGING__BASE_LOG_FOLDER:    /opt/airflow/logs
+    volumes:
+      - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
+      - airflow_logs:/opt/airflow/logs
+    command: airflow webserver
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "--max-time", "10", "http://localhost:9202/health"]
+      interval: 30s
+      timeout: 15s
+      start_period: 120s
+      retries: 5
+
+  # ── Airflow Scheduler ──────────────────────────────────────────────────────
+  airflow-scheduler:
+    image: ${GHCR_BASE}/imf-airflow:staging
+    container_name: imf-airflow-scheduler
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      airflow-webserver:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR:              LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN:  postgresql+psycopg2://${DB_USER:-imf_user}:${DB_PASSWORD}@127.0.0.1:5433/${DB_AIRFLOW:-airflow_db}
+      AIRFLOW__CORE__FERNET_KEY:            ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__CORE__DAGS_FOLDER:           /opt/airflow/dags
+      AIRFLOW__LOGGING__BASE_LOG_FOLDER:    /opt/airflow/logs
+    volumes:
+      - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
+      - airflow_logs:/opt/airflow/logs
+    command: airflow scheduler
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --allow-multiple 2>/dev/null | grep -q running || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # ── Frontend Angular (nginx sur port 8091 via config montée en volume) ──────
+  frontend:
+    image: ${GHCR_BASE}/imf-frontend:staging
+    container_name: imf-frontend
+    restart: unless-stopped
+    network_mode: host
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=50M
+      - /var/run:size=5M
+      - /tmp:size=10M
+    volumes:
+      - ./nginx/frontend-staging.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8091/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── Nginx reverse proxy IMF (port 9090) ────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: imf-nginx
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./nginx/nginx-imf.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  imf_pgdata:
+  airflow_logs:

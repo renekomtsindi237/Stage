@@ -1,0 +1,84 @@
+@startuml SEQ08_consultation_kpi_mobile
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ08 — Consultation KPIs depuis Flutter\n(Dashboard Mobile Directeur / RR)
+
+actor "Directeur Général" as DG
+participant "Flutter App\n(DashboardScreen)" as APP
+participant "DashboardProvider\n(Riverpod)" as PROV
+participant "ApiClient\n(Dio)" as API_CLIENT
+participant "Spring Boot API\nKpiController" as SPRING
+database "PostgreSQL\nreporting" as PG
+
+== Chargement du Dashboard ==
+
+DG -> APP : Ouvre l'application\n(après authentification)
+APP -> APP : <b>GoRouter</b> → /dashboard
+
+APP -> PROV : <b>ref.watch(dashboardProvider)</b>
+PROV -> PROV : Vérifie si données\ncachées (< 30 min)
+
+alt <b>Données expirées ou première ouverture</b>
+
+  PROV -> API_CLIENT : <b>fetchDashboardSummary()</b>
+
+  API_CLIENT -> SPRING : <b>GET</b> /api/kpi/dashboard-summary\nAuthorization: Bearer <JWT>
+  activate SPRING
+
+  SPRING -> SPRING : <b>@PreAuthorize</b>\nhasRole('DIRECTEUR') ou hasRole('RR')
+
+  SPRING -> PG : <b>SELECT</b>\n  SUM(montant_collecte) AS total_collectes,\n  AVG(taux_par30) AS par30_moyen,\n  AVG(taux_par90) AS par90_moyen,\n  COUNT(alertes actives) AS nb_alertes\nFROM reporting.v_kpi_executif\nWHERE date_complete = CURRENT_DATE - 1
+  note right PG : Vue matérialisée\n→ réponse < 100ms
+
+  PG --> SPRING : ResultSet agrégé
+
+  SPRING -> PG : <b>SELECT</b> serie PAR30\n(30 derniers jours)\npour graphique tendance
+  PG --> SPRING : [{date, taux_par30}, ...]
+
+  SPRING --> API_CLIENT : <b>200 OK</b>\n{\n  "totalCollectes": 87300000,\n  "par30": 0.083,\n  "par90": 0.031,\n  "nbAlertes": 47,\n  "trendPar30": [...]\n}
+  deactivate SPRING
+
+  PROV -> PROV : Stocke en cache\n(timestamp = NOW())
+  PROV --> APP : DashboardState.loaded(data)
+
+else <b>Données en cache valides</b>
+  PROV --> APP : DashboardState.loaded(cachedData)
+end
+
+APP -> APP : <b>Render</b> widgets\n- KpiCard PAR30 : 8,3%\n- KpiCard PAR90 : 3,1%\n- KpiCard Collectes : 87,3M XAF\n- KpiCard Alertes : 47 🔴\n- LineChart tendance PAR30 (fl_chart)
+
+APP --> DG : Dashboard affiché\n(< 2 secondes)
+
+== Interaction utilisateur — Actualisation ==
+
+DG -> APP : Swipe down\n(Pull to refresh)
+APP -> PROV : <b>ref.refresh(dashboardProvider)</b>
+PROV -> PROV : Invalide le cache
+PROV -> API_CLIENT : <b>fetchDashboardSummary()</b>
+note right : Même séquence\nque ci-dessus
+
+== Navigation vers détail alertes ==
+
+DG -> APP : Tape sur KpiCard "47 Alertes"
+APP -> APP : <b>GoRouter.go()</b> /alertes
+
+APP -> API_CLIENT : <b>GET</b> /api/alertes?statut=ACTIVE
+API_CLIENT -> SPRING : <b>HTTP GET</b>
+SPRING -> PG : SELECT alertes actives\nORDER BY jours_retard DESC
+PG --> SPRING : [{alerte1}, {alerte2}, ...]
+SPRING --> APP : <b>200 OK</b> [AlerteResponse]
+
+APP --> DG : Liste alertes triées\npar gravité (jours_retard DESC)
+
+@enduml

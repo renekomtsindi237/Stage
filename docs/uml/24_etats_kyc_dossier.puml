@@ -1,0 +1,77 @@
+@startuml etats_kyc_dossier
+!theme plain
+title Diagramme d'état-transition — Dossier KYC\n(Connaissance du Client — Cycle de vie complet)
+
+skinparam state {
+    BackgroundColor #EAFAF1
+    BorderColor #1E8449
+    FontSize 12
+    ArrowColor #1E8449
+}
+
+[*] --> EN_COURS : Ouverture du dossier KYC\n(par l'agent ou le DSI)
+
+EN_COURS : ● Dossier en cours de constitution
+EN_COURS : ○ Documents en cours de collecte
+EN_COURS : ○ Vérifications pas encore lancées
+
+state EN_COURS {
+    [*] --> DOCS_MANQUANTS
+    DOCS_MANQUANTS : Documents à collecter
+    DOCS_MANQUANTS --> DOCS_COMPLETS : Tous les documents requis déposés
+    DOCS_COMPLETS : Documents prêts pour vérification
+}
+
+EN_COURS --> EN_VERIFICATION : Dossier soumis à la vérification\n(lancée par le DSI ou l'agent)
+
+EN_VERIFICATION : ● Vérification en cours par le DSI
+EN_VERIFICATION : ○ Identité vérifiée manuellement
+EN_VERIFICATION : ○ Documents examinés un par un
+
+state EN_VERIFICATION {
+    [*] --> VERIF_EN_ATTENTE
+    VERIF_EN_ATTENTE : Vérification(s) en attente d'examen
+    VERIF_EN_ATTENTE --> VERIF_PARTIELLE : Certaines vérifications validées
+    VERIF_PARTIELLE : Vérifications partiellement validées
+    VERIF_PARTIELLE --> VERIF_EN_ATTENTE : Document complémentaire demandé
+}
+
+EN_VERIFICATION --> VALIDE : Toutes les vérifications concluantes\n(détection automatique à la fin du contrôle)
+
+EN_VERIFICATION --> REJETE : Au moins une vérification négative\net refus définitif du DSI
+
+EN_VERIFICATION --> SUSPENDU : Informations contradictoires détectées\n(en attente de clarification du client)
+
+VALIDE : ● KYC validé — Client éligible aux services
+VALIDE : ○ Date de validation enregistrée
+VALIDE : ○ Identité du vérificateur conservée
+VALIDE : ○ Le client peut ouvrir un compte ou bénéficier d'un prêt
+
+REJETE : ● KYC refusé — Client non éligible
+REJETE : ○ Motif de refus consigné dans la vérification
+REJETE : ○ Agent informé par alerte en temps réel
+REJETE : ○ Documents non conformes archivés
+
+SUSPENDU : ● Dossier temporairement suspendu
+SUSPENDU : ○ En attente d'un document complémentaire du client
+SUSPENDU : ○ Délai de réponse recommandé : 30 jours
+
+SUSPENDU --> EN_VERIFICATION : Le client fournit les documents manquants\n(nouvelle pièce déposée)
+
+SUSPENDU --> REJETE : Délai expiré sans réponse du client
+
+REJETE --> EN_COURS : Réouverture sur demande\n(nouveau dossier avec de nouveaux documents)
+
+VALIDE --> [*]
+REJETE --> [*]
+
+note right of VALIDE
+  Un dossier validé n'expire pas.
+  Si le client devient suspect ultérieurement,
+  le DSI peut ouvrir une nouvelle vérification
+  (type : re-vérification).
+end note
+
+note "Droits par rôle :\n• Création : Agent, DSI, Administrateur\n• Validation / Rejet : DSI, Administrateur\n• Consultation : tous les rôles sauf\n  l'Agent pour les dossiers d'autres clients" as N1
+
+@enduml

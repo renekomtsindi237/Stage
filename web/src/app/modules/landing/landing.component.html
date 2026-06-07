@@ -1,0 +1,300 @@
+<div class="landing-root">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header" [class.scrolled]="headerScrolled">
+    <div class="header-inner">
+      <a class="header-logo" routerLink="/">
+        <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="logo-img">
+        <span class="logo-text"><span class="logo-micro">Micro</span><span class="logo-recouv">Recouv</span></span>
+      </a>
+
+      <nav class="header-nav">
+        <a href="#section-how" class="nav-link" (click)="scrollTo('section-how', $event)">Fonctionnement</a>
+        <a href="#section-features" class="nav-link" (click)="scrollTo('section-features', $event)">Fonctionnalites</a>
+        <a href="#section-benefits" class="nav-link" (click)="scrollTo('section-benefits', $event)">Benefices</a>
+        <a href="#section-faq" class="nav-link" (click)="scrollTo('section-faq', $event)">FAQ</a>
+      </nav>
+
+      <div class="header-cta">
+        <button mat-flat-button class="btn-header-login" (click)="goToLogin()">
+          Connexion <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero-section">
+    <div class="hero-orbit"></div>
+    <div class="hero-blur hero-blur-left"></div>
+    <div class="hero-blur hero-blur-right"></div>
+
+    <app-floating-lines class="floating-lines-bg"
+      [enabledWaves]="['top', 'middle', 'bottom']"
+      [lineCount]="4" [lineDistance]="6" [bendRadius]="5" [bendStrength]="-0.4"
+      [interactive]="true" [parallax]="true" [mixBlendMode]="'screen'">
+    </app-floating-lines>
+
+    <div class="hero-card" @fadeInUp>
+      <div class="hero-pill">
+        <span class="pill-dot"></span>
+        Plateforme SaaS de microfinance
+      </div>
+
+      <h1 class="hero-title">
+        One-click pour un
+        <span class="title-accent">Recouvrement</span> serein
+      </h1>
+
+      <p class="hero-sub">
+        Pilotez votre portefeuille de prets, automatisez vos alertes d'impayes
+        et analysez vos KPI en temps reel. Une seule interface, tout votre flux.
+      </p>
+
+      <div class="hero-actions">
+        <button mat-flat-button class="btn-primary-hero" (click)="goToLogin()">
+          <mat-icon>rocket_launch</mat-icon>
+          Acceder a la plateforme
+        </button>
+        <button mat-stroked-button class="btn-ghost-hero" (click)="scrollTo('section-how', $event)">
+          Decouvrir comment ca marche
+          <mat-icon>south</mat-icon>
+        </button>
+      </div>
+
+      <div class="hero-trust">
+        <div *ngFor="let t of trustBadges" class="trust-item">
+          <mat-icon>{{ t.icon }}</mat-icon>
+          <span>{{ t.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint" (click)="scrollTo('section-metrics', $event)">
+      <span>Defiler</span>
+      <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
+    </div>
+  </section>
+
+  <!-- ══ MÉTRIQUES ══ -->
+  <section class="metrics-section" id="section-metrics">
+    <div class="metrics-inner">
+      <div *ngFor="let m of metrics" class="metric-item">
+        <div class="metric-icon"><mat-icon>{{ m.icon }}</mat-icon></div>
+        <div class="metric-body">
+          <span class="metric-value">{{ m.value }}</span>
+          <span class="metric-label">{{ m.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ COMMENT ÇA MARCHE ══ -->
+  <section class="steps-section" id="section-how">
+    <div class="section-container">
+
+      <div class="section-label-row">
+        <span class="section-tag">Comment ça fonctionne</span>
+        <div class="tag-line"></div>
+      </div>
+
+      <div class="section-heading-row">
+        <h2 class="section-heading">Trois étapes vers l'efficacité</h2>
+        <p class="section-sub">De la connexion à l'action, tout est automatisé</p>
+      </div>
+
+      <div class="steps-grid">
+        <div *ngFor="let step of steps; let i = index" class="step-card">
+          <div class="step-number">{{ (i + 1).toString().padStart(2, '0') }}</div>
+          <div class="step-icon-wrap" [style.background]="step.color + '18'">
+            <mat-icon [style.color]="step.color">{{ step.icon }}</mat-icon>
+          </div>
+          <h3 class="step-title">{{ step.title }}</h3>
+          <p class="step-desc">{{ step.desc }}</p>
+          <button class="step-connector" *ngIf="i < steps.length - 1" (click)="toggleStep(i); playStepAnimation(i)">
+            <mat-icon>arrow_forward</mat-icon>
+            <span class="connector-label">Voir</span>
+            <div class="connector-panel" [class.open]="activeStepIndex === i">
+              <div class="connector-pulse"></div>
+              <div class="connector-lines"></div>
+              <span class="connector-text">Flux optimise, sans friction</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ STEP ANIMATION OVERLAY ══ -->
+  <div class="step-overlay" [class.show]="stepOverlayVisible">
+    <div class="step-orbit"></div>
+    <div class="step-burst"></div>
+    <div class="step-tag">
+      <span>Flow {{ (activeStepIndex ?? 0) + 1 }}</span>
+    </div>
+  </div>
+
+  <!-- ══ FONCTIONNALITÉS ══ -->
+  <section class="features-section" id="section-features">
+    <div class="section-container">
+
+      <div class="section-label-row">
+        <span class="section-tag">Fonctionnalités</span>
+        <div class="tag-line"></div>
+      </div>
+
+      <div class="section-heading-row">
+        <h2 class="section-heading">Tout ce dont votre IMF a besoin</h2>
+        <p class="section-sub">Une suite complète d'outils pensés pour la microfinance africaine</p>
+      </div>
+
+      <div class="features-grid">
+        <div *ngFor="let f of features; let i = index" class="feature-card">
+          <div class="feature-top">
+            <span class="feature-num">{{ (i + 1).toString().padStart(2, '0') }}</span>
+            <div class="feature-icon-wrap" [style.background]="f.color + '15'">
+              <mat-icon [style.color]="f.color">{{ f.icon }}</mat-icon>
+            </div>
+          </div>
+          <h3 class="feature-title">{{ f.title }}</h3>
+          <p class="feature-desc">{{ f.desc }}</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ BÉNÉFICES ══ -->
+  <section class="benefits-section" id="section-benefits">
+    <div class="section-container">
+
+      <div class="section-label-row">
+        <span class="section-tag">Benefices</span>
+        <div class="tag-line"></div>
+      </div>
+
+      <div class="section-heading-row">
+        <h2 class="section-heading">Des gains visibles, des risques limites</h2>
+        <p class="section-sub">Chaque action est tracee, chaque alerte est priorisee, chaque decision est guidee.</p>
+      </div>
+
+      <div class="benefits-grid">
+        <div *ngFor="let b of benefits" class="benefit-card">
+          <div class="benefit-icon" [style.background]="b.color + '20'">
+            <mat-icon [style.color]="b.color">{{ b.icon }}</mat-icon>
+          </div>
+          <div class="benefit-body">
+            <h3 class="benefit-title">{{ b.title }}</h3>
+            <p class="benefit-desc">{{ b.desc }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ INTÉGRATIONS ══ -->
+  <section class="integrations-section" id="section-integrations">
+    <div class="section-container">
+
+      <div class="section-label-row">
+        <span class="section-tag">Integrations</span>
+        <div class="tag-line"></div>
+      </div>
+
+      <div class="section-heading-row">
+        <h2 class="section-heading">Connecte a vos outils existants</h2>
+        <p class="section-sub">Import automatique, synchronisation fluide et API unifiee.</p>
+      </div>
+
+      <div class="integrations-grid">
+        <div *ngFor="let i of integrations" class="integration-pill">
+          <span class="integration-name">{{ i.name }}</span>
+          <span class="integration-desc">{{ i.desc }}</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ FAQ ══ -->
+  <section class="faq-section" id="section-faq">
+    <div class="section-container">
+      <div class="section-label-row">
+        <span class="section-tag">FAQ</span>
+        <div class="tag-line"></div>
+      </div>
+
+      <div class="section-heading-row">
+        <h2 class="section-heading">Reponses aux questions frequentes</h2>
+        <p class="section-sub">On vous aide a demarrer vite, sans exposition de donnees sensibles.</p>
+      </div>
+
+      <div class="faq-list">
+        <div *ngFor="let f of faqs" class="faq-item">
+          <h3 class="faq-question">{{ f.q }}</h3>
+          <p class="faq-answer">{{ f.a }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CTA FINAL ══ -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-glow"></div>
+      <div class="cta-content">
+        <span class="section-tag">Prêt à commencer ?</span>
+        <h2 class="cta-heading">Transformez la gestion de votre IMF dès aujourd'hui</h2>
+        <p class="cta-sub">Connectez-vous et accédez à votre tableau de bord en quelques secondes</p>
+        <button mat-flat-button class="btn-primary-hero btn-cta-big" (click)="goToLogin()">
+          <mat-icon>login</mat-icon>
+          Accéder à MicroRecouv
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Bouton retour haut + progression ══ -->
+  <button class="scroll-top-btn"
+          [class.scroll-top-visible]="showScrollTop"
+          (click)="scrollToTop()"
+          aria-label="Retour en haut de page">
+
+    <svg class="scroll-ring" viewBox="0 0 52 52" fill="none">
+      <!-- Piste grise -->
+      <circle cx="26" cy="26" [attr.r]="SCROLL_RADIUS"
+              stroke-width="3" class="ring-track"/>
+      <!-- Arc de progression -->
+      <circle cx="26" cy="26" [attr.r]="SCROLL_RADIUS"
+              stroke-width="3" class="ring-fill"
+              [attr.stroke-dasharray]="scrollCircumference"
+              [attr.stroke-dashoffset]="strokeDashoffset"
+              stroke-linecap="round"
+              transform="rotate(-90 26 26)"/>
+    </svg>
+
+    <mat-icon class="scroll-arrow">keyboard_arrow_up</mat-icon>
+
+    <span class="scroll-pct">{{ scrollProgress }}%</span>
+
+  </button>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="footer-logo-img">
+        <span class="footer-brand-name">
+          <span class="logo-micro">Micro</span><span class="logo-recouv">Recouv</span>
+        </span>
+      </div>
+      <p class="footer-copy">© 2025 MicroRecouv — Gestion &amp; Recouvrement Intelligents pour la Microfinance</p>
+      <button mat-stroked-button class="btn-footer-login" (click)="goToLogin()">
+        <mat-icon>login</mat-icon> Se connecter
+      </button>
+    </div>
+  </footer>
+
+</div>

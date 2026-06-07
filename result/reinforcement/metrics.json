@@ -1,0 +1,26 @@
+{
+  "paradigme": "renforcement",
+  "algorithme": "Q-Learning tabulaire ε-greedy",
+  "n_episodes": 10000,
+  "n_etats": 48,
+  "n_actions": 4,
+  "hyperparametres": {
+    "alpha": 0.1,
+    "gamma": 0.95,
+    "epsilon_start": 1.0,
+    "epsilon_fin": 0.05
+  },
+  "recompense_moy_100_derniers": 145.51,
+  "evaluation": {
+    "recompense_politique_rl": -1.8919,
+    "recompense_baseline": 2.9555,
+    "amelioration_pct": -164.01
+  },
+  "distribution_actions": {
+    "AUCUNE": 13,
+    "RELANCE_PREVENTIVE": 13,
+    "MISE_EN_DEMEURE": 10,
+    "VISITE_TERRAIN": 12
+  },
+  "generated_at": "2026-05-25T12:56:55.721707"
+}

@@ -1,0 +1,250 @@
+@startuml SEQ_UC06_app_mobile_flutter
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam sequenceGroupBackgroundColor #F5F5F5
+skinparam sequenceGroupBorderColor #9E9E9E
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceBoxBorderColor #4A6CF7
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ_UC06 — Application Mobile Flutter\nAgent terrain (collectes offline/sync) · Directeur (KPIs) · Alertes push FCM\n<size:11><color:#555>Architecture conteneurisée Docker — Flutter 3.19 + Riverpod + sqflite + FCM</color></size>
+
+' ===== ACTEURS =====
+actor "Agent Terrain\n(App Flutter)" as AT
+actor "Directeur\n(App Flutter)" as DG
+
+' ===== FLUTTER INTERNE (couche locale) =====
+box "📱 Flutter App (device Android/iOS)" #E3F2FD
+  participant "GoRouter\n[AuthGuard\nroleGuard]" as ROUTER
+  participant "AuthProvider\n[Riverpod]" as AUTH_PROV
+  participant "flutter_secure_storage\n[JWT stockage sécurisé]" as SEC_STORE
+  participant "CollecteProvider\n[Riverpod StateNotifier]" as COL_PROV
+  participant "DashboardProvider\n[Riverpod — cache 30min]" as DASH_PROV
+  participant "SyncService\n[BackgroundSync]" as SYNC
+  participant "LocalDatabase\n[sqflite — SQLite]" as LOCAL_DB
+  participant "ApiClient\n[Dio + JwtInterceptor\n+ ConnectivityPlus]" as API
+  participant "FcmService\n[firebase_messaging]" as FCM_SVC
+end box
+
+' ===== CONTENEUR : nginx =====
+box "🐳 nginx (:80/:443)" #FFF9C4
+  participant "Nginx\n[Proxy /api/* → springboot:8080]" as NGINX
+end box
+
+' ===== CONTENEUR : springboot =====
+box "🐳 springboot-api (:8080 interne)" #E8F5E9
+  participant "AuthController\n[POST /api/auth/*]" as CTRL_AUTH
+  participant "CollecteController\n[POST /api/collectes]" as CTRL_COL
+  participant "KpiController\n[GET /api/kpi/*]" as CTRL_KPI
+  participant "AlerteController\n[GET /api/alertes]" as CTRL_ALE
+  participant "JwtTokenProvider\n[signe + valide JWT]" as JWT_SVC
+end box
+
+' ===== CONTENEUR : postgres-pipeline =====
+box "🐳 postgres-pipeline (:5432)" #E8F5E9
+  database "staging\n(users, collectes,\nalertes)" as STG
+  database "reporting\n(v_kpi_collectes\nv_kpi_recouvrement)" as RPT
+end box
+
+' ===== SERVICES EXTERNES =====
+boundary "Firebase FCM\n[Google Cloud]" as FCM_EXT
+
+' =================================================
+' ÉTAPE 1 — DÉMARRAGE APP + AUTHENTIFICATION
+' =================================================
+== 🔐 ÉTAPE 1 — Démarrage de l'application et authentification JWT ==
+
+AT -> ROUTER : Lance l'application Flutter\nGoRouter évalue la route initiale
+ROUTER -> SEC_STORE : flutter_secure_storage.read(key: 'access_token')
+SEC_STORE --> ROUTER : null (premier lancement) ou JWT expiré
+
+ROUTER -> AT : Redirige vers /login
+
+AT -> AUTH_PROV : login(username: "agent_08", password: "...")
+AUTH_PROV -> API : dio.post('/api/auth/login',\n{username, password})
+API -> NGINX : HTTPS POST /api/auth/login
+NGINX -> CTRL_AUTH : Proxy POST /api/auth/login
+CTRL_AUTH -> JWT_SVC : authenticate(username, password)
+JWT_SVC -> STG : SELECT password_hash, role, id_zone, id_agent\nFROM staging.users\nWHERE username = 'agent_08' AND actif = TRUE
+STG --> JWT_SVC : {password_hash, role: 'AGENT',\nid_zone: 3, id_agent: 8}
+JWT_SVC -> JWT_SVC : BCrypt.verify(password, hash) → OK\ngénère accessToken (15min)\ngénère refreshToken (7j)
+JWT_SVC --> CTRL_AUTH : {accessToken, refreshToken, role, agentId}
+CTRL_AUTH --> NGINX : HTTP 200 JSON
+NGINX --> API : HTTPS 200 {accessToken, refreshToken, role: 'AGENT'}
+
+AUTH_PROV -> SEC_STORE : flutter_secure_storage.write(\n  'access_token' → JWT_ACCESS\n  'refresh_token' → JWT_REFRESH\n  'role' → 'AGENT'\n  'agent_id' → '8'\n)
+AUTH_PROV --> ROUTER : authState = authenticated, role = AGENT
+ROUTER -> AT : Redirige vers /agent/home
+
+FCM_SVC -> FCM_EXT : FirebaseMessaging.instance\n.requestPermission()\n.getToken() → fcm_token_device
+FCM_SVC -> API : dio.put('/api/users/fcm-token',\n{token: fcm_token_device})
+API -> NGINX : HTTPS PUT /api/users/fcm-token
+NGINX -> CTRL_AUTH : Proxy PUT
+CTRL_AUTH -> STG : UPDATE staging.users\nSET fcm_token = ?\nWHERE id_user = (from JWT)
+STG --> CTRL_AUTH : OK
+CTRL_AUTH --> NGINX : HTTP 200
+note right FCM_SVC : FCM token enregistré\n→ permettra la réception\ndes alertes push
+
+' =================================================
+' ÉTAPE 2 — SAISIE COLLECTE (MODE ONLINE)
+' =================================================
+== 📝 ÉTAPE 2 — Saisie collecte terrain (mode connecté) ==
+
+AT -> COL_PROV : submitCollecte({\n  client_id: 12,\n  pret_id: 45,\n  montant: 125000,\n  canal: "MTN_MOBILE_MONEY",\n  reference: "REF-MTN-20260401-XYZ"\n})
+
+COL_PROV -> API : Vérifie connectivité\nConnectivityPlus.checkConnectivity()
+API --> COL_PROV : ConnectivityResult.mobile ✓
+
+COL_PROV -> API : dio.post('/api/collectes', body)\nDio JwtInterceptor injecte\nAuthorization: Bearer <access_token>
+API -> NGINX : HTTPS POST /api/collectes
+NGINX -> CTRL_COL : Proxy POST /api/collectes
+CTRL_COL -> CTRL_COL : JwtFilter valide JWT\n@PreAuthorize("hasRole('AGENT')")\nagentId extrait du JWT = 8
+CTRL_COL -> STG : SELECT COUNT(*) FROM staging.collectes_terrain\nWHERE reference_transaction = 'REF-MTN-...'
+STG --> CTRL_COL : 0 (pas de doublon)
+CTRL_COL -> STG : INSERT INTO staging.collectes_terrain\n{agent_id:8, client_id:12, pret_id:45,\ndate_collecte: 2026-04-01,\nmontant: 125000,\ncanal: 'MTN_MOBILE_MONEY',\nreference: 'REF-MTN-20260401-XYZ',\nstatut: 'CONFIRME'}
+STG --> CTRL_COL : id_collecte = 789
+CTRL_COL --> NGINX : HTTP 201\n{id: "COL-2026-789", statut: "CONFIRME"}
+NGINX --> API : HTTPS 201 JSON
+
+COL_PROV -> LOCAL_DB : sqflite INSERT collecte\n{status: 'SYNCED', server_id: 'COL-2026-789'}
+COL_PROV --> AT : ✓ Collecte confirmée\n"COL-2026-789 — 125 000 XAF"
+
+' =================================================
+' ÉTAPE 3 — SAISIE COLLECTE (MODE OFFLINE + SYNC)
+' =================================================
+== 📴 ÉTAPE 3 — Saisie collecte terrain (mode hors-ligne + synchronisation) ==
+
+AT -> COL_PROV : submitCollecte({\n  client_id: 17,\n  pret_id: 51,\n  montant: 75000,\n  canal: "ESPECES"\n})
+
+COL_PROV -> API : ConnectivityPlus.checkConnectivity()
+API --> COL_PROV : ConnectivityResult.none ✗ (hors-ligne)
+
+COL_PROV -> LOCAL_DB : sqflite INSERT collecte\n{status: 'PENDING_SYNC',\nclient_id:17, pret_id:51,\nmontant:75000, canal:'ESPECES',\nlocal_id: uuid_v4()}
+LOCAL_DB --> COL_PROV : local_id = "local-abc-123"
+COL_PROV --> AT : ⏳ Collecte sauvegardée localement\n"Sera synchronisée dès reconnexion"
+
+note over LOCAL_DB : SQLite stocke toutes les collectes\navec statut PENDING_SYNC\njusqu'au retour de la connectivité
+
+' --- Retour en ligne ---
+
+SYNC -> API : ConnectivityPlus stream\n→ ConnectivityResult.mobile détecté !
+SYNC -> LOCAL_DB : SELECT * FROM collectes\nWHERE status = 'PENDING_SYNC'\nORDER BY created_at ASC
+LOCAL_DB --> SYNC : [{local_id: "local-abc-123",\nclient_id:17, pret_id:51,\nmontant:75000}]
+
+loop <b>Pour chaque collecte PENDING_SYNC</b>
+  SYNC -> API : dio.post('/api/collectes', collecte)
+  API -> NGINX : HTTPS POST /api/collectes
+  NGINX -> CTRL_COL : Proxy (idem étape 2)
+
+  alt <b>HTTP 201 — Succès</b>
+    CTRL_COL --> NGINX : 201 {id: "COL-2026-790"}
+    NGINX --> API : 201 Created
+    SYNC -> LOCAL_DB : UPDATE collectes\nSET status='SYNCED', server_id='COL-2026-790'\nWHERE local_id='local-abc-123'
+    SYNC --> AT : ✓ Collecte synchronisée
+
+  else <b>HTTP 409 — Doublon détecté</b>
+    CTRL_COL --> NGINX : 409 Conflict
+    NGINX --> API : 409 Conflict
+    SYNC -> LOCAL_DB : UPDATE collectes\nSET status='DUPLICATE'\nWHERE local_id='local-abc-123'
+    SYNC --> AT : ⚠ Doublon détecté — ignoré
+
+  else <b>HTTP 5xx — Erreur serveur</b>
+    CTRL_COL --> NGINX : 500 / 503
+    NGINX --> API : 5xx
+    SYNC -> SYNC : retry_count++\n(max 3 tentatives)
+    alt retry_count >= 3
+      SYNC -> LOCAL_DB : UPDATE collectes\nSET status='SYNC_ERROR'\nWHERE local_id='local-abc-123'
+      SYNC --> AT : ❌ Échec synchronisation\n(réessayer manuellement)
+    end
+  end
+end
+
+' =================================================
+' ÉTAPE 4 — DASHBOARD KPIs (Directeur)
+' =================================================
+== 📊 ÉTAPE 4 — Consultation dashboard KPIs (Directeur Flutter) ==
+
+DG -> DASH_PROV : ngOnInit → loadDashboard()
+DASH_PROV -> DASH_PROV : Vérifie cache Riverpod\n(TTL: 30 min)\ncache valide ? → retourne données locales
+
+alt <b>Cache expiré ou absent</b>
+  DASH_PROV -> API : dio.get('/api/kpi/dashboard-summary')
+  API -> API : JwtInterceptor : injecte\nAuthorization: Bearer <JWT_DIRECTEUR>
+  API -> NGINX : HTTPS GET /api/kpi/dashboard-summary
+  NGINX -> CTRL_KPI : Proxy
+  CTRL_KPI -> CTRL_KPI : @PreAuthorize("hasRole('DIRECTEUR')")
+
+  par
+    CTRL_KPI -> RPT : SELECT taux_par30, taux_par90,\nencours_total, nb_prets_actifs\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete = CURRENT_DATE - 1
+    RPT --> CTRL_KPI : {par30: 0.083, encours: 625M XAF}
+
+    CTRL_KPI -> RPT : SELECT SUM(montant_total), SUM(nb_mobile_money)\nFROM reporting.v_kpi_collectes\nWHERE date_complete >= DATE_TRUNC('month', CURRENT_DATE)
+    RPT --> CTRL_KPI : {total_mois: 87.3M XAF, pct_mobile: 0.68}
+
+    CTRL_KPI -> STG : SELECT COUNT(*) FROM staging.alertes_impayes\nWHERE statut_alerte = 'ACTIVE'
+    STG --> CTRL_KPI : 47 alertes actives
+  end
+
+  CTRL_KPI --> NGINX : HTTP 200 JSON\n{par30:0.083, par90:0.031,\nnbAlertes:47, totalCollectes:87.3M,\ntrendPar30:[×30]}
+  NGINX --> API : HTTPS 200 JSON
+  DASH_PROV -> DASH_PROV : Met à jour cache Riverpod\n(timestamp = now, TTL = 30min)
+end
+
+DASH_PROV --> DG : DashboardState mis à jour\nfl_chart : courbe PAR30 (30j)\nKpiCards : 8.3% / 3.1% / 47 alertes\nProgressBar : 68% mobile money
+
+' =================================================
+' ÉTAPE 5 — RÉCEPTION ALERTE PUSH FCM
+' =================================================
+== 🔔 ÉTAPE 5 — Réception notification push (alerte impayé) ==
+
+note over FCM_EXT : Le pipeline Airflow a détecté\nun nouveau prêt en retard\n(dag_alertes — 08h00)\n→ Spring Boot envoie FCM push
+
+FCM_EXT -> FCM_SVC : onMessage / onBackgroundMessage\n{notification: {title: "🚨 ALERTE IMPAYÉ",\n body: "Prêt #42 — KAMGA Jean\n45 jours — 125 000 XAF"},\n data: {type: "ALERTE_IMPAYE",\n pret_id: "42",\n alerte_id: "101"}}
+
+FCM_SVC -> FCM_SVC : App en foreground ?\n→ showLocalNotification()\nApp en background ?\n→ notification système OS
+
+AT -> FCM_SVC : Tap sur la notification
+FCM_SVC -> ROUTER : GoRouter.go('/agent/alertes/101'\nfrom FCM data payload)
+ROUTER -> ROUTER : authGuard : JWT valide ✓\nroleGuard : AGENT ✓
+ROUTER -> API : dio.get('/api/alertes?agentId=8&statut=ACTIVE')
+API -> NGINX : HTTPS GET /api/alertes?agentId=8&statut=ACTIVE
+NGINX -> CTRL_ALE : Proxy
+CTRL_ALE -> STG : SELECT ai.*, c.nom, c.telephone,\np.montant_octroye\nFROM staging.alertes_impayes ai\nJOIN staging.prets p ON ai.id_pret = p.id_pret\nJOIN staging.clients c ON p.id_client = c.id_client\nWHERE p.id_agent = 8 AND ai.statut_alerte = 'ACTIVE'
+STG --> CTRL_ALE : 3 alertes actives pour agent 8
+CTRL_ALE --> NGINX : HTTP 200 JSON
+NGINX --> API : HTTPS 200 JSON
+API --> ROUTER : List<AlerteResponse>
+ROUTER --> AT : Écran AlerteDetailPage\nClient: KAMGA Jean\nRetard: 45 jours\nMontant dû: 125 000 XAF\n[Bouton: Enregistrer visite]
+
+' =================================================
+' ÉTAPE 6 — REFRESH TOKEN AUTOMATIQUE
+' =================================================
+== 🔄 ÉTAPE 6 — Renouvellement automatique du JWT (intercepteur Dio) ==
+
+note over API : Access token expiré (15 min)\nDio intercepteur détecte HTTP 401
+
+API -> API : dio Interceptor :\nonError → response.statusCode == 401
+API -> SEC_STORE : read(key: 'refresh_token')
+SEC_STORE --> API : refresh_token (7j — toujours valide)
+API -> NGINX : HTTPS POST /api/auth/refresh\n{refreshToken: "..."}
+NGINX -> CTRL_AUTH : Proxy POST /api/auth/refresh
+CTRL_AUTH -> JWT_SVC : validateRefreshToken(token)
+JWT_SVC -> STG : SELECT id_user FROM refresh_tokens\nWHERE token_hash = ? AND expires_at > NOW()
+STG --> JWT_SVC : id_user = 8 ✓
+JWT_SVC -> JWT_SVC : Génère nouveau accessToken (15min)
+JWT_SVC --> CTRL_AUTH : {accessToken: new_token}
+CTRL_AUTH --> NGINX : HTTP 200
+NGINX --> API : HTTPS 200 {accessToken}
+API -> SEC_STORE : write('access_token', new_token)
+API -> API : Rejoue la requête initiale\navec le nouveau token
+API --> COL_PROV : Réponse de la requête originale
+
+@enduml

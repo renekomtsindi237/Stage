@@ -1,0 +1,64 @@
+@startuml etats_demande_rgpd
+!theme plain
+title Diagramme d'état-transition — Demande de Droit RGPD\n(Loi 2024/017 Cameroun — Délai légal 30 jours, art. 41)
+
+skinparam state {
+    BackgroundColor #FDEDEC
+    BorderColor #C0392B
+    FontSize 12
+    ArrowColor #C0392B
+}
+
+[*] --> SOUMISE : Demande déposée par l'utilisateur\n(délai de réponse : 30 jours à compter de ce jour)
+
+SOUMISE : ● Demande reçue — en attente de traitement par le DSI
+SOUMISE : ○ Identité du demandeur enregistrée (traçabilité)
+SOUMISE : ○ Adresse IP de soumission conservée (art. 41)
+SOUMISE : ○ Date limite de réponse calculée (J + 30 jours)
+
+SOUMISE --> EN_COURS : Le DSI prend en charge la demande
+
+EN_COURS : ● En cours de traitement par le DSI
+EN_COURS : ○ Examen de la légitimité de la demande
+EN_COURS : ○ Préparation de la réponse ou de l'export
+
+EN_COURS --> TRAITEE : Traitement réussi par le DSI\n(réponse fournie, export disponible si applicable)
+
+EN_COURS --> REFUSEE : Refus du DSI pour motif légal\n(motif obligatoirement renseigné)
+
+SOUMISE --> EN_RETARD : Aucune action du DSI\naprès 30 jours\n(détection automatique chaque nuit)
+
+EN_RETARD : ● Délai légal de 30 jours dépassé
+EN_RETARD : ○ Risque de sanction (art. 41)
+EN_RETARD : ○ Alerte rouge dans le tableau de bord DSI
+EN_RETARD : ○ Visible dans la liste des demandes en retard
+
+EN_RETARD --> TRAITEE : Le DSI traite (même tardivement)
+EN_RETARD --> REFUSEE : Le DSI refuse (même tardivement)
+
+TRAITEE : ● Demande satisfaite
+TRAITEE : ○ Identité du traitant enregistrée
+TRAITEE : ○ Date de traitement enregistrée
+TRAITEE : ○ Lien de téléchargement si demande d'accès ou de portabilité\n   (expire après 7 jours)
+TRAITEE : ○ L'utilisateur peut consulter le résultat
+
+REFUSEE : ● Demande refusée légitimement
+REFUSEE : ○ Motif de refus obligatoire
+REFUSEE : ○ L'utilisateur peut contester\n   auprès de l'autorité de protection des données
+
+TRAITEE --> [*]
+REFUSEE --> [*]
+
+note right of EN_RETARD
+  Détection automatique chaque nuit :
+  Le système vérifie les demandes
+  dont l'échéance est dépassée
+  et notifie le DSI pour action.
+
+  Obligation légale art. 41
+  Loi 2024/017 Cameroun.
+end note
+
+note "Types de droits exercés :\n• Art. 37 : Accès aux données\n• Art. 38 : Rectification\n• Art. 39 : Effacement (droit à l'oubli)\n• Art. 40 : Opposition au traitement\n• Art. 41 : Limitation du traitement\n• Art. 43 : Portabilité des données" as N1
+
+@enduml

@@ -1,0 +1,78 @@
+# ══════════════════════════════════════════
+# MicroRecouv — .gitignore monorepo
+# ══════════════════════════════════════════
+
+# ── Secrets & Env ─────────────────────────
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+*.p12
+firebase-credentials.json
+
+# ── Docker ────────────────────────────────
+docker/volumes/
+
+# ── Backend (Spring Boot / Maven) ─────────
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+src/backend/target/
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# ── Web (Angular / Node) ──────────────────
+web/node_modules/
+web/dist/
+web/.angular/cache/
+src/web/node_modules/
+src/web/dist/
+
+# ── Pipeline (Python) ─────────────────────
+pipeline/src/__pycache__/
+pipeline/src/*.pyc
+pipeline/src/.env
+pipeline/src/.venv/
+pipeline/logs/
+pipeline/data/
+src/pipeline/__pycache__/
+src/pipeline/*.pyc
+
+# ── Mobile (Flutter) ──────────────────────
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/coverage/
+mobile/pubspec.lock
+
+# ── dbt ───────────────────────────────────
+pipeline/dbt_project/target/
+pipeline/dbt_project/dbt_packages/
+pipeline/dbt_project/logs/
+
+# ── IDE ───────────────────────────────────
+.idea/
+.vscode/settings.json
+*.iml
+*.iws
+
+# ── OS ────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────
+*.log
+logs/
+
+# ── Data / Warehouse (fichiers volumineux — hors Git) ─────────────────────
+data/
+*.csv
+*.parquet
+*.arrow
+*.json.gz

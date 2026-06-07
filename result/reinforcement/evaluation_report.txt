@@ -1,0 +1,41 @@
+
+RAPPORT — Q-LEARNING STRATÉGIE RECOUVREMENT
+Généré le : 2026-05-25 12:56:55
+=======================================================
+
+Paramètres
+  Épisodes      : 10,000
+  α (lr)        : 0.1
+  γ (discount)  : 0.95
+  ε initial     : 1.0 → ε final : 0.05
+  Espace états  : 48 (4 risques × 4 retards × 3 incidents)
+  Actions       : 4 (AUCUNE, RELANCE_PREVENTIVE, VISITE_TERRAIN, MISE_EN_DEMEURE)
+
+Résultats entraînement
+  Récompense moy. (500 derniers ép.) : 104.0380
+  Récompense moy. finale              : 145.5100
+
+Évaluation sur test (N=3237)
+  Récompense politique RL  : -1.8919
+  Récompense baseline      : 2.9555  (RELANCE systématique)
+  Amélioration             : -164.0%
+
+Distribution des actions politiques
+  AUCUNE                   : 13 états
+  MISE_EN_DEMEURE          : 10 états
+  RELANCE_PREVENTIVE       : 13 états
+  VISITE_TERRAIN           : 12 états
+
+Extrait politique (10 états)
+État                                              Action                   
+---------------------------------------------------------------------------
+  ('FAIBLE', '0-30j', '0 incident')                 AUCUNE
+  ('FAIBLE', '0-30j', '1-2 incidents')              RELANCE_PREVENTIVE
+  ('FAIBLE', '0-30j', '3+ incidents')               AUCUNE
+  ('FAIBLE', '30-90j', '0 incident')                AUCUNE
+  ('FAIBLE', '30-90j', '1-2 incidents')             AUCUNE
+  ('FAIBLE', '30-90j', '3+ incidents')              AUCUNE
+  ('FAIBLE', '90-180j', '0 incident')               AUCUNE
+  ('FAIBLE', '90-180j', '1-2 incidents')            AUCUNE
+  ('FAIBLE', '90-180j', '3+ incidents')             AUCUNE
+  ('FAIBLE', '180j+', '0 incident')                 AUCUNE

@@ -1,0 +1,86 @@
+@startuml SEQ07_push_notification
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ07 — Notification Push FCM vers Flutter\nCycle complet : Alerte → FCM → App mobile
+
+participant "Airflow DAG\ndag_alertes" as DAG
+participant "Spring Boot\nNotificationService" as SPRING
+participant "Firebase Admin SDK\n(Java)" as FB_ADMIN
+participant "Firebase FCM\n(Google Cloud)" as FCM
+participant "Flutter App\n(Appareil Android/iOS)" as APP
+actor "Responsable\nRecouvrement" as RR
+database "PostgreSQL" as PG
+
+== Déclenchement depuis le pipeline ==
+
+DAG -> SPRING : <b>POST</b> /internal/trigger-alertes\n{alertes: [{id_pret:42, jours:45}, ...]}
+note right : Endpoint interne\nnon exposé à l'extérieur\n(Spring Security : IP whitelist)
+
+activate SPRING
+
+SPRING -> PG : <b>SELECT</b> users.fcm_token\nJOIN zones ON users.zone_id = zone_id_pret\nWHERE role IN ('RESPONSABLE_RECOUVREMENT',\n'DIRECTEUR') AND actif = TRUE
+PG --> SPRING : [{user: "RR-Zone3",\n fcm_token: "dXXX..."}]
+
+SPRING -> SPRING : <b>construire Message FCM</b>\nTitle: "🚨 ALERTE IMPAYÉ"\nBody: "Prêt #42 — KAMGA Jean\n45 jours de retard (125 000 XAF)"\nData: {type: "ALERTE", pret_id: "42",\n       alerte_id: "101", jours: "45"}
+
+SPRING -> FB_ADMIN : <b>FirebaseMessaging.send(message)</b>
+activate FB_ADMIN
+
+FB_ADMIN -> FCM : <b>HTTPS POST</b>\nhttps://fcm.googleapis.com/v1/projects/{id}/messages:send\n{Authorization: Bearer <service_account_token>}
+activate FCM
+
+FCM --> FB_ADMIN : <b>200 OK</b>\n{"name": "projects/xxx/messages/yyy"}
+deactivate FCM
+
+FB_ADMIN --> SPRING : message_id = "projects/xxx/messages/yyy"
+deactivate FB_ADMIN
+
+SPRING -> PG : <b>UPDATE</b> alertes_impayes\nSET fcm_sent = TRUE,\nfcm_message_id = 'yyy'\nWHERE id_alerte = 101
+
+SPRING --> DAG : <b>200 OK</b> {sent: 1}
+deactivate SPRING
+
+== Réception sur l'appareil Flutter ==
+
+FCM -> APP : <b>Push notification</b> livrée
+
+alt <b>App en premier plan (foreground)</b>
+  APP -> APP : <b>FirebaseMessaging.onMessage</b>\nAffiche snackbar ou dialog\nin-app
+  APP --> RR : 🔔 Notification visible dans l'app
+
+else <b>App en arrière-plan (background)</b>
+  APP -> APP : <b>FirebaseMessaging.onBackgroundMessage</b>\nnotification dans barre de statut Android/iOS
+  APP --> RR : 📳 Notification barre de statut
+
+else <b>App fermée (terminated)</b>
+  FCM -> APP : Notification système Android/iOS
+  APP --> RR : 📳 Notification barre de statut
+
+end
+
+== Interaction utilisateur ==
+
+RR -> APP : Tape sur la notification
+APP -> APP : <b>FirebaseMessaging.onMessageOpenedApp</b>\nExtrait pret_id = 42 depuis data payload
+
+APP -> APP : <b>GoRouter.go()</b>\n/alertes/101
+
+APP -> SPRING : <b>GET</b> /api/alertes/101\nAuthorization: Bearer <JWT>
+SPRING -> PG : SELECT * FROM alertes WHERE id = 101
+PG --> SPRING : alerte détail
+SPRING --> APP : <b>200 OK</b> AlerteResponse
+
+APP --> RR : 📋 Écran détail alerte\n(client, prêt, montant, jours,\nactions : Clôturer / Escalader)
+
+@enduml

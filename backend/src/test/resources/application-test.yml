@@ -1,0 +1,42 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: app
+
+  flyway:
+    enabled: true
+    schemas: app
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # Cache simple en mémoire pour les tests (pas de Redis)
+  cache:
+    type: simple
+
+  mail:
+    host: localhost
+    port: 1025
+
+jwt:
+  secret: test-secret-key-integration-1234567890-abcdefghijklmnopqrstuvwxyz-XYZ
+  access-token-expiration-ms: 900000
+  refresh-token-expiration-ms: 604800000
+
+internal:
+  api-key: test_internal_api_key
+
+imf:
+  pipeline:
+    firebase-enabled: false
+    internal-api-key: test-internal-key
+    dw-schema: public        # Pas de schéma DW en test, les requêtes KPI échouent gracieusement
+    staging-schema: public
+
+logging:
+  level:
+    cm.imf: INFO
+    org.springframework.security: WARN

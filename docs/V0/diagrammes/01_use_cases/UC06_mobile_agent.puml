@@ -1,0 +1,74 @@
+@startuml UC06_mobile_agent
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 11
+}
+skinparam actor {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title UC06 — Application Mobile Flutter\n(Agent Terrain + Directeur)\nPlateforme IMF Cameroun
+
+left to right direction
+
+actor "Agent de Terrain" as AT
+actor "Directeur Général" as DG
+actor "Responsable\nRecouvrement" as RR
+actor "Spring Boot API" as API <<système>>
+actor "Firebase FCM" as FCM <<système>>
+actor "SQLite Local" as DB <<système>>
+
+rectangle "UC06 — Application Mobile Flutter" {
+
+  usecase "UC06.1\nS'authentifier\n(login JWT sécurisé)" as UC0601
+  usecase "UC06.2\nSaisir une collecte\n(formulaire guidé)" as UC0602
+  usecase "UC06.3\nFonctionner\nhors-ligne\n(offline-first)" as UC0603
+  usecase "UC06.4\nSynchroniser\nles collectes\npendantes" as UC0604
+  usecase "UC06.5\nConsulter ses\nclients et créances\nassignées" as UC0605
+  usecase "UC06.6\nConsulter l'historique\nde ses collectes\neffectuées" as UC0606
+  usecase "UC06.7\nConsulter les KPIs\n(PAR30/90, volume\ncollectes)" as UC0607
+  usecase "UC06.8\nRecevoir notification\npush alerte impayé\n(FCM)" as UC0608
+  usecase "UC06.9\nConsulter le détail\nd'une alerte\ndepuis la notif" as UC0609
+
+}
+
+' Agent terrain
+AT --> UC0601
+AT --> UC0602
+AT --> UC0603
+AT --> UC0605
+AT --> UC0606
+AT --> UC0608
+
+' Directeur
+DG --> UC0601
+DG --> UC0607
+DG --> UC0608
+DG --> UC0609
+
+' RR
+RR --> UC0608
+RR --> UC0609
+
+' Systèmes
+API <-- UC0602
+DB  <-- UC0603
+DB  --> UC0604
+API <-- UC0604
+FCM --> UC0608
+
+' Inclusions
+UC0601 ..> API    : <<include>>
+UC0602 ..> UC0603 : <<extend>>
+UC0603 ..> UC0604 : <<include>>
+UC0608 ..> UC0609 : <<extend>>
+
+@enduml

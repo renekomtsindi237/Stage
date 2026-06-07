@@ -1,0 +1,39 @@
+# Pipeline IMF — dépendances Python
+# Installer avec : pip install -r requirements.txt
+
+# ── Airflow ───────────────────────────────────────────────────────────────────
+apache-airflow==2.8.4
+apache-airflow-providers-postgres==5.10.2
+
+# ── Base de données ───────────────────────────────────────────────────────────
+psycopg2-binary==2.9.9
+
+# ── Traitement de données ─────────────────────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+
+# ── dbt ───────────────────────────────────────────────────────────────────────
+dbt-core==1.8.6
+dbt-postgres==1.8.6
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+pytest==8.1.1
+pytest-cov==5.0.0
+
+# ── Notifications ─────────────────────────────────────────────────────────────
+requests==2.31.0
+httpx==0.27.0
+
+# ── Machine Learning — MCRS ───────────────────────────────────────────────────
+scikit-learn==1.4.2
+xgboost==2.0.3
+shap==0.45.1
+scipy==1.13.0
+pyarrow==16.1.0        # parquet (dataset entraînement)
+lifelines==0.29.0      # analyse survie Cox (optionnel)
+
+# ── FastAPI ML Service ────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.1
+pydantic-settings==2.3.1

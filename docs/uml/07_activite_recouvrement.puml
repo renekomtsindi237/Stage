@@ -1,0 +1,92 @@
+@startuml activite_recouvrement
+!theme plain
+title Diagramme d'activité — Workflow Recouvrement Créances\nPhases COBAC (CEMAC Règlement 01/02)
+
+skinparam activityBorderColor #2C7BE5
+skinparam activityBackgroundColor #EBF2FF
+
+|Pipeline Airflow|
+start
+:Ingestion export CBS quotidien;
+:Calcul PAR et classification COBAC\n(A: sain, B: PAR30-89j, C: 90-179j\nD: 180-359j, E: 360j+);
+:Mise à jour app.creances;
+:Calcul provisions réglementaires\n(B:20%, C:50%, D:80%, E:100%);
+
+|Système Automatique|
+if (Jours retard >= 30 ?) then (oui)
+    :Créer/MAJ dossier recouvrement;
+    :Prioriser par score MCRS;
+    :Générer alerte PAR_SEUIL_DEPASSE;
+else (non)
+    :Créance COURANTE\n(monitoring seulement);
+    stop
+endif
+
+|Responsable Recouvrement|
+:Recevoir tableau de bord\ndossiers prioritaires (score MCRS);
+:Consulter score MCRS + SHAP\n(top 3 facteurs de risque);
+
+fork
+    :Phase RELANCE_AMIABLE;
+    :Appel téléphonique / SMS;
+    if (Contact établi ?) then (oui)
+        :Enregistrer action\n(résultat=PROMESSE);
+        :Créer promesse de paiement\n(date + montant);
+    else (non)
+        :Enregistrer action\n(résultat=PAS_JOINT);
+        :Planifier revisite;
+    endif
+fork again
+    :Phase MISE_EN_DEMEURE\n(si PAR90+ ou 3 relances sans résultat);
+    :Envoi lettre officielle;
+    :Deadline 15 jours légaux;
+end fork
+
+|Pipeline Airflow|
+:Vérifier promesses échues\n(dag_recouvrement 06h00);
+if (Promesse honorée ?) then (oui)
+    :Marquer promesse HONOREE;
+    :MAJ montant_impaye;
+else (non)
+    :Marquer promesse ROMPUE;
+    :Générer alerte PROMESSE_ECHEANCE;
+    :Escalade automatique si PAR180+;
+endif
+
+|Responsable Recouvrement|
+if (Accord rééchelonnement possible ?) then (oui)
+    :Phase REECHELONNEMENT;
+    :Créer accord (nouveau calendrier);
+    :Approbation directeur;
+    :Signer accord;
+    :MAJ créance statut=REECHELONNEE;
+else (non)
+    if (Jours retard >= 360 ?) then (oui)
+        :Phase CONTENTIEUX;
+        :Saisine juridique (OHADA);
+        :Activation garanties/cautions;
+    else (non)
+        :Continuer suivi actif;
+    endif
+endif
+
+|Directeur IMF|
+if (Créance irrecoverable ?) then (oui)
+    :Décision radiation;
+    :MAJ statut=RADIEE;
+    :Provision 100% comptabilisée;
+    :Report annuel COBAC;
+else (non)
+    :Clôture dossier si recouvrement OK;
+    :Libération provision;
+endif
+
+|Système Automatique|
+:Calculer KPI recouvrement\n(PAR30/60/90, taux recouvrement, benchmark);
+:Notifier directeur (SSE + email);
+:Mettre à jour benchmarks inter-agences;
+:MAJ score MCRS client (prochaine exécution);
+
+stop
+
+@enduml

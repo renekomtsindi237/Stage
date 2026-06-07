@@ -1,0 +1,1272 @@
+/* ============================================================
+   MicroRecouv — Design System · Thème Blucash
+   Palette : Navy profond #030B18 | Electric Blue #1A7AFF | Cyan #00C8FF
+   ============================================================ */
+
+@use '@angular/material' as mat;
+
+/* ── Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Police San Francisco (iPhone) - Fallback sur system-ui */
+:root {
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ============================================================
+   TOKENS THÈME CLAIR (Style Blucash.net)
+   ============================================================ */
+:root,
+[data-theme="light"] {
+
+  /* ── Brand Blucash (couleurs officielles) */
+  --brand-navy:        #03091A;
+  --brand-navy-dark:   #020610;
+  --brand-navy-deep:   #010308;
+  --brand-blue:        #0066FF;
+  --brand-blue-light:  #3385FF;
+  --brand-blue-pale:   #E6F0FF;
+  --brand-cyan:        #00C8FF;
+  --brand-cyan-light:  #99E8FF;
+  --brand-indigo:      #4F46E5;
+  --brand-green:       #00D084;
+  --brand-orange:      #FF9500;
+  --brand-electric:    #00D4FF;
+  --brand-red-soft:    #FF3B30;
+
+  /* ── Layout (thème clair Blucash - fond très clair) */
+  --color-bg:             #FAFBFC;
+  --color-surface:        #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-border:         #E5E7EB;
+  --color-border-light:   #F3F4F6;
+
+  /* ── Primary = Blucash Blue */
+  --color-primary:        #0066FF;
+  --color-primary-dark:   #0052CC;
+  --color-primary-light:  #E6F0FF;
+  --color-primary-hover:  #3385FF;
+
+  /* ── Accent = Cyan Blucash */
+  --color-accent:         #00C8FF;
+  --color-accent-dark:    #009BD4;
+  --color-accent-light:   #E6F9FF;
+
+  /* ── Sémantique (style Blucash) */
+  --color-success:        #00D084;
+  --color-warn:           #FF9500;
+  --color-info:           #0066FF;
+  --color-pending:        #FFB020;
+  --color-error:          #FF3B30;
+
+  /* ── Texte (noir et bleu Blucash) */
+  --color-text-primary:   #000000;  // Noir pur pour titres et textes importants
+  --color-text-secondary: #1A1A1A;  // Noir légèrement atténué pour textes normaux
+  --color-text-muted:     #6B7280;  // Gris pour textes secondaires
+  --color-text-blue:      #0066FF;  // Bleu Blucash pour liens et accents
+  --color-text-on-primary:#FFFFFF;
+  --color-text-on-accent: #FFFFFF;
+
+  /* ── Sidebar (toujours sombre — Blucash style) */
+  --color-sidebar-bg:          #020810;
+  --color-sidebar-header:      #010508;
+  --color-sidebar-footer-bg:   rgba(0,0,0,0.3);
+  --color-sidebar-user-bg:     rgba(255,255,255,0.04);
+  --color-sidebar-text:        rgba(255,255,255,0.52);
+  --color-sidebar-hover:       rgba(0,180,255,0.08);
+  --color-sidebar-active:      #00C8FF;
+  --color-sidebar-active-bg:   rgba(0,200,255,0.12);
+  --color-sidebar-border:      rgba(255,255,255,0.05);
+
+  /* ── Navbar */
+  --color-navbar-bg:      rgba(3,9,26,0.96);
+  --color-navbar-border:  rgba(26,122,255,0.18);
+
+  /* ── Ombres (style Blucash - plus douces) */
+  --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md:    0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg:    0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-glow:  0 4px 16px rgba(0, 102, 255, 0.3);
+
+  /* ── Radii — Blucash utilise des formes arrondies */
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-pill: 100px;
+
+  /* ── Glassmorphism — light glass style Blucash */
+  --glass-bg:     rgba(255, 255, 255, 0.8);  // Fond blanc semi-transparent
+  --glass-border: rgba(0, 102, 255, 0.15);  // Bordure bleue Blucash
+  --glass-blur:   16px;
+  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);  // Ombre douce
+
+  /* ── Gradients Blucash */
+  --grad-primary:  linear-gradient(135deg, #1A7AFF 0%, #0A5FCC 100%);
+  --grad-growth:   linear-gradient(135deg, #00E599 0%, #00C8FF 100%);
+  --grad-premium:  linear-gradient(135deg, #1A7AFF 0%, #00C8FF 100%);
+  --grad-hero:     linear-gradient(135deg, #030B18 0%, #071A35 50%, #030B18 100%);
+  --grad-glass:    linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  --grad-glow:     radial-gradient(ellipse at 50% 0%, rgba(26,122,255,0.2) 0%, transparent 60%);
+
+  /* ── Animation */
+  --speed-fast: 0.15s;
+  --speed-base: 0.3s;
+  --speed-slow: 0.6s;
+
+  /* ── Skeleton */
+  --skeleton-base:      rgba(26,122,255,0.08);
+  --skeleton-highlight: rgba(26,122,255,0.14);
+
+  /* ── Landing page tokens */
+  --ld-bg:            #030B18;
+  --ld-surface:       #071526;
+  --ld-surface-alt:   #041020;
+  --ld-text:          #FFFFFF;
+  --ld-text-mid:      rgba(255,255,255,0.70);
+  --ld-text-dim:      rgba(255,255,255,0.42);
+  --ld-border:        rgba(255,255,255,0.06);
+  --ld-border-md:     rgba(26,122,255,0.20);
+  --ld-hero-bg:       linear-gradient(160deg,#030B18 0%,#071526 40%,#0A1C35 70%,#030B18 100%);
+  --ld-header-bg:     rgba(3,9,26,0.96);
+  --ld-grid:          rgba(26,122,255,0.03);
+  --ld-btn-bg:        #1A7AFF;
+  --ld-btn-fg:        #FFFFFF;
+  --ld-ghost-border:  rgba(255,255,255,0.14);
+  --ld-ghost-color:   rgba(255,255,255,0.72);
+  --ld-metric-bg:     #071526;
+}
+
+/* ============================================================
+   TOKENS THÈME SOMBRE — Blucash Deep Dark
+   ============================================================ */
+[data-theme="dark"] {
+
+  --color-bg:             #020810;
+  --color-surface:        #03101E;
+  --color-surface-raised: #051828;
+  --color-border:         rgba(26,122,255,0.18);
+  --color-border-light:   rgba(26,122,255,0.09);
+
+  --color-primary:        #5BA0FF;
+  --color-primary-dark:   #1A7AFF;
+  --color-primary-light:  rgba(91,160,255,0.10);
+  --color-primary-hover:  #80B8FF;
+
+  --color-accent:         #00C8FF;
+  --color-accent-dark:    #009BD4;
+  --color-accent-light:   rgba(0,200,255,0.10);
+
+  --color-success:        #00E599;
+  --color-warn:           #FF4D6A;
+  --color-info:           #5BA0FF;
+  --color-pending:        #FFB020;
+  --color-error:          #FF4D6A;
+
+  --color-text-primary:   #EEF4FF;
+  --color-text-secondary: rgba(255,255,255,0.58);
+  --color-text-muted:     rgba(255,255,255,0.35);
+  --color-text-on-primary:#FFFFFF;
+  --color-text-on-accent: #FFFFFF;
+
+  --color-sidebar-bg:         #010610;
+  --color-sidebar-header:     #010408;
+  --color-sidebar-footer-bg:  rgba(0,0,0,0.45);
+  --color-sidebar-user-bg:    rgba(255,255,255,0.04);
+  --color-sidebar-text:       rgba(255,255,255,0.48);
+  --color-sidebar-hover:      rgba(0,180,255,0.07);
+  --color-sidebar-active:     #00C8FF;
+  --color-sidebar-active-bg:  rgba(0,200,255,0.12);
+  --color-sidebar-border:     rgba(255,255,255,0.04);
+
+  --color-navbar-bg:      rgba(2,8,16,0.95);
+  --color-navbar-border:  rgba(26,122,255,0.16);
+
+  --shadow-sm:    0 2px 8px rgba(0,0,0,0.35);
+  --shadow-md:    0 8px 28px rgba(0,0,0,0.50);
+  --shadow-lg:    0 20px 56px rgba(0,0,0,0.65);
+  --shadow-glow:  0 0 32px rgba(0, 102, 255, 0.18);  // Glow bleu Blucash
+
+  --glass-bg:     rgba(255, 255, 255, 0.9);  // Fond blanc semi-transparent (dark mode)
+  --glass-border: rgba(0, 102, 255, 0.16);  // Bordure bleue Blucash
+  --glass-blur:   20px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);  // Ombre douce
+  --grad-glass:   linear-gradient(135deg,rgba(26,122,255,0.06) 0%,rgba(0,200,255,0.02) 100%);
+
+  --skeleton-base:      rgba(26,122,255,0.06);
+  --skeleton-highlight: rgba(26,122,255,0.12);
+
+  /* ── Landing page tokens (dark — Blucash dark) */
+  --ld-bg:            #020810;
+  --ld-surface:       #03101E;
+  --ld-surface-alt:   #020A18;
+  --ld-text:          #FFFFFF;
+  --ld-text-mid:      rgba(255,255,255,0.68);
+  --ld-text-dim:      rgba(255,255,255,0.40);
+  --ld-border:        rgba(26,122,255,0.12);
+  --ld-border-md:     rgba(26,122,255,0.22);
+  --ld-hero-bg:       linear-gradient(160deg,#020810 0%,#03101E 40%,#051828 70%,#020810 100%);
+  --ld-header-bg:     rgba(2,8,16,0.96);
+  --ld-grid:          rgba(26,122,255,0.025);
+  --ld-btn-bg:        #1A7AFF;
+  --ld-btn-fg:        #FFFFFF;
+  --ld-ghost-border:  rgba(255,255,255,0.12);
+  --ld-ghost-color:   rgba(255,255,255,0.68);
+  --ld-metric-bg:     #03101E;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  transition: background 0.35s ease, color 0.35s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   APP SHELL LAYOUT
+   ============================================================ */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #FAFBFC !important;  // Fond clair Blucash
+  min-width: 0;
+  margin-left: 260px; /* Compense la largeur du sidebar fixe */
+  
+  @media (max-width: 768px) {
+    margin-left: 240px;
+  }
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  scroll-behavior: smooth;
+  background: #FAFBFC !important;  // Fond clair Blucash
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+    &:hover { background: var(--color-text-muted); }
+  }
+}
+
+/* ============================================================
+   NAVBAR — Blucash dark style
+   ============================================================ */
+.app-navbar {
+  height: 64px;
+  background: var(--color-navbar-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border-bottom: 1px solid var(--color-navbar-border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+  z-index: 100;
+  flex-shrink: 0;
+  box-shadow: 0 1px 0 var(--color-navbar-border), var(--shadow-sm);
+}
+
+.navbar-spacer { flex: 1; }
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(26,122,255,0.08);
+  border: 1px solid rgba(26,122,255,0.18);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  &:hover {
+    background: rgba(26,122,255,0.15);
+    border-color: rgba(26,122,255,0.35);
+    box-shadow: 0 0 0 3px rgba(26,122,255,0.08);
+  }
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--grad-premium);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(0,200,255,0.25);
+}
+
+.navbar-user-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.navbar-user-role {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.user-chevron {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.app-sidebar {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--color-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 200;
+  transition: background 0.3s;
+}
+
+.sidebar-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--color-sidebar-header);
+  border-bottom: 1px solid var(--color-sidebar-border);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(1.1);
+}
+
+.sidebar-logo-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.sidebar-logo-sub {
+  font-size: 0.58rem;
+  color: var(--color-sidebar-text);
+  letter-spacing: 0.3px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+}
+
+.sidebar-section-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--color-sidebar-text);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 8px 20px 4px;
+  opacity: 0.45;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  margin: 1px 8px;
+  border-radius: var(--radius-md);
+  color: var(--color-sidebar-text);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.845rem;
+  font-weight: 500;
+  position: relative;
+  transition: background 0.18s, color 0.18s;
+
+  mat-icon {
+    font-size: 19px;
+    width: 19px;
+    height: 19px;
+    opacity: 0.65;
+    flex-shrink: 0;
+    transition: opacity 0.18s, filter 0.18s;
+  }
+
+  &:hover {
+    background: var(--color-sidebar-hover);
+    color: rgba(255,255,255,0.85);
+    mat-icon { opacity: 0.9; }
+  }
+
+  &.active {
+    background: var(--color-sidebar-active-bg);
+    color: var(--color-sidebar-active);
+    font-weight: 600;
+    box-shadow: inset 0 0 16px rgba(0, 200, 255, 0.06);
+
+    mat-icon {
+      opacity: 1;
+      color: var(--color-sidebar-active);
+      filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.5));
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: linear-gradient(180deg, #1A7AFF, #00C8FF);
+      border-radius: 0 2px 2px 0;
+      box-shadow: 0 0 8px rgba(0, 200, 255, 0.6);
+    }
+  }
+}
+
+.sidebar-footer {
+  padding: 8px;
+  border-top: 1px solid var(--color-sidebar-border);
+}
+
+/* ============================================================
+   TOGGLE BUTTONS CIRCULAIRES
+   ============================================================ */
+.toggle-btn-circular {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 50% !important;
+  background: var(--color-surface-raised) !important;
+  border: 1.5px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  padding: 0 !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  &:hover {
+    background: var(--color-primary-light) !important;
+    border-color: var(--color-primary) !important;
+    transform: scale(1.08);
+    color: var(--color-primary) !important;
+  }
+}
+
+/* ============================================================
+   CARDS MATERIAL — Blucash style
+   ============================================================ */
+mat-card, .mat-mdc-card {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  color: var(--color-text-primary) !important;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md) !important;
+    border-color: rgba(26,122,255,0.30) !important;
+  }
+}
+
+/* ============================================================
+   KPI CARDS (style FlowMail amélioré)
+   ============================================================ */
+.kpi-card {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.kpi-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.primary { background: var(--color-primary-light); color: var(--color-primary); }
+  &.accent  { background: var(--color-accent-light);  color: var(--color-accent); }
+  &.success { background: rgba(34,160,107,0.12);      color: var(--color-success); }
+  &.warn    { background: rgba(229,72,77,0.12);       color: var(--color-warn); }
+  &.teal    { background: rgba(6,182,212,0.12);        color: var(--brand-cyan); }
+
+  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+}
+
+.kpi-delta {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+
+  &.positive { background: rgba(34,160,107,0.1); color: var(--color-success); }
+  &.negative { background: rgba(229,72,77,0.1);  color: var(--color-warn); }
+  &.neutral  { background: var(--color-border);  color: var(--color-text-muted); }
+}
+
+.kpi-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.kpi-label {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.kpi-sub {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 3px;
+}
+
+/* ============================================================
+   GRILLES
+   ============================================================ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+
+  @media (max-width: 1100px) { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PAGE HEADERS
+   ============================================================ */
+.page-header {
+  margin-bottom: 22px;
+
+  h1 {
+    margin: 0 0 3px;
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #000000;  // Noir pur pour les titres
+    letter-spacing: -0.5px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  }
+
+  .page-subtitle {
+    font-size: 0.845rem;
+    color: #1A1A1A;  // Noir légèrement atténué
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  }
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #000000;  // Noir pur
+  margin: 0 0 3px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+}
+
+.section-sub {
+  font-size: 0.78rem;
+  color: #6B7280;  // Gris pour textes secondaires
+  margin: 0 0 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+}
+
+/* ============================================================
+   BADGES STATUT
+   ============================================================ */
+.badge-statut {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &.active, &.actif   { background: rgba(34,160,107,0.12); color: var(--color-success); }
+  &.escaladee          { background: var(--color-accent-light); color: var(--color-accent); }
+  &.cloturee, &.solde  { background: rgba(96,112,128,0.12); color: var(--color-text-secondary); }
+  &.en_retard          { background: rgba(229,72,77,0.12);  color: var(--color-warn); }
+  &.en_retard_grave    { background: rgba(229,72,77,0.20);  color: var(--color-warn); font-weight: 700; }
+  &.en_attente         { background: rgba(46,135,175,0.12); color: var(--color-info); }
+}
+
+/* ============================================================
+   TABLES MATERIAL
+   ============================================================ */
+.mat-mdc-table {
+  background: var(--color-surface) !important;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.mat-mdc-header-row { background: #F9FAFB !important; }
+
+.mat-mdc-header-cell {
+  color: #374151 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+.mat-mdc-row {
+  color: #111827 !important;
+  border-bottom-color: #F3F4F6 !important;
+  transition: background 0.1s;
+  &:hover { background: #F8FAFF !important; }
+  &:last-child { border-bottom: none !important; }
+}
+
+.mat-mdc-cell {
+  color: #111827 !important;
+  font-size: 0.875rem !important;
+}
+
+/* ============================================================
+   BADGE ALERTE SSE
+   ============================================================ */
+.badge-alerte {
+  background: var(--color-warn);
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229,72,77,0.5); }
+  50%       { box-shadow: 0 0 0 6px rgba(229,72,77,0); }
+}
+
+/* ============================================================
+   SKELETON LOADER
+   ============================================================ */
+.skeleton {
+  background: var(--skeleton-base);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--skeleton-highlight) 50%,
+      transparent 100%
+    );
+    animation: skeleton-shimmer 1.6s infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton-text    { height: 14px; margin-bottom: 8px; border-radius: 4px; }
+.skeleton-title   { height: 20px; margin-bottom: 12px; border-radius: 4px; width: 60%; }
+.skeleton-avatar  { border-radius: 50%; }
+.skeleton-card    { border-radius: var(--radius-lg); }
+.skeleton-btn     { height: 36px; border-radius: 18px; }
+.skeleton-table-row {
+  height: 52px;
+  border-radius: 0;
+  margin-bottom: 1px;
+  &::after { animation-delay: var(--delay, 0s); }
+}
+
+/* ============================================================
+   LOADING OVERLAY
+   ============================================================ */
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 48px;
+  color: var(--color-text-secondary);
+  font-size: 0.845rem;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  color: var(--color-text-muted);
+  text-align: center;
+  gap: 10px;
+
+  mat-icon { font-size: 44px; width: 44px; height: 44px; opacity: 0.3; }
+  p { margin: 0; font-size: 0.845rem; }
+}
+
+/* ============================================================
+   PAGINATOR
+   ============================================================ */
+.mat-mdc-paginator {
+  background: #FAFBFC !important;
+  color: #374151 !important;
+  border-top: 1px solid #E5E7EB;
+  font-size: 0.78rem !important;
+
+  .mat-mdc-paginator-range-label,
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-select-value-text {
+    color: #374151 !important;
+  }
+
+  .mat-mdc-icon-button {
+    color: #374151 !important;
+    &:disabled { color: #D1D5DB !important; }
+  }
+}
+
+/* ============================================================
+   FORM FIELDS MATERIAL — Blucash style
+   ============================================================ */
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color:       #E5E7EB;  // Bordure grise claire
+  --mdc-outlined-text-field-hover-outline-color: #0066FF;  // Bordure bleue au hover
+  --mdc-outlined-text-field-focus-outline-color: #0066FF;  // Bordure bleue au focus
+  --mdc-outlined-text-field-label-text-color:    #6B7280;  // Label gris
+  --mdc-outlined-text-field-input-text-color:    #000000;  // Texte noir pur
+  --mdc-outlined-text-field-disabled-outline-color: #E5E7EB;
+  --mdc-outlined-text-field-error-outline-color: #FF3B30;  // Rouge pour erreur
+  
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  
+  .mat-mdc-text-field-wrapper {
+    border-radius: 12px !important;  // Coins arrondis style Blucash
+  }
+  
+  .mat-mdc-form-field-focus-overlay {
+    background-color: transparent !important;
+  }
+  
+  .mat-mdc-form-field-icon-prefix {
+    color: #0066FF !important;  // Icônes bleues
+  }
+  
+  .mat-mdc-form-field-icon-suffix {
+    color: #6B7280 !important;  // Icônes grises
+  }
+  
+  input, textarea {
+    font-weight: 500 !important;
+    color: #000000 !important;  // Texte noir pur
+    
+    &::placeholder {
+      color: #9CA3AF !important;  // Placeholder gris
+    }
+  }
+  
+  .mat-mdc-form-field-hint {
+    color: #6B7280 !important;  // Hint gris
+    font-size: 0.75rem !important;
+  }
+  
+  .mat-mdc-form-field-error {
+    color: #FF3B30 !important;  // Erreur rouge
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* ============================================================
+   MATERIAL BUTTON OVERRIDES — Blucash style
+   ============================================================ */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-flat-button.mat-primary {
+  background: #0066FF !important;  // Bleu Blucash pur
+  color: #FFFFFF !important;
+  border-radius: 12px !important;  // Coins arrondis style Blucash
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25) !important;
+  transition: all 0.2s ease !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.2px !important;
+  padding: 10px 24px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  
+  &:hover:not(:disabled) {
+    background: #3385FF !important;  // Bleu plus clair au hover
+    box-shadow: 0 4px 16px rgba(0, 102, 255, 0.35) !important;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: #E5E7EB !important;
+    color: #9CA3AF !important;
+    box-shadow: none !important;
+  }
+}
+
+.mat-mdc-stroked-button,
+.mat-mdc-outlined-button {
+  border: 2px solid #0066FF !important;  // Bordure bleue
+  color: #0066FF !important;  // Texte bleu
+  background: #FFFFFF !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  transition: all 0.2s ease !important;
+  
+  &:hover:not(:disabled) {
+    background: #E6F0FF !important;  // Fond bleu très pâle
+    border-color: #3385FF !important;
+    color: #3385FF !important;
+  }
+  
+  &:disabled {
+    border-color: #E5E7EB !important;
+    color: #9CA3AF !important;
+  }
+}
+
+.mat-mdc-button {
+  color: #0066FF !important;  // Texte bleu pour boutons texte
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  
+  &:hover:not(:disabled) {
+    background: #E6F0FF !important;
+  }
+}
+
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-flat-button.mat-accent {
+  background: #00C8FF !important;  // Cyan Blucash
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 200, 255, 0.25) !important;
+  font-weight: 600 !important;
+  
+  &:hover:not(:disabled) {
+    background: #33D4FF !important;
+    box-shadow: 0 4px 16px rgba(0, 200, 255, 0.35) !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* ============================================================
+   DARK MODE OVERRIDES MATERIAL
+   ============================================================ */
+[data-theme="dark"] {
+  .mat-mdc-dialog-container  { background: var(--color-surface) !important; }
+  .mat-mdc-menu-panel        { background: var(--color-surface) !important; border: 1px solid var(--color-border) !important; }
+  .mat-mdc-select-panel      { background: var(--color-surface) !important; }
+  .mat-mdc-option            { color: var(--color-text-primary) !important; }
+  .mat-mdc-input-element     { color: var(--color-text-primary) !important; }
+  .mdc-text-field--filled    { background: var(--color-surface-raised) !important; }
+  .mat-calendar              { background: var(--color-surface) !important; color: var(--color-text-primary) !important; }
+  .mat-calendar-body-cell-content { color: var(--color-text-primary) !important; }
+}
+
+/* ============================================================
+   UTILITAIRES PREMIUM & GLASS
+   ============================================================ */
+.glass {
+  background: #FFFFFF !important;  // Fond blanc pur
+  border: none !important;  // Pas de bordure
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06) !important;  // Ombre douce Blucash
+}
+
+.glass-heavy {
+  background: #FFFFFF !important;  // Fond blanc pur
+  border: none !important;  // Pas de bordure
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04) !important;  // Ombre plus marquée
+}
+
+/* ── Mesh Gradients — Blucash Navy ── */
+.mesh-gradient-bg {
+  background-color: #020810;
+  background-image:
+    radial-gradient(at 0% 0%,   hsla(218, 100%, 10%, 1) 0, transparent 50%),
+    radial-gradient(at 50% 0%,  hsla(218, 90%, 22%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(195, 100%, 40%, 0.35) 0, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(218, 90%, 18%, 1) 0, transparent 50%),
+    radial-gradient(at 50% 100%,hsla(218, 100%, 35%, 0.25) 0, transparent 50%),
+    radial-gradient(at 100% 100%,hsla(218,100%, 10%, 1) 0, transparent 50%);
+  background-size: 200% 200%;
+  animation: mesh-flow 20s ease infinite;
+}
+
+@keyframes mesh-flow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Animations d'entrée ── */
+.reveal-stagger {
+  & > * {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: reveal-item 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+@for $i from 1 through 10 {
+  .reveal-stagger > *:nth-child(#{$i}) {
+    animation-delay: #{$i * 0.1}s;
+  }
+}
+
+@keyframes reveal-item {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Boutons premium Blucash ──────────────────────────────
+.btn-premium,
+.btn-primary-premium {
+  background: #0066FF !important;  // Bleu Blucash pur
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25) !important;
+  padding: 12px 28px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  border: none !important;
+
+  &:hover:not(:disabled) {
+    background: #3385FF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 102, 255, 0.35) !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: #E5E7EB !important;
+    color: #9CA3AF !important;
+    box-shadow: none !important;
+  }
+}
+
+.btn-secondary {
+  background: #FFFFFF !important;
+  color: #0066FF !important;  // Texte bleu
+  border: 2px solid #0066FF !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  transition: all 0.2s ease !important;
+
+  &:hover:not(:disabled) {
+    background: #E6F0FF !important;
+    border-color: #3385FF !important;
+    color: #3385FF !important;
+  }
+  
+  &:disabled {
+    border-color: #E5E7EB !important;
+    color: #9CA3AF !important;
+  }
+}
+
+.btn-text {
+  background: transparent !important;
+  color: #0066FF !important;  // Texte bleu
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  transition: all 0.2s ease !important;
+
+  &:hover:not(:disabled) {
+    background: #E6F0FF !important;
+  }
+}
+
+/* Base utilities */
+.full-width   { width: 100%; }
+.text-center  { text-align: center; }
+.mb-16        { margin-bottom: 16px; }
+.mt-16        { margin-top: 16px; }
+.gap-8        { gap: 8px; }
+.gap-12       { gap: 12px; }
+.gap-16       { gap: 16px; }
+.flex         { display: flex; }
+.flex-1       { flex: 1; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+
+/* Gradient text — Blucash */
+.text-gradient {
+  background: linear-gradient(135deg, #1A7AFF, #00C8FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #1A7AFF, #00C8FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Error card */
+.error-card {
+  border-left: 3px solid var(--color-warn);
+  margin-bottom: 16px;
+}
+/* ============================================================
+   ANIMATIONS GLOBALES
+   ============================================================ */
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-15px); }
+}
+
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50%       { transform: translateY(10px); opacity: 0.8; }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes pulse-soft {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up-reveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Effet de lueur interactive (Aura) — Blucash Blue ── */
+.mouse-glow-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle 600px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(26, 122, 255, 0.07),
+    transparent 80%
+  );
+  transition: opacity 0.5s ease;
+}
+
+[data-theme="dark"] .mouse-glow-bg {
+  background: radial-gradient(
+    circle 500px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 200, 255, 0.055),
+    transparent 80%
+  );
+}
+
+/* ── Border Beam — Blucash Electric ── */
+.border-beam {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      transparent,
+      rgba(0, 200, 255, 0.45),
+      rgba(26, 122, 255, 0.65),
+      transparent 25%
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    padding: 1.5px;
+    animation: rotate-beam 3.5s linear infinite;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+@keyframes rotate-beam {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Boutons Magnétiques (Effet subtil) ── */
+.magnetic-btn {
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+  display: inline-flex;
+  &:hover {
+    transform: translate(
+      calc((var(--mouse-x, 0) - 50%) * 0.01), 
+      calc((var(--mouse-y, 0) - 50%) * 0.01)
+    ) scale(1.03);
+  }
+}
+
+/* ── Bouton "Retour Accueil" — Blucash style ── */
+.btn-home-floating {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 44px;
+  padding: 10px;
+  background: rgba(26, 122, 255, 0.08);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(26, 122, 255, 0.18);
+  border-radius: 100px;
+  color: rgba(255,255,255,0.72);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.84rem;
+  width: 44px;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  white-space: nowrap;
+
+  mat-icon { font-size: 20px; width: 22px; height: 22px; }
+  span { opacity: 0; transform: translateX(-10px); transition: all 0.3s; }
+
+  &:hover {
+    width: 145px;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(26, 122, 255, 0.16);
+    border-color: rgba(26, 122, 255, 0.35);
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(26, 122, 255, 0.08);
+    span { opacity: 1; transform: translateX(0); }
+  }
+}
+
+/* ── Glow Text — Blucash Cyan ── */
+.glow-text {
+  text-shadow: 0 0 18px rgba(26, 122, 255, 0.40);
+  [data-theme="dark"] & {
+    text-shadow: 0 0 22px rgba(0, 200, 255, 0.45);
+  }
+}
+
+/* ── Responsive utilities ── */
+.d-none-sm {
+  @media (max-width: 768px) { display: none !important; }
+}

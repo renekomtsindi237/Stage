@@ -1,0 +1,10 @@
+@import '../../blucash-list-styles.scss';
+
+// ── Host component background ────────────────────────────────────────────────
+:host {
+  display: block;
+  background: #FAFBFC;  // Fond clair Blucash
+  min-height: 100%;
+}
+
+// Styles spécifiques à la page Clients (si nécessaire)

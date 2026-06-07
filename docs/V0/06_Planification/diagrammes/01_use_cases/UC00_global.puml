@@ -1,0 +1,81 @@
+@startuml UC00_global
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 12
+}
+skinparam actor {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+skinparam rectangle {
+  BackgroundColor #F1F8E9
+  BorderColor #388E3C
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title Diagramme de Use Cases Global\nPlateforme IMF Cameroun — Vue d'ensemble
+
+left to right direction
+
+' ===== ACTEURS HUMAINS =====
+actor "Directeur Général" as DG #FFE0B2
+actor "Responsable\nRecouvrement" as RR #FFE0B2
+actor "Analyste Data" as AD #FFE0B2
+actor "DSI / Admin" as DSI #FFE0B2
+actor "Agent de Terrain" as AT #FFE0B2
+
+' ===== ACTEURS SYSTÈMES =====
+actor "Core Banking\nSystem (CBS)" as CBS #E3F2FD
+actor "MTN Mobile\nMoney" as MTN #E3F2FD
+actor "Orange Money" as OM #E3F2FD
+actor "Firebase FCM" as FCM #E3F2FD
+actor "Serveur Email\n(SMTP)" as SMTP #E3F2FD
+
+' ===== SYSTÈME =====
+rectangle "Plateforme IMF — Système Intégré" {
+
+  usecase "UC01\nGérer les collectes\ndigitales" as UC01
+  usecase "UC02\nSuivre le portefeuille\nde créances (PAR)" as UC02
+  usecase "UC03\nGérer le recouvrement\net les relances" as UC03
+  usecase "UC04\nConsulter les tableaux\nde bord (Web)" as UC04
+  usecase "UC05\nAdministrer\nle pipeline" as UC05
+  usecase "UC06\nSaisir et consulter\nvia app mobile" as UC06
+  usecase "UC07\nS'authentifier\n(JWT)" as UC07
+
+}
+
+' ===== RELATIONS ACTEURS HUMAINS =====
+DG     --> UC04
+DG     --> UC06
+RR     --> UC02
+RR     --> UC03
+RR     --> UC04
+AD     --> UC01
+AD     --> UC02
+AD     --> UC04
+DSI    --> UC05
+AT     --> UC06
+AT     --> UC01
+
+' ===== RELATIONS ACTEURS SYSTÈMES =====
+CBS    --> UC01
+CBS    --> UC02
+MTN    --> UC01
+OM     --> UC01
+UC03   --> SMTP
+UC06   --> FCM
+
+' ===== DÉPENDANCES ENTRE UC =====
+UC01 ..> UC07 : <<include>>
+UC02 ..> UC07 : <<include>>
+UC03 ..> UC07 : <<include>>
+UC04 ..> UC07 : <<include>>
+UC06 ..> UC07 : <<include>>
+
+@enduml

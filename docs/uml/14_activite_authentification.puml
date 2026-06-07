@@ -1,0 +1,103 @@
+@startuml activite_authentification
+!theme plain
+title Diagramme d'activité — Authentification Multi-Tenant\nJetons d'accès sécurisés + Changement de Mot de Passe Obligatoire
+
+skinparam activityBorderColor #2C7BE5
+skinparam activityBackgroundColor #EBF2FF
+
+|Utilisateur|
+start
+:Accède à la page de connexion;
+:Saisit son identifiant et son mot de passe;
+
+|Serveur Spring Boot|
+:Reçoit la demande de connexion;
+:Recherche l'utilisateur en base;
+
+if (Utilisateur trouvé ?) then (non)
+    :Identifiants invalides;
+    |Utilisateur|
+    :Affiche le message d'erreur;
+    stop
+else (oui)
+endif
+
+:Vérifie le mot de passe\n(comparaison avec le hachage sécurisé stocké);
+
+if (Mot de passe correct ?) then (non)
+    :Identifiants invalides;
+    |Utilisateur|
+    :Affiche le message d'erreur;
+    stop
+else (oui)
+endif
+
+if (Compte actif ?) then (non)
+    :Compte désactivé;
+    |Utilisateur|
+    :Contacter l'administrateur DSI;
+    stop
+else (oui)
+endif
+
+:Génère le jeton d'accès (valable 15 minutes);
+:Génère le jeton de renouvellement (valable 7 jours);
+:Enregistre le jeton de renouvellement en base\n(hachage sécurisé pour révocation éventuelle);
+:Met à jour la date de dernière connexion;
+:Pose les cookies sécurisés\n(inaccessibles au JavaScript, chiffrés en transit);
+:Renvoie le profil utilisateur\n(rôle, institution, changement de mot de passe requis);
+
+|Utilisateur|
+if (Changement de mot de passe requis ?) then (oui)
+    :Redirigé vers la page de changement de mot de passe;
+
+    |Serveur Spring Boot|
+    :Reçoit le nouveau mot de passe;
+    :Vérifie l'ancien mot de passe;
+    :Chiffre le nouveau mot de passe;
+    :Enregistre le nouveau mot de passe\n(changement obligatoire désactivé);
+
+    |Utilisateur|
+    :Redirigé vers son tableau de bord;
+else (non)
+    :Redirigé vers son tableau de bord\n(selon son rôle);
+endif
+
+== Navigation authentifiée ==
+
+|Utilisateur|
+:Navigue dans l'application\n(cookie transmis automatiquement à chaque requête);
+
+|Serveur Spring Boot|
+:Extrait et vérifie le jeton d'accès du cookie;
+
+if (Jeton valide ?) then (oui)
+    :Identifie l'utilisateur et son institution;
+    :Requête traitée — données filtrées pour son institution uniquement;
+else (expiré ou invalide)
+    :Jeton expiré;
+
+    |Angular (Intercepteur automatique)|
+    :Détecte l'expiration;
+    :Demande automatiquement un nouveau jeton\n(avec le jeton de renouvellement);
+
+    |Serveur Spring Boot|
+    :Vérifie le jeton de renouvellement en base;
+
+    if (Jeton de renouvellement valide ?) then (oui)
+        :Génère un nouveau jeton d'accès;
+        :Renouvelle le cookie;
+        :Rejoue automatiquement la requête initiale;
+    else (expiré ou révoqué)
+        :Session expirée;
+
+        |Angular (Intercepteur automatique)|
+        :Efface les cookies de session;
+        :Redirige vers la page de connexion;
+        stop
+    endif
+endif
+
+stop
+
+@enduml

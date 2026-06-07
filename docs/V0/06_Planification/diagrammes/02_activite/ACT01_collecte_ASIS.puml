@@ -1,0 +1,61 @@
+@startuml ACT01_collecte_ASIS
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam activity {
+  BackgroundColor #FFF8E1
+  BorderColor #F57F17
+  FontSize 12
+  DiamondBackgroundColor #FCE4EC
+  DiamondBorderColor #C62828
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title ACT01 — Processus Collecte Digitale\nSituation Actuelle (AS-IS)\n<color:#C62828>Points douloureux identifiés en rouge</color>
+
+|#E3F2FD| Client |
+|#FFF9C4| MTN / Orange Money |
+|#FCE4EC| Comptable / Agent |
+|#E8F5E9| Core Banking System |
+
+start
+
+|Client|
+:Effectue un paiement\nvia MTN ou Orange Money;
+
+|MTN / Orange Money|
+:Génère un relevé CSV\n(quotidien ou hebdomadaire);
+:Envoie le relevé\npar email;
+
+|Comptable / Agent|
+:<color:#C62828>Réception manuelle\nde l'email + téléchargement</color>;
+note right : <color:#C62828>PD01 — Aucune\nautomatisation</color>
+
+:<color:#C62828>Ouvre Excel et CBS\nen parallèle</color>;
+note right : <color:#C62828>PD04 — Outils\nnon intégrés</color>
+
+:<color:#C62828>Lecture ligne par ligne\ndu relevé CSV</color>;
+
+:<color:#C62828>Recherche manuelle\ndans le CBS</color>;
+
+:<color:#C62828>Rapprochement manuel\n(VLOOKUP Excel ou copier-coller)</color>;
+note right : <color:#C62828>PD01 — 2 à 4h/jour\npour le comptable</color>
+
+if (Transaction identifiée\ndans le CBS ?) then (Oui)
+  :Saisie manuelle\ndu paiement dans le CBS;
+  |Core Banking System|
+  :Mise à jour du solde client\n<color:#C62828>+ registre Excel (risque écrasement)</color>;
+else (Non — non identifiée)
+  :<color:#C62828>Signalement au\nresponsable d'agence</color>;
+  :<color:#C62828>Mise en attente\n(plusieurs jours)</color>;
+  note right : <color:#C62828>PD03 — Doublon\nnon détecté</color>
+endif
+
+|Comptable / Agent|
+:<color:#C62828>Rapport hebdomadaire\nmanuel (Word/Excel)</color>;
+note right : <color:#C62828>PD05 — Données\nobsolètes</color>
+
+stop
+
+@enduml

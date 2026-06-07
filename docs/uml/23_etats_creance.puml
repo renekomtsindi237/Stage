@@ -1,0 +1,83 @@
+@startuml etats_creance
+!theme plain
+title Diagramme d'état-transition — Créance\n(Classification COBAC CEMAC — Règlement 01/02)
+
+skinparam state {
+    BackgroundColor #EBF5FB
+    BorderColor #1A5276
+    FontSize 12
+    ArrowColor #1A5276
+}
+
+[*] --> ACTIVE : Import quotidien des données CBS\n(créance enregistrée sans retard de paiement)
+
+state "ACTIVE (En cours de remboursement)" as ACTIVE {
+    [*] --> CAT_A
+    CAT_A : Classe A — Saine (0 à 29 jours de retard)
+    CAT_A : Provision COBAC : 0 %
+    CAT_A --> CAT_B : Retard supérieur ou égal à 30 jours
+    CAT_B : Classe B — Retard 30 à 89 jours
+    CAT_B : Provision COBAC : 20 %
+    CAT_B --> CAT_C : Retard supérieur ou égal à 90 jours
+    CAT_C : Classe C — Retard 90 à 179 jours
+    CAT_C : Provision COBAC : 50 %
+    CAT_C --> CAT_D : Retard supérieur ou égal à 180 jours
+    CAT_D : Classe D — Retard 180 à 359 jours
+    CAT_D : Provision COBAC : 80 %
+    CAT_D --> CAT_E : Retard supérieur ou égal à 360 jours
+    CAT_E : Classe E — Retard supérieur à 360 jours
+    CAT_E : Provision COBAC : 100 %
+}
+
+ACTIVE : ● Prêt en cours de remboursement
+ACTIVE : ○ Mise à jour quotidienne via l'import CBS
+ACTIVE : ○ Provision calculée selon la classe COBAC
+ACTIVE : ○ Score MCRS calculé chaque jour
+
+ACTIVE --> EN_RECOUVREMENT : Retard supérieur ou égal à 30 jours\n→ Dossier de recouvrement ouvert automatiquement
+
+EN_RECOUVREMENT : ● Dossier de recouvrement actif
+EN_RECOUVREMENT : ○ Phase en cours (relance amiable ou mise en demeure)
+EN_RECOUVREMENT : ○ Agent responsable désigné
+EN_RECOUVREMENT : ○ Score MCRS guide la priorité de traitement
+
+EN_RECOUVREMENT --> RESTRUCTUREE : Accord de rééchelonnement signé\n(nouveau calendrier de remboursement accepté)
+
+RESTRUCTUREE : ● Calendrier de remboursement restructuré actif
+RESTRUCTUREE : ○ Nouvelles échéances définies
+RESTRUCTUREE : ○ Taux d'intérêt renégocié
+RESTRUCTUREE : ○ Provision maintenue pendant la restructuration
+
+RESTRUCTUREE --> SOLDEE : Toutes les nouvelles échéances honorées\n(créance intégralement remboursée)
+
+RESTRUCTUREE --> EN_RECOUVREMENT : Échéance restructurée non honorée\n(retour en recouvrement actif)
+
+EN_RECOUVREMENT --> CONTENTIEUX : Échec du recouvrement amiable\n(décision de saisine juridique)
+
+CONTENTIEUX : ● Procédure judiciaire en cours
+CONTENTIEUX : ○ Saisine OHADA enregistrée
+CONTENTIEUX : ○ Garanties et cautions activées
+CONTENTIEUX : ○ Provision entre 80 et 100 % selon la durée
+
+CONTENTIEUX --> SOLDEE : Recouvrement judiciaire réussi\n(paiement forcé ou cession)
+
+CONTENTIEUX --> IRRECOVERABLE : Décision définitive d'irrécouvrabilité\n(insolvabilité confirmée par la justice)
+
+SOLDEE : ● Prêt intégralement remboursé
+SOLDEE : ○ Montant impayé ramené à zéro
+SOLDEE : ○ Provision libérée dans les comptes
+SOLDEE : ○ Taux de recouvrement de l'IMF amélioré
+
+IRRECOVERABLE : ● Créance radiée définitivement
+IRRECOVERABLE : ○ Provision à 100 % comptabilisée
+IRRECOVERABLE : ○ Impact négatif sur le taux de recouvrement
+IRRECOVERABLE : ○ Déclaration COBAC annuelle obligatoire
+
+SOLDEE --> [*]
+IRRECOVERABLE --> [*]
+
+note "Mise à jour automatique quotidienne (pipeline 06h00) :\n• Jours de retard recalculés depuis l'import CBS\n• Classe COBAC mise à jour (A→B→C→D→E)\n• Provision recalculée (capital × taux COBAC)\n• Alerte générée si seuil de retard franchi" as N1
+
+note "Transitions manuelles — rôles autorisés :\n• Directeur, Responsable Recouvrement,\n  Administrateur de la plateforme" as N2
+
+@enduml

@@ -1,0 +1,91 @@
+@startuml ACT02_collecte_TOBE
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam activity {
+  BackgroundColor #E8F5E9
+  BorderColor #2E7D32
+  FontSize 12
+  DiamondBackgroundColor #E3F2FD
+  DiamondBorderColor #1565C0
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title ACT02 — Processus Collecte Digitale\nSituation Cible (TO-BE) — Pipeline Automatisé + Scoring ML
+
+|#E3F2FD| Client |
+|#FFF9C4| MTN / Orange Money |
+|#E8F5E9| Airflow Pipeline |
+|#F3E5F5| PostgreSQL |
+|#EDE7F6| Modèle ML (Scoring) |
+|#FCE4EC| Comptable / DSI |
+
+start
+
+|Client|
+:Effectue paiement\nvia MTN / Orange Money;
+
+|MTN / Orange Money|
+:Génère relevé CSV\n(automatique quotidien);
+
+|Airflow Pipeline|
+:Déclenchement automatique\nà 06h00 (cron scheduler);
+:Téléchargement relevés CSV\n(MTN + Orange);
+:Chargement dans schéma raw\n(PostgreSQL);
+note right : Traçabilité complète\n→ source, timestamp, nb lignes
+
+:Calcul hash SHA-256\npour déduplication;
+
+|PostgreSQL|
+:INSERT ... ON CONFLICT DO NOTHING\n(doublons ignorés automatiquement);
+note right : Déduplication\nauto inter-fichiers
+
+|Airflow Pipeline|
+:Transformation dbt\n(raw → staging → dw);
+
+|Modèle ML (Scoring)|
+:Extraction des features\n(montant, canal, heure, agent,\nhistorique client, zone);
+note right : Features normalisées\ndepuis la couche staging
+
+:Scoring par transaction\n(modèle XGBoost / Régression);
+note right : Score de risque\nentre 0.0 et 1.0\n(probabilité d'anomalie)
+
+if (Score de risque ?) then (Élevé > 0.75)
+  :Marquage <color:#C62828>SUSPECT</color>\n+ mise en file de révision;
+  |Comptable / DSI|
+  :Révision manuelle\nde la transaction;
+  if (Validée manuellement ?) then (Oui)
+    :Transaction confirmée\net enrichie dans le DW;
+    note right : Feedback loop :\nréentraînement mensuel\ndu modèle
+  else (Rejetée)
+    :Archivage en table rejets\n+ notification client;
+    stop
+  endif
+else (Faible ≤ 0.75)
+  :Validation automatique\n(auto-posting);
+endif
+
+|Airflow Pipeline|
+:Rapprochement automatique\ntransactions / CBS\n(3 passes algorithmiques);
+
+if (Transactions non\nréconciliées ?) then (Oui — < 5%)
+  :Stockage en table suspense;
+  |Comptable / DSI|
+  :Notification DSI\npar email;
+  |Airflow Pipeline|
+else (Non)
+endif
+
+:Calcul KPIs collectes\n(volume, canal, zone, agent);
+
+|Modèle ML (Scoring)|
+:Génération rapport de scoring\n(distribution risques, taux\nde validation auto);
+note right : Indicateur de qualité\ndu modèle — suivi dérive
+
+|Comptable / DSI|
+:Dashboards Superset mis à jour\n(données + scores disponibles\nà 08h00);
+
+stop
+
+@enduml

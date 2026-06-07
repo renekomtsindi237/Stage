@@ -1,0 +1,126 @@
+{
+  "_description": "Configuration du scoring MCRS (Multi-Criteria Recovery Scoring). Modifiable par le DSI via l'interface d'administration sans retrainement du modèle.",
+  "_version": "1.0.0",
+
+  "mcrs": {
+    "_doc": "Poids des trois composantes — doivent sommer à 1.0",
+    "weights": {
+      "crs": 0.35,
+      "rps": 0.45,
+      "csi": 0.20
+    },
+
+    "risk_thresholds": {
+      "_doc": "Seuils de classification du risque (score MCRS ∈ [0,1], 1=plus risqué). Configurable par IMF.",
+      "faible":   0.30,
+      "modere":   0.55,
+      "eleve":    0.75,
+      "critique": 1.00
+    },
+
+    "alert_thresholds": {
+      "_doc": "Seuils de déclenchement des alertes prédictives (EF-R07)",
+      "risque_defaut_imminent":     0.75,
+      "deterioration_rapide":       0.65,
+      "baisse_collecte_persistante": 0.50
+    }
+  },
+
+  "crs": {
+    "_doc": "Collection Reliability Score — régularité des collectes terrain. Score 0→1 (1=excellent). Contribue au MCRS comme (1-CRS).",
+    "sub_weights": {
+      "regularite_collecte_pct":         0.30,
+      "nb_collectes_30j_normalise":       0.20,
+      "taux_remboursement_historique":    0.25,
+      "absence_semaines_penalite":        0.15,
+      "stabilite_montants":              0.10
+    },
+    "nb_collectes_reference_mensuel": 4,
+    "semaines_reference_annuel":      52
+  },
+
+  "csi": {
+    "_doc": "Client Solvency Index — résilience économique et facteurs externes. Score 0→1 (1=très résilient). Contribue au MCRS comme (1-CSI).",
+    "sub_weights": {
+      "indice_resilience":      0.35,
+      "capacite_remboursement": 0.30,
+      "pression_prix":          0.15,
+      "pression_climatique":    0.10,
+      "diversification":        0.10
+    },
+    "inflation_reference_pct": 5.0,
+    "secheresse_max":           4.0,
+    "capacite_saturation":      2.0
+  },
+
+  "retraining": {
+    "_doc": "Déclenchement automatique du retraining (OBJ-7)",
+    "psi_threshold":          0.20,
+    "min_new_samples":        500,
+    "check_frequency_days":   7
+  },
+
+  "cobac": {
+    "_doc": "Classification COBAC (Règlement EMF 01/02 CEMAC) — non modifiable sans avis réglementaire",
+    "classes": {
+      "A": { "jours_min": 0,   "jours_max": 29,  "taux_provision": 0.00 },
+      "B": { "jours_min": 30,  "jours_max": 89,  "taux_provision": 0.20 },
+      "C": { "jours_min": 90,  "jours_max": 179, "taux_provision": 0.50 },
+      "D": { "jours_min": 180, "jours_max": 359, "taux_provision": 0.80 },
+      "E": { "jours_min": 360, "jours_max": 9999,"taux_provision": 1.00 }
+    }
+  },
+
+  "par_alerts": {
+    "_doc": "Seuils PAR déclenchant des alertes opérationnelles (EF-R03, EF-A02)",
+    "par30_warning_pct":  5.0,
+    "par30_critical_pct": 10.0,
+    "par90_warning_pct":  3.0,
+    "par90_critical_pct": 7.0
+  },
+
+  "regions": {
+    "_doc": "Profils régionaux camerounais — risque de base, mobile money, zone agroclimatique. Utilisés par le modèle XGBoost comme features contextuelles.",
+    "REG01": { "nom": "Adamaoua",    "risque_base": 1.15, "penetration_mobile": 0.45, "zone_agro": 2, "cultures_rente": ["ELEVAGE","MAIS"],         "seuil_alerte_local": 0.72 },
+    "REG02": { "nom": "Centre",      "risque_base": 1.00, "penetration_mobile": 0.75, "zone_agro": 1, "cultures_rente": ["CACAO","CAFE_ROBUSTA"],   "seuil_alerte_local": 0.75 },
+    "REG03": { "nom": "Est",         "risque_base": 1.20, "penetration_mobile": 0.30, "zone_agro": 1, "cultures_rente": ["CACAO"],                   "seuil_alerte_local": 0.70 },
+    "REG04": { "nom": "Extreme-Nord","risque_base": 1.45, "penetration_mobile": 0.25, "zone_agro": 0, "cultures_rente": ["COTON","SORGHO"],          "seuil_alerte_local": 0.65 },
+    "REG05": { "nom": "Littoral",    "risque_base": 0.90, "penetration_mobile": 0.85, "zone_agro": 3, "cultures_rente": ["PLANTAIN","HUILE_PALME"],  "seuil_alerte_local": 0.78 },
+    "REG06": { "nom": "Nord",        "risque_base": 1.30, "penetration_mobile": 0.35, "zone_agro": 0, "cultures_rente": ["COTON"],                   "seuil_alerte_local": 0.68 },
+    "REG07": { "nom": "Nord-Ouest",  "risque_base": 1.25, "penetration_mobile": 0.55, "zone_agro": 2, "cultures_rente": ["CAFE_ARABICA"],            "seuil_alerte_local": 0.70 },
+    "REG08": { "nom": "Ouest",       "risque_base": 1.00, "penetration_mobile": 0.65, "zone_agro": 2, "cultures_rente": ["CAFE_ARABICA","MAIS"],     "seuil_alerte_local": 0.75 },
+    "REG09": { "nom": "Sud",         "risque_base": 1.10, "penetration_mobile": 0.35, "zone_agro": 1, "cultures_rente": ["CACAO"],                   "seuil_alerte_local": 0.72 },
+    "REG10": { "nom": "Sud-Ouest",   "risque_base": 1.20, "penetration_mobile": 0.50, "zone_agro": 3, "cultures_rente": ["CACAO","PLANTAIN"],        "seuil_alerte_local": 0.70 }
+  },
+
+  "agricultural_calendar": {
+    "_doc": "Calendrier agricole camerounais — mois de récolte par culture. Utilisé pour calculer saison_recolte_active (feature XGBoost). Récolte = liquidités = risque réduit.",
+    "zones": {
+      "sahel": {
+        "regions": ["REG04","REG06"],
+        "cultures": { "COTON": [9,10,11], "SORGHO": [9,10], "MIL": [8,9] },
+        "commentaire": "Extrême-Nord et Nord — coton principal export, récolte sep-nov"
+      },
+      "equatorial": {
+        "regions": ["REG02","REG03","REG09"],
+        "cultures": { "CACAO_GRANDE_SAISON": [10,11,12], "CACAO_MI_SAISON": [3,4,5], "MANIOC": [1,2,3,4,5,6,7,8,9,10,11,12] },
+        "commentaire": "Deux saisons cacao — grande saison oct-déc, petite saison mar-mai"
+      },
+      "highlands": {
+        "regions": ["REG07","REG08"],
+        "cultures": { "CAFE_ARABICA": [11,12,1,2], "MAIS": [7,8], "POMME_DE_TERRE": [3,4,9,10] },
+        "commentaire": "Hauts plateaux de l'Ouest — café nov-fév, maïs double-saison"
+      },
+      "coastal": {
+        "regions": ["REG05","REG10"],
+        "cultures": { "PLANTAIN": [1,2,3,4,5,6,7,8,9,10,11,12], "CACAO": [10,11,12], "HUILE_PALME": [3,4,5,9,10] },
+        "commentaire": "Zone côtière — plantain toute l'année, cacao oct-déc"
+      },
+      "highland_savane": {
+        "regions": ["REG01"],
+        "cultures": { "MAIS": [7,8], "PATATE_DOUCE": [4,5,10,11] },
+        "commentaire": "Adamaoua — élevage dominant, cultures vivrières secondaires"
+      }
+    }
+  }
+}

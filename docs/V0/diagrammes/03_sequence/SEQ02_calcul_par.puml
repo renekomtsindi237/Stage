@@ -1,0 +1,72 @@
+@startuml SEQ02_calcul_par
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ02 — Calcul Quotidien PAR30 / PAR90\ndbt Core + PostgreSQL
+
+actor "Airflow Scheduler" as SCHED
+participant "DAG\ndag_transform_dw" as DAG
+participant "dbt Core\n(modèles SQL)" as DBT
+database "PostgreSQL\nstaging" as STG
+database "PostgreSQL\ndw" as DW
+participant "dbt Tests" as TESTS
+
+SCHED -> DAG : <b>Trigger</b> après succès dag_ingest_*\n(07h00 — ordre de dépendance)
+activate DAG
+
+DAG -> DBT : <b>dbt run</b> --select staging.*\n(modèles de nettoyage)
+activate DBT
+
+DBT -> STG : <b>SELECT</b> prets, echeances, remboursements\n(données ingérées du jour)
+STG --> DBT : Dataset prêts actifs + historique
+
+DBT -> STG : <b>CREATE/REPLACE VIEW</b>\nstg_prets, stg_echeances,\nstg_remboursements
+DBT --> DAG : staging terminé ✓
+
+DAG -> DBT : <b>dbt run</b> --select marts.fact_par_quotidien
+note over DBT : Modèle SQL calculant le PAR\npar zone et par produit
+
+DBT -> STG : <b>CTE encours_prets :</b>\nSELECT montant_octroye - SUM(remboursements)\n= capital_restant_du par prêt
+STG --> DBT : Encours par prêt
+
+DBT -> STG : <b>CTE retard_par_pret :</b>\nSELECT MAX(CURRENT_DATE - date_echeance)\nWHERE montant_restant > 0\n= jours_retard_max par prêt
+STG --> DBT : Jours de retard max
+
+DBT -> DBT : <b>Calcul PAR30 :</b>\nSUM(capital) WHERE jours_retard > 30\n/ SUM(capital_total) par zone/produit
+
+DBT -> DBT : <b>Calcul PAR90 :</b>\nSUM(capital) WHERE jours_retard > 90\n/ SUM(capital_total) par zone/produit
+
+DBT -> DW : <b>INSERT INTO</b> dw.fact_par_quotidien\n(date_id, zone_id, produit_id,\nencours_total, encours_par30, taux_par30,\nencours_par90, taux_par90, nb_prets_actifs)
+DW --> DBT : {rows_inserted: Z}
+
+deactivate DBT
+
+DAG -> TESTS : <b>dbt test</b> --select marts.fact_par_quotidien
+activate TESTS
+TESTS -> DW : Vérifier not_null(date_id, encours_total)
+TESTS -> DW : Vérifier taux_par30 BETWEEN 0 AND 1
+TESTS -> DW : Vérifier taux_par90 <= taux_par30
+DW --> TESTS : Tests results
+TESTS --> DAG : {passed: 3, failed: 0} ✓
+deactivate TESTS
+
+DAG -> DBT : <b>dbt run</b> --select reporting.*\n(Rafraîchir vues matérialisées)
+activate DBT
+DBT -> DW : <b>REFRESH MATERIALIZED VIEW</b>\nreporting.v_kpi_recouvrement\nreporting.v_kpi_executif
+DW --> DBT : OK
+deactivate DBT
+
+DAG --> SCHED : Task <b>transform_dw</b> → SUCCESS ✓\n(durée ~25 min)
+deactivate DAG
+
+@enduml

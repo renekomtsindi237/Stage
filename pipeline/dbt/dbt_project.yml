@@ -1,0 +1,32 @@
+name: imf_pipeline
+version: '1.0.0'
+config-version: 2
+
+profile: imf_pipeline
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+target-path:  "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  imf_pipeline:
+    staging:
+      +schema:      staging
+      +materialized: view
+    intermediate:
+      +schema:      intermediate
+      +materialized: view
+    mart:
+      +schema:      mart
+      +materialized: table
+    ml:
+      +schema:      ml
+      +materialized: table
+
+vars:
+  imf_pipeline:
+    # Fenêtre historique pour les features ML (jours)
+    feature_window_days: 90
+    # Seuil de régularité collecte (%)
+    regularite_min_pct: 0.60

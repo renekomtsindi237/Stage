@@ -1,0 +1,54 @@
+@startuml etats_collecte_epargne
+!theme plain
+title Diagramme d'état-transition — Collecte d'Épargne\n(Cycle de vie d'une collecte terrain)
+
+skinparam state {
+    BackgroundColor #EBF2FF
+    BorderColor #2C7BE5
+    FontSize 13
+    ArrowColor #2C7BE5
+}
+skinparam stateComposite {
+    BackgroundColor #F8FBFF
+}
+
+[*] --> EN_ATTENTE_SYNC : L'application mobile crée la collecte\net la conserve localement
+
+EN_ATTENTE_SYNC : ● Enregistrée uniquement sur l'appareil de l'agent
+EN_ATTENTE_SYNC : ○ Identifiant unique généré côté application
+EN_ATTENTE_SYNC : ○ Pas encore transmise au serveur
+
+EN_ATTENTE_SYNC --> SOUMISE : Synchronisation réussie vers le serveur\n(connexion internet disponible)
+
+SOUMISE : ● Enregistrée en base de données
+SOUMISE : ○ Agent et montant identifiés
+SOUMISE : ○ Date et heure de synchronisation enregistrées
+SOUMISE : ○ En attente de validation par le superviseur
+
+SOUMISE --> VALIDEE : Validation par le superviseur\n(montant et informations conformes)
+
+SOUMISE --> REJETEE : Rejet par le superviseur\n(anomalie ou erreur détectée, motif enregistré)
+
+VALIDEE : ● Collecte approuvée par le superviseur
+VALIDEE : ○ Date de validation enregistrée
+VALIDEE : ○ Comptabilisée dans les indicateurs de performance
+VALIDEE : ○ Transmise au pipeline de traitement
+
+REJETEE : ● Refusée par le superviseur
+REJETEE : ○ Motif du rejet enregistré
+REJETEE : ○ Exclue des indicateurs (non comptabilisée)
+REJETEE : ○ Agent notifié par alerte en temps réel
+
+VALIDEE --> TRAITEE_PIPELINE : Intégration automatique par le pipeline\n(calcul des indicateurs et agrégation)
+
+TRAITEE_PIPELINE : ● Intégrée dans l'entrepôt de données
+TRAITEE_PIPELINE : ○ Agrégée dans les snapshots d'indicateurs
+TRAITEE_PIPELINE : ○ Visible dans les tableaux de bord
+
+TRAITEE_PIPELINE --> [*] : État final (historique conservé)
+
+REJETEE --> SOUMISE : Correction et nouvelle soumission par l'agent\n(nouvelle collecte avec identifiant unique)
+
+note "Droits par rôle :\n• Validation → Responsable Recouvrement,\n  Directeur, Administrateur\n• Soumission → Agent, Administrateur" as N1
+
+@enduml

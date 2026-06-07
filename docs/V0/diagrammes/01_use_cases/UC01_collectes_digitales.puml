@@ -1,0 +1,68 @@
+@startuml UC01_collectes_digitales
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF4FF
+  BorderColor #4A6CF7
+  FontSize 11
+}
+skinparam actor {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title UC01 — Gestion des Collectes Digitales\nPlateforme IMF Cameroun
+
+left to right direction
+
+actor "Analyste Data" as AD
+actor "Agent de Terrain" as AT
+actor "MTN Mobile Money" as MTN <<système>>
+actor "Orange Money" as OM <<système>>
+actor "Core Banking\nSystem (CBS)" as CBS <<système>>
+actor "DSI / Admin" as DSI
+
+rectangle "UC01 — Gestion des Collectes Digitales" {
+
+  usecase "UC01.1\nIngérer relevé\nMTN Mobile Money\n(CSV quotidien)" as UC0101
+  usecase "UC01.2\nIngérer relevé\nOrange Money\n(CSV quotidien)" as UC0102
+  usecase "UC01.3\nIngérer fichier\ncollecte agent terrain\n(Excel hebdo)" as UC0103
+  usecase "UC01.4\nDédupliquer\nles transactions\n(hash SHA-256)" as UC0104
+  usecase "UC01.5\nRapprocher\ntransactions / CBS\n(3 passes)" as UC0105
+  usecase "UC01.6\nConsulter volume\net tendances\ncollectes" as UC0106
+  usecase "UC01.7\nFiltrer par canal,\nzone, agent,\npériode" as UC0107
+  usecase "UC01.8\nExporter données\ncollectes (CSV)" as UC0108
+  usecase "UC01.9\nRéingérer un\nfichier en erreur" as UC0109
+  usecase "UC01.10\nVisualiser\ndashboard\nCollectes (web)" as UC0110
+
+}
+
+' Acteurs humains
+AD  --> UC0106
+AD  --> UC0107
+AD  --> UC0108
+AD  --> UC0109
+AT  --> UC0103
+DSI --> UC0109
+
+' Acteurs systèmes
+MTN --> UC0101
+OM  --> UC0102
+CBS --> UC0105
+
+' Inclusions
+UC0101 ..> UC0104 : <<include>>
+UC0102 ..> UC0104 : <<include>>
+UC0103 ..> UC0104 : <<include>>
+UC0104 ..> UC0105 : <<include>>
+
+' Extensions
+UC0106 ..> UC0107 : <<extend>>
+UC0106 ..> UC0108 : <<extend>>
+UC0106 ..> UC0110 : <<include>>
+
+@enduml

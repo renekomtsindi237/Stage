@@ -1,0 +1,29 @@
+============================================================
+RAPPORT DE CLASSIFICATION — XGBoost MCRS
+Généré le : 2026-05-25 12:56:47
+============================================================
+
+                precision    recall  f1-score   support
+
+Non défaut (0)       0.77      0.78      0.77      1828
+Défaut 90j (1)       0.71      0.69      0.70      1409
+
+      accuracy                           0.74      3237
+     macro avg       0.74      0.74      0.74      3237
+  weighted avg       0.74      0.74      0.74      3237
+
+Métriques étendues :
+  auc_roc        : 0.8119
+  gini           : 0.6237
+  ks             : 0.474
+  brier          : 0.2018
+  f1             : 0.6996
+  precision      : 0.7111
+  rappel         : 0.6884
+
+Cross-validation (walk-forward 5 plis) :
+  Pli 1 — AUC=0.8233  Gini=0.6467  Brier=0.17  F1=0.6869
+  Pli 2 — AUC=0.8174  Gini=0.6348  Brier=0.1712  F1=0.7008
+  Pli 3 — AUC=0.8097  Gini=0.6195  Brier=0.1768  F1=0.7119
+  Pli 4 — AUC=0.8233  Gini=0.6466  Brier=0.1693  F1=0.7089
+  Pli 5 — AUC=0.8117  Gini=0.6234  Brier=0.175  F1=0.7039

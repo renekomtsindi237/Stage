@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "CreanceEvenement",
+  "namespace": "cm.imf.pipeline.events",
+  "doc": "Événement sur une créance : création, paiement, retard, restructuration.",
+  "fields": [
+    {"name": "event_id",          "type": "string"},
+    {"name": "creance_id",        "type": "string"},
+    {"name": "client_id_externe", "type": "string"},
+    {"name": "imf_id",            "type": "int"},
+    {"name": "agence_id",         "type": "string"},
+    {"name": "type_evenement",    "type": {
+      "type": "enum", "name": "TypeEvenementCreance",
+      "symbols": ["CREATION", "PAIEMENT_ECHEANCE", "PAIEMENT_PARTIEL",
+                  "RETARD_DETECTE", "REECHELONNEMENT", "PASSAGE_COBAC_B",
+                  "PASSAGE_COBAC_C", "PASSAGE_COBAC_D", "PASSAGE_COBAC_E",
+                  "REMBOURSEMENT_TOTAL", "PERTE_DEFINITIVE"]
+    }},
+    {"name": "montant_encours",   "type": "double",  "doc": "Capital restant dû en FCFA"},
+    {"name": "montant_evenement", "type": "double",  "doc": "Montant du paiement ou de la provision"},
+    {"name": "jours_retard",      "type": "int"},
+    {"name": "cobac_classe_avant","type": "string"},
+    {"name": "cobac_classe_apres","type": "string"},
+    {"name": "taux_provision",    "type": "double"},
+    {"name": "timestamp_ms",      "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "date_evenement",    "type": {"type": "int",  "logicalType": "date"}}
+  ]
+}

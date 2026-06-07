@@ -1,0 +1,29 @@
+{
+  "type": "record",
+  "name": "CollecteEvent",
+  "namespace": "cm.imf.pipeline.events",
+  "doc": "Événement émis lors de la confirmation d'une collecte terrain par un agent.",
+  "fields": [
+    {"name": "event_id",          "type": "string",  "doc": "UUID unique de l'événement"},
+    {"name": "collecte_id",       "type": "string",  "doc": "ID externe de la collecte"},
+    {"name": "client_id_externe", "type": "string",  "doc": "ID externe du client"},
+    {"name": "agent_id",          "type": "string",  "doc": "ID de l'agent collecteur"},
+    {"name": "agence_id",         "type": "string",  "doc": "ID de l'agence"},
+    {"name": "imf_id",            "type": "int",     "doc": "ID de l'IMF (multi-tenant)"},
+    {"name": "region_id",         "type": "string",  "doc": "Région camerounaise (REG01-REG10)"},
+    {"name": "montant",           "type": "double",  "doc": "Montant collecté en FCFA"},
+    {"name": "canal",             "type": {
+      "type": "enum", "name": "CanalPaiement",
+      "symbols": ["MOBILE_MONEY_MTN", "MOBILE_MONEY_ORANGE", "ESPECES", "VIREMENT_BANCAIRE", "CHEQUE"]
+    }, "doc": "Canal de paiement utilisé"},
+    {"name": "statut",            "type": {
+      "type": "enum", "name": "StatutCollecte",
+      "symbols": ["CONFIRMEE", "EN_ATTENTE", "REJETEE", "ANNULEE"]
+    }},
+    {"name": "reference_momo",    "type": ["null", "string"], "default": null, "doc": "Référence transaction mobile money"},
+    {"name": "latitude",          "type": ["null", "double"], "default": null},
+    {"name": "longitude",         "type": ["null", "double"], "default": null},
+    {"name": "timestamp_ms",      "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Horodatage UTC"},
+    {"name": "date_collecte",     "type": {"type": "int",  "logicalType": "date"},             "doc": "Date locale Cameroun"}
+  ]
+}

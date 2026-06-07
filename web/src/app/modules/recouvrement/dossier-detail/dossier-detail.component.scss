@@ -1,0 +1,270 @@
+// ── Host component background ────────────────────────────────────────────────
+:host {
+  display: block;
+  background: #FAFBFC;  // Fond clair Blucash
+  min-height: 100%;
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  .header-info {
+    flex: 1;
+    h2 { 
+      margin: 0; 
+      font-size: 1.4rem; 
+      color: #000000;  // Noir pur pour les titres
+      font-weight: 800;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    }
+    .header-sub { 
+      margin: 2px 0 0; 
+      font-size: 0.8rem; 
+      color: #6B7280;  // Gris pour texte secondaire
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    }
+  }
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-card {
+  margin-bottom: 20px;
+
+  .inline-form {
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      mat-form-field { flex: 1 1 200px; }
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+  }
+
+  &.warn-card { border-left: 3px solid var(--color-warn); }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cobac-block {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.badge-cobac {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.cobac-large { font-size: 0.9rem; padding: 6px 16px; }
+  &.cobac-surveillance { background: rgba(34,197,94,.15);  color: #16a34a; }
+  &.cobac-douteuse     { background: rgba(234,179,8,.15);  color: #ca8a04; }
+  &.cobac-litigieuse   { background: rgba(249,115,22,.15); color: #ea580c; }
+  &.cobac-contentieuse { background: rgba(239,68,68,.15);  color: #dc2626; }
+}
+
+.badge-phase {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.phase-relance     { background: rgba(6,182,212,.15);  color: #0891b2; }
+  &.phase-mediation   { background: rgba(99,102,241,.15); color: #4f46e5; }
+  &.phase-demeure     { background: rgba(249,115,22,.15); color: #ea580c; }
+  &.phase-contentieux { background: rgba(239,68,68,.15);  color: #dc2626; }
+  &.phase-reechelon   { background: rgba(34,197,94,.15);  color: #16a34a; }
+  &.phase-perte       { background: rgba(113,113,122,.15);color: #52525b; }
+}
+
+.section-card {
+  margin-bottom: 20px;
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    mat-icon { font-size: 1.1rem; }
+  }
+}
+
+/* Accords */
+.accord-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.accord-item {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  opacity: 0.7;
+
+  &.accord-actif {
+    border-color: var(--color-success);
+    opacity: 1;
+    background: rgba(34,197,94,.04);
+  }
+
+  .accord-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .accord-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--color-surface-alt);
+
+    &.badge-actif { background: rgba(34,197,94,.15); color: #16a34a; }
+  }
+
+  .accord-date { font-size: 0.8rem; color: var(--color-text-muted); }
+  .accord-obs  { font-size: 0.85rem; color: var(--color-text-muted); margin: 8px 0 0; font-style: italic; }
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 40px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-border);
+  }
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+
+  .timeline-icon {
+    position: absolute;
+    left: -32px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--color-accent); }
+  }
+
+  .timeline-body {
+    background: var(--color-surface-alt);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .timeline-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+
+    .timeline-date   { font-size: 0.78rem; color: var(--color-text-muted); }
+    .timeline-auteur { font-size: 0.78rem; color: var(--color-text-muted); }
+  }
+
+  .timeline-desc { margin: 0; font-size: 0.875rem; }
+
+  .timeline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: 0.75rem;
+
+  mat-icon { font-size: 12px; width: 12px; height: 12px; }
+
+  &.momo-attente { border-color: #ca8a04; color: #ca8a04; }
+  &.momo-verifie { border-color: #16a34a; color: #16a34a; }
+  &.momo-rejete  { border-color: #dc2626; color: #dc2626; }
+}
+
+.info-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  margin: 0;
+
+  dt { 
+    color: #6B7280;  // Gris pour les labels
+    font-size: 0.82rem; 
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+  dd { 
+    margin: 0; 
+    font-size: 0.9rem; 
+    color: #1A1A1A;  // Noir atténué pour les valeurs
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  }
+
+  &.info-list--inline dt { white-space: nowrap; }
+}
+
+.mono { font-family: monospace; }
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--color-text-muted);
+
+  mat-icon { font-size: 40px; width: 40px; height: 40px; }
+  p { margin: 6px 0 0; }
+}

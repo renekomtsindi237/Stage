@@ -1,0 +1,256 @@
+version: 2
+
+sources:
+  - name: app
+    schema: app
+    description: "Tables opérationnelles Spring Boot — données écrites par l'API et les DAGs Airflow"
+    meta:
+      owner: "equipe-pipeline"
+      tier: "bronze"
+    freshness:
+      warn_after: {count: 2, period: day}
+      error_after: {count: 3, period: day}
+    loaded_at_field: updated_at
+    tables:
+      - name: donnees_meteo
+        description: "Observations météo quotidiennes par zone (Open-Meteo) — format narrow (variable, valeur)"
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 5, period: day}
+        loaded_at_field: created_at
+        columns:
+          - name: zone_nom
+            tests: [not_null]
+          - name: date_meteo
+            tests: [not_null]
+          - name: variable
+            tests: [not_null]
+      - name: facteurs_macro
+        description: "Indicateurs macro-économiques BEAC / INS Cameroun par date de publication"
+        freshness:
+          warn_after: {count: 7, period: day}
+          error_after: {count: 14, period: day}
+        loaded_at_field: created_at
+        columns:
+          - name: indicateur
+            tests: [not_null]
+          - name: valeur
+            tests: [not_null]
+          - name: date_publication
+            tests: [not_null]
+
+  - name: raw
+    schema: raw
+    description: "Données sources brutes ingérées par les DAGs Airflow — non modifiables"
+    meta:
+      owner: "equipe-pipeline"
+      tier: "bronze"
+    freshness:
+      warn_after: {count: 1, period: day}
+      error_after: {count: 2, period: day}
+    loaded_at_field: created_at
+    tables:
+      - name: transactions_mtn
+        description: "Relevés MTN Mobile Money bruts — dédupliqués par hash SHA-256"
+        meta:
+          pii: true
+          pii_fields: ["numero_telephone", "nom_client"]
+          classification: "CONFIDENTIEL"
+        columns:
+          - name: hash_sha256
+            tests: [unique, not_null]
+            description: "Empreinte de déduplication (SHA-256 sur champs clés)"
+          - name: transaction_id
+            tests: [not_null]
+      - name: transactions_orange
+        description: "Relevés Orange Money bruts — dédupliqués par hash SHA-256"
+        meta:
+          pii: true
+          pii_fields: ["numero_telephone", "nom_client"]
+          classification: "CONFIDENTIEL"
+        columns:
+          - name: hash_sha256
+            tests: [unique, not_null]
+          - name: transaction_id
+            tests: [not_null]
+      - name: export_cbs
+        description: "Export CBS brut — prêts et clients. Livraison SFTP quotidienne depuis le CBS de l'IMF."
+        meta:
+          pii: true
+          pii_fields: ["nom_client", "adresse", "telephone"]
+          classification: "CONFIDENTIEL"
+        columns:
+          - name: hash_sha256
+            tests: [unique, not_null]
+          - name: id_pret
+            tests: [not_null]
+      - name: collectes_terrain
+        description: "Saisies terrain Flutter — synchronisées via l'API Spring Boot"
+        meta:
+          pii: true
+          pii_fields: ["id_agent", "id_client"]
+          classification: "INTERNE"
+        columns:
+          - name: id_collecte_mobile
+            tests: [unique, not_null]
+
+models:
+  - name: stg_collectes_mtn
+    description: "Collectes MTN nettoyées et normalisées — montants en FCFA, dates en UTC"
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: true
+    columns:
+      - name: hash_sha256
+        tests: [unique, not_null]
+        description: "Clé de déduplication héritée du brut"
+      - name: transaction_id
+        tests: [not_null]
+      - name: date_transaction
+        tests: [not_null]
+      - name: montant
+        description: "Montant en FCFA — doit être strictement positif"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: statut
+        tests:
+          - accepted_values:
+              values: ['SUCCESS', 'COMPLETED', 'SUCCES', 'REUSSI']
+
+  - name: stg_collectes_orange
+    description: "Collectes Orange Money nettoyées — même structure que stg_collectes_mtn"
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: true
+    columns:
+      - name: hash_sha256
+        tests: [unique, not_null]
+      - name: transaction_id
+        tests: [not_null]
+      - name: date_transaction
+        tests: [not_null]
+      - name: montant
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+
+  - name: stg_prets
+    description: >
+      Prêts CBS nettoyés avec calcul du nombre de jours de retard.
+      Chaque ligne représente l'état courant d'un prêt actif ou soldé.
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: true
+      pii_fields: ["id_client"]
+    columns:
+      - name: id_pret
+        description: "Identifiant unique du prêt dans le CBS (clé naturelle)"
+        tests: [unique, not_null]
+      - name: id_client
+        description: "Identifiant du client emprunteur — référence CBS"
+        tests: [not_null]
+      - name: montant_pret
+        description: "Capital initial accordé (FCFA)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: statut_pret
+        description: "Statut COBAC du prêt"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ACTIF', 'EN_RETARD', 'SOLDE', 'WRITE_OFF']
+      - name: jours_retard
+        description: "Nombre de jours de retard sur la dernière échéance (0 si à jour)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+  - name: stg_clients
+    description: "Clients uniques extraits du CBS — un enregistrement par client, dernière version connue"
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: true
+      pii_fields: ["nom_client", "telephone", "adresse"]
+      classification: "CONFIDENTIEL"
+    columns:
+      - name: id_client
+        description: "Identifiant unique du client dans le CBS"
+        tests: [unique, not_null]
+      - name: nom_client
+        description: "Nom complet — donnée PII soumise au droit à l'effacement (art. 39 Loi 2024/017)"
+        tests: [not_null]
+
+  - name: stg_agents
+    description: "Agents de terrain uniques extraits du CBS"
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: true
+      pii_fields: ["nom_agent"]
+    columns:
+      - name: id_agent
+        tests: [unique, not_null]
+      - name: nom_agent
+        tests: [not_null]
+
+  - name: stg_meteo
+    description: >
+      Observations météo quotidiennes pivotées (format wide) par zone géographique.
+      Source : Open-Meteo API via dag_donnees_externes (04h00 quotidien).
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: false
+    columns:
+      - name: zone_id
+        tests: [not_null]
+        description: "Identifiant de la zone géographique"
+      - name: date_observation
+        tests: [not_null]
+      - name: precipitation_mm
+        description: "Précipitations cumulées sur 24h en millimètres"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: indice_secheresse
+        description: "Indice de sécheresse catégoriel calculé depuis le SPI (Standardized Precipitation Index)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['NORMAL', 'FAIBLE', 'MODEREE', 'SEVERE', 'INCONNU']
+
+  - name: stg_indicateurs_macro
+    description: >
+      Indicateurs macro-économiques BEAC/INS normalisés.
+      Codes harmonisés pour le feature store ML (43 features/client/jour).
+    meta:
+      owner: "equipe-pipeline"
+      tier: "silver"
+      pii: false
+    columns:
+      - name: indicateur
+        description: "Code normalisé de l'indicateur (ex. TAUX_DIRECTEUR_BEAC)"
+        tests: [not_null]
+      - name: valeur
+        tests: [not_null]
+      - name: date_observation
+        tests: [not_null]
+      - name: source
+        description: "Institution source : BEAC (Banque Centrale) ou INS_CMR (Institut National de la Statistique)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['BEAC', 'INS_CMR']

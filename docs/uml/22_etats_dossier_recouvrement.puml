@@ -1,0 +1,77 @@
+@startuml etats_dossier_recouvrement
+!theme plain
+title Diagramme d'état-transition — Dossier de Recouvrement\n(Cycle de vie d'un dossier — Règlement COBAC 01/02 CEMAC)
+
+skinparam state {
+    BackgroundColor #FEF9E7
+    BorderColor #D4AC0D
+    FontSize 12
+    ArrowColor #D4AC0D
+}
+
+[*] --> OUVERT : Retard de paiement d'au moins 30 jours détecté\n(automatiquement par le pipeline ou manuellement\npar le Responsable Recouvrement)
+
+OUVERT : ● Dossier créé, agent responsable désigné
+OUVERT : ○ Créance liée (montant impayé, jours de retard)
+OUVERT : ○ Score MCRS calculé pour prioriser le traitement
+
+OUVERT --> RELANCE_AMIABLE : Première action de contact enregistrée\n(appel téléphonique, visite terrain, SMS)
+
+state RELANCE_AMIABLE {
+    [*] --> CONTACT_EN_COURS
+    CONTACT_EN_COURS --> PROMESSE_PAIEMENT : Accord verbal obtenu du client\n(date et montant de remboursement convenus)
+    CONTACT_EN_COURS --> PAS_JOINT : Impossible de joindre le client
+    PROMESSE_PAIEMENT --> [*]
+    PAS_JOINT --> [*]
+}
+
+RELANCE_AMIABLE : ● Phase amiable — Retard entre 30 et 89 jours
+RELANCE_AMIABLE : ○ Contacts téléphoniques, SMS et visites terrain
+RELANCE_AMIABLE : ○ Promesses de paiement enregistrées et suivies
+RELANCE_AMIABLE : ○ Maximum 3 tentatives de relance amiable
+
+RELANCE_AMIABLE --> MISE_EN_DEMEURE : Retard supérieur à 90 jours\nOU 3 relances infructueuses\nOU promesse de paiement non honorée
+
+MISE_EN_DEMEURE : ● Courrier officiel de mise en demeure envoyé
+MISE_EN_DEMEURE : ○ Délai légal accordé : 15 jours
+MISE_EN_DEMEURE : ○ Preuve d'envoi archivée
+
+MISE_EN_DEMEURE --> REECHELONNEMENT : Le client accepte un plan de remboursement\n(accord signé avec nouvelles échéances)
+
+MISE_EN_DEMEURE --> CONTENTIEUX : Délai de 15 jours dépassé sans réponse\nOU refus explicite du client\n(escalade automatique au-delà de 180 jours)
+
+REECHELONNEMENT : ● Accord de rééchelonnement signé
+REECHELONNEMENT : ○ Nouveau calendrier d'échéances établi
+REECHELONNEMENT : ○ Taux d'intérêt renégocié
+REECHELONNEMENT : ○ Approuvé par le Directeur de l'IMF
+
+REECHELONNEMENT --> RELANCE_AMIABLE : Accord non respecté\n(impayé sur une nouvelle échéance)
+
+REECHELONNEMENT --> CLOS : Toutes les nouvelles échéances honorées\n(recouvrement réussi)
+
+CONTENTIEUX : ● Procédure juridique engagée (OHADA)
+CONTENTIEUX : ○ Garanties et cautions activées
+CONTENTIEUX : ○ Mandataire judiciaire désigné
+
+CONTENTIEUX --> CLOS : Recouvrement judiciaire réussi\n(paiement forcé ou cession d'actifs)
+
+CONTENTIEUX --> IRRECOVERABLE : Décision du Directeur de l'IMF\n(insolvabilité confirmée — retard supérieur à 360 jours)
+
+CLOS : ● Dossier clôturé avec succès
+CLOS : ○ Montant recouvré enregistré
+CLOS : ○ Provision comptable libérée
+CLOS : ○ Créance passée au statut : soldée
+
+IRRECOVERABLE : ● Créance radiée définitivement
+IRRECOVERABLE : ○ Provision à 100% comptabilisée
+IRRECOVERABLE : ○ Déclaration annuelle COBAC requise
+IRRECOVERABLE : ○ Créance passée au statut : irrécupérable
+
+CLOS --> [*]
+IRRECOVERABLE --> [*]
+
+note "Escalades automatiques (pipeline — chaque matin à 06h00) :\n• Retard 30j → Relance amiable\n• Retard 90j → Mise en demeure\n• Retard 180j → Escalade contentieux\n• Promesse non honorée → alerte" as N1
+
+note "Droits par rôle :\n• Ouverture : Responsable Recouvrement, Administrateur\n• Rééchelonnement : approbation du Directeur\n• Clôture / Radiation : Directeur, Administrateur" as N2
+
+@enduml

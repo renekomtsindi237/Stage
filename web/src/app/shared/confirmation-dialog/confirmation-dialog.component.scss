@@ -1,0 +1,206 @@
+.confirmation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);  // Overlay plus léger et transparent
+  backdrop-filter: blur(8px);
+  padding: 24px;
+}
+
+.confirmation-dialog {
+  max-width: 500px;
+  width: 100%;
+  padding: 48px 40px;
+  border-radius: 16px;  // Coins arrondis style Blucash
+  background: #FFFFFF;  // Fond blanc
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);  // Ombre douce
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  border: none;  // Pas de bordure
+  transition: all 0.3s ease;
+
+  @media (max-width: 768px) {
+    padding: 40px 32px;
+    max-width: 90vw;
+  }
+}
+
+.dialog-icon-wrapper {
+  margin-bottom: 8px;
+}
+
+.dialog-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  .warning & {
+    background: #FFF4E6;  // Orange pâle
+    box-shadow: 0 4px 16px rgba(255, 149, 0, 0.2);
+  }
+
+  .danger & {
+    background: #FFE6E6;  // Rouge pâle
+    box-shadow: 0 4px 16px rgba(255, 59, 48, 0.2);
+  }
+
+  .info & {
+    background: #E6F0FF;  // Bleu Blucash très pâle
+    box-shadow: 0 4px 16px rgba(0, 102, 255, 0.2);
+  }
+
+  .dialog-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+
+    .warning & {
+      color: #FF9500;  // Orange Blucash
+    }
+
+    .danger & {
+      color: #FF3B30;  // Rouge Blucash
+    }
+
+    .info & {
+      color: #0066FF;  // Bleu Blucash
+    }
+  }
+}
+
+.dialog-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.5px;
+  color: #1A1A1A;  // Texte sombre
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+}
+
+.dialog-message {
+  font-size: 1.05rem;
+  color: #6B7280;  // Gris moyen
+  margin: 0;
+  line-height: 1.6;
+  max-width: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+  }
+}
+
+.btn-cancel {
+  flex: 1;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 14px 24px !important;
+  border: 2px solid #E5E7EB !important;  // Bordure grise claire
+  border-radius: 12px !important;  // Coins arrondis style Blucash
+  color: #6B7280 !important;  // Gris moyen
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  transition: all 0.3s ease !important;
+  text-transform: none !important;
+
+  mat-icon {
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  &:hover {
+    border-color: #1A1A1A !important;  // Texte sombre
+    color: #1A1A1A !important;
+    background: #F9FAFB !important;  // Gris très clair
+  }
+}
+
+.btn-confirm {
+  flex: 1;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 14px 24px !important;
+  border: none !important;
+  border-radius: 12px !important;  // Coins arrondis style Blucash
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  transition: all 0.3s ease !important;
+  text-transform: none !important;
+
+  .warning & {
+    background: #FF9500 !important;  // Orange Blucash
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3) !important;
+  }
+
+  .danger & {
+    background: #FF3B30 !important;  // Rouge Blucash
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3) !important;
+  }
+
+  .info & {
+    background: #0066FF !important;  // Bleu Blucash
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3) !important;
+  }
+
+  mat-icon {
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+
+    .warning & {
+      background: #FFB020 !important;  // Orange plus clair
+      box-shadow: 0 6px 16px rgba(255, 149, 0, 0.4) !important;
+    }
+
+    .danger & {
+      background: #FF6B63 !important;  // Rouge plus clair
+      box-shadow: 0 6px 16px rgba(255, 59, 48, 0.4) !important;
+    }
+
+    .info & {
+      background: #3385FF !important;  // Bleu plus clair
+      box-shadow: 0 6px 16px rgba(0, 102, 255, 0.4) !important;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

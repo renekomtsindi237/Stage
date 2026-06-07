@@ -1,0 +1,64 @@
+@startuml sequence_collecte_epargne
+!theme plain
+title Diagramme de séquence — Collecte d'épargne terrain (offline-first)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 120
+
+actor "Agent\nTerrain" as AGENT
+participant "Application\nMobile Flutter" as MOBILE
+participant "Serveur\nSpring Boot" as API
+participant "Traitement\ndes Collectes" as CTRL
+participant "Service\nCollectes" as SVC
+database "Base de données\n(Collectes épargne)" as DB
+database "Données\nBrutes" as RAW
+participant "Pipeline\nAutomatique" as DAG
+participant "Notifications\nTemps Réel" as SSE
+
+== Phase 1 : Saisie terrain (mode hors ligne possible) ==
+
+AGENT -> MOBILE : Saisit la collecte\n(montant, client, canal, coordonnées GPS)
+MOBILE -> MOBILE : Génère un identifiant unique\n(protection contre les doublons)
+MOBILE -> MOBILE : Enregistre localement\n(en attente de connexion)
+
+== Phase 2 : Synchronisation (dès que la connexion est disponible) ==
+
+MOBILE -> API : Envoie les collectes en attente
+API -> CTRL : Réceptionne le lot de synchronisation
+CTRL -> SVC : Traite chaque collecte du lot
+
+loop Pour chaque collecte
+    SVC -> DB : Vérifie si cette collecte existe déjà
+    alt Collecte déjà reçue
+        SVC -> SVC : Identifie comme doublon\n(idempotence garantie)
+    else Nouvelle collecte
+        SVC -> DB : Enregistre la collecte\n(en attente de validation)
+        SVC -> RAW : Ingère dans la couche de données brutes
+    end
+end
+
+SVC --> CTRL : Résultat de synchronisation\n(acceptées, doublons, rejetées)
+CTRL --> MOBILE : Confirmation avec bilan\n(ex. : 4 acceptées, 1 doublon)
+MOBILE -> MOBILE : Marque les collectes\ncomme synchronisées
+
+== Phase 3 : Validation par le superviseur ==
+
+note over API,SSE : Déclenchée par un superviseur ou automatiquement
+
+API -> CTRL : Valide une collecte
+CTRL -> SVC : Confirme la validation
+SVC -> DB : Marque la collecte comme validée
+SVC -> SSE : Déclenche une notification de confirmation
+SSE --> AGENT : Notification : "Collecte validée ✓"
+
+== Phase 4 : Traitement automatique par le pipeline ==
+
+DAG -> RAW : Récupère les collectes reçues à traiter
+DAG -> DAG : Nettoie et valide les données\n(dédoublonnage, enrichissement)
+DAG -> DB : Calcule les indicateurs\n(par agent, agence, cycle)
+DAG -> DB : Vérifie les objectifs de collecte\n(taux de réalisation)
+DAG -> API : Signale la mise à jour des indicateurs
+SSE --> AGENT : Tableau de bord actualisé
+
+@enduml

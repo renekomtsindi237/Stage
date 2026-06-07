@@ -1,0 +1,81 @@
+@startuml activite_violation_donnees
+!theme plain
+title Diagramme d'activité — Gestion des Violations de Données\n(Loi 2024/017 Cameroun — Art. 22 — Délai légal 72h)
+
+skinparam activityBorderColor #E74C3C
+skinparam activityBackgroundColor #FDEDEC
+
+|DSI (Déclarant)|
+start
+:Détecte ou est informé d'une violation\n(accès non autorisé, fuite, ransomware...);
+:Évalue la gravité de la violation :\nFAIBLE / MODÉRÉE / ÉLEVÉE / CRITIQUE;
+
+:Remplit le formulaire de déclaration\n(type de violation, gravité, date de découverte,\ncatégories de données concernées,\nnombre de personnes estimées,\nentités impliquées, mesures immédiates prises);
+
+|Serveur Spring Boot|
+:Enregistre la violation\n(statut : déclarée, identifiant unique attribué);
+:Calcule le temps écoulé depuis la découverte;
+:Calcule le délai restant pour notifier l'autorité\n(72h depuis la découverte);
+
+if (Délai de 72h déjà dépassé ?) then (oui)
+    :Alerte "DÉLAI LÉGAL DÉPASSÉ de N heure(s)"\n(obligation légale art. 22 §1);
+else (non)
+    :Alerte "N heure(s) restantes\npour notifier l'autorité";
+endif
+
+:Diffuse l'alerte à tous les DSI connectés\n(notification temps réel);
+:Envoie une notification mobile aux DSI;
+:Envoie un email détaillé au DSI déclarant\n(résumé, procédure, délais);
+
+|DSI (Déclarant)|
+:Prend les mesures immédiates\n(isolation du système, changement des mots de passe,\ncontact du CERT, sauvegarde des journaux...);
+:Passe la violation en mode investigation;
+
+|Serveur Spring Boot|
+:Met à jour le statut : en investigation\n(mesures correctives notées);
+
+|DSI (Déclarant)|
+:Mène l'investigation technique\n(origine, étendue, données compromises);
+
+:Détermine si la notification à l'autorité\nest légalement requise (art. 22 §2);
+
+if (Notification à l'autorité requise ?) then (oui)
+    :Prépare la notification officielle\nà l'autorité de protection des données;
+    :Envoie la notification par voie légale\n(courrier recommandé ou plateforme officielle);
+    :Récupère la référence officielle de la déclaration;
+
+    :Enregistre la confirmation de notification à l'autorité\n(référence officielle, date d'envoi);
+
+    |Serveur Spring Boot|
+    :Marque la violation comme notifiée à l'autorité\n(référence et date conservées);
+endif
+
+if (Personnes physiques à informer ?) then (oui)
+    |DSI (Déclarant)|
+    :Notifie les personnes concernées\n(email, SMS ou courrier selon art. 22 §3);
+    :Conserve la preuve des notifications envoyées;
+endif
+
+|DSI (Déclarant)|
+:Termine l'investigation;
+:Rédige le rapport final\n(cause, impact, mesures correctives, améliorations prévues);
+
+:Clôture la violation avec le rapport final;
+
+|Serveur Spring Boot|
+:Enregistre la clôture\n(rapport final, identité du clôturant, date);
+
+|DSI (Déclarant)|
+:Consulte le tableau de bord des violations\n(classées par urgence restante);
+
+note right
+  Le tableau de bord trie les violations
+  par délai restant pour permettre
+  au DSI de prioriser ses actions.
+end note
+
+:Archive le dossier complet\n(conservation légale recommandée : 5 ans);
+
+stop
+
+@enduml

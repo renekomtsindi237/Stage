@@ -1,0 +1,106 @@
+version: 2
+
+exposures:
+
+  # ── Tableaux de bord Metabase ────────────────────────────────────────────────
+  - name: tableau_bord_direction
+    label: "Tableau de bord Direction"
+    type: dashboard
+    maturity: high
+    url: "http://metabase:3000/dashboard/1"
+    description: >
+      Tableau de bord principal pour les directeurs d'IMF.
+      Indicateurs : PAR (Portfolio at Risk), collectes du jour, top agents,
+      alertes ML prioritaires, évolution provisions COBAC.
+    depends_on:
+      - ref('fact_collectes')
+      - ref('fact_remboursements')
+      - ref('dim_client')
+      - ref('dim_agence')
+      - source('ml', 'client_scores')
+    owner:
+      name: "Équipe Pipeline"
+      email: "dsi@imf.cm"
+
+  - name: tableau_bord_recouvrement
+    label: "Tableau de bord Recouvrement"
+    type: dashboard
+    maturity: high
+    url: "http://metabase:3000/dashboard/2"
+    description: >
+      Suivi des dossiers de recouvrement — responsable recouvrement.
+      PAR par classe COBAC, dossiers en retard, agents terrain par zone,
+      alertes prédictives MCRS à risque élevé.
+    depends_on:
+      - ref('fact_remboursements')
+      - ref('dim_client')
+      - source('ml', 'client_scores')
+      - source('ml', 'alertes_predictives')
+    owner:
+      name: "Équipe Pipeline"
+      email: "dsi@imf.cm"
+
+  # ── API Spring Boot ──────────────────────────────────────────────────────────
+  - name: api_ml_scores
+    label: "API ML Scores (Spring Boot)"
+    type: application
+    maturity: high
+    url: "http://backend:8080/api/v1/ml/score"
+    description: >
+      Endpoint Spring Boot qui lit les scores MCRS depuis ml.client_scores
+      et ml.alertes_predictives pour les afficher aux responsables de recouvrement.
+      Consomme le feature store construit par dbt (ml.*).
+    depends_on:
+      - source('ml', 'client_scores')
+      - source('ml', 'alertes_predictives')
+    owner:
+      name: "Équipe Backend"
+      email: "dsi@imf.cm"
+
+  - name: api_dashboard_kpi
+    label: "API KPI Dashboard (Spring Boot)"
+    type: application
+    maturity: high
+    url: "http://backend:8080/api/v1/kpi"
+    description: >
+      Endpoints KPI du tableau de bord Angular.
+      Lit depuis les vues du data warehouse (dw.*) et reporting.v_*.
+    depends_on:
+      - ref('fact_collectes')
+      - ref('fact_remboursements')
+      - ref('dim_agence')
+    owner:
+      name: "Équipe Backend"
+      email: "dsi@imf.cm"
+
+  # ── Pipeline ML (scoring) ────────────────────────────────────────────────────
+  - name: pipeline_scoring_mcrs
+    label: "DAG ML Scoring MCRS (Airflow)"
+    type: ml
+    maturity: high
+    description: >
+      DAG dag_ml_scoring (07h30 quotidien).
+      Lit les 43 features depuis ml.features_client (produit par dbt).
+      Calcule les scores CRS, RPS, CSI, MCRS pour chaque client.
+      Écrit dans ml.client_scores et ml.alertes_predictives.
+    depends_on:
+      - ref('ml_features_client')
+    owner:
+      name: "Équipe Data Science"
+      email: "dsi@imf.cm"
+
+  - name: pipeline_training_mcrs
+    label: "DAG Entraînement MCRS (Airflow)"
+    type: ml
+    maturity: medium
+    description: >
+      DAG dag_ml_training (hebdomadaire ou PSI > 0.20).
+      Entraîne un challenger XGBoost sur les features historiques.
+      Déploie automatiquement si le challenger surpasse le champion
+      (AUC > champion + 0.005, KS > champion, ECE < 0.05).
+    depends_on:
+      - ref('ml_features_client')
+      - ref('fact_remboursements')
+    owner:
+      name: "Équipe Data Science"
+      email: "dsi@imf.cm"

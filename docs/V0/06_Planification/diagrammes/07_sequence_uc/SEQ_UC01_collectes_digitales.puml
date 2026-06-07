@@ -1,0 +1,207 @@
+@startuml SEQ_UC01_collectes_digitales
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam sequenceGroupBackgroundColor #F5F5F5
+skinparam sequenceGroupBorderColor #9E9E9E
+skinparam sequenceGroupFontColor #333333
+skinparam sequenceBoxBackgroundColor #EEF4FF
+skinparam sequenceBoxBorderColor #4A6CF7
+skinparam sequenceParticipantBackgroundColor #EEF4FF
+skinparam sequenceParticipantBorderColor #4A6CF7
+skinparam sequenceActorBackgroundColor #FFF3E0
+skinparam sequenceActorBorderColor #E65100
+skinparam sequenceLifeLineBorderColor #9E9E9E
+skinparam noteBorderColor #F57F17
+skinparam noteBackgroundColor #FFFDE7
+skinparam Padding 8
+
+title SEQ_UC01 — Gestion des Collectes Digitales\nFlux complet : Sources multiples → Pipeline → API → Web/Mobile\n<size:11><color:#555>Tous les composants sont conteneurisés (Docker Compose)</color></size>
+
+' ===================================================
+' ACTEURS EXTERNES (hors Docker)
+' ===================================================
+actor "Analyste Data\n(Navigateur Web)" as AD
+actor "Agent Terrain\n(App Flutter)" as AT
+
+' ===================================================
+' SOURCES EXTERNES DE DONNÉES
+' ===================================================
+boundary "MTN Mobile Money\n[Source externe — CSV quotidien]" as MTN
+boundary "Orange Money\n[Source externe — CSV quotidien]" as OM
+boundary "Core Banking System\n[Source interne — CSV export]" as CBS
+boundary "Agent de Terrain\n[Source interne — Excel hebdo]" as AGENT_FILE
+
+' ===================================================
+' CONTENEUR : pipeline-airflow
+' ===================================================
+box "🐳 Conteneur : airflow-scheduler\n(image: apache/airflow:2.8)" #EDE7F6
+  participant "Airflow\nScheduler\n[Cron: 0 6 * * *]" as AS
+end box
+
+box "🐳 Conteneur : python-scripts\n(partage volume /dags)" #E8EAF6
+  participant "IngestMTN\n[mtn_source.py]" as IMTN
+  participant "IngestOrange\n[orange_source.py]" as IOM
+  participant "IngestCBS\n[cbs_source.py]" as ICBS
+  participant "IngestAgents\n[agent_source.py]" as IAGT
+  participant "Deduplicator\n[SHA-256]" as DEDUP
+end box
+
+box "🐳 Conteneur : dbt-runner\n(partage volume /dbt_project)" #FCE4EC
+  participant "dbt stg_collectes\n[staging models]" as DBT_STG
+  participant "dbt fact_collectes\n[mart models]" as DBT_MART
+  participant "dbt v_kpi_collectes\n[reporting models]" as DBT_RPT
+end box
+
+' ===================================================
+' CONTENEUR : postgres (pipeline)
+' ===================================================
+box "🐳 Conteneur : postgres-pipeline\n(image: postgres:15, port: 5432)" #E8F5E9
+  database "Schéma\n<b>raw</b>" as RAW
+  database "Schéma\n<b>staging</b>" as STG
+  database "Schéma\n<b>dw</b>" as DW
+  database "Schéma\n<b>reporting</b>" as RPT
+end box
+
+' ===================================================
+' CONTENEUR : springboot-api
+' ===================================================
+box "🐳 Conteneur : springboot-api\n(image: openjdk:17, port interne: 8080)" #E3F2FD
+  participant "KpiController\n[GET /api/kpi/collectes]" as CTRL
+  participant "KpiService\n[@Service]" as SVC
+  participant "KpiParRepository\n[@Repository]" as REPO
+end box
+
+' ===================================================
+' CONTENEUR : nginx (Reverse Proxy + Angular)
+' ===================================================
+box "🐳 Conteneur : nginx\n(image: nginx:1.25, port: 80/443)" #FFF9C4
+  participant "Nginx\n[Reverse proxy /api/\nServeur statiques Angular]" as NGINX
+end box
+
+' ===================================================
+' ÉTAPE 1 — INGESTION MULTI-SOURCES (06h00)
+' ===================================================
+== 🔄 ÉTAPE 1 — Ingestion multi-sources (06h00) | Docker: airflow-scheduler → python-scripts ==
+
+AS -> IMTN : trigger Task: ingest_mtn\n(volume partagé /data/sources)
+AS -> IOM  : trigger Task: ingest_orange\n(parallèle)
+AS -> ICBS : trigger Task: ingest_cbs\n(parallèle)
+AS -> IAGT : trigger Task: ingest_agents\n(parallèle)
+
+MTN --> IMTN : Lecture MTN_20260401.csv\n(ref_ext, date, montant, operateur)\n→ via volume /data/sources/mtn/
+OM  --> IOM  : Lecture ORANGE_20260401.csv\n(id_op, date_valeur, montant_credit, libelle)
+CBS --> ICBS : Lecture CBS_prets_20260401.csv\n(id_pret, id_client, remboursements)\nEncoding: latin-1
+AGENT_FILE --> IAGT : Lecture collectes_agent_semaine.xlsx\n(nom_client, tel, montant, mode)\n→ via volume /data/sources/agents/
+
+' Normalisation par source
+IMTN -> IMTN : normalize_columns()\n→ {reference_externe, date_transaction,\n   montant, operateur="MTN", num_expediteur}
+IOM  -> IOM  : normalize_columns()\n→ {reference_externe, date_transaction,\n   montant, operateur="ORANGE"}
+ICBS -> ICBS : parse_dates() + normalize_pret_ids()\n→ {id_pret, id_echeance, montant_paye, date}
+IAGT -> IAGT : validate_agent_id()\n→ {agent_id, client_tel, montant, mode}
+
+' Déduplication
+IMTN -> DEDUP : df_mtn (N lignes)
+IOM  -> DEDUP : df_orange (M lignes)
+DEDUP -> DEDUP : compute_hash()\nSHA256(ref_ext + date + montant + operateur)\npour chaque ligne de chaque source
+DEDUP -> DEDUP : drop_duplicates(subset=['hash_dedup'])\nDéduplication intra-fichier
+note right DEDUP : hash_dedup garantit\nl'unicité cross-sources\nex: même paiement reçu\nMTN et Orange → 1 seule ligne
+
+' Chargement RAW
+DEDUP -> RAW : INSERT INTO raw.transactions_mtn\nON CONFLICT (hash_dedup) DO NOTHING\n→ déduplication inter-fichiers (PostgreSQL)
+DEDUP -> RAW : INSERT INTO raw.transactions_orange\nON CONFLICT (hash_dedup) DO NOTHING
+ICBS -> RAW  : INSERT INTO raw.remboursements_cbs
+IAGT -> RAW  : INSERT INTO raw.collectes_agents
+
+RAW --> AS : {mtn: 245 insérées, 3 doublons\norange: 98 insérées, 1 doublon\ncbs: 180 insérées, agents: 42 insérées}
+
+' ===================================================
+' ÉTAPE 2 — TRANSFORMATION dbt (07h00)
+' ===================================================
+== 🔄 ÉTAPE 2 — Transformation dbt (07h00) | Docker: dbt-runner ==
+
+AS -> DBT_STG : dbt run --select staging.*\n(Dépendance : toutes ingestions OK)
+
+DBT_STG -> RAW : SELECT * FROM raw.transactions_mtn\nUNION ALL SELECT * FROM raw.transactions_orange\nWHERE ingere_le >= CURRENT_DATE
+RAW --> DBT_STG : 343 transactions Mobile Money
+
+DBT_STG -> RAW : SELECT * FROM raw.remboursements_cbs
+RAW --> DBT_STG : 180 remboursements CBS
+
+DBT_STG -> RAW : SELECT * FROM raw.collectes_agents
+RAW --> DBT_STG : 42 collectes terrain
+
+DBT_STG -> STG : CREATE OR REPLACE VIEW stg_transactions\n→ Unification + nettoyage + typing\n(toutes sources fusionnées)
+DBT_STG -> STG : CREATE OR REPLACE VIEW stg_collectes_terrain
+DBT_STG -> STG : CREATE OR REPLACE VIEW stg_remboursements
+
+AS -> DBT_MART : dbt run --select marts.fact_collectes
+
+DBT_MART -> STG : SELECT stg_transactions.*\nJOIN stg_clients ON telephone ≈ num_expediteur\nJOIN dim_canal ON operateur\nJOIN dim_zone ON client.id_zone\nJOIN dim_temps ON date_transaction
+STG --> DBT_MART : Dataset enrichi (transactions + dimensions)
+
+DBT_MART -> DW : INSERT INTO dw.fact_collectes\n{collecte_id, date_id, client_id,\nagent_id, canal_id, zone_id,\nmontant_collecte, est_mobile_money}
+note right DW : fact_collectes agrège\nMTN + Orange + Agents\nen une seule table de faits
+
+AS -> DBT_RPT : dbt run --select reporting.v_kpi_collectes
+
+DBT_RPT -> DW : SELECT\nSUM(montant_collecte),\nCOUNT(*) AS nb_collectes,\nAVG(montant_collecte),\nSUM(est_mobile_money::int)\nFROM dw.fact_collectes\nJOIN dim_temps, dim_zone, dim_canal, dim_agent\nGROUP BY date, zone, canal, agent
+DW --> DBT_RPT : Agrégats calculés
+
+DBT_RPT -> RPT : REFRESH MATERIALIZED VIEW\nreporting.v_kpi_collectes\n(index unique: date+zone+canal+agent)
+RPT --> AS : Vue matérialisée rafraîchie ✓
+
+' ===================================================
+' ÉTAPE 3 — CONSULTATION WEB (Angular)
+' ===================================================
+== 📊 ÉTAPE 3 — Consultation Dashboard Collectes (08h00+) | Angular → Nginx → Spring Boot → PostgreSQL ==
+
+AD -> NGINX : HTTPS GET /collectes\n(navigateur — Angular SPA)
+NGINX -> AD : Sert dist/angular/index.html\n(fichiers statiques Angular)
+
+AD -> NGINX : HTTPS GET /api/kpi/collectes\n?dateDebut=2026-04-01&dateFin=2026-04-30\n&zoneId=3&canal=MTN\nAuthorization: Bearer <JWT>
+
+NGINX -> CTRL : Proxy HTTP vers springboot:8080\nGET /api/kpi/collectes (JWT validé par filter)
+
+CTRL -> CTRL : @PreAuthorize("hasAnyRole\n('ANALYSTE','DIRECTEUR','RR')")
+CTRL -> SVC : getCollecteStats(dateDebut, dateFin, zoneId=3, canal="MTN")
+SVC -> REPO : findCollectesByFilters(params)
+
+REPO -> RPT : SELECT date_complete, nom_zone, nom_canal,\nnb_collectes, montant_total, montant_moyen,\nnb_mobile_money\nFROM reporting.v_kpi_collectes\nWHERE date_complete BETWEEN '2026-04-01' AND '2026-04-30'\nAND zone_id = 3 AND nom_canal = 'MTN'\nORDER BY date_complete
+note right RPT : Vue matérialisée pré-agrégée\n→ réponse JDBC < 100ms\n(données MTN + Orange + Agents\ndéjà unifiées par dbt)
+RPT --> REPO : ResultSet 30 lignes (1 par jour)
+
+REPO --> SVC : List<KpiCollecteRow>
+SVC --> CTRL : KpiCollectesResponse {\n  totalCollectes: 1245,\n  montantTotal: 87_300_000,\n  tauxMobileMoney: 0.68,\n  series: [{date, montant, nbCollectes}×30]\n}
+CTRL --> NGINX : HTTP 200 JSON
+NGINX --> AD : HTTPS 200 JSON (gzip compressé)
+
+AD -> AD : Angular HttpClient reçoit JSON\nChart.js trace les courbes\nAngular Material affiche le tableau
+
+' ===================================================
+' ÉTAPE 4 — CONSULTATION MOBILE (Flutter)
+' ===================================================
+== 📱 ÉTAPE 4 — Saisie collecte terrain | Flutter → Nginx → Spring Boot → PostgreSQL ==
+
+AT -> NGINX : HTTPS POST /api/collectes\n{client_id:12, pret_id:45, montant:125000,\n canal:"MTN_MOBILE_MONEY",\n reference_transaction:"REF-MTN-20260401-XYZ"}\nAuthorization: Bearer <JWT_AGENT>
+NGINX -> CTRL : Proxy POST /api/collectes
+
+CTRL -> CTRL : @PreAuthorize("hasRole('AGENT')")\nJWT contient: role=AGENT, agent_id=7
+
+CTRL -> SVC : enregistrerCollecte(request, agentId=7)
+SVC -> REPO : existsByReferenceTransactionAndDate\n("REF-MTN-...", 2026-04-01)\n→ vérification doublon
+REPO -> STG : SELECT COUNT(*) FROM staging.collectes_terrain\nWHERE reference_transaction = ? AND date_collecte = ?
+STG --> REPO : 0 (pas de doublon)
+REPO --> SVC : false (pas doublon)
+
+SVC -> REPO : save(collecte)
+REPO -> STG : INSERT INTO staging.collectes_terrain\n{agent_id:7, client_id:12, pret_id:45,\n date_collecte:2026-04-01, montant:125000,\n canal:'MTN_MOBILE_MONEY',\n reference:'REF-MTN-...',\n statut:'CONFIRME'}
+STG --> REPO : id_collecte = 789
+REPO --> SVC : CollecteTerrain{id:789}
+SVC --> CTRL : CollecteResponse{id:"COL-2026-789", statut:"CONFIRME"}
+CTRL --> NGINX : HTTP 201 Created
+NGINX --> AT : HTTPS 201 {"id":"COL-2026-789"}
+
+note over AT, STG : La collecte saisie manuellement\npar l'agent sera reprise par\nle pipeline Airflow à J+1\net intégrée dans dw.fact_collectes\n→ unification automatique\navec MTN, Orange et CBS
+
+@enduml

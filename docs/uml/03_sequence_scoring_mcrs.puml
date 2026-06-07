@@ -1,0 +1,89 @@
+@startuml sequence_scoring_mcrs
+!theme plain
+title Diagramme de séquence — Pipeline MCRS (Scoring quotidien)
+
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 140
+
+participant "Planificateur\nAirflow" as SCHED
+participant "Pipeline\nScoring ML\n(07h30)" as DAG
+participant "Moteur de\nTransformation\n(dbt)" as DBT
+database "Réservoir\nde Données\nClients (43 variables)" as FEAT
+participant "Modèle\nXGBoost MCRS" as MODEL
+database "Scores\nClients" as SCORES
+database "Explications\nSHAP" as SHAP_DB
+database "Alertes\nPrédictives" as ALERTES_ML
+participant "Notifications\n(Temps réel + Mobile)" as NOTIF
+actor "Directeur IMF" as DIR
+actor "Responsable\nRecouvrement" as RESP
+
+== Étape 1 : Préparation des données clients ==
+
+SCHED -> DAG : Déclenche le scoring à 07h30
+DAG -> DBT : Calcule la régularité des collectes\n(tendance sur 3 mois, fenêtre 52 semaines)
+note right of DBT : Comportement de collecte\ndu client sur l'année écoulée
+DBT -> FEAT : Met à jour les variables comportementales
+
+DAG -> DBT : Calcule les facteurs de contexte\n(prix marchés, météo zone, indicateurs BEAC/INS)
+note right of DBT : Environnement économique\net climatique du client
+DBT -> FEAT : Met à jour les variables externes
+
+DAG -> DBT : Assemble le profil complet du client
+DBT -> FEAT : Profil finalisé\n(43 variables par client)
+
+== Étape 2 : Calcul du score MCRS ==
+
+DAG -> MODEL : Charge le modèle actif validé
+MODEL --> DAG : Modèle prêt
+
+DAG -> FEAT : Récupère les profils du jour
+FEAT --> DAG : Ensemble des clients à scorer
+
+loop Par groupe de 500 clients
+    DAG -> MODEL : Calcule le score de chaque client
+    note right of MODEL
+        Score collecte (CRS) — fiabilité des versements [35%]
+        Score remboursement (RPS) — probabilité défaut [45%]
+        Score contexte (CSI) — facteurs externes [20%]
+        Score final MCRS = 0,35×CRS + 0,45×RPS + 0,20×CSI
+        Intervalle de confiance [5% – 95%]
+    end note
+    MODEL --> DAG : Scores et classifications
+    DAG -> SCORES : Enregistre les scores\n(score, classe de risque, probabilité de défaut)
+end
+
+== Étape 3 : Explication des scores ==
+
+DAG -> MODEL : Calcule la contribution de chaque variable au score
+MODEL --> DAG : Valeurs d'explication (top 10 variables)
+DAG -> SHAP_DB : Enregistre les explications\n(variable, contribution, rang d'importance)
+
+== Étape 4 : Génération des alertes ==
+
+DAG -> DAG : Identifie les clients en risque critique\n(score > 0,75)
+DAG -> ALERTES_ML : Crée une alerte "Risque de défaut imminent"\n(urgence : critique)
+
+DAG -> DAG : Identifie les baisses de collecte importantes\n(baisse > 20%)
+DAG -> ALERTES_ML : Crée une alerte "Baisse des collectes"\n(urgence : haute)
+
+DAG -> DAG : Identifie les dégradations de score\n(dégradation > 15% en 30 jours)
+DAG -> ALERTES_ML : Crée une alerte "Dégradation rapide du score"\n(urgence : moyenne)
+
+== Étape 5 : Notification des équipes ==
+
+DAG -> NOTIF : Signale la mise à jour du scoring
+NOTIF --> DIR : Tableau de bord actualisé en temps réel
+
+DAG -> NOTIF : Envoie les alertes sur mobile
+NOTIF --> RESP : Notification : "N clients en risque critique"
+
+== Étape 6 : Contrôle de la qualité du modèle ==
+
+DAG -> DAG : Évalue la stabilité du modèle\n(compare la distribution des scores\nd'aujourd'hui à celle d'il y a 90 jours)
+alt Dérive détectée (variation significative)
+    DAG -> DAG : Déclenche le réentraînement du modèle\n(en arrière-plan — validation humaine requise)
+else Modèle stable
+    DAG -> DAG : Aucune action — modèle stable
+end
+
+@enduml

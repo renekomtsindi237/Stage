@@ -1,0 +1,33 @@
+{
+  "type": "record",
+  "name": "RecouvrementAction",
+  "namespace": "cm.imf.pipeline.events",
+  "doc": "Action de recouvrement recommandée par l'agent Q-Learning et confirmée par l'agent terrain.",
+  "fields": [
+    {"name": "event_id",          "type": "string"},
+    {"name": "action_id",         "type": "string"},
+    {"name": "client_id_externe", "type": "string"},
+    {"name": "imf_id",            "type": "int"},
+    {"name": "agence_id",         "type": "string"},
+    {"name": "agent_id",          "type": ["null", "string"], "default": null},
+    {"name": "action_type",       "type": {
+      "type": "enum", "name": "TypeAction",
+      "symbols": ["AUCUNE", "RELANCE_PREVENTIVE", "VISITE_TERRAIN", "MISE_EN_DEMEURE"]
+    }},
+    {"name": "statut",            "type": {
+      "type": "enum", "name": "StatutAction",
+      "symbols": ["RECOMMANDEE", "PLANIFIEE", "EN_COURS", "EFFECTUEE", "ABANDONNEE"]
+    }},
+    {"name": "score_mcrs",        "type": "double"},
+    {"name": "jours_retard",      "type": "int"},
+    {"name": "montant_encours",   "type": "double"},
+    {"name": "resultat",          "type": ["null", {
+      "type": "enum", "name": "ResultatAction",
+      "symbols": ["REMBOURSE", "PROMESSE_PAIEMENT", "SANS_EFFET", "INJOIGNABLE"]
+    }], "default": null},
+    {"name": "montant_recupere",  "type": ["null", "double"], "default": null},
+    {"name": "source_recommandation", "type": "string", "doc": "Q-LEARNING | RULE_BASED | MANUEL"},
+    {"name": "timestamp_ms",      "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "date_planifiee",    "type": ["null", {"type": "int", "logicalType": "date"}], "default": null}
+  ]
+}

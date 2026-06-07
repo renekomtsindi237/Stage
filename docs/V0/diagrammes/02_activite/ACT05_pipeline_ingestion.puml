@@ -1,0 +1,89 @@
+@startuml ACT05_pipeline_ingestion
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam activity {
+  BackgroundColor #EDE7F6
+  BorderColor #4527A0
+  FontSize 11
+  DiamondBackgroundColor #E3F2FD
+  DiamondBorderColor #1565C0
+}
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+skinparam Padding 8
+
+title ACT05 — Pipeline d'Ingestion Quotidien\nVue d'ensemble Airflow
+
+|#EDE7F6| Airflow Scheduler |
+|#E8F5E9| Sources (MTN/Orange/CBS/Agents) |
+|#F3E5F5| PostgreSQL Raw |
+|#FFF9C4| dbt Core |
+|#FCE4EC| PostgreSQL DW |
+|#E3F2FD| Superset / Spring Boot |
+
+start
+
+|Airflow Scheduler|
+:Déclenchement automatique\n06h00 (cron: 0 6 * * *);
+
+fork
+  |Sources (MTN/Orange/CBS/Agents)|
+  :MTN CSV — téléchargement\ndossier sources;
+fork again
+  :Orange CSV — téléchargement\ndossier sources;
+fork again
+  :CBS CSV — export planifié;
+fork again
+  :Agents Excel — dépôt\nnouveaux fichiers;
+end fork
+
+|Airflow Scheduler|
+:Détection nouveaux fichiers\nnon encore traités;
+
+|PostgreSQL Raw|
+:LOAD INTO raw.transactions_mtn\nraw.transactions_orange\nraw.prets_cbs\nraw.collectes_agents;
+
+|Airflow Scheduler|
+:Calcul hash SHA-256\n(déduplication);
+
+|PostgreSQL Raw|
+:INSERT ... ON CONFLICT (hash_dedup)\nDO NOTHING;
+
+|Airflow Scheduler|
+:Validation des données\n(types, montants > 0, dates valides);
+
+if (Erreurs critiques\ndétectées ?) then (Oui)
+  :Rejet lignes erronées\n→ table error_log;
+  :Notification email DSI;
+else (Non)
+endif
+
+|dbt Core|
+:dbt run --select staging.*\n(raw → staging :\nnettoyage, normalisation);
+:dbt run --select marts.*\n(staging → DW :\nfacts + dimensions);
+:dbt test --select ...\n(not_null, unique,\naccepted_values);
+
+if (Tests dbt\néchecs ?) then (Oui)
+  |Airflow Scheduler|
+  :Alerte email DSI\n+ log erreur;
+  stop
+else (Non)
+endif
+
+|PostgreSQL DW|
+:DW mis à jour\n(fact_collectes,\nfact_remboursements,\nfact_par_quotidien);
+
+|dbt Core|
+:REFRESH MATERIALIZED VIEW\nreporting.v_kpi_collectes\nreporting.v_kpi_recouvrement;
+
+|Superset / Spring Boot|
+:Données disponibles\npour dashboards Angular\net app Flutter;
+:Déclenchement dag_alertes\n(calcul PAR30/90\n+ envoi push FCM);
+
+|Airflow Scheduler|
+:Log exécution terminée\n(durée, volumes, statut);
+:Notification succès\npar email;
+
+stop
+
+@enduml

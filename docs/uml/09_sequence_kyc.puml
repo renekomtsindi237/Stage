@@ -1,0 +1,86 @@
+@startuml sequence_kyc
+!theme plain
+title Diagramme de séquence — Vérification KYC Client\n(Connaissance du Client — Loi 2024/017 Cameroun)
+
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 140
+
+actor "Agent / DSI" as AGENT
+participant "Interface\nVérification KYC" as WEB
+participant "Service\nKYC" as CTRL
+participant "Traitement\nKYC" as SVC
+database "Base de données\n(Dossiers, Documents,\nVérifications)" as DB
+participant "Stockage\nDocuments" as STORAGE
+participant "Service\nNotifications" as NOTIF
+actor "DSI" as DSI
+
+== Étape 1 : Ouverture du dossier KYC ==
+
+AGENT -> WEB : Saisit les informations du client\n(nom, prénom, numéro d'identité, téléphone)
+WEB -> CTRL : Demande l'ouverture d'un dossier KYC
+CTRL -> SVC : Vérifie l'absence de dossier existant
+SVC -> DB : Recherche un dossier pour ce client
+alt Dossier déjà existant
+    DB --> SVC : Dossier trouvé
+    SVC --> CTRL : Refus — dossier en double
+    CTRL --> WEB : Erreur — Un dossier KYC existe déjà pour ce client
+else Nouveau dossier
+    SVC -> DB : Crée le dossier KYC\n(en cours de constitution)
+    DB --> SVC : Dossier créé avec son identifiant unique
+    SVC --> CTRL : Dossier ouvert avec succès
+    CTRL --> WEB : Dossier créé — étape suivante : documents
+end
+
+== Étape 2 : Téléversement des pièces justificatives ==
+
+loop Pour chaque document (CNI, acte de naissance, justificatif de domicile...)
+    AGENT -> WEB : Sélectionne le type et le fichier du document
+    WEB -> CTRL : Soumet le document
+    CTRL -> SVC : Enregistre le document
+    SVC -> DB : Vérifie que le dossier existe
+    SVC -> STORAGE : Sauvegarde le fichier sur le serveur
+    STORAGE --> SVC : Adresse du fichier enregistré
+    SVC -> DB : Enregistre les métadonnées du document\n(type, adresse, statut : soumis)
+    SVC --> CTRL : Document ajouté avec succès
+    CTRL --> WEB : Document enregistré
+end
+
+== Étape 3 : Lancement de la vérification ==
+
+AGENT -> WEB : Soumet le dossier pour vérification
+WEB -> CTRL : Lance le processus de vérification d'identité
+CTRL -> SVC : Crée la tâche de vérification
+SVC -> DB : Enregistre la vérification\n(en attente d'examen)
+note right of SVC
+  Vérification manuelle par le DSI
+  (aucune API NIN disponible actuellement)
+end note
+SVC -> NOTIF : Alerte le DSI
+NOTIF --> DSI : Notification : "Dossier KYC à vérifier"
+
+== Étape 4 : Validation par le DSI ==
+
+DSI -> WEB : Ouvre le dossier KYC
+WEB -> CTRL : Demande le dossier complet
+CTRL -> SVC : Récupère le dossier
+SVC -> DB : Lit le dossier, les documents et les vérifications
+DB --> SVC : Dossier complet avec tous les éléments
+SVC --> CTRL : Dossier avec documents et vérifications
+CTRL --> WEB : Dossier affiché au DSI
+
+DSI -> WEB : Prend sa décision (validé ou rejeté avec motif)
+WEB -> CTRL : Transmet la décision
+CTRL -> SVC : Applique la décision à la vérification
+SVC -> DB : Met à jour la vérification\n(résultat + identité du vérificateur)
+SVC -> DB : Compte les vérifications restantes
+alt Toutes les vérifications sont validées
+    SVC -> DB : Marque le dossier KYC comme validé
+    SVC -> NOTIF : Prévient l'agent
+    NOTIF --> AGENT : Notification : "KYC client validé ✓"
+else Vérifications encore en cours ou rejetées
+    SVC -> DB : Met à jour le statut du dossier
+end
+SVC --> CTRL : Vérification enregistrée
+CTRL --> WEB : Mise à jour confirmée
+
+@enduml

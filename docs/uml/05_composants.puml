@@ -1,0 +1,239 @@
+@startuml composants_architecture
+!theme plain
+title Diagramme de composants — Architecture IMF Pipeline\nVue complète : Mobile · Web · Backend · Pipeline · ML · Infrastructure
+
+skinparam componentStyle rectangle
+skinparam packageStyle frame
+skinparam component {
+    BackgroundColor #EBF2FF
+    BorderColor #2C7BE5
+}
+
+' ══════════════════════════════════════════════════════════════════
+' COUCHE PRÉSENTATION
+' ══════════════════════════════════════════════════════════════════
+
+package "App Mobile Flutter\n(Android / iOS)" as MOBILE {
+    [Saisie Collecte\n(offline-first)] as C_SAISIE
+    [Gestionnaire de synchronisation\n(déduplication UUID)] as C_SYNC
+    [SQLite Local\n(WAL mode)] as C_SQLITE
+    [Plugin GPS\n(position en arrière-plan)] as C_GPS
+    [Gestionnaire FCM\n(notifications push)] as C_FCM
+
+    C_SAISIE --> C_SQLITE : stocke hors ligne
+    C_SAISIE --> C_SYNC : soumet quand réseau disponible
+    C_GPS --> C_SYNC : position jointe à la collecte
+}
+
+package "Frontend Web Angular 17" as WEB {
+    package "Modules fonctionnels" {
+        [Module Auth\n(cookie sécurisé)] as W_AUTH
+        [Tableau de bord Directeur\n(KPI + Score MCRS)] as W_DIR
+        [Tableau de bord Recouvrement\n(PAR + dossiers)] as W_REC
+        [Tableau de bord Agent\n(collectes + KPI jour)] as W_AGENT
+        [Carte Géolocalisation\n(Leaflet + temps réel)] as W_MAP
+        [Module KYC\n(vérification dossiers)] as W_KYC
+        [Module RGPD\n(droits + violations)] as W_RGPD
+        [Module Administration\n(IMF + utilisateurs + agences)] as W_ADMIN
+    }
+    package "Services transverses" {
+        [Intercepteur JWT\n(rafraîchissement auto)] as W_JWT
+        [Client SSE\n(événements temps réel)] as W_SSE
+        [Internationalisation\n(FR / EN)] as W_I18N
+        [Gestion du thème\n(clair / sombre)] as W_THEME
+    }
+    W_AUTH --> W_JWT
+    W_DIR --> W_SSE
+    W_MAP --> W_SSE
+}
+
+' ══════════════════════════════════════════════════════════════════
+' COUCHE API — SPRING BOOT 3.3 / JAVA 21
+' ══════════════════════════════════════════════════════════════════
+
+package "API Spring Boot 3.3 (Java 21)" as BACKEND {
+
+    package "Contrôleurs REST" {
+        [Authentification] as B_AUTH
+        [Collectes Épargne] as B_COL
+        [Créances] as B_CRE
+        [Recouvrement] as B_REC
+        [KYC] as B_KYC
+        [Agents\n(GPS)] as B_AGENT
+        [RGPD\n(droits + consentements)] as B_RGPD
+        [Violations de données] as B_VIOL
+        [Plateforme\n(SUPER_ADMIN)] as B_PLAT
+        [Supervision] as B_SUP
+        [Événements temps réel\n(SSE)] as B_SSE
+        [Contrôleur interne\n(pipeline → backend)] as B_INT
+    }
+
+    package "Sécurité" {
+        [Filtre JWT\n(cookie sécurisé)] as SEC_JWT
+        [Contexte locataire\n(isolation IMF par requête)] as SEC_TEN
+        [Contrôle d'accès\n(RBAC par rôle)] as SEC_RBAC
+        [Piste d'audit\n(@Auditable AOP)] as SEC_AUD
+    }
+
+    package "Services métier" {
+        [Service Auth\n(connexion + refresh)] as S_AUTH
+        [Service Collectes] as S_COL
+        [Service Créances\n(PAR + provisions)] as S_CRE
+        [Service Recouvrement] as S_REC
+        [Service KYC] as S_KYC
+        [Service Positions\n(GPS + historique)] as S_POS
+        [Service Notifications\n(SSE + FCM + Email)] as S_NOTIF
+        [Service Administration\n(utilisateurs + agences)] as S_ADMIN
+        [Service IMF\n(gestion locataires)] as S_IMF
+    }
+
+    package "Repositories (JPA)" {
+        [Utilisateurs / IMF / Agences] as R_USER
+        [Collectes Épargne] as R_COL
+        [Créances / Dossiers] as R_CRE
+        [KYC Dossier / Documents] as R_KYC
+        [Notifications / Alertes] as R_NOTIF
+        [Demandes RGPD / Consentements] as R_RGPD
+    }
+
+    SEC_JWT --> SEC_TEN
+    SEC_JWT --> SEC_RBAC
+    SEC_AUD --> R_USER
+
+    B_COL --> S_COL
+    B_CRE --> S_CRE
+    B_REC --> S_REC
+    B_KYC --> S_KYC
+    B_AGENT --> S_POS
+    B_RGPD --> R_RGPD
+    B_VIOL --> S_NOTIF
+    B_AUTH --> S_AUTH
+    B_PLAT --> S_IMF
+    B_SUP --> R_USER
+
+    S_COL --> R_COL
+    S_CRE --> R_CRE
+    S_KYC --> R_KYC
+    S_AUTH --> R_USER
+    S_NOTIF --> R_NOTIF
+    S_ADMIN --> R_USER
+}
+
+' ══════════════════════════════════════════════════════════════════
+' COUCHE PIPELINE AIRFLOW
+' ══════════════════════════════════════════════════════════════════
+
+package "Apache Airflow 2.9 (Python)" as PIPELINE {
+    [Traitement collectes\n(toutes les 2h)] as D_COL
+    [Traitement recouvrement\n(quotidien 06h00)] as D_REC
+    [Données externes\n(quotidien 04h00)] as D_EXT
+    [Scoring ML MCRS\n(quotidien 07h30)] as D_ML
+    [Entraînement modèle\n(hebdomadaire ou dérive PSI)] as D_TRAIN
+}
+
+package "dbt Core 1.8" as DBT {
+    [Staging\n(nettoyage, typage)] as DBT_STG
+    [Intermédiaire\n(jointures, calculs)] as DBT_INT
+    [Data warehouse\n(agrégats)] as DBT_MART
+    [Feature store ML\n(43 features / client / jour)] as DBT_ML_F
+
+    DBT_STG --> DBT_INT
+    DBT_INT --> DBT_MART
+    DBT_INT --> DBT_ML_F
+}
+
+' ══════════════════════════════════════════════════════════════════
+' COUCHE ML — MCRS
+' ══════════════════════════════════════════════════════════════════
+
+package "Pipeline ML — MCRS" as ML {
+    [Modèle MCRS\n(XGBoost + calibration Platt)] as ML_MODEL
+    [Feature Store\n(43 dimensions par client)] as ML_FEAT
+    [Explicateur SHAP\n(contribution par feature)] as ML_SHAP
+    [Détecteur de dérive PSI\n(Population Stability Index)] as ML_PSI
+    [Registre des modèles\n(historique des exécutions)] as ML_REG
+
+    ML_FEAT --> ML_MODEL
+    ML_MODEL --> ML_SHAP
+    ML_MODEL --> ML_PSI
+    ML_MODEL --> ML_REG
+}
+
+' ══════════════════════════════════════════════════════════════════
+' INFRASTRUCTURE DE DONNÉES
+' ══════════════════════════════════════════════════════════════════
+
+database "PostgreSQL 16" as PG {
+    [Schéma opérationnel\n(21 tables — multi-tenant)] as PG_APP
+    [Schéma brut\n(ingestion CBS)] as PG_RAW
+    [Schéma nettoyé\n(transformations dbt)] as PG_STG
+    [Data warehouse\n(agrégats)] as PG_DW
+    [Feature store\n(scores + SHAP)] as PG_ML
+    [Reporting\n(vues Metabase)] as PG_REP
+}
+
+database "Redis 7" as REDIS {
+    [Cache sessions JWT\n(jetons révoqués)] as REDIS_JWT
+    [Cache KPI\n(TTL 5 min)] as REDIS_KPI
+}
+
+cloud "Sources Externes" as EXT {
+    [MINCOMMERCE\n(prix produits)] as EXT_MIN
+    [Open-Meteo\n(météo zones)] as EXT_MET
+    [BEAC / INS\n(indicateurs macro)] as EXT_BEAC
+    [CBS IMF\n(export fichier quotidien)] as EXT_CBS
+}
+
+cloud "Firebase FCM" as FCM_CLOUD {
+    [Service FCM\n(push mobile)] as FCM_SVC
+}
+
+' ══════════════════════════════════════════════════════════════════
+' FLUX DE DONNÉES PRINCIPAUX
+' ══════════════════════════════════════════════════════════════════
+
+C_SYNC --> B_COL : Synchronisation HTTPS\n(lot de collectes hors ligne)
+C_GPS --> B_AGENT : Envoi HTTPS\n(position GPS de l'agent)
+C_FCM <-- FCM_SVC : Notifications push Firebase
+
+WEB --> BACKEND : Requêtes HTTPS\n(session authentifiée — cookie sécurisé)
+B_SSE --> W_SSE : Événements temps réel (SSE)
+
+BACKEND --> PG_APP : JDBC / JPA (Spring Data)
+BACKEND --> REDIS_JWT : Cache Spring (liste noire JWT)
+S_NOTIF --> FCM_SVC : Firebase Admin SDK
+
+D_EXT --> EXT_CBS : Récupération export CBS (SFTP)
+D_EXT --> EXT_MIN : Récupération prix (HTTPS)
+D_EXT --> EXT_MET : Récupération météo (HTTPS)
+D_EXT --> EXT_BEAC : Récupération indicateurs (HTTPS)
+D_COL --> PG_RAW : Insertion collectes brutes
+D_REC --> PG_RAW : Insertion créances CBS
+D_COL --> DBT_STG : Lance la transformation dbt
+D_REC --> DBT_STG : Lance la transformation dbt
+D_ML --> ML_FEAT : Lecture features client
+D_ML --> ML_MODEL : Calcul des scores en lot
+D_ML --> PG_ML : Insertion scores + valeurs SHAP
+D_TRAIN --> ML_MODEL : Entraînement du modèle challenger
+D_ML --> B_INT : Notifie le backend\n(scores calculés, alertes ML)
+
+DBT --> PG_STG : Matérialise staging
+DBT --> PG_DW : Matérialise data warehouse
+DBT --> PG_ML : Matérialise feature store
+
+note right of ML_MODEL
+  CRS [35%] : régularité collecte
+  RPS [45%] : XGBoost P(défaut 90j)
+  CSI [20%] : facteurs externes (macro)
+  MCRS = composite [0,1]
+  IC [5%-95%] via Monte Carlo
+end note
+
+note right of PG_APP
+  Isolation multi-tenant : imf_id
+  sur toutes les tables opérationnelles.
+  TenantContext (ThreadLocal) garantit
+  l'isolation à chaque requête.
+end note
+
+@enduml
