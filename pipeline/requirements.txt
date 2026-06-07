@@ -32,8 +32,7 @@ scipy==1.13.0
 pyarrow==16.1.0        # parquet (dataset entraînement)
 lifelines==0.29.0      # analyse survie Cox (optionnel)
 
-# ── FastAPI ML Service ────────────────────────────────────────────────────────
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-pydantic==2.7.1
-pydantic-settings==2.3.1
+# ── FastAPI ML Service (installé dans Dockerfile.ml, pas dans le CI pipeline) ─
+# fastapi, uvicorn, pydantic, pydantic-settings sont exclus ici pour éviter
+# le conflit email_validator avec flask-appbuilder (airflow 2.8).
+# Voir pipeline/Dockerfile.ml pour les versions utilisées par le service ML.
