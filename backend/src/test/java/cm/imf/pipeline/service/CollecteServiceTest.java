@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -113,9 +114,9 @@ class CollecteServiceTest {
     @Test
     @DisplayName("getById — ID inexistant → 404")
     void getById_inexistant_leve_not_found() {
-        when(collecteRepository.findById(99L)).thenReturn(Optional.empty());
+        when(collecteRepository.findByUid(any(UUID.class))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> collecteService.getById(99L))
+        assertThatThrownBy(() -> collecteService.getById(UUID.randomUUID()))
                 .isInstanceOf(ResponseStatusException.class);
     }
 

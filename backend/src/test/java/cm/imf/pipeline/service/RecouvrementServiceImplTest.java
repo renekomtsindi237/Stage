@@ -64,7 +64,6 @@ class RecouvrementServiceImplTest {
     private RecouvrementDossier buildDossier(int joursRetard, BigDecimal montant) {
         RecouvrementDossier d = new RecouvrementDossier();
         d.setId(1L);
-        d.setUid(UUID.randomUUID());
         d.setImfId(1L);
         d.setIdPret("PRE-2024-001");
         d.setNomClient("Fomo Martin");
@@ -89,14 +88,13 @@ class RecouvrementServiceImplTest {
             when(dossierRepo.save(any())).thenAnswer(inv -> {
                 RecouvrementDossier d = inv.getArgument(0);
                 d.setId(1L);
-                d.setUid(UUID.randomUUID());
                 d.setPhase(RecouvrementPhase.RELANCE_AMIABLE);
                 return d;
             });
 
             OuvrirDossierRequest req = new OuvrirDossierRequest(
                     "PRE-NEW", "Fomo Martin", new BigDecimal("300000"), 65,
-                    null, null, null, null, TypeGarantie.CAUTION_PERSONNELLE);
+                    null, null, null, null, TypeGarantie.CAUTIONNAIRE_PERSONNEL);
 
             DossierRecouvrementResponse result = recouvrementService.ouvrirDossier(req, rrUser);
 
@@ -156,7 +154,6 @@ class RecouvrementServiceImplTest {
                 RecouvrementDossier saved = inv.getArgument(0);
                 // @PrePersist calcule la catégorie — on simule ici
                 saved.setId(1L);
-                saved.setUid(UUID.randomUUID());
                 saved.setCategorieCobtac(CategorieCobtac.valueOf(categorie));
                 saved.setTauxProvision(new BigDecimal(tauxAttendu));
                 saved.setMontantProvision(
@@ -192,7 +189,6 @@ class RecouvrementServiceImplTest {
             when(actionRepo.save(any())).thenAnswer(inv -> {
                 ActionRecouvrement a = inv.getArgument(0);
                 a.setId(1L);
-                a.setUid(UUID.randomUUID());
                 return a;
             });
             when(dossierRepo.save(any())).thenReturn(dossier);

@@ -44,7 +44,6 @@ class RgpdControllerTest {
         User user = TestHelper.mockAnalyste();
         cm.imf.pipeline.entity.DemandeRgpd saved = new cm.imf.pipeline.entity.DemandeRgpd();
         saved.setId(1L);
-        saved.setUid(java.util.UUID.randomUUID());
         saved.setTypeDroit("ACCES");
         when(demandeRepository.save(any())).thenReturn(saved);
 
@@ -81,7 +80,7 @@ class RgpdControllerTest {
     @DisplayName("GET /mes-donnees/demandes → 200 — liste des demandes de l'utilisateur")
     void listMesDemandes_retourne_200() throws Exception {
         User user = TestHelper.mockAnalyste();
-        when(demandeRepository.findByDemandeurId(any(), any()))
+        when(demandeRepository.findByDemandeurIdOrderByDateSoumissionDesc(any(), any()))
                 .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of()));
 
         mockMvc.perform(get("/mes-donnees/demandes")
@@ -115,7 +114,7 @@ class RgpdControllerTest {
     @Test
     @DisplayName("GET /admin/rgpd/demandes/en-retard → 200 pour DSI — SLA art. 41")
     void demandesEnRetard_dsi_retourne_200() throws Exception {
-        when(demandeRepository.findEnRetard(any()))
+        when(demandeRepository.findEnRetard(any(), any()))
                 .thenReturn(java.util.List.of());
 
         mockMvc.perform(get("/admin/rgpd/demandes/en-retard").with(TestHelper.asDsi()))
