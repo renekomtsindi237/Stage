@@ -196,8 +196,8 @@ class RecouvrementServiceImplTest {
             AjouterActionRequest req = new AjouterActionRequest(
                     TypeActionRecouvrement.VISITE_TERRAIN,
                     ResultatActionRecouvrement.PAIEMENT_EFFECTUE,
-                    "Client présent, a promis de payer",
-                    new BigDecimal("75000"));
+                    null, null, null, null, null, null, null,
+                    "Client présent, a promis de payer");
 
             ActionRecouvrementResponse result =
                     recouvrementService.ajouterAction(uid, req, rrUser);
@@ -217,7 +217,8 @@ class RecouvrementServiceImplTest {
                             new AjouterActionRequest(
                                     TypeActionRecouvrement.SMS_RELANCE,
                                     ResultatActionRecouvrement.SANS_REPONSE,
-                                    "Pas de réponse", null),
+                                    null, null, null, null, null, null, null,
+                                    "Pas de réponse"),
                             rrUser))
                     .isInstanceOf(ResponseStatusException.class);
         }

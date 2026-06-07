@@ -1,8 +1,13 @@
 package cm.imf.pipeline.exception;
 
 import cm.imf.pipeline.dto.response.ApiResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -12,21 +17,32 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("GlobalExceptionHandler — tests unitaires")
 class GlobalExceptionHandlerTest {
 
-    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+    @Mock MessageSource messageSource;
+    private GlobalExceptionHandler handler;
+
+    @BeforeEach
+    void setUp() {
+        when(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
+                .thenReturn("invalide");
+        handler = new GlobalExceptionHandler(messageSource);
+    }
 
     @Test
     @DisplayName("ResourceNotFoundException → 404 avec message métier")
     void handleResourceNotFound() {
         ResourceNotFoundException ex = new ResourceNotFoundException("Prêt", "PRE-001");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleNotFound(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleNotFound(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isNotNull();
@@ -38,7 +54,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("DuplicateResourceException → 409 CONFLICT")
     void handleDuplicateResource() {
         DuplicateResourceException ex = new DuplicateResourceException("Utilisateur", "username", "jdoe");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleDuplicate(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleDuplicate(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(response.getBody().isSuccess()).isFalse();
@@ -48,7 +64,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("InvalidTokenException → 401 UNAUTHORIZED")
     void handleInvalidToken() {
         InvalidTokenException ex = new InvalidTokenException("Token invalide ou expiré");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleInvalidToken(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleInvalidToken(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
@@ -57,10 +73,9 @@ class GlobalExceptionHandlerTest {
     @DisplayName("BadCredentialsException → 401 message générique (pas d'indice)")
     void handleBadCredentials() {
         BadCredentialsException ex = new BadCredentialsException("Bad credentials");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleBadCredentials(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleBadCredentials(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        // Le message ne doit pas mentionner "mot de passe incorrect" (anti-timing-attack)
         assertThat(response.getBody().getMessage()).doesNotContainIgnoringCase("mot de passe");
         assertThat(response.getBody().getMessage()).containsIgnoringCase("invalide");
     }
@@ -69,7 +84,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("AccessDeniedException → 403 FORBIDDEN")
     void handleAccessDenied() {
         AccessDeniedException ex = new AccessDeniedException("Accès refusé");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleAccessDenied(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleAccessDenied(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
@@ -83,7 +98,8 @@ class GlobalExceptionHandlerTest {
         when(ex.getBindingResult()).thenReturn(br);
         when(br.getFieldErrors()).thenReturn(List.of(fieldError));
 
-        ResponseEntity<ApiResponse<Map<String, String>>> response = handler.handleValidation(ex);
+        ResponseEntity<ApiResponse<Map<String, String>>> response =
+                handler.handleValidation(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getData()).containsKey("username");
@@ -94,7 +110,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("Exception générique → 500 INTERNAL_SERVER_ERROR")
     void handleGenericException() {
         Exception ex = new RuntimeException("Erreur inattendue");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleGeneric(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleGeneric(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody().isSuccess()).isFalse();
@@ -104,7 +120,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("IllegalArgumentException → 400 BAD_REQUEST")
     void handleIllegalArgument() {
         IllegalArgumentException ex = new IllegalArgumentException("Argument invalide");
-        ResponseEntity<ApiResponse<Void>> response = handler.handleIllegalArgument(ex);
+        ResponseEntity<ApiResponse<Void>> response = handler.handleIllegalArgument(ex, Locale.FRENCH);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getMessage()).contains("Argument invalide");
