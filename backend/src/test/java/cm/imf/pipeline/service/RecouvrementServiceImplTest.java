@@ -194,16 +194,16 @@ class RecouvrementServiceImplTest {
             when(dossierRepo.save(any())).thenReturn(dossier);
 
             AjouterActionRequest req = new AjouterActionRequest(
-                    TypeActionRecouvrement.VISITE,
-                    ResultatActionRecouvrement.SUCCES,
+                    TypeActionRecouvrement.VISITE_TERRAIN,
+                    ResultatActionRecouvrement.PAIEMENT_EFFECTUE,
                     "Client présent, a promis de payer",
                     new BigDecimal("75000"));
 
             ActionRecouvrementResponse result =
                     recouvrementService.ajouterAction(uid, req, rrUser);
 
-            assertThat(result.typeAction()).isEqualTo(TypeActionRecouvrement.VISITE);
-            assertThat(result.resultat()).isEqualTo(ResultatActionRecouvrement.SUCCES);
+            assertThat(result.typeAction()).isEqualTo(TypeActionRecouvrement.VISITE_TERRAIN);
+            assertThat(result.resultat()).isEqualTo(ResultatActionRecouvrement.PAIEMENT_EFFECTUE);
             verify(actionRepo).save(any(ActionRecouvrement.class));
         }
 
@@ -215,7 +215,7 @@ class RecouvrementServiceImplTest {
             assertThatThrownBy(() ->
                     recouvrementService.ajouterAction(UUID.randomUUID(),
                             new AjouterActionRequest(
-                                    TypeActionRecouvrement.SMS,
+                                    TypeActionRecouvrement.SMS_RELANCE,
                                     ResultatActionRecouvrement.SANS_REPONSE,
                                     "Pas de réponse", null),
                             rrUser))

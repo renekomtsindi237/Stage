@@ -22,7 +22,9 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -43,7 +45,7 @@ class CollecteControllerTest {
     }
 
     private CollecteResponse confirmedResponse() {
-        return new CollecteResponse(1L, "MOBILE-001", "CLI001", "PRE001",
+        return new CollecteResponse(null, "MOBILE-001", "CLI001", "PRE001",
                 LocalDate.now(), new BigDecimal("25000"), CanalPaiement.MTN,
                 "REF001", StatutCollecte.CONFIRMEE, OffsetDateTime.now());
     }
@@ -66,7 +68,7 @@ class CollecteControllerTest {
     @WithMockUser(roles = "AGENT")
     @DisplayName("POST /api/collectes — doublon → 409 CONFLICT")
     void enregistrer_doublon_409() throws Exception {
-        CollecteResponse doublon = new CollecteResponse(1L, "MOBILE-001", "CLI001", "PRE001",
+        CollecteResponse doublon = new CollecteResponse(null, "MOBILE-001", "CLI001", "PRE001",
                 LocalDate.now(), new BigDecimal("25000"), CanalPaiement.MTN,
                 "REF001", StatutCollecte.DOUBLON, OffsetDateTime.now());
         when(collecteService.enregistrer(any(), any())).thenReturn(doublon);
@@ -92,7 +94,7 @@ class CollecteControllerTest {
     @DisplayName("GET /api/collectes/mes-collectes — retourne page paginée")
     void getMesCollectes_agent_ok() throws Exception {
         PageResponse<CollecteResponse> page = new PageResponse<>(
-                List.of(confirmedResponse()), 0, 20, 1, 1, true);
+                List.of(confirmedResponse()), 0, 20, 1L, 1, true, true);
         when(collecteService.getMesCollectes(any(), eq(0), eq(20))).thenReturn(page);
 
         mockMvc.perform(get("/collectes/mes-collectes"))
@@ -104,10 +106,10 @@ class CollecteControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("GET /api/collectes/{id} — ANALYSTE peut voir une collecte")
     void getById_analyste_ok() throws Exception {
-        when(collecteService.getById(1L)).thenReturn(confirmedResponse());
+        when(collecteService.getById(any(UUID.class))).thenReturn(confirmedResponse());
 
-        mockMvc.perform(get("/collectes/1"))
+        mockMvc.perform(get("/collectes/{uid}", UUID.randomUUID()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.idCollecteMobile").value("MOBILE-001"));
     }
 }
