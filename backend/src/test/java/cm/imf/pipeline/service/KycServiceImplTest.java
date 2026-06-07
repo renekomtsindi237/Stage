@@ -67,7 +67,7 @@ class KycServiceImplTest {
                 LocalDate.of(1988, 7, 20), "Bafoussam", "Camerounaise",
                 "697001122", "kouam@test.cm", "Ngousso", "Yaoundé",
                 "Commerçant", "Auto", null,
-                TypeDocumentKyc.CARTE_IDENTITE, "123456789",
+                TypeDocumentKyc.CNI_RECTO, "123456789",
                 LocalDate.of(2020, 1, 1), LocalDate.of(2030, 1, 1), "Yaoundé",
                 niveau, false, null);
     }
@@ -75,7 +75,6 @@ class KycServiceImplTest {
     private KycDossier buildDossier(String clientId, StatutKyc statut, NiveauRisque risque) {
         KycDossier d = new KycDossier();
         d.setId(1L);
-        d.setUid(UUID.randomUUID());
         d.setImf(imf);
         d.setClientId(clientId);
         d.setNomClient("Kouam");
@@ -100,9 +99,8 @@ class KycServiceImplTest {
             when(dossierRepo.save(any())).thenAnswer(inv -> {
                 KycDossier d = inv.getArgument(0);
                 d.setId(1L);
-                d.setUid(UUID.randomUUID());
-                d.setStatut(StatutKyc.INITIE);
-                d.setNiveauRisque(NiveauRisque.BAS);
+                d.setStatut(StatutKyc.EN_ATTENTE);
+                d.setNiveauRisque(NiveauRisque.FAIBLE);
                 return d;
             });
 
@@ -110,7 +108,7 @@ class KycServiceImplTest {
                     buildInitierRequest("CLI-NEW", NiveauKyc.NIVEAU_1), dsiUser);
 
             assertThat(result.clientId()).isEqualTo("CLI-NEW");
-            assertThat(result.statut()).isEqualTo(StatutKyc.INITIE);
+            assertThat(result.statut()).isEqualTo(StatutKyc.EN_ATTENTE);
             verify(dossierRepo).save(any(KycDossier.class));
         }
 
@@ -118,7 +116,7 @@ class KycServiceImplTest {
         @DisplayName("→ lève CONFLICT si dossier déjà existant pour ce client")
         void client_existant_leve_conflict() {
             when(dossierRepo.findByImfIdAndClientId(1L, "CLI-EXIST"))
-                    .thenReturn(Optional.of(buildDossier("CLI-EXIST", StatutKyc.APPROUVE, NiveauRisque.BAS)));
+                    .thenReturn(Optional.of(buildDossier("CLI-EXIST", StatutKyc.APPROUVE, NiveauRisque.FAIBLE)));
 
             assertThatThrownBy(() ->
                     kycService.initierDossier(buildInitierRequest("CLI-EXIST", NiveauKyc.NIVEAU_1), dsiUser))
@@ -148,7 +146,7 @@ class KycServiceImplTest {
         @Test
         @DisplayName("→ retourne la page complète sans filtres")
         void sans_filtre_retourne_tous() {
-            KycDossier d = buildDossier("CLI-001", StatutKyc.EN_COURS, NiveauRisque.MOYEN);
+            KycDossier d = buildDossier("CLI-001", StatutKyc.EN_COURS_VERIFICATION, NiveauRisque.MOYEN);
             when(dossierRepo.findByImfId(eq(1L), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(d)));
 
@@ -208,7 +206,7 @@ class KycServiceImplTest {
         @DisplayName("→ mise à jour PPE + niveau risque ELEVE persiste en base")
         void ppe_vrai_met_a_jour_risque_eleve() {
             UUID uid = UUID.randomUUID();
-            KycDossier dossier = buildDossier("CLI-PPE", StatutKyc.EN_COURS, NiveauRisque.BAS);
+            KycDossier dossier = buildDossier("CLI-PPE", StatutKyc.EN_COURS_VERIFICATION, NiveauRisque.FAIBLE);
             when(dossierRepo.findByUid(uid)).thenReturn(Optional.of(dossier));
             when(dossierRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -243,7 +241,7 @@ class KycServiceImplTest {
         @DisplayName("→ décision APPROUVE passe le statut à APPROUVE")
         void decision_approuve_change_statut() {
             UUID uid = UUID.randomUUID();
-            KycDossier dossier = buildDossier("CLI-VER", StatutKyc.EN_COURS, NiveauRisque.BAS);
+            KycDossier dossier = buildDossier("CLI-VER", StatutKyc.EN_COURS_VERIFICATION, NiveauRisque.FAIBLE);
             when(dossierRepo.findByUid(uid)).thenReturn(Optional.of(dossier));
             when(dossierRepo.save(any())).thenAnswer(inv -> {
                 KycDossier d = inv.getArgument(0);
@@ -264,7 +262,7 @@ class KycServiceImplTest {
         @DisplayName("→ décision REJETE passe le statut à REJETE")
         void decision_rejete_change_statut() {
             UUID uid = UUID.randomUUID();
-            KycDossier dossier = buildDossier("CLI-REJ", StatutKyc.EN_COURS, NiveauRisque.ELEVE);
+            KycDossier dossier = buildDossier("CLI-REJ", StatutKyc.EN_COURS_VERIFICATION, NiveauRisque.ELEVE);
             when(dossierRepo.findByUid(uid)).thenReturn(Optional.of(dossier));
             when(dossierRepo.save(any())).thenAnswer(inv -> {
                 KycDossier d = inv.getArgument(0);
