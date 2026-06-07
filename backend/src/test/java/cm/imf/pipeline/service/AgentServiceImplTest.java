@@ -30,8 +30,12 @@ class AgentServiceImplTest {
     @InjectMocks
     private AgentServiceImpl agentService;
 
-    private static final AgentResponse AGENT_A = new AgentResponse("AG001", "Amadou Diallo", "ANC01", "Agence Nord");
-    private static final AgentResponse AGENT_B = new AgentResponse("AG002", "Binta Koné", "ANC01", "Agence Nord");
+    private static final AgentResponse AGENT_A = new AgentResponse(
+            "AG001", null, "Amadou Diallo", "ANC01", "Agence Nord",
+            null, null, null, null, null, false, false, null);
+    private static final AgentResponse AGENT_B = new AgentResponse(
+            "AG002", null, "Binta Koné", "ANC01", "Agence Nord",
+            null, null, null, null, null, false, false, null);
 
     @BeforeEach
     void setUp() {
@@ -47,7 +51,7 @@ class AgentServiceImplTest {
         List<AgentResponse> result = agentService.listByAgence("ANC01");
 
         assertThat(result).hasSize(2);
-        assertThat(result).extracting(AgentResponse::idAgent)
+        assertThat(result).extracting(AgentResponse::uid)
                 .containsExactlyInAnyOrder("AG001", "AG002");
     }
 
@@ -89,8 +93,8 @@ class AgentServiceImplTest {
 
         AgentResponse result = agentService.getById("AG001");
 
-        assertThat(result.idAgent()).isEqualTo("AG001");
-        assertThat(result.nomAgent()).isEqualTo("Amadou Diallo");
+        assertThat(result.uid()).isEqualTo("AG001");
+        assertThat(result.nomComplet()).isEqualTo("Amadou Diallo");
     }
 
     @Test
@@ -102,6 +106,6 @@ class AgentServiceImplTest {
         List<AgentResponse> result = agentService.search("Amadou", 10);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).nomAgent()).isEqualTo("Amadou Diallo");
+        assertThat(result.get(0).nomComplet()).isEqualTo("Amadou Diallo");
     }
 }

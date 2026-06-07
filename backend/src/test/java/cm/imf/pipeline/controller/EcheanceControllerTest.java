@@ -19,7 +19,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestSecurityConfig.class)
 @DisplayName("EcheanceController — tests MockMvc")
 class EcheanceControllerTest {
+
+    private static final UUID ECH_UID = UUID.fromString("aaaaaaaa-0000-0000-0000-000000000001");
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
@@ -58,24 +62,24 @@ class EcheanceControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("GET /api/echeances/{id} — retourne 200 avec détail")
     void getById_200() throws Exception {
-        when(echeanceService.getById(1L)).thenReturn(buildResponse());
+        when(echeanceService.getById(any(UUID.class))).thenReturn(buildResponse());
 
-        mockMvc.perform(get("/echeances/1"))
+        mockMvc.perform(get("/echeances/{uid}", ECH_UID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.idPret").value("PRE-001"));
     }
 
     @Test
     @WithMockUser(roles = "AGENT")
     @DisplayName("PUT /api/echeances/{id} — agent peut mettre à jour")
     void updateStatut_200() throws Exception {
-        when(echeanceService.updateStatut(eq(1L), any())).thenReturn(buildResponse());
+        when(echeanceService.updateStatut(any(UUID.class), any())).thenReturn(buildResponse());
 
         String body = """
                 {"statut":"PAYEE","montantPaye":50000,"datePaiement":"2026-04-03","observation":"OK"}
                 """;
 
-        mockMvc.perform(put("/echeances/1")
+        mockMvc.perform(put("/echeances/{uid}", ECH_UID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk());
