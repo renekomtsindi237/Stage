@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.*;
 class AlerteServiceTest {
 
     @Mock AlerteRepository alerteRepository;
+    @Mock ApplicationEventPublisher eventPublisher;
     @InjectMocks AlerteService alerteService;
 
     private AlerteImpaye activeAlerte;
@@ -50,7 +53,7 @@ class AlerteServiceTest {
     @Test
     @DisplayName("getAlertes — sans filtre statut → retourne toutes les alertes")
     void getAlertes_sans_filtre_retourne_tout() {
-        when(alerteRepository.findAll(any(Pageable.class)))
+        when(alerteRepository.findByImfId(any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(activeAlerte)));
 
         PageResponse<AlerteResponse> page = alerteService.getAlertes(null, 0, 20);
@@ -60,25 +63,26 @@ class AlerteServiceTest {
     }
 
     @Test
-    @DisplayName("getAlertes — avec filtre ACTIVE → appelle findByStatutAlerte")
+    @DisplayName("getAlertes — avec filtre ACTIVE → appelle findByImfIdAndStatutAlerte")
     void getAlertes_avec_filtre_statut() {
-        when(alerteRepository.findByStatutAlerte(eq(StatutAlerte.ACTIVE), any(Pageable.class)))
+        when(alerteRepository.findByImfIdAndStatutAlerte(any(), eq(StatutAlerte.ACTIVE), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(activeAlerte)));
 
         PageResponse<AlerteResponse> page = alerteService.getAlertes(StatutAlerte.ACTIVE, 0, 20);
 
         assertThat(page.content()).hasSize(1);
-        verify(alerteRepository).findByStatutAlerte(eq(StatutAlerte.ACTIVE), any());
-        verify(alerteRepository, never()).findAll(any(Pageable.class));
+        verify(alerteRepository).findByImfIdAndStatutAlerte(any(), eq(StatutAlerte.ACTIVE), any());
+        verify(alerteRepository, never()).findByImfId(any(), any(Pageable.class));
     }
 
     @Test
     @DisplayName("updateStatut — ACTIVE → ESCALADEE : transition valide")
     void updateStatut_active_vers_escaladee() {
-        when(alerteRepository.findById(1L)).thenReturn(Optional.of(activeAlerte));
+        UUID uid = UUID.randomUUID();
+        when(alerteRepository.findByUid(uid)).thenReturn(Optional.of(activeAlerte));
         when(alerteRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        AlerteResponse result = alerteService.updateStatut(1L, new AlerteUpdateRequest(StatutAlerte.ESCALADEE));
+        AlerteResponse result = alerteService.updateStatut(uid, new AlerteUpdateRequest(StatutAlerte.ESCALADEE));
 
         assertThat(result.statutAlerte()).isEqualTo(StatutAlerte.ESCALADEE);
     }
@@ -86,10 +90,11 @@ class AlerteServiceTest {
     @Test
     @DisplayName("updateStatut — ACTIVE → CLOTUREE : dateCloture renseignée")
     void updateStatut_active_vers_cloturee_remplit_date_cloture() {
-        when(alerteRepository.findById(1L)).thenReturn(Optional.of(activeAlerte));
+        UUID uid = UUID.randomUUID();
+        when(alerteRepository.findByUid(uid)).thenReturn(Optional.of(activeAlerte));
         when(alerteRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        AlerteResponse result = alerteService.updateStatut(1L, new AlerteUpdateRequest(StatutAlerte.CLOTUREE));
+        AlerteResponse result = alerteService.updateStatut(uid, new AlerteUpdateRequest(StatutAlerte.CLOTUREE));
 
         assertThat(result.statutAlerte()).isEqualTo(StatutAlerte.CLOTUREE);
         assertThat(result.dateCloture()).isNotNull();
@@ -99,10 +104,10 @@ class AlerteServiceTest {
     @DisplayName("updateStatut — alerte déjà CLOTUREE → 422 UNPROCESSABLE_ENTITY")
     void updateStatut_alerte_cloturee_leve_exception() {
         activeAlerte.setStatutAlerte(StatutAlerte.CLOTUREE);
-        when(alerteRepository.findById(1L)).thenReturn(Optional.of(activeAlerte));
+        when(alerteRepository.findByUid(any(UUID.class))).thenReturn(Optional.of(activeAlerte));
 
         assertThatThrownBy(() ->
-                alerteService.updateStatut(1L, new AlerteUpdateRequest(StatutAlerte.ACTIVE)))
+                alerteService.updateStatut(UUID.randomUUID(), new AlerteUpdateRequest(StatutAlerte.ACTIVE)))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("clôturée");
     }
@@ -110,16 +115,16 @@ class AlerteServiceTest {
     @Test
     @DisplayName("getById — ID inconnu → 404")
     void getById_inconnu_leve_not_found() {
-        when(alerteRepository.findById(99L)).thenReturn(Optional.empty());
+        when(alerteRepository.findByUid(any(UUID.class))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> alerteService.getById(99L))
+        assertThatThrownBy(() -> alerteService.getById(UUID.randomUUID()))
                 .isInstanceOf(ResponseStatusException.class);
     }
 
     @Test
     @DisplayName("countActiveAlertes — délègue au repository")
     void countActiveAlertes() {
-        when(alerteRepository.countByStatutAlerte(StatutAlerte.ACTIVE)).thenReturn(7L);
+        when(alerteRepository.countByImfIdAndStatutAlerte(any(), eq(StatutAlerte.ACTIVE))).thenReturn(7L);
         assertThat(alerteService.countActiveAlertes()).isEqualTo(7L);
     }
 }

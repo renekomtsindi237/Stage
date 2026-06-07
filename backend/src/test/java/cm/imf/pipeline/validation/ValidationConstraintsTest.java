@@ -201,20 +201,20 @@ class ValidationConstraintsTest {
         @DisplayName("Valide — username + password + role présents")
         void valide() {
             assertNoViolations(new CreateUserRequest(
-                    "newuser", "SecurePass!1", Role.AGENT, "YD001"));
+                    "newuser", "SecurePass!1", null, Role.AGENT, "YD001", null, null, null));
         }
 
         @ParameterizedTest
         @NullAndEmptySource
         @DisplayName("username vide → violation")
         void username_vide(String u) {
-            assertHasViolations(new CreateUserRequest(u, "SecurePass!1", Role.AGENT, null));
+            assertHasViolations(new CreateUserRequest(u, "SecurePass!1", null, Role.AGENT, null, null, null, null));
         }
 
         @Test
         @DisplayName("role null → violation @NotNull")
         void role_null() {
-            assertHasViolations(new CreateUserRequest("user", "Pass!1", null, null));
+            assertHasViolations(new CreateUserRequest("user", "Pass!1", null, null, null, null, null, null));
         }
     }
 }
