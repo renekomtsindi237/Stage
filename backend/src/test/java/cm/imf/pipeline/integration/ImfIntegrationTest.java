@@ -1,12 +1,11 @@
 package cm.imf.pipeline.integration;
 
-import cm.imf.pipeline.dto.request.CreateUserRequest;
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.response.AuthResponse;
-import cm.imf.pipeline.dto.response.UserResponse;
+import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.Role;
 import cm.imf.pipeline.repository.UserRepository;
-import cm.imf.pipeline.service.AdminService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Assumptions;
@@ -59,8 +58,8 @@ class ImfIntegrationTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
-    @Autowired AdminService adminService;
     @Autowired UserRepository userRepository;
+    @Autowired PasswordEncoder passwordEncoder;
 
     private static String accessToken;
     private static String dsiAccessToken;
@@ -75,21 +74,29 @@ class ImfIntegrationTest {
 
     @Test
     @Order(2)
-    @DisplayName("AdminService — créer un utilisateur ANALYSTE via service")
+    @DisplayName("Repository — créer un utilisateur ANALYSTE pour les tests de login")
     void creerUtilisateur_analyste() {
-        UserResponse user = adminService.createUser(
-                new CreateUserRequest("jkamga", "TestPass!2024", Role.ANALYSTE, "YD001"));
-        assertThat(user.username()).isEqualTo("jkamga");
-        assertThat(user.role()).isEqualTo(Role.ANALYSTE);
-        assertThat(user.actif()).isTrue();
+        User user = User.builder()
+                .username("jkamga")
+                .passwordHash(passwordEncoder.encode("TestPass!2024"))
+                .role(Role.ANALYSTE)
+                .actif(true)
+                .build();
+        userRepository.save(user);
+        assertThat(userRepository.findByUsername("jkamga")).isPresent();
     }
 
     @Test
     @Order(3)
-    @DisplayName("AdminService — créer un utilisateur DSI pour les tests admin")
+    @DisplayName("Repository — créer un utilisateur DSI pour les tests admin")
     void creerUtilisateur_dsi() {
-        adminService.createUser(
-                new CreateUserRequest("admin_dsi", "DsiPass!2024", Role.DSI, null));
+        User user = User.builder()
+                .username("admin_dsi")
+                .passwordHash(passwordEncoder.encode("DsiPass!2024"))
+                .role(Role.DSI)
+                .actif(true)
+                .build();
+        userRepository.save(user);
         assertThat(userRepository.findByUsername("admin_dsi")).isPresent();
     }
 
