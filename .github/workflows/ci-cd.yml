@@ -142,7 +142,7 @@ jobs:
       - name: Tests (pytest)
         run: |
           if [ -d tests ]; then
-            pip install pytest -r requirements.txt
+            pip install -r requirements-ci.txt
             pytest tests/ -v --tb=short --junitxml=../junit-pipeline.xml
           else
             echo "Aucun dossier tests/ — étape ignorée"
