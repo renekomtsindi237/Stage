@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -74,33 +75,35 @@ class EcheanceServiceImplTest {
     @Test
     @DisplayName("getById — retourne l'échéance si trouvée")
     void getById_retourne_echeance() {
+        UUID uid = UUID.randomUUID();
         EcheanceApp e = buildEcheance(1L, "PRE-001", StatutEcheance.EN_ATTENTE);
-        when(echeanceRepository.findById(1L)).thenReturn(Optional.of(e));
+        when(echeanceRepository.findByUid(uid)).thenReturn(Optional.of(e));
 
-        EcheanceResponse result = echeanceService.getById(1L);
-        assertThat(result.id()).isEqualTo(1L);
+        EcheanceResponse result = echeanceService.getById(uid);
+        assertThat(result.idPret()).isEqualTo("PRE-001");
         assertThat(result.statut()).isEqualTo(StatutEcheance.EN_ATTENTE);
     }
 
     @Test
     @DisplayName("getById — lève ResourceNotFoundException si non trouvée")
     void getById_leve_exception() {
-        when(echeanceRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> echeanceService.getById(99L))
+        when(echeanceRepository.findByUid(any(UUID.class))).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> echeanceService.getById(UUID.randomUUID()))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     @DisplayName("updateStatut — met à jour correctement")
     void updateStatut_met_a_jour() {
+        UUID uid = UUID.randomUUID();
         EcheanceApp e = buildEcheance(1L, "PRE-001", StatutEcheance.EN_ATTENTE);
-        when(echeanceRepository.findById(1L)).thenReturn(Optional.of(e));
+        when(echeanceRepository.findByUid(uid)).thenReturn(Optional.of(e));
         when(echeanceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         EcheanceUpdateRequest req = new EcheanceUpdateRequest(
                 StatutEcheance.PAYEE, new BigDecimal("50000"), LocalDate.now(), "Payé intégralement");
 
-        EcheanceResponse result = echeanceService.updateStatut(1L, req);
+        EcheanceResponse result = echeanceService.updateStatut(uid, req);
 
         assertThat(result.statut()).isEqualTo(StatutEcheance.PAYEE);
         assertThat(result.montantPaye()).isEqualByComparingTo("50000");
@@ -110,29 +113,29 @@ class EcheanceServiceImplTest {
     @DisplayName("updateStatut — lève 422 si échéance ANNULEE")
     void updateStatut_echec_si_annulee() {
         EcheanceApp e = buildEcheance(1L, "PRE-001", StatutEcheance.ANNULEE);
-        when(echeanceRepository.findById(1L)).thenReturn(Optional.of(e));
+        when(echeanceRepository.findByUid(any(UUID.class))).thenReturn(Optional.of(e));
 
         EcheanceUpdateRequest req = new EcheanceUpdateRequest(StatutEcheance.PAYEE, null, null, null);
 
-        assertThatThrownBy(() -> echeanceService.updateStatut(1L, req))
+        assertThatThrownBy(() -> echeanceService.updateStatut(UUID.randomUUID(), req))
                 .isInstanceOf(ResponseStatusException.class);
     }
 
     @Test
     @DisplayName("getEcheancesEnRetard — délègue au repository avec statut EN_RETARD")
     void getEcheancesEnRetard_delegue() {
-        when(echeanceRepository.findByStatut(eq(StatutEcheance.EN_RETARD), any(Pageable.class)))
+        when(echeanceRepository.findByImfIdAndStatut(any(), eq(StatutEcheance.EN_RETARD), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
         PageResponse<EcheanceResponse> result = echeanceService.getEcheancesEnRetard(0, 10);
         assertThat(result.content()).isEmpty();
-        verify(echeanceRepository).findByStatut(eq(StatutEcheance.EN_RETARD), any(Pageable.class));
+        verify(echeanceRepository).findByImfIdAndStatut(any(), eq(StatutEcheance.EN_RETARD), any(Pageable.class));
     }
 
     @Test
     @DisplayName("countEnRetard — retourne le bon compte")
     void countEnRetard_retourne_compte() {
-        when(echeanceRepository.countByStatut(StatutEcheance.EN_RETARD)).thenReturn(7L);
+        when(echeanceRepository.countByImfIdAndStatut(any(), eq(StatutEcheance.EN_RETARD))).thenReturn(7L);
         assertThat(echeanceService.countEnRetard()).isEqualTo(7L);
     }
 }
