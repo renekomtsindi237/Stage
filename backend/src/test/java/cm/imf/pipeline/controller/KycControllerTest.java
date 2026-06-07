@@ -57,9 +57,13 @@ class KycControllerTest {
 
     private KycDossierResponse dossierResponse(StatutKyc statut) {
         return new KycDossierResponse(
-                1L, DOSSIER_UID, "CLI-001", "Kouam", "Jean-Pierre",
-                NiveauKyc.NIVEAU_1, statut, NiveauRisque.BAS, false,
-                null, null, null);
+                DOSSIER_UID.toString(), null, "CLI-001", "Kouam", "Jean-Pierre",
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null,
+                NiveauKyc.NIVEAU_1, NiveauKyc.NIVEAU_1, statut,
+                0, NiveauRisque.FAIBLE, false, null,
+                false, false,
+                null, null, null, null, null, null);
     }
 
     // ── POST /kyc/dossiers ────────────────────────────────────────────────────
@@ -72,14 +76,14 @@ class KycControllerTest {
         @DisplayName("→ 201 CREATED quand la requête est valide")
         void initier_valide_retourne_201() throws Exception {
             when(kycService.initierDossier(any(), any()))
-                    .thenReturn(dossierResponse(StatutKyc.INITIE));
+                    .thenReturn(dossierResponse(StatutKyc.EN_ATTENTE));
 
             mockMvc.perform(post("/kyc/dossiers")
                             .with(TestHelper.asDsi())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(initierRequest())))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.statut").value("INITIE"))
+                    .andExpect(jsonPath("$.data.statut").value("EN_ATTENTE"))
                     .andExpect(jsonPath("$.data.clientId").value("CLI-001"));
         }
 
@@ -131,7 +135,7 @@ class KycControllerTest {
         @DisplayName("→ 200 avec contenu paginé pour DSI")
         void list_dsi_retourne_200() throws Exception {
             PageResponse<KycDossierResponse> page =
-                    PageResponse.of(List.of(dossierResponse(StatutKyc.EN_COURS)), 0, 20, 1L);
+                    PageResponse.of(List.of(dossierResponse(StatutKyc.EN_COURS_VERIFICATION)), 0, 20, 1L);
             when(kycService.listDossiers(anyLong(), any(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(page);
 
@@ -175,7 +179,7 @@ class KycControllerTest {
     @DisplayName("GET /kyc/dossiers/{uid} → 200 avec le détail du dossier")
     void getDossier_existant_retourne_200() throws Exception {
         when(kycService.getDossier(DOSSIER_UID))
-                .thenReturn(dossierResponse(StatutKyc.EN_COURS));
+                .thenReturn(dossierResponse(StatutKyc.EN_COURS_VERIFICATION));
 
         mockMvc.perform(get("/kyc/dossiers/{uid}", DOSSIER_UID)
                         .with(TestHelper.asDsi()))
@@ -201,9 +205,13 @@ class KycControllerTest {
     @DisplayName("PUT /kyc/dossiers/{uid}/risque → 200 après évaluation PPE ELEVE")
     void evaluerRisque_ppe_retourne_200() throws Exception {
         KycDossierResponse resp = new KycDossierResponse(
-                1L, DOSSIER_UID, "CLI-001", "Kouam", "Jean-Pierre",
-                NiveauKyc.NIVEAU_3, StatutKyc.EN_COURS, NiveauRisque.ELEVE, true,
-                null, null, null);
+                DOSSIER_UID.toString(), null, "CLI-001", "Kouam", "Jean-Pierre",
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null,
+                NiveauKyc.NIVEAU_3, NiveauKyc.NIVEAU_3, StatutKyc.EN_COURS_VERIFICATION,
+                75, NiveauRisque.ELEVE, true, null,
+                false, false,
+                null, null, null, null, null, null);
         when(kycService.evaluerRisque(eq(DOSSIER_UID), any(), any())).thenReturn(resp);
 
         String body = """

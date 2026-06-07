@@ -5,8 +5,6 @@ import cm.imf.pipeline.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("JwtTokenProvider — tests unitaires")
@@ -22,10 +20,7 @@ class JwtTokenProviderTest {
 
     @BeforeEach
     void setUp() {
-        provider = new JwtTokenProvider();
-        ReflectionTestUtils.setField(provider, "jwtSecret", SECRET);
-        ReflectionTestUtils.setField(provider, "accessTokenExpirationMs",  ACCESS_EXPIRY);
-        ReflectionTestUtils.setField(provider, "refreshTokenExpirationMs", REFRESH_EXPIRY);
+        provider = new JwtTokenProvider(SECRET, ACCESS_EXPIRY, REFRESH_EXPIRY);
     }
 
     private User testUser() {
@@ -88,10 +83,7 @@ class JwtTokenProviderTest {
     @DisplayName("extractUsername — pour un token expiré : lève exception ou retourne null")
     void extractUsername_token_expire_leve_exception_ou_false() {
         // On crée un token avec expiry négatif (déjà expiré)
-        JwtTokenProvider shortProvider = new JwtTokenProvider();
-        ReflectionTestUtils.setField(shortProvider, "jwtSecret", SECRET);
-        ReflectionTestUtils.setField(shortProvider, "accessTokenExpirationMs", -1L);
-        ReflectionTestUtils.setField(shortProvider, "refreshTokenExpirationMs", REFRESH_EXPIRY);
+        JwtTokenProvider shortProvider = new JwtTokenProvider(SECRET, -1L, REFRESH_EXPIRY);
 
         String expiredToken = shortProvider.generateAccessToken(testUser());
         assertThat(shortProvider.validateToken(expiredToken)).isFalse();

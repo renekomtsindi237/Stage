@@ -31,9 +31,9 @@ class NotificationControllerTest {
 
     private NotificationDto sampleNotif() {
         return new NotificationDto(
-                UUID.randomUUID(), "ALERTE_IMPAYE",
+                UUID.randomUUID().toString(), "ALERTE_IMPAYE",
                 "Alerte impayé", "Le client CLI-001 est en retard de 30 jours",
-                false, OffsetDateTime.now());
+                null, false, OffsetDateTime.now());
     }
 
     // ── GET /notifications ────────────────────────────────────────────────────
