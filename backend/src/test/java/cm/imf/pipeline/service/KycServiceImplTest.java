@@ -211,7 +211,7 @@ class KycServiceImplTest {
             when(dossierRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             EvaluerRisqueKycRequest req = new EvaluerRisqueKycRequest(
-                    true, true, false, "ELEVE", "PPE détecté");
+                    true, true, false, null, "ELEVE", "PPE détecté");
             KycDossierResponse result = kycService.evaluerRisque(uid, req, dsiUser);
 
             assertThat(result.estPep()).isTrue();
@@ -225,7 +225,7 @@ class KycServiceImplTest {
 
             assertThatThrownBy(() ->
                     kycService.evaluerRisque(UUID.randomUUID(),
-                            new EvaluerRisqueKycRequest(false, false, false, "BAS", null),
+                            new EvaluerRisqueKycRequest(false, false, false, null, "BAS", null),
                             dsiUser))
                     .isInstanceOf(ResponseStatusException.class);
         }
@@ -251,7 +251,7 @@ class KycServiceImplTest {
             when(verificationRepo.save(any())).thenReturn(null);
 
             VerifierKycRequest req = new VerifierKycRequest(
-                    ResultatVerificationKyc.APPROUVE, "Documents conformes");
+                    ResultatVerificationKyc.APPROUVE, null, "Documents conformes", null);
             KycDossierResponse result = kycService.verifier(uid, req, dsiUser);
 
             assertThat(result.statut()).isEqualTo(StatutKyc.APPROUVE);
@@ -272,7 +272,7 @@ class KycServiceImplTest {
             when(verificationRepo.save(any())).thenReturn(null);
 
             VerifierKycRequest req = new VerifierKycRequest(
-                    ResultatVerificationKyc.REJETE, "Pièce expirée");
+                    ResultatVerificationKyc.REJETE, null, null, "Pièce expirée");
             KycDossierResponse result = kycService.verifier(uid, req, dsiUser);
 
             assertThat(result.statut()).isEqualTo(StatutKyc.REJETE);

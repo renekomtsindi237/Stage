@@ -237,7 +237,7 @@ class KycControllerTest {
                 .thenReturn(dossierResponse(StatutKyc.APPROUVE));
 
         String body = """
-                {"decision":"APPROUVE","motif":"Documents conformes"}
+                {"resultat":"APPROUVE","commentaire":"Documents conformes"}
                 """;
 
         mockMvc.perform(put("/kyc/dossiers/{uid}/verification", DOSSIER_UID)
@@ -255,7 +255,7 @@ class KycControllerTest {
                 .thenReturn(dossierResponse(StatutKyc.REJETE));
 
         String body = """
-                {"decision":"REJETE","motif":"Pièce expirée"}
+                {"resultat":"REJETE","motifRejet":"Pièce expirée"}
                 """;
 
         mockMvc.perform(put("/kyc/dossiers/{uid}/verification", DOSSIER_UID)

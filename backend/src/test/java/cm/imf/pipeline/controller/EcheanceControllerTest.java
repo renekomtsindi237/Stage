@@ -35,7 +35,7 @@ class EcheanceControllerTest {
 
     private EcheanceResponse buildResponse() {
         return new EcheanceResponse(
-                1L, "PRE-001", null, null, 1,
+                null, "PRE-001", null, null, 1,
                 LocalDate.now().plusMonths(1),
                 new BigDecimal("50000"), BigDecimal.ZERO, new BigDecimal("50000"),
                 null, StatutEcheance.EN_ATTENTE, null, null,
@@ -86,7 +86,7 @@ class EcheanceControllerTest {
     @DisplayName("GET /api/echeances/en-retard — RR peut accéder")
     void getEnRetard_rr_200() throws Exception {
         when(echeanceService.getEcheancesEnRetard(0, 20))
-                .thenReturn(new PageResponse<>(List.of(), 0, 0, 1, true));
+                .thenReturn(PageResponse.of(List.of(), 0, 20, 0L));
 
         mockMvc.perform(get("/echeances/en-retard"))
                 .andExpect(status().isOk());
