@@ -8,25 +8,28 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-
 from exceptions import DataValidationError, TransformationError
+from transformers.collecte_transformer import (
+    FactCollecte,
+    transform_collectes,
+)
 from transformers.par_transformer import (
-    FactRemboursement,
-    transform_prets_to_fact,
-    compute_par_summary,
     PAR30_DAYS,
     PAR90_DAYS,
+    FactRemboursement,
+    compute_par_summary,
+    transform_prets_to_fact,
 )
-from transformers.collecte_transformer import (
-    transform_collectes,
-    FactCollecte,
-)
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
-def _pret(id_pret: str = "PRE-001", jours_retard: int = 0,
-          solde_restant: str = "500000", nom_agence: str = "Agence Yaoundé") -> dict:
+
+def _pret(
+    id_pret: str = "PRE-001",
+    jours_retard: int = 0,
+    solde_restant: str = "500000",
+    nom_agence: str = "Agence Yaoundé",
+) -> dict:
     return {
         "id_pret": id_pret,
         "id_client": "CLI-001",
@@ -44,8 +47,11 @@ def _pret(id_pret: str = "PRE-001", jours_retard: int = 0,
 
 
 def _collecte(
-    id_: int = 1, id_pret: str = "PRE-001", montant: str = "50000",
-    canal: str = "MTN_MOBILE_MONEY", jours_retard_date: int = 0
+    id_: int = 1,
+    id_pret: str = "PRE-001",
+    montant: str = "50000",
+    canal: str = "MTN_MOBILE_MONEY",
+    jours_retard_date: int = 0,
 ) -> dict:
     return {
         "id": id_,
@@ -64,6 +70,7 @@ def _collecte(
 
 
 # ── Tests PAR Transformer ─────────────────────────────────────────────────────
+
 
 class TestTransformPretsToFact:
 
@@ -118,9 +125,15 @@ class TestComputePARSummary:
 
     def test_resume_par_agence(self):
         prets = [
-            _pret("PRE-001", jours_retard=0, solde_restant="500000", nom_agence="Douala"),
-            _pret("PRE-002", jours_retard=35, solde_restant="200000", nom_agence="Douala"),
-            _pret("PRE-003", jours_retard=95, solde_restant="100000", nom_agence="Yaoundé"),
+            _pret(
+                "PRE-001", jours_retard=0, solde_restant="500000", nom_agence="Douala"
+            ),
+            _pret(
+                "PRE-002", jours_retard=35, solde_restant="200000", nom_agence="Douala"
+            ),
+            _pret(
+                "PRE-003", jours_retard=95, solde_restant="100000", nom_agence="Yaoundé"
+            ),
         ]
         facts = transform_prets_to_fact(prets, date.today())
         summaries = compute_par_summary(facts)
@@ -157,6 +170,7 @@ class TestComputePARSummary:
 
 
 # ── Tests Collecte Transformer ────────────────────────────────────────────────
+
 
 class TestTransformCollectes:
 
@@ -206,7 +220,7 @@ class TestTransformCollectes:
     def test_mixte_valides_invalides(self):
         collectes = [
             _collecte(id_=1, canal="ESPECES", montant="30000"),
-            _collecte(id_=2, canal="BITCOIN", montant="30000"),   # invalide
+            _collecte(id_=2, canal="BITCOIN", montant="30000"),  # invalide
             _collecte(id_=3, canal="ORANGE_MONEY", montant="0"),  # invalide
             _collecte(id_=4, canal="VIREMENT", montant="80000"),
         ]

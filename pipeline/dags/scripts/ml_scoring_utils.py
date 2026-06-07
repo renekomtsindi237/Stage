@@ -8,6 +8,7 @@ Scoring MCRS journalier :
 - Détection drift PSI.
 - Mise à jour des priorités de dossiers de recouvrement.
 """
+
 from __future__ import annotations
 
 import json
@@ -26,7 +27,7 @@ from pipeline.src.ml.mcrs_model import MCRSModel, ScoreResult
 logger = logging.getLogger(__name__)
 
 MODEL_BASE_DIR = Path(os.getenv("MCRS_MODEL_DIR", "/ml/models/mcrs"))
-CHAMPION_DIR   = MODEL_BASE_DIR / "champion"
+CHAMPION_DIR = MODEL_BASE_DIR / "champion"
 
 
 def charger_modele_actif(**ctx) -> str:
@@ -74,8 +75,8 @@ def scorer_clients_batch(
     -------
     dict avec 'total_clients', 'total_imfs', 'duration_ms'
     """
-    from pipeline.src.ml.mcrs_model import McrsParams
     from pipeline.src.ml.feature_engineering import reconstruire_imf_ids_actifs
+    from pipeline.src.ml.mcrs_model import McrsParams
 
     t0 = time.perf_counter()
 
@@ -125,12 +126,14 @@ def scorer_clients_batch(
     duration_ms = round((time.perf_counter() - t0) * 1000)
     logger.info(
         "Scoring terminé : %d clients, %d IMF, %.0f ms",
-        total_clients, len(imf_ids), duration_ms,
+        total_clients,
+        len(imf_ids),
+        duration_ms,
     )
     return {
         "total_clients": total_clients,
-        "total_imfs":    len(imf_ids),
-        "duration_ms":   duration_ms,
+        "total_imfs": len(imf_ids),
+        "duration_ms": duration_ms,
     }
 
 
@@ -168,17 +171,22 @@ def calculer_shap_values(top_n_features: int = 10, **ctx) -> int:
         for row in rows:
             shap_dict: dict = row["shap_top_features"] or {}
             for rang, (feat, val) in enumerate(
-                sorted(shap_dict.items(), key=lambda x: abs(x[1]), reverse=True)[:top_n_features],
+                sorted(shap_dict.items(), key=lambda x: abs(x[1]), reverse=True)[
+                    :top_n_features
+                ],
                 start=1,
             ):
-                cur.execute(sql_insert, {
-                    "client_id":  row["client_id"],
-                    "imf_id":     row["imf_id"],
-                    "date_score": row["date_score"],
-                    "feature_name": feat,
-                    "shap_value": float(val),
-                    "rang":       rang,
-                })
+                cur.execute(
+                    sql_insert,
+                    {
+                        "client_id": row["client_id"],
+                        "imf_id": row["imf_id"],
+                        "date_score": row["date_score"],
+                        "feature_name": feat,
+                        "shap_value": float(val),
+                        "rang": rang,
+                    },
+                )
                 n_rows += 1
 
     logger.info("SHAP explanations insérées : %d lignes", n_rows)
@@ -252,7 +260,9 @@ def detecter_drift_psi_segmente(
             ti.xcom_push(key="psi_par_segment", value={})
         return 0.0
 
-    df = pd.DataFrame(rows, columns=["score_mcrs", "date_score", "zone_id", "categorie_produit"])
+    df = pd.DataFrame(
+        rows, columns=["score_mcrs", "date_score", "zone_id", "categorie_produit"]
+    )
     df["date_score"] = pd.to_datetime(df["date_score"])
     cutoff = pd.Timestamp.now().normalize() - pd.Timedelta(days=fenetre_courante_jours)
 
@@ -262,7 +272,8 @@ def detecter_drift_psi_segmente(
     if len(df_ref) < 50 or len(df_cur) < 10:
         logger.warning(
             "Données globales insuffisantes pour PSI — ref=%d, cur=%d — skip",
-            len(df_ref), len(df_cur),
+            len(df_ref),
+            len(df_cur),
         )
         if ti:
             ti.xcom_push(key="psi", value=0.0)
@@ -270,18 +281,22 @@ def detecter_drift_psi_segmente(
         return 0.0
 
     # PSI global
-    psi_global = MCRSModel.calculer_psi(df_ref["score_mcrs"].values, df_cur["score_mcrs"].values)
+    psi_global = MCRSModel.calculer_psi(
+        df_ref["score_mcrs"].values, df_cur["score_mcrs"].values
+    )
 
     # PSI par segment (zone × catégorie_produit)
     psi_par_segment: dict[str, float] = {}
     segments_alertes: list[dict] = []
 
-    for (zone, categorie), group_ref in df_ref.groupby(["zone_id", "categorie_produit"]):
+    for (zone, categorie), group_ref in df_ref.groupby(
+        ["zone_id", "categorie_produit"]
+    ):
         group_cur = df_cur[
             (df_cur["zone_id"] == zone) & (df_cur["categorie_produit"] == categorie)
         ]
         if len(group_ref) < 20 or len(group_cur) < 5:
-            continue   # segment trop petit pour être fiable
+            continue  # segment trop petit pour être fiable
 
         psi_seg = MCRSModel.calculer_psi(
             group_ref["score_mcrs"].values,
@@ -295,11 +310,14 @@ def detecter_drift_psi_segmente(
             logger.warning("DRIFT SEGMENTÉ — %s PSI=%.4f ≥ 0.20", segment_key, psi_seg)
 
     psi_max_segment = max(psi_par_segment.values()) if psi_par_segment else 0.0
-    psi_final       = max(psi_global, psi_max_segment)
+    psi_final = max(psi_global, psi_max_segment)
 
     logger.info(
         "PSI global=%.4f | max_segment=%.4f | %d segments analysés | psi_final=%.4f",
-        psi_global, psi_max_segment, len(psi_par_segment), psi_final,
+        psi_global,
+        psi_max_segment,
+        len(psi_par_segment),
+        psi_final,
     )
 
     if ti:
@@ -307,7 +325,9 @@ def detecter_drift_psi_segmente(
         ti.xcom_push(key="psi_par_segment", value=psi_par_segment)
 
     if psi_final >= 0.20:
-        logger.warning("DRIFT DÉTECTÉ — PSI_final=%.4f ≥ 0.20 — retraining planifié", psi_final)
+        logger.warning(
+            "DRIFT DÉTECTÉ — PSI_final=%.4f ≥ 0.20 — retraining planifié", psi_final
+        )
         _inserer_alerte_drift_segmentee(psi_final, psi_global, segments_alertes)
 
     return psi_final
@@ -342,6 +362,7 @@ def maj_priorites_dossiers_recouvrement(**ctx) -> int:
 
 # ─── Helpers privés ───────────────────────────────────────────────────────────
 
+
 def _inserer_scores(scores: list[ScoreResult]) -> None:
     sql = """
         INSERT INTO ml.client_scores (
@@ -375,10 +396,13 @@ def _inserer_scores(scores: list[ScoreResult]) -> None:
     """
     with db_session() as cur:
         for score in scores:
-            cur.execute(sql, {
-                **score.to_dict(),
-                "shap_top_features": json.dumps(score.shap_values),
-            })
+            cur.execute(
+                sql,
+                {
+                    **score.to_dict(),
+                    "shap_top_features": json.dumps(score.shap_values),
+                },
+            )
 
 
 def _maj_scores_creances(scores: list[ScoreResult]) -> None:
@@ -398,14 +422,17 @@ def _maj_scores_creances(scores: list[ScoreResult]) -> None:
     """
     with db_session() as cur:
         for score in scores:
-            cur.execute(sql, {
-                "score_mcrs":          score.score_mcrs,
-                "score_crs":           score.score_crs,
-                "score_rps":           score.score_rps,
-                "score_csi":           score.score_csi,
-                "classe_risque":       score.classe_risque,
-                "client_id_externe":   score.client_id_externe,
-            })
+            cur.execute(
+                sql,
+                {
+                    "score_mcrs": score.score_mcrs,
+                    "score_crs": score.score_crs,
+                    "score_rps": score.score_rps,
+                    "score_csi": score.score_csi,
+                    "classe_risque": score.classe_risque,
+                    "client_id_externe": score.client_id_externe,
+                },
+            )
 
 
 def _inserer_alerte_drift(psi: float) -> None:
@@ -418,9 +445,8 @@ def _inserer_alerte_drift_segmentee(
     segments_alertes: list[dict],
 ) -> None:
     """Insère une alerte de drift avec détail par segment dans ml.alertes_predictives."""
-    msg = (
-        f"Drift PSI_final={psi_final:.4f} (global={psi_global:.4f})"
-        + (f" — segments: {json.dumps(segments_alertes)}" if segments_alertes else "")
+    msg = f"Drift PSI_final={psi_final:.4f} (global={psi_global:.4f})" + (
+        f" — segments: {json.dumps(segments_alertes)}" if segments_alertes else ""
     )
     sql = """
         INSERT INTO ml.alertes_predictives

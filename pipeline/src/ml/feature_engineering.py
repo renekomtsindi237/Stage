@@ -16,6 +16,7 @@ Conception
 - Les features sont normalisées à la source (pas dans le modèle) pour cohérence.
 - Les features manquantes sont explicitement signalées dans les logs.
 """
+
 from __future__ import annotations
 
 import logging
@@ -298,6 +299,7 @@ WHERE c.imf_id = %(imf_id)s
 
 # ─── Fonctions publiques ──────────────────────────────────────────────────────
 
+
 def construire_features_scoring(imf_id: int) -> pd.DataFrame:
     """
     Construit le DataFrame de features complet pour le scoring journalier.
@@ -345,10 +347,13 @@ def construire_features_scoring(imf_id: int) -> pd.DataFrame:
         df["imf_code"] = str(imf_id)
 
     n_total = len(df)
-    n_complet = df.dropna(subset=["regularite_collecte_pct", "taux_remboursement_pct"]).shape[0]
+    n_complet = df.dropna(
+        subset=["regularite_collecte_pct", "taux_remboursement_pct"]
+    ).shape[0]
     logger.info(
         "Features MCRS construites : %d clients (%d avec features complètes)",
-        n_total, n_complet,
+        n_total,
+        n_complet,
     )
     return df
 
@@ -369,19 +374,26 @@ def construire_features_entrainement(
     """
     logger.info(
         "Construction dataset entraînement imf_id=%d, période=%s→%s",
-        imf_id, date_debut, date_fin,
+        imf_id,
+        date_debut,
+        date_fin,
     )
 
     with readonly_session() as cur:
-        cur.execute(LABELS_QUERY, {
-            "imf_id":     imf_id,
-            "date_debut": date_debut.isoformat(),
-            "date_fin":   date_fin.isoformat(),
-        })
+        cur.execute(
+            LABELS_QUERY,
+            {
+                "imf_id": imf_id,
+                "date_debut": date_debut.isoformat(),
+                "date_fin": date_fin.isoformat(),
+            },
+        )
         df_labels = pd.DataFrame(cur.fetchall())
 
     if df_labels.empty:
-        raise ValueError(f"Aucune donnée d'entraînement pour imf_id={imf_id} sur la période donnée")
+        raise ValueError(
+            f"Aucune donnée d'entraînement pour imf_id={imf_id} sur la période donnée"
+        )
 
     # Construire les features pour les clients dans les labels
     df_features = construire_features_scoring(imf_id)
@@ -393,7 +405,8 @@ def construire_features_entrainement(
     taux = y.mean() * 100
     logger.info(
         "Dataset entraînement prêt : %d lignes, %.1f%% défauts",
-        len(df), taux,
+        len(df),
+        taux,
     )
 
     meta_cols = {"client_id_externe", "imf_code", "defaut_90j", "date_reference"}

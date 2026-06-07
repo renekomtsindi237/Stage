@@ -8,23 +8,24 @@ En fonctionnement normal les KPIs sont calculés par :
   - dag_collecte_epargne  (KPIs collecte, toutes les 2h)
   - dag_recouvrement      (KPIs PAR, provisions, benchmarks — 06h00)
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 from scripts.collecte_utils import calculer_kpis_collecte, verifier_objectifs_cycle
-from scripts.recouvrement_utils import (
-    calculer_par_et_provisions,
-    calculer_kpis_recouvrement,
-    calculer_benchmarks_agences,
-)
 from scripts.dbt_utils import dbt_run_select
-from scripts.ingestion_utils import log_journal, generer_alertes_operationnelles
+from scripts.ingestion_utils import generer_alertes_operationnelles, log_journal
+from scripts.recouvrement_utils import (
+    calculer_benchmarks_agences,
+    calculer_kpis_recouvrement,
+    calculer_par_et_provisions,
+)
 
 DEFAULT_ARGS = {
     "owner": "pipeline-imf",
@@ -46,7 +47,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     # ── Transformations dbt ──────────────────────────────────────────────────
     dbt_stg = PythonOperator(
@@ -106,7 +107,10 @@ with DAG(
     journal = PythonOperator(
         task_id="log_journal",
         python_callable=log_journal,
-        op_kwargs={"dag_id": "dag_kpis_quotidien", "table_cible": "dw.fait_collectes_journalieres"},
+        op_kwargs={
+            "dag_id": "dag_kpis_quotidien",
+            "table_cible": "dw.fait_collectes_journalieres",
+        },
         trigger_rule=TriggerRule.ALL_DONE,
     )
 

@@ -4,25 +4,25 @@ test_exceptions.py — Tests de la hiérarchie d'exceptions du pipeline.
 
 import pytest
 from exceptions import (
-    PipelineException,
+    AuthenticationError,
+    BackendAPIError,
+    BatchInsertError,
+    ColumnMissingError,
     ConfigurationError,
     DatabaseConnectionError,
     DatabaseQueryError,
+    DataValidationError,
+    DuplicateAlertError,
+    EmptyDatasetError,
+    ExtractionError,
+    JobError,
+    LoadingError,
+    NetworkError,
+    PipelineException,
+    RetryExhaustedError,
     SchemaNotFoundError,
     TransactionError,
-    ExtractionError,
-    EmptyDatasetError,
-    ColumnMissingError,
     TransformationError,
-    DataValidationError,
-    LoadingError,
-    BatchInsertError,
-    NetworkError,
-    AuthenticationError,
-    BackendAPIError,
-    DuplicateAlertError,
-    JobError,
-    RetryExhaustedError,
 )
 
 
@@ -108,7 +108,9 @@ class TestExtractionErrors:
 
 class TestTransformationErrors:
     def test_data_validation_fields(self):
-        exc = DataValidationError("par_transformer", "jours_retard", -5, "valeur négative")
+        exc = DataValidationError(
+            "par_transformer", "jours_retard", -5, "valeur négative"
+        )
         assert exc.field == "jours_retard"
         assert exc.value == -5
         assert exc.reason == "valeur négative"
@@ -130,7 +132,9 @@ class TestLoadingErrors:
         assert "150/500" in str(exc)
 
     def test_loading_error_with_details(self):
-        exc = LoadingError("dw.fact_collectes", "contrainte violée", details="FK manquante")
+        exc = LoadingError(
+            "dw.fact_collectes", "contrainte violée", details="FK manquante"
+        )
         assert "FK manquante" in str(exc)
 
 

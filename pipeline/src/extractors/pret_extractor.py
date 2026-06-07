@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Any
 
 from config import settings
-from database import readonly_session, check_table_exists
+from database import check_table_exists, readonly_session
 from exceptions import (
     ColumnMissingError,
     EmptyDatasetError,
@@ -24,9 +24,18 @@ logger = logging.getLogger(__name__)
 
 # Colonnes requises dans stg_prets
 REQUIRED_COLUMNS = {
-    "id_pret", "id_client", "nom_client", "nom_agence", "nom_agent",
-    "montant_pret", "date_deblocage", "date_echeance",
-    "montant_rembourse", "solde_restant", "statut_pret", "jours_retard",
+    "id_pret",
+    "id_client",
+    "nom_client",
+    "nom_agence",
+    "nom_agent",
+    "montant_pret",
+    "date_deblocage",
+    "date_echeance",
+    "montant_rembourse",
+    "solde_restant",
+    "statut_pret",
+    "jours_retard",
 }
 
 
@@ -42,7 +51,9 @@ def _validate_row(row: dict[str, Any], source: str) -> None:
             raise ColumnMissingError(source, col)
 
 
-def extract_prets_en_retard(min_jours_retard: int | None = None) -> list[dict[str, Any]]:
+def extract_prets_en_retard(
+    min_jours_retard: int | None = None,
+) -> list[dict[str, Any]]:
     """
     Extrait les prêts dont le retard dépasse le seuil configuré.
 
@@ -59,7 +70,11 @@ def extract_prets_en_retard(min_jours_retard: int | None = None) -> list[dict[st
     schema = settings.db.staging_schema
     table = "stg_prets"
     source = f"{schema}.{table}"
-    seuil = min_jours_retard if min_jours_retard is not None else settings.pipeline.alerte_min_jours_retard
+    seuil = (
+        min_jours_retard
+        if min_jours_retard is not None
+        else settings.pipeline.alerte_min_jours_retard
+    )
 
     if not check_table_exists(schema, table):
         raise SchemaNotFoundError(schema, table)
@@ -108,7 +123,9 @@ def extract_prets_en_retard(min_jours_retard: int | None = None) -> list[dict[st
         row_dict["jours_retard"] = int(row_dict["jours_retard"])
         result.append(row_dict)
 
-    logger.info("Extrait %d prêts en retard (seuil=%d j) depuis %s", len(result), seuil, source)
+    logger.info(
+        "Extrait %d prêts en retard (seuil=%d j) depuis %s", len(result), seuil, source
+    )
     return result
 
 

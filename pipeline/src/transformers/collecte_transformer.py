@@ -24,9 +24,9 @@ CANAUX_VALIDES = {"ESPECES", "MTN_MOBILE_MONEY", "ORANGE_MONEY", "VIREMENT", "CH
 class FactCollecte:
     """Enregistrement cible pour dw.fact_collectes."""
 
-    source_id: int           # app.collectes_terrain.id — pour déduplication
+    source_id: int  # app.collectes_terrain.id — pour déduplication
     id_pret: str
-    id_agence: str           # résolu à partir du nom_agence (dim_agence)
+    id_agence: str  # résolu à partir du nom_agence (dim_agence)
     date_valeur: date
     canal: str
     montant: Decimal
@@ -61,13 +61,16 @@ def transform_collectes(
             # Validation du canal
             canal = str(col.get("canal", "")).strip().upper()
             if canal not in CANAUX_VALIDES:
-                raise DataValidationError(step, "canal", canal,
-                                          f"valeur attendue parmi {CANAUX_VALIDES}")
+                raise DataValidationError(
+                    step, "canal", canal, f"valeur attendue parmi {CANAUX_VALIDES}"
+                )
 
             # Résolution date
             date_collecte = col.get("date_collecte")
             if date_collecte is None:
-                raise DataValidationError(step, "date_collecte", date_collecte, "date absente")
+                raise DataValidationError(
+                    step, "date_collecte", date_collecte, "date absente"
+                )
 
             if isinstance(date_collecte, datetime):
                 date_val = date_collecte.date()
@@ -79,21 +82,25 @@ def transform_collectes(
             # Montant
             montant = Decimal(str(col["montant"]))
             if montant <= 0:
-                raise DataValidationError(step, "montant", montant, "montant doit être > 0")
+                raise DataValidationError(
+                    step, "montant", montant, "montant doit être > 0"
+                )
 
             # Résolution agence
             nom_agence = str(col.get("nom_agence", "INCONNU"))
             id_agence = (agence_map or {}).get(nom_agence, nom_agence)
 
-            result.append(FactCollecte(
-                source_id=int(source_id),
-                id_pret=str(col["id_pret"]),
-                id_agence=id_agence,
-                date_valeur=date_val,
-                canal=canal,
-                montant=montant,
-                nom_agent=str(col.get("nom_agent", "INCONNU")),
-            ))
+            result.append(
+                FactCollecte(
+                    source_id=int(source_id),
+                    id_pret=str(col["id_pret"]),
+                    id_agence=id_agence,
+                    date_valeur=date_val,
+                    canal=canal,
+                    montant=montant,
+                    nom_agent=str(col.get("nom_agent", "INCONNU")),
+                )
+            )
 
         except DataValidationError:
             skipped += 1
@@ -103,5 +110,9 @@ def transform_collectes(
 
     if skipped:
         logger.warning("%d collecte(s) ignorée(s) lors de la transformation", skipped)
-    logger.info("Transformé %d collectes → %d enregistrements fact_collectes", len(collectes), len(result))
+    logger.info(
+        "Transformé %d collectes → %d enregistrements fact_collectes",
+        len(collectes),
+        len(result),
+    )
     return result

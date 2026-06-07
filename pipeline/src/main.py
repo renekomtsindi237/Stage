@@ -17,13 +17,12 @@ import time
 from datetime import datetime
 
 import schedule
-
 from config import settings
 from exceptions import ConfigurationError, JobError, PipelineException
 from jobs.alertes_job import run_alertes_job
 from jobs.echeances_job import run_echeances_job
 from jobs.sync_dw_job import run_sync_dw_job
-from logger import setup_logging, get_logger
+from logger import get_logger, setup_logging
 
 setup_logging(level="DEBUG" if not settings.is_production else "INFO")
 logger = get_logger(__name__)
@@ -59,7 +58,9 @@ def run_job(job_name: str) -> bool:
         if success:
             logger.info("Job '%s' terminé avec succès en %.1fs", job_name, elapsed)
         else:
-            logger.warning("Job '%s' terminé avec des erreurs en %.1fs", job_name, elapsed)
+            logger.warning(
+                "Job '%s' terminé avec des erreurs en %.1fs", job_name, elapsed
+            )
         return success
 
     except JobError as exc:
@@ -90,7 +91,9 @@ def start_scheduler() -> None:
     - alertes     : tous les jours à 06h00
     - echeances   : tous les jours à 00h30
     """
-    logger.info("=== Pipeline IMF démarré en mode planifié (env=%s) ===", settings.pipeline.env)
+    logger.info(
+        "=== Pipeline IMF démarré en mode planifié (env=%s) ===", settings.pipeline.env
+    )
 
     schedule.every().hour.at(":00").do(run_job, "sync_dw")
     schedule.every().day.at("06:00").do(run_job, "alertes")

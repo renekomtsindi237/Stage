@@ -29,7 +29,7 @@ class FactRemboursement:
     """Enregistrement cible pour dw.fact_remboursements."""
 
     id_pret: str
-    id_agence: str          # nom_agence utilisé comme clé jusqu'à résolution dim_agence
+    id_agence: str  # nom_agence utilisé comme clé jusqu'à résolution dim_agence
     date_valeur: date
     montant_pret: Decimal
     montant_rembourse: Decimal
@@ -97,23 +97,35 @@ def transform_prets_to_fact(
             jours_retard = int(pret["jours_retard"])
 
             if jours_retard < 0:
-                raise DataValidationError(step, "jours_retard", jours_retard, "valeur négative interdite")
+                raise DataValidationError(
+                    step, "jours_retard", jours_retard, "valeur négative interdite"
+                )
 
-            encours_par30 = solde_restant if jours_retard >= PAR30_DAYS else Decimal("0")
-            encours_par90 = solde_restant if jours_retard >= PAR90_DAYS else Decimal("0")
+            encours_par30 = (
+                solde_restant if jours_retard >= PAR30_DAYS else Decimal("0")
+            )
+            encours_par90 = (
+                solde_restant if jours_retard >= PAR90_DAYS else Decimal("0")
+            )
 
-            result.append(FactRemboursement(
-                id_pret=id_pret,
-                id_agence=pret.get("nom_agence", "INCONNU"),
-                date_valeur=date_valeur,
-                montant_pret=_to_decimal(pret["montant_pret"], "montant_pret", id_pret),
-                montant_rembourse=_to_decimal(pret["montant_rembourse"], "montant_rembourse", id_pret),
-                solde_restant=solde_restant,
-                statut_pret=str(pret.get("statut_pret", "")),
-                jours_retard=jours_retard,
-                encours_par30=encours_par30,
-                encours_par90=encours_par90,
-            ))
+            result.append(
+                FactRemboursement(
+                    id_pret=id_pret,
+                    id_agence=pret.get("nom_agence", "INCONNU"),
+                    date_valeur=date_valeur,
+                    montant_pret=_to_decimal(
+                        pret["montant_pret"], "montant_pret", id_pret
+                    ),
+                    montant_rembourse=_to_decimal(
+                        pret["montant_rembourse"], "montant_rembourse", id_pret
+                    ),
+                    solde_restant=solde_restant,
+                    statut_pret=str(pret.get("statut_pret", "")),
+                    jours_retard=jours_retard,
+                    encours_par30=encours_par30,
+                    encours_par90=encours_par90,
+                )
+            )
         except DataValidationError:
             skipped += 1
             logger.warning("Prêt %s ignoré — validation échouée", id_pret)
@@ -122,7 +134,11 @@ def transform_prets_to_fact(
 
     if skipped:
         logger.warning("%d prêt(s) ignoré(s) lors de la transformation PAR", skipped)
-    logger.info("Transformé %d prêts → %d enregistrements fact_remboursements", len(prets), len(result))
+    logger.info(
+        "Transformé %d prêts → %d enregistrements fact_remboursements",
+        len(prets),
+        len(result),
+    )
     return result
 
 

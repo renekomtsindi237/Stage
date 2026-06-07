@@ -7,16 +7,18 @@ les transactions sont synchronisées directement via dag_collecte_epargne.
 
 Ce fichier est conservé pour traçabilité. Aucune tâche active.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
+
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 
 with DAG(
     dag_id="dag_ingestion_mtn",
     description="[OBSOLÈTE] Ingestion relevés MTN — remplacé par dag_collecte_epargne",
-    schedule_interval=None,         # Désactivé
+    schedule_interval=None,  # Désactivé
     start_date=datetime(2025, 1, 1),
     catchup=False,
     tags=["obsolete"],

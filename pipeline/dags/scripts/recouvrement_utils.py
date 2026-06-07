@@ -11,6 +11,7 @@ Appelé par dag_recouvrement (06h00 chaque jour) pour :
 7. Vérifier les promesses de paiement échues.
 8. Calculer les KPIs et benchmarks inter-agences.
 """
+
 from __future__ import annotations
 
 import csv
@@ -28,11 +29,11 @@ CBS_DOSSIER_DEFAULT = Path(os.getenv("CBS_DOSSIER_ENTRANT", "/data/cbs_exports")
 
 # Seuils COBAC EMF 01/02
 COBAC_CLASSES = {
-    "A": (0,    29,  0.00),   # < 30j retard  → 0% provision
-    "B": (30,   89,  0.20),   # 30-89j         → 20%
-    "C": (90,  179,  0.50),   # 90-179j         → 50%
-    "D": (180, 359,  0.80),   # 180-359j         → 80%
-    "E": (360, 9999, 1.00),   # 360j+           → 100%
+    "A": (0, 29, 0.00),  # < 30j retard  → 0% provision
+    "B": (30, 89, 0.20),  # 30-89j         → 20%
+    "C": (90, 179, 0.50),  # 90-179j         → 50%
+    "D": (180, 359, 0.80),  # 180-359j         → 80%
+    "E": (360, 9999, 1.00),  # 360j+           → 100%
 }
 
 
@@ -48,6 +49,7 @@ def _taux_provision(classe: str) -> float:
 
 
 # ─── 1. Ingestion CBS ──────────────────────────────────────────────────────────
+
 
 def ingerer_export_cbs(dossier_entrant: str | None = None, **ctx) -> dict:
     """
@@ -98,22 +100,29 @@ def ingerer_export_cbs(dossier_entrant: str | None = None, **ctx) -> dict:
             for row in _lire_csv_cbs(fichier):
                 n_lu += 1
                 try:
-                    jours    = int(row.get("jours_retard", 0) or 0)
-                    classe   = _classe_cobac(jours)
-                    taux_pr  = _taux_provision(classe)
-                    cur.execute(sql_insert, {
-                        "imf_code":       row["imf_code"].strip(),
-                        "client_ref":     row["client_ref"].strip(),
-                        "numero_credit":  row["numero_credit"].strip(),
-                        "montant_initial": float(row.get("montant_initial", 0) or 0),
-                        "encours_restant": float(row.get("encours_restant", 0) or 0),
-                        "date_debut":      row.get("date_debut") or None,
-                        "date_echeance":   row.get("date_echeance") or None,
-                        "jours_retard":    jours,
-                        "classe_cobac":    classe,
-                        "taux_provision":  taux_pr,
-                        "source_fichier":  fichier.name,
-                    })
+                    jours = int(row.get("jours_retard", 0) or 0)
+                    classe = _classe_cobac(jours)
+                    taux_pr = _taux_provision(classe)
+                    cur.execute(
+                        sql_insert,
+                        {
+                            "imf_code": row["imf_code"].strip(),
+                            "client_ref": row["client_ref"].strip(),
+                            "numero_credit": row["numero_credit"].strip(),
+                            "montant_initial": float(
+                                row.get("montant_initial", 0) or 0
+                            ),
+                            "encours_restant": float(
+                                row.get("encours_restant", 0) or 0
+                            ),
+                            "date_debut": row.get("date_debut") or None,
+                            "date_echeance": row.get("date_echeance") or None,
+                            "jours_retard": jours,
+                            "classe_cobac": classe,
+                            "taux_provision": taux_pr,
+                            "source_fichier": fichier.name,
+                        },
+                    )
                     n_val += 1
                 except (KeyError, ValueError, TypeError) as exc:
                     logger.debug("Ligne CBS rejetée (%s) : %s", fichier.name, exc)
@@ -121,7 +130,10 @@ def ingerer_export_cbs(dossier_entrant: str | None = None, **ctx) -> dict:
 
     logger.info(
         "ingerer_export_cbs : lu=%d, valide=%d, rejeté=%d — fichiers=%d",
-        n_lu, n_val, n_rej, len(fichiers),
+        n_lu,
+        n_val,
+        n_rej,
+        len(fichiers),
     )
     return {"lignes_lues": n_lu, "lignes_valides": n_val, "lignes_rejetees": n_rej}
 
@@ -134,6 +146,7 @@ def _lire_csv_cbs(path: Path) -> Iterator[dict]:
 
 
 # ─── 2. Validation des données CBS ────────────────────────────────────────────
+
 
 def valider_donnees_cbs(**ctx) -> dict:
     """
@@ -180,6 +193,7 @@ def valider_donnees_cbs(**ctx) -> dict:
 
 
 # ─── 3. PAR et provisions ─────────────────────────────────────────────────────
+
 
 def calculer_par_et_provisions(
     seuils_cobac: dict | None = None,
@@ -273,6 +287,7 @@ def calculer_par_et_provisions(
 
 # ─── 4. Synchronisation créances → app ────────────────────────────────────────
 
+
 def synchroniser_creances_app(**ctx) -> dict:
     """
     Propage les créances valides de staging.stg_creances → app.creances.
@@ -324,6 +339,7 @@ def synchroniser_creances_app(**ctx) -> dict:
 
 # ─── 5. Création automatique des dossiers ────────────────────────────────────
 
+
 def creer_dossiers_automatiques(seuil_par_jours: int = 30, **ctx) -> int:
     """
     Crée un dossier de recouvrement dans app.dossiers_recouvrement
@@ -365,11 +381,14 @@ def creer_dossiers_automatiques(seuil_par_jours: int = 30, **ctx) -> int:
         cur.execute(sql, {"seuil": seuil_par_jours})
         n = cur.rowcount
 
-    logger.info("creer_dossiers_automatiques (PAR%d+) : %d dossiers créés", seuil_par_jours, n)
+    logger.info(
+        "creer_dossiers_automatiques (PAR%d+) : %d dossiers créés", seuil_par_jours, n
+    )
     return n
 
 
 # ─── 6. Priorisation par score MCRS ──────────────────────────────────────────
+
 
 def prioriser_dossiers_par_score(**ctx) -> int:
     """
@@ -406,6 +425,7 @@ def prioriser_dossiers_par_score(**ctx) -> int:
 
 
 # ─── 7. Promesses échues ─────────────────────────────────────────────────────
+
 
 def verifier_promesses_echeues(**ctx) -> dict:
     """
@@ -453,12 +473,14 @@ def verifier_promesses_echeues(**ctx) -> dict:
 
     logger.info(
         "Promesses échues : non honorées=%d, honorées=%d",
-        n_non_honorees, n_honorees,
+        n_non_honorees,
+        n_honorees,
     )
     return {"non_honorees": n_non_honorees, "honorees_aujourd_hui": n_honorees}
 
 
 # ─── 8. KPIs recouvrement ────────────────────────────────────────────────────
+
 
 def calculer_kpis_recouvrement(periodes: list[str] | None = None, **ctx) -> dict:
     """

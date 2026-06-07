@@ -7,22 +7,23 @@ Ce DAG permet de déclencher manuellement l'ingestion d'un export CBS
 En fonctionnement normal, l'ingestion CBS est intégrée dans dag_recouvrement
 (exécuté quotidiennement à 06h00). Ce DAG est réservé aux imports ad hoc.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
-from scripts.recouvrement_utils import (
-    ingerer_export_cbs,
-    valider_donnees_cbs,
-    synchroniser_creances_app,
-    calculer_par_et_provisions,
-)
 from scripts.ingestion_utils import log_journal
+from scripts.recouvrement_utils import (
+    calculer_par_et_provisions,
+    ingerer_export_cbs,
+    synchroniser_creances_app,
+    valider_donnees_cbs,
+)
 
 DEFAULT_ARGS = {
     "owner": "pipeline-imf",
@@ -34,7 +35,7 @@ DEFAULT_ARGS = {
 with DAG(
     dag_id="dag_ingestion_cbs",
     description="Import ad hoc d'un export CBS — déclenchement manuel uniquement",
-    schedule_interval=None,         # Déclenché manuellement
+    schedule_interval=None,  # Déclenché manuellement
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -44,7 +45,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     ingerer = PythonOperator(
         task_id="ingerer_export_cbs",
@@ -70,7 +71,10 @@ with DAG(
     journal = PythonOperator(
         task_id="log_journal",
         python_callable=log_journal,
-        op_kwargs={"dag_id": "dag_ingestion_cbs", "table_cible": "staging.stg_creances"},
+        op_kwargs={
+            "dag_id": "dag_ingestion_cbs",
+            "table_cible": "staging.stg_creances",
+        },
         trigger_rule=TriggerRule.ALL_DONE,
     )
 

@@ -11,21 +11,22 @@ En fonctionnement normal ces alertes sont intégrées dans :
   - dag_recouvrement  (alertes PAR)
   - dag_ml_scoring    (alertes prédictives MCRS)
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 from scripts.ingestion_utils import generer_alertes_operationnelles, log_journal
 from scripts.ml_alertes_utils import generer_alertes_predictives
 from scripts.notification_utils import (
-    notifier_responsables_sse,
-    notifier_directeurs_fcm,
     envoyer_email_resume_quotidien,
+    notifier_directeurs_fcm,
+    notifier_responsables_sse,
 )
 
 DEFAULT_ARGS = {
@@ -38,7 +39,7 @@ DEFAULT_ARGS = {
 with DAG(
     dag_id="dag_alertes_impayes",
     description="Alertes impayés PAR30+ et prédictives MCRS — peut être déclenché manuellement",
-    schedule_interval=None,         # Déclenché par dag_recouvrement ou manuellement
+    schedule_interval=None,  # Déclenché par dag_recouvrement ou manuellement
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -48,7 +49,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     # Alertes réglementaires (PAR COBAC, dossiers sans action)
     alertes_ops = PythonOperator(
@@ -69,9 +70,9 @@ with DAG(
         task_id="alertes_predictives_ml",
         python_callable=generer_alertes_predictives,
         op_kwargs={
-            "seuil_defaut_critique":    0.75,
+            "seuil_defaut_critique": 0.75,
             "seuil_baisse_collecte_pct": -20.0,
-            "seuil_degradation_score":  -0.15,
+            "seuil_degradation_score": -0.15,
         },
     )
 
@@ -100,7 +101,10 @@ with DAG(
     journal = PythonOperator(
         task_id="log_journal",
         python_callable=log_journal,
-        op_kwargs={"dag_id": "dag_alertes_impayes", "table_cible": "app.alertes_operationnelles"},
+        op_kwargs={
+            "dag_id": "dag_alertes_impayes",
+            "table_cible": "app.alertes_operationnelles",
+        },
         trigger_rule=TriggerRule.ALL_DONE,
     )
 

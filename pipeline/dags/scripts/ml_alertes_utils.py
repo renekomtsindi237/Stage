@@ -5,6 +5,7 @@ Appelé par dag_ml_scoring après le scoring journalier.
 Insère des alertes dans ml.alertes_predictives pour les clients
 dont le score MCRS dépasse les seuils configurés.
 """
+
 from __future__ import annotations
 
 import logging
@@ -15,10 +16,10 @@ from pipeline.src.database import db_session, readonly_session
 logger = logging.getLogger(__name__)
 
 TYPES_ALERTE_ML = {
-    "RISQUE_DEFAUT_IMMINENT",      # score MCRS ≥ seuil_critique
-    "BAISSE_COLLECTE_PERSISTANTE", # variation collecte < -20% sur 4 semaines consécutives
-    "DETERIORATION_RAPIDE",        # hausse du score MCRS > 0.15 en 7 jours
-    "CLASSE_COBAC_AGGRAVEE",       # passage de classe B→C ou C→D ce jour
+    "RISQUE_DEFAUT_IMMINENT",  # score MCRS ≥ seuil_critique
+    "BAISSE_COLLECTE_PERSISTANTE",  # variation collecte < -20% sur 4 semaines consécutives
+    "DETERIORATION_RAPIDE",  # hausse du score MCRS > 0.15 en 7 jours
+    "CLASSE_COBAC_AGGRAVEE",  # passage de classe B→C ou C→D ce jour
 }
 
 
@@ -84,18 +85,23 @@ def _alertes_risque_critique(seuil: float) -> int:
         for row in rows:
             # Extraire la feature principale pour le message
             shap = row.get("shap_top_features") or {}
-            top_feature = max(shap, key=lambda k: abs(shap[k]), default="N/A") if shap else "N/A"
-            cur.execute(sql_insert, {
-                "client_id_externe":       row["client_id_externe"],
-                "imf_code":                row["imf_code"],
-                "message": (
-                    f"Score MCRS={row['score_mcrs']:.3f} — P(défaut 90j)={row['probabilite_defaut_90j']:.1%} "
-                    f"— Facteur principal: {top_feature}"
-                ),
-                "score_mcrs":              row["score_mcrs"],
-                "probabilite_defaut_90j":  row["probabilite_defaut_90j"],
-                "action_recommandee":      row["action_recommandee"],
-            })
+            top_feature = (
+                max(shap, key=lambda k: abs(shap[k]), default="N/A") if shap else "N/A"
+            )
+            cur.execute(
+                sql_insert,
+                {
+                    "client_id_externe": row["client_id_externe"],
+                    "imf_code": row["imf_code"],
+                    "message": (
+                        f"Score MCRS={row['score_mcrs']:.3f} — P(défaut 90j)={row['probabilite_defaut_90j']:.1%} "
+                        f"— Facteur principal: {top_feature}"
+                    ),
+                    "score_mcrs": row["score_mcrs"],
+                    "probabilite_defaut_90j": row["probabilite_defaut_90j"],
+                    "action_recommandee": row["action_recommandee"],
+                },
+            )
             n += 1
 
     logger.info("Alertes RISQUE_DEFAUT_IMMINENT : %d", n)
@@ -142,14 +148,17 @@ def _alertes_deterioration_rapide(seuil_delta: float) -> int:
 
     with db_session() as cur:
         for row in rows:
-            cur.execute(sql_insert, {
-                "client_id_externe": row["client_id_externe"],
-                "imf_code":          row["imf_code"],
-                "message": (
-                    f"Score MCRS={row['score_mcrs']:.3f} — Dégradation de +{row['delta_7j']:.3f} en 7 jours"
-                ),
-                "score_mcrs":        row["score_mcrs"],
-            })
+            cur.execute(
+                sql_insert,
+                {
+                    "client_id_externe": row["client_id_externe"],
+                    "imf_code": row["imf_code"],
+                    "message": (
+                        f"Score MCRS={row['score_mcrs']:.3f} — Dégradation de +{row['delta_7j']:.3f} en 7 jours"
+                    ),
+                    "score_mcrs": row["score_mcrs"],
+                },
+            )
             n += 1
 
     logger.info("Alertes DETERIORATION_RAPIDE : %d", n)
@@ -188,18 +197,21 @@ def _alertes_baisse_collecte(seuil_pct: float) -> int:
 
         with db_session() as cur:
             for row in rows:
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO ml.alertes_predictives
                         (client_id_externe, imf_code, type_alerte, message, date_detection, statut, created_at)
                     VALUES
                         (%(client_id_externe)s, %(imf_code)s, 'BAISSE_COLLECTE_PERSISTANTE',
                          %(message)s, CURRENT_DATE, 'ACTIVE', NOW())
                     ON CONFLICT DO NOTHING
-                """, {
-                    "client_id_externe": row["client_id_externe"],
-                    "imf_code":          row["imf_code"],
-                    "message": f"Baisse collecte persistante — tendance négative sur 4 semaines",
-                })
+                """,
+                    {
+                        "client_id_externe": row["client_id_externe"],
+                        "imf_code": row["imf_code"],
+                        "message": f"Baisse collecte persistante — tendance négative sur 4 semaines",
+                    },
+                )
                 n += 1
     except Exception as exc:
         logger.warning("Alertes BAISSE_COLLECTE ignorées : %s", exc)
@@ -244,17 +256,20 @@ def _alertes_cobac_aggravee() -> int:
 
         with db_session() as cur:
             for row in rows:
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO ml.alertes_predictives
                         (client_id_externe, imf_code, type_alerte, message, date_detection, statut, created_at)
                     VALUES
                         (%(cie)s, %(imc)s, 'CLASSE_COBAC_AGGRAVEE', %(msg)s, CURRENT_DATE, 'ACTIVE', NOW())
                     ON CONFLICT DO NOTHING
-                """, {
-                    "cie": row["client_id_externe"],
-                    "imc": row["imf_code"],
-                    "msg": f"Passage COBAC {row['classe_hier']} → {row['classe_auj']} ce jour",
-                })
+                """,
+                    {
+                        "cie": row["client_id_externe"],
+                        "imc": row["imf_code"],
+                        "msg": f"Passage COBAC {row['classe_hier']} → {row['classe_auj']} ce jour",
+                    },
+                )
                 n += 1
     except Exception as exc:
         logger.warning("Alertes COBAC_AGGRAVEE ignorées : %s", exc)

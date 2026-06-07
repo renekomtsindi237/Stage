@@ -8,9 +8,8 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from exceptions import JobError, SchemaNotFoundError
-from jobs.echeances_job import run_echeances_job, EcheancesJobResult
+from jobs.echeances_job import EcheancesJobResult, run_echeances_job
 
 
 class TestRunEcheancesJob:
@@ -57,7 +56,9 @@ class TestRunEcheancesJob:
         mock_cur = MagicMock()
         mock_cur.fetchall.side_effect = RuntimeError("SQL error")
         mock_session.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_session.return_value.__exit__ = MagicMock(side_effect=RuntimeError("SQL error"))
+        mock_session.return_value.__exit__ = MagicMock(
+            side_effect=RuntimeError("SQL error")
+        )
 
         with pytest.raises(JobError):
             run_echeances_job()

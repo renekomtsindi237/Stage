@@ -10,6 +10,7 @@ Appelé par dag_donnees_externes (04h00 chaque jour) pour alimenter :
 Toutes les fonctions sont idempotentes (ON CONFLICT DO UPDATE).
 Les erreurs réseau sont loggées sans exception pour garantir la robustesse du DAG.
 """
+
 from __future__ import annotations
 
 import logging
@@ -23,15 +24,18 @@ from pipeline.src.database import db_session, readonly_session
 
 logger = logging.getLogger(__name__)
 
-OPEN_METEO_URL      = "https://api.open-meteo.com/v1/forecast"
-MINCOMMERCE_URL_BASE = os.getenv("MINCOMMERCE_API_URL", "https://mincommerce.cm/api/prix")
-BEAC_API_URL        = os.getenv("BEAC_API_URL", "https://www.beac.int/api/indicateurs")
-INS_API_URL         = os.getenv("INS_API_URL", "https://www.inseed.cm/api/indicateurs")
+OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
+MINCOMMERCE_URL_BASE = os.getenv(
+    "MINCOMMERCE_API_URL", "https://mincommerce.cm/api/prix"
+)
+BEAC_API_URL = os.getenv("BEAC_API_URL", "https://www.beac.int/api/indicateurs")
+INS_API_URL = os.getenv("INS_API_URL", "https://www.inseed.cm/api/indicateurs")
 
 HTTP_TIMEOUT = int(os.getenv("FETCH_HTTP_TIMEOUT_SECONDS", "30"))
 
 
 # ─── 1. Prix marchés — saisie terrain ────────────────────────────────────────
+
 
 def fetch_prix_marche_agents_terrain(**ctx) -> int:
     """
@@ -75,15 +79,18 @@ def fetch_prix_marche_agents_terrain(**ctx) -> int:
     with db_session() as cur:
         for item in data:
             try:
-                cur.execute(sql, {
-                    "produit_id":   item["produit_id"],
-                    "imf_id":       item.get("imf_id"),
-                    "agence_id":    item.get("agence_id"),
-                    "zone_id":      item.get("zone_id"),
-                    "prix_unitaire": float(item["prix_unitaire"]),
-                    "unite":        item.get("unite", "kg"),
-                    "date_collecte": item.get("date_collecte", str(date.today())),
-                })
+                cur.execute(
+                    sql,
+                    {
+                        "produit_id": item["produit_id"],
+                        "imf_id": item.get("imf_id"),
+                        "agence_id": item.get("agence_id"),
+                        "zone_id": item.get("zone_id"),
+                        "prix_unitaire": float(item["prix_unitaire"]),
+                        "unite": item.get("unite", "kg"),
+                        "date_collecte": item.get("date_collecte", str(date.today())),
+                    },
+                )
                 n += 1
             except (KeyError, ValueError, TypeError) as exc:
                 logger.debug("Prix terrain ignoré : %s", exc)
@@ -93,6 +100,7 @@ def fetch_prix_marche_agents_terrain(**ctx) -> int:
 
 
 # ─── 2. Prix marchés — MINCOMMERCE ───────────────────────────────────────────
+
 
 def fetch_prix_mincommerce(
     url_base: str | None = None,
@@ -107,8 +115,18 @@ def fetch_prix_mincommerce(
     Retourne le nombre de prix insérés.
     """
     base = url_base or MINCOMMERCE_URL_BASE
-    produits = produits_suivis or ["mais", "riz", "haricot", "manioc", "huile_palme",
-                                   "sucre", "sel", "tomate", "oignon", "plantain"]
+    produits = produits_suivis or [
+        "mais",
+        "riz",
+        "haricot",
+        "manioc",
+        "huile_palme",
+        "sucre",
+        "sel",
+        "tomate",
+        "oignon",
+        "plantain",
+    ]
 
     sql = """
         INSERT INTO app.prix_produits (
@@ -139,22 +157,28 @@ def fetch_prix_mincommerce(
         with db_session() as cur:
             for item in items:
                 try:
-                    cur.execute(sql, {
-                        "produit_code":  produit,
-                        "zone_id":       item.get("region_code", "CM"),
-                        "prix_unitaire": float(item["prix"]),
-                        "unite":         item.get("unite", "kg"),
-                        "date_collecte": item.get("date", today_str),
-                    })
+                    cur.execute(
+                        sql,
+                        {
+                            "produit_code": produit,
+                            "zone_id": item.get("region_code", "CM"),
+                            "prix_unitaire": float(item["prix"]),
+                            "unite": item.get("unite", "kg"),
+                            "date_collecte": item.get("date", today_str),
+                        },
+                    )
                     n += 1
                 except (KeyError, ValueError, TypeError) as exc:
                     logger.debug("Prix MINCOMMERCE ignoré (%s) : %s", produit, exc)
 
-    logger.info("fetch_prix_mincommerce : %d prix insérés (%d produits)", n, len(produits))
+    logger.info(
+        "fetch_prix_mincommerce : %d prix insérés (%d produits)", n, len(produits)
+    )
     return n
 
 
 # ─── 3. Indicateurs BEAC ─────────────────────────────────────────────────────
+
 
 def fetch_indicateurs_beac(
     indicateurs: list[str] | None = None,
@@ -206,12 +230,15 @@ def fetch_indicateurs_beac(
 
         try:
             with db_session() as cur:
-                cur.execute(sql, {
-                    "indicateur":       indic,
-                    "valeur":           float(data["valeur"]),
-                    "unite":            data.get("unite", ""),
-                    "date_publication": data.get("date", today_str),
-                })
+                cur.execute(
+                    sql,
+                    {
+                        "indicateur": indic,
+                        "valeur": float(data["valeur"]),
+                        "unite": data.get("unite", ""),
+                        "date_publication": data.get("date", today_str),
+                    },
+                )
                 n += 1
         except (KeyError, ValueError, TypeError) as exc:
             logger.warning("BEAC indicateur '%s' ignoré : %s", indic, exc)
@@ -221,6 +248,7 @@ def fetch_indicateurs_beac(
 
 
 # ─── 4. Indicateurs INS Cameroun ─────────────────────────────────────────────
+
 
 def fetch_indicateurs_ins_cameroun(
     indicateurs: list[str] | None = None,
@@ -270,12 +298,15 @@ def fetch_indicateurs_ins_cameroun(
 
         try:
             with db_session() as cur:
-                cur.execute(sql, {
-                    "indicateur":       indic,
-                    "valeur":           float(data["valeur"]),
-                    "unite":            data.get("unite", ""),
-                    "date_publication": data.get("date_publication", today_str),
-                })
+                cur.execute(
+                    sql,
+                    {
+                        "indicateur": indic,
+                        "valeur": float(data["valeur"]),
+                        "unite": data.get("unite", ""),
+                        "date_publication": data.get("date_publication", today_str),
+                    },
+                )
                 n += 1
         except (KeyError, ValueError, TypeError) as exc:
             logger.warning("INS indicateur '%s' ignoré : %s", indic, exc)
@@ -285,6 +316,7 @@ def fetch_indicateurs_ins_cameroun(
 
 
 # ─── 5. Météo — Open-Meteo ────────────────────────────────────────────────────
+
 
 def fetch_meteo_open_meteo(
     zones: list[dict] | dict | None = None,
@@ -332,10 +364,10 @@ def fetch_meteo_open_meteo(
 
     # Unités correspondantes
     unites = {
-        "precipitation":              "mm",
-        "temperature_2m_max":         "°C",
-        "temperature_2m_min":         "°C",
-        "wind_speed_10m_max":         "km/h",
+        "precipitation": "mm",
+        "temperature_2m_max": "°C",
+        "temperature_2m_min": "°C",
+        "wind_speed_10m_max": "km/h",
         "et0_fao_evapotranspiration": "mm",
     }
 
@@ -345,12 +377,12 @@ def fetch_meteo_open_meteo(
     for zone in zones_cible:
         try:
             params = {
-                "latitude":   zone["latitude"],
-                "longitude":  zone["longitude"],
-                "daily":      ",".join(vars_meteo),
-                "timezone":   "Africa/Douala",
+                "latitude": zone["latitude"],
+                "longitude": zone["longitude"],
+                "daily": ",".join(vars_meteo),
+                "timezone": "Africa/Douala",
                 "start_date": str(today),
-                "end_date":   str(today),
+                "end_date": str(today),
             }
             with httpx.Client(timeout=HTTP_TIMEOUT) as client:
                 resp = client.get(OPEN_METEO_URL, params=params)
@@ -361,7 +393,7 @@ def fetch_meteo_open_meteo(
             continue
 
         daily = payload.get("daily", {})
-        dates  = daily.get("time", [])
+        dates = daily.get("time", [])
 
         with db_session() as cur:
             for i, d in enumerate(dates):
@@ -370,20 +402,29 @@ def fetch_meteo_open_meteo(
                     if i >= len(values) or values[i] is None:
                         continue
                     try:
-                        cur.execute(sql, {
-                            "zone_nom":  zone["nom"],
-                            "latitude":  float(zone["latitude"]),
-                            "longitude": float(zone["longitude"]),
-                            "date_meteo": d,
-                            "variable":  var,
-                            "valeur":    float(values[i]),
-                            "unite":     unites.get(var, ""),
-                        })
+                        cur.execute(
+                            sql,
+                            {
+                                "zone_nom": zone["nom"],
+                                "latitude": float(zone["latitude"]),
+                                "longitude": float(zone["longitude"]),
+                                "date_meteo": d,
+                                "variable": var,
+                                "valeur": float(values[i]),
+                                "unite": unites.get(var, ""),
+                            },
+                        )
                         n += 1
                     except (TypeError, ValueError) as exc:
-                        logger.debug("Méteo ignorée (%s/%s) : %s", zone["nom"], var, exc)
+                        logger.debug(
+                            "Méteo ignorée (%s/%s) : %s", zone["nom"], var, exc
+                        )
 
-    logger.info("fetch_meteo_open_meteo : %d observations insérées (%d zones)", n, len(zones_cible))
+    logger.info(
+        "fetch_meteo_open_meteo : %d observations insérées (%d zones)",
+        n,
+        len(zones_cible),
+    )
     return n
 
 
@@ -408,13 +449,14 @@ def _recuperer_zones_actives() -> list[dict]:
     except Exception as exc:
         logger.warning("Impossible de récupérer les zones actives : %s", exc)
         return [
-            {"nom": "Yaoundé",   "latitude": 3.848,   "longitude": 11.502},
-            {"nom": "Douala",    "latitude": 4.0511,  "longitude": 9.7679},
-            {"nom": "Bafoussam", "latitude": 5.4737,  "longitude": 10.4173},
+            {"nom": "Yaoundé", "latitude": 3.848, "longitude": 11.502},
+            {"nom": "Douala", "latitude": 4.0511, "longitude": 9.7679},
+            {"nom": "Bafoussam", "latitude": 5.4737, "longitude": 10.4173},
         ]
 
 
 # ─── 6. Événements calendrier ─────────────────────────────────────────────────
+
 
 def fetch_evenements_calendrier(horizon_jours: int = 30, **ctx) -> int:
     """
@@ -438,8 +480,8 @@ def fetch_evenements_calendrier(horizon_jours: int = 30, **ctx) -> int:
         ON CONFLICT (date_evenement, type_evenement, zone_id) DO NOTHING
     """
 
-    today     = date.today()
-    horizon   = today + timedelta(days=horizon_jours)
+    today = date.today()
+    horizon = today + timedelta(days=horizon_jours)
     evenements = _generer_evenements_cameroun(today, horizon)
 
     n = 0
@@ -451,7 +493,11 @@ def fetch_evenements_calendrier(horizon_jours: int = 30, **ctx) -> int:
             except Exception as exc:
                 logger.debug("Événement ignoré (%s) : %s", evt.get("nom"), exc)
 
-    logger.info("fetch_evenements_calendrier : %d événements insérés (horizon=%dj)", n, horizon_jours)
+    logger.info(
+        "fetch_evenements_calendrier : %d événements insérés (horizon=%dj)",
+        n,
+        horizon_jours,
+    )
     return n
 
 
@@ -462,73 +508,81 @@ def _generer_evenements_cameroun(debut: date, fin: date) -> list[dict]:
 
     # Fêtes nationales fixes (impact positif sur collectes : les gens ont des liquidités)
     fetes_fixes = [
-        (1, 1,  "Nouvel An",          "POSITIF"),
+        (1, 1, "Nouvel An", "POSITIF"),
         (2, 11, "Fête de la Jeunesse", "POSITIF"),
-        (5, 1,  "Fête du Travail",     "POSITIF"),
-        (5, 20, "Fête Nationale",      "POSITIF"),
-        (8, 15, "Assomption",          "NEUTRE"),
-        (12, 25, "Noël",              "POSITIF"),
+        (5, 1, "Fête du Travail", "POSITIF"),
+        (5, 20, "Fête Nationale", "POSITIF"),
+        (8, 15, "Assomption", "NEUTRE"),
+        (12, 25, "Noël", "POSITIF"),
     ]
 
     for mois, jour, nom, impact in fetes_fixes:
         try:
             d = date(annee, mois, jour)
             if debut <= d <= fin:
-                evenements.append({
-                    "date_evenement": d,
-                    "type_evenement": "FETE_NATIONALE",
-                    "nom":            nom,
-                    "impact_collecte": impact,
-                    "zone_id":        "CM",
-                    "recurrent":      True,
-                })
+                evenements.append(
+                    {
+                        "date_evenement": d,
+                        "type_evenement": "FETE_NATIONALE",
+                        "nom": nom,
+                        "impact_collecte": impact,
+                        "zone_id": "CM",
+                        "recurrent": True,
+                    }
+                )
         except ValueError:
             pass
 
     # Saisons agricoles (impact sur CSI : les producteurs ont des revenus à la récolte)
     saisons = [
-        (3, 15, "Début semis maïs nord",   "NEGATIF"),   # dépenses semences
-        (7, 1,  "Récolte maïs nord",       "POSITIF"),   # revenus
-        (9, 1,  "Début semis cacao",       "NEGATIF"),
-        (11, 1, "Récolte cacao début",     "POSITIF"),
-        (4, 1,  "Récolte café arabica",    "POSITIF"),
-        (8, 1,  "Récolte café robusta",    "POSITIF"),
+        (3, 15, "Début semis maïs nord", "NEGATIF"),  # dépenses semences
+        (7, 1, "Récolte maïs nord", "POSITIF"),  # revenus
+        (9, 1, "Début semis cacao", "NEGATIF"),
+        (11, 1, "Récolte cacao début", "POSITIF"),
+        (4, 1, "Récolte café arabica", "POSITIF"),
+        (8, 1, "Récolte café robusta", "POSITIF"),
     ]
 
     for mois, jour, nom, impact in saisons:
         try:
             d = date(annee, mois, jour)
             if debut <= d <= fin:
-                evenements.append({
-                    "date_evenement": d,
-                    "type_evenement": "SAISON_AGRICOLE",
-                    "nom":            nom,
-                    "impact_collecte": impact,
-                    "zone_id":        "CM",
-                    "recurrent":      True,
-                })
+                evenements.append(
+                    {
+                        "date_evenement": d,
+                        "type_evenement": "SAISON_AGRICOLE",
+                        "nom": nom,
+                        "impact_collecte": impact,
+                        "zone_id": "CM",
+                        "recurrent": True,
+                    }
+                )
         except ValueError:
             pass
 
     # Marchés hebdomadaires périodiques (tous les 8 jours dans les zones rurales)
     from datetime import timedelta as td
+
     marche_debut = debut
     while marche_debut <= fin:
         if marche_debut.weekday() in (3, 5):  # jeudi et samedi
-            evenements.append({
-                "date_evenement":  marche_debut,
-                "type_evenement":  "MARCHE_PERIODIQUE",
-                "nom":             f"Marché {marche_debut.strftime('%A')}",
-                "impact_collecte": "POSITIF",
-                "zone_id":         "CM",
-                "recurrent":       True,
-            })
+            evenements.append(
+                {
+                    "date_evenement": marche_debut,
+                    "type_evenement": "MARCHE_PERIODIQUE",
+                    "nom": f"Marché {marche_debut.strftime('%A')}",
+                    "impact_collecte": "POSITIF",
+                    "zone_id": "CM",
+                    "recurrent": True,
+                }
+            )
         marche_debut += td(days=1)
 
     return evenements
 
 
 # ─── 7. Mapping et propagation ────────────────────────────────────────────────
+
 
 def mapper_produits_generiques(**ctx) -> int:
     """

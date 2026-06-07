@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import date, timedelta
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -24,9 +24,11 @@ logger = logging.getLogger(__name__)
 # Dataclasses de résultat
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PretTransformed:
     """Représentation enrichie d'un prêt après transformation."""
+
     id_pret: str
     reference: str
     id_client: int
@@ -49,6 +51,7 @@ class PretTransformed:
 @dataclass
 class EcheanceInfo:
     """Informations sur une échéance de prêt."""
+
     id: int
     id_pret: str
     numero: int
@@ -61,6 +64,7 @@ class EcheanceInfo:
 # ---------------------------------------------------------------------------
 # Fonctions de calcul
 # ---------------------------------------------------------------------------
+
 
 def calculate_jours_retard(
     echeances: list[EcheanceInfo],
@@ -251,6 +255,7 @@ def transform_batch(
 # ---------------------------------------------------------------------------
 # Utilitaires internes
 # ---------------------------------------------------------------------------
+
 
 def _parse_date(value: Optional[str | date]) -> Optional[date]:
     """Parse une date depuis une chaîne ISO ou retourne None."""

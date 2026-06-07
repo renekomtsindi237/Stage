@@ -29,6 +29,7 @@ class PipelineException(Exception):
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
+
 class ConfigurationError(PipelineException):
     """
     Variable d'environnement ou paramètre de configuration manquant/invalide.
@@ -41,6 +42,7 @@ class ConfigurationError(PipelineException):
 
 
 # ── Base de données ───────────────────────────────────────────────────────────
+
 
 class DatabaseError(PipelineException):
     """Classe parente pour toutes les erreurs base de données."""
@@ -56,7 +58,9 @@ class DatabaseConnectionError(DatabaseError):
     - Pool de connexions épuisé
     """
 
-    def __init__(self, host: str, port: int, dbname: str, *, cause: Exception | None = None) -> None:
+    def __init__(
+        self, host: str, port: int, dbname: str, *, cause: Exception | None = None
+    ) -> None:
         super().__init__(
             f"Connexion PostgreSQL échouée — {host}:{port}/{dbname}",
             details=str(cause) if cause else None,
@@ -110,6 +114,7 @@ class TransactionError(DatabaseError):
 
 # ── Extraction ────────────────────────────────────────────────────────────────
 
+
 class ExtractionError(PipelineException):
     """
     Échec de l'extraction de données depuis la source.
@@ -148,6 +153,7 @@ class ColumnMissingError(ExtractionError):
 
 # ── Transformation ────────────────────────────────────────────────────────────
 
+
 class TransformationError(PipelineException):
     """
     Erreur lors de la transformation / calcul métier.
@@ -180,6 +186,7 @@ class DataValidationError(TransformationError):
 
 # ── Chargement ───────────────────────────────────────────────────────────────
 
+
 class LoadingError(PipelineException):
     """
     Erreur lors de l'insertion / mise à jour dans la cible (staging ou DW).
@@ -201,7 +208,14 @@ class BatchInsertError(LoadingError):
     Contient le nombre de lignes traitées avec succès avant l'échec.
     """
 
-    def __init__(self, target: str, success_count: int, total: int, *, cause: Exception | None = None) -> None:
+    def __init__(
+        self,
+        target: str,
+        success_count: int,
+        total: int,
+        *,
+        cause: Exception | None = None,
+    ) -> None:
         super().__init__(
             target,
             f"{success_count}/{total} lignes insérées avant échec",
@@ -212,6 +226,7 @@ class BatchInsertError(LoadingError):
 
 
 # ── API Spring Boot ───────────────────────────────────────────────────────────
+
 
 class APIError(PipelineException):
     """Classe parente pour les erreurs d'appel à l'API Spring Boot."""
@@ -277,13 +292,16 @@ class DuplicateAlertError(APIError):
 
 # ── Jobs / Orchestration ─────────────────────────────────────────────────────
 
+
 class JobError(PipelineException):
     """
     Erreur de haut niveau levée par un job ETL.
     Encapsule les exceptions sous-jacentes pour le reporting.
     """
 
-    def __init__(self, job_name: str, message: str, *, cause: Exception | None = None) -> None:
+    def __init__(
+        self, job_name: str, message: str, *, cause: Exception | None = None
+    ) -> None:
         super().__init__(
             f"Job '{job_name}' échoué — {message}",
             details=str(cause) if cause else None,
@@ -298,7 +316,9 @@ class RetryExhaustedError(JobError):
     Le job est marqué ECHEC dans sync_logs.
     """
 
-    def __init__(self, job_name: str, attempts: int, *, last_error: Exception | None = None) -> None:
+    def __init__(
+        self, job_name: str, attempts: int, *, last_error: Exception | None = None
+    ) -> None:
         super().__init__(
             job_name,
             f"échec après {attempts} tentative(s)",

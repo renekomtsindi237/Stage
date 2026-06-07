@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 
 from config import settings
-from database import db_session, check_table_exists
+from database import check_table_exists, db_session
 from exceptions import JobError, LoadingError, SchemaNotFoundError
 
 logger = logging.getLogger(__name__)

@@ -11,10 +11,10 @@ import logging
 from typing import Any
 
 from config import settings
-from database import db_session, check_schema_exists
+from database import check_schema_exists, db_session
 from exceptions import BatchInsertError, LoadingError, SchemaNotFoundError
-from transformers.par_transformer import FactRemboursement
 from transformers.collecte_transformer import FactCollecte
+from transformers.par_transformer import FactRemboursement
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +99,7 @@ def load_fact_collectes(facts: list[FactCollecte]) -> int:
 
 # ── Utilitaires internes ──────────────────────────────────────────────────────
 
+
 def _batch_upsert(target: str, sql: str, rows: list[tuple[Any, ...]]) -> int:
     """
     Exécute l'upsert par batches de BATCH_SIZE lignes.
@@ -115,7 +116,7 @@ def _batch_upsert(target: str, sql: str, rows: list[tuple[Any, ...]]) -> int:
     try:
         with db_session() as cur:
             for i in range(0, total, BATCH_SIZE):
-                batch = rows[i: i + BATCH_SIZE]
+                batch = rows[i : i + BATCH_SIZE]
                 cur.executemany(sql, batch)
                 inserted += len(batch)
                 logger.debug("Batch %d/%d inséré dans %s", inserted, total, target)
@@ -128,14 +129,26 @@ def _batch_upsert(target: str, sql: str, rows: list[tuple[Any, ...]]) -> int:
 
 def _fact_remb_to_tuple(f: FactRemboursement) -> tuple[Any, ...]:
     return (
-        f.id_pret, f.id_agence, f.date_valeur,
-        f.montant_pret, f.montant_rembourse, f.solde_restant,
-        f.statut_pret, f.jours_retard, f.encours_par30, f.encours_par90,
+        f.id_pret,
+        f.id_agence,
+        f.date_valeur,
+        f.montant_pret,
+        f.montant_rembourse,
+        f.solde_restant,
+        f.statut_pret,
+        f.jours_retard,
+        f.encours_par30,
+        f.encours_par90,
     )
 
 
 def _fact_col_to_tuple(f: FactCollecte) -> tuple[Any, ...]:
     return (
-        f.source_id, f.id_pret, f.id_agence,
-        f.date_valeur, f.canal, f.montant, f.nom_agent,
+        f.source_id,
+        f.id_pret,
+        f.id_agence,
+        f.date_valeur,
+        f.canal,
+        f.montant,
+        f.nom_agent,
     )

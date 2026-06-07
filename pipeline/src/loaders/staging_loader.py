@@ -11,7 +11,7 @@ import logging
 from typing import Any
 
 from config import settings
-from database import db_session, check_table_exists
+from database import check_table_exists, db_session
 from exceptions import LoadingError, SchemaNotFoundError
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,9 @@ def update_statuts_retard(prets_en_retard: list[dict[str, Any]]) -> int:
     except (SchemaNotFoundError, LoadingError):
         raise
     except Exception as exc:
-        raise LoadingError(target, "mise à jour statuts échouée", details=str(exc)) from exc
+        raise LoadingError(
+            target, "mise à jour statuts échouée", details=str(exc)
+        ) from exc
 
     logger.info("Mis à jour %d statuts de retard dans %s", updated, target)
     return updated

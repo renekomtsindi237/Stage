@@ -31,6 +31,7 @@ Conception
 - Vectorisation complète du scoring (pas d'itération row-by-row).
 - Gestion explicite des features manquantes et des cas limites.
 """
+
 from __future__ import annotations
 
 import json
@@ -80,19 +81,19 @@ def _walk_forward_splits(
     dates_ts = pd.to_datetime(dates_sorted).values
     max_date = dates_ts.max()
 
-    gap_days  = int(gap_mois * 30.44)
+    gap_days = int(gap_mois * 30.44)
     test_days = 90  # 3 mois par fenêtre de test
 
     splits: list[tuple[np.ndarray, np.ndarray]] = []
     for fold in range(n_folds):
         # fold 0 = plus ancien test, fold n-1 = plus récent
         offset_days = (n_folds - 1 - fold) * test_days
-        test_end    = max_date - np.timedelta64(offset_days, "D")
-        test_start  = test_end - np.timedelta64(test_days, "D")
-        train_end   = test_start - np.timedelta64(gap_days, "D")
+        test_end = max_date - np.timedelta64(offset_days, "D")
+        test_start = test_end - np.timedelta64(test_days, "D")
+        train_end = test_start - np.timedelta64(gap_days, "D")
 
         train_idx = np.where(dates_ts < train_end)[0]
-        test_idx  = np.where((dates_ts >= test_start) & (dates_ts < test_end))[0]
+        test_idx = np.where((dates_ts >= test_start) & (dates_ts < test_end))[0]
 
         if len(train_idx) >= 50 and len(test_idx) >= 20:
             splits.append((train_idx, test_idx))
@@ -108,79 +109,80 @@ def _walk_forward_splits(
 
     return splits
 
+
 # ─── Groupes de features ─────────────────────────────────────────────────────
 
 CRS_FEATURES: list[str] = [
-    "nb_collectes_12m",           # nombre de collectes sur 12 mois glissants
-    "regularite_collecte_pct",    # % de semaines avec au moins une collecte (0–100)
-    "tendance_collecte_3m",       # pente normalisée (régression OLS) sur 3 mois
-    "montant_moy_collecte",       # montant moyen par collecte (FCFA)
-    "ecart_type_collecte",        # volatilité du montant de collecte
-    "nb_cycles_manques_12m",      # cycles sans aucune collecte (sur 52 semaines max)
-    "montant_total_collectes_12m",# total collecté sur 12 mois
+    "nb_collectes_12m",  # nombre de collectes sur 12 mois glissants
+    "regularite_collecte_pct",  # % de semaines avec au moins une collecte (0–100)
+    "tendance_collecte_3m",  # pente normalisée (régression OLS) sur 3 mois
+    "montant_moy_collecte",  # montant moyen par collecte (FCFA)
+    "ecart_type_collecte",  # volatilité du montant de collecte
+    "nb_cycles_manques_12m",  # cycles sans aucune collecte (sur 52 semaines max)
+    "montant_total_collectes_12m",  # total collecté sur 12 mois
 ]
 
 RPS_FEATURES: list[str] = [
-    "taux_remboursement_pct",     # % du capital remboursé à date (0–100)
-    "jours_retard_moyen",         # moyenne des retards sur les 12 derniers mois
-    "jours_retard_max",           # maximum des retards sur 12 mois
-    "nb_incidents_paiement",      # nombre d'incidents de paiement sur 12 mois
-    "montant_impaye_courant",     # encours impayé au moment du scoring (FCFA)
-    "nb_remboursements_12m",      # nombre de remboursements effectués sur 12 mois
-    "classe_risque_cobac_encode", # classe COBAC encodée (A=0, B=1, C=2, D=3, E=4)
+    "taux_remboursement_pct",  # % du capital remboursé à date (0–100)
+    "jours_retard_moyen",  # moyenne des retards sur les 12 derniers mois
+    "jours_retard_max",  # maximum des retards sur 12 mois
+    "nb_incidents_paiement",  # nombre d'incidents de paiement sur 12 mois
+    "montant_impaye_courant",  # encours impayé au moment du scoring (FCFA)
+    "nb_remboursements_12m",  # nombre de remboursements effectués sur 12 mois
+    "classe_risque_cobac_encode",  # classe COBAC encodée (A=0, B=1, C=2, D=3, E=4)
 ]
 
 CSI_FEATURES: list[str] = [
-    "revenu_mensuel_estime",      # revenu mensuel estimé client (FCFA)
-    "anciennete_client_jours",    # ancienneté relation IMF en jours
-    "nb_produits_actifs",         # nombre de produits distincts dans l'activité client
-    "ratio_collecte_credit",      # montant collecte / encours crédit (capacité relative)
-    "capacite_remboursement",     # revenu_mensuel / (montant_echeance * 1.2)
-    "indice_resilience",          # min(nb_produits / 5, 1) — diversification activité
-    "est_producteur",             # 1 si le client produit/vend, 0 si consommateur net
-    "prix_produit_principal_moy", # prix moyen 90j du produit principal (FCFA/unité)
-    "volatilite_prix_produit",    # écart-type du prix produit sur 90j
-    "tendance_prix_30j",          # pente régression prix sur 30j (+ = hausse)
-    "prix_lag_30j",               # prix moyen période 31–60j (lag 30j) pour détecter tendance retardée
-    "prix_lag_90j",               # prix moyen période 91–120j (lag 90j) pour amplitude de variation
-    "inflation_mensuelle_moy",    # inflation mensuelle moyenne zone (%)
-    "taux_directeur_beac",        # taux directeur BEAC en vigueur (%)
-    "precipitation_moy_mm",       # précipitations cumulées 30j (mm)
-    "indice_secheresse",          # Palmer DSI négatif = sécheresse
-    "nb_evenements_negatifs",     # nombre d'événements perturbateurs sur 30j
+    "revenu_mensuel_estime",  # revenu mensuel estimé client (FCFA)
+    "anciennete_client_jours",  # ancienneté relation IMF en jours
+    "nb_produits_actifs",  # nombre de produits distincts dans l'activité client
+    "ratio_collecte_credit",  # montant collecte / encours crédit (capacité relative)
+    "capacite_remboursement",  # revenu_mensuel / (montant_echeance * 1.2)
+    "indice_resilience",  # min(nb_produits / 5, 1) — diversification activité
+    "est_producteur",  # 1 si le client produit/vend, 0 si consommateur net
+    "prix_produit_principal_moy",  # prix moyen 90j du produit principal (FCFA/unité)
+    "volatilite_prix_produit",  # écart-type du prix produit sur 90j
+    "tendance_prix_30j",  # pente régression prix sur 30j (+ = hausse)
+    "prix_lag_30j",  # prix moyen période 31–60j (lag 30j) pour détecter tendance retardée
+    "prix_lag_90j",  # prix moyen période 91–120j (lag 90j) pour amplitude de variation
+    "inflation_mensuelle_moy",  # inflation mensuelle moyenne zone (%)
+    "taux_directeur_beac",  # taux directeur BEAC en vigueur (%)
+    "precipitation_moy_mm",  # précipitations cumulées 30j (mm)
+    "indice_secheresse",  # Palmer DSI négatif = sécheresse
+    "nb_evenements_negatifs",  # nombre d'événements perturbateurs sur 30j
 ]
 
 ALL_FEATURES: list[str] = CRS_FEATURES + RPS_FEATURES + CSI_FEATURES
 
 # Valeurs par défaut pour les features manquantes (médiane sectorielle estimée)
 FEATURE_DEFAULTS: dict[str, float] = {
-    "regularite_collecte_pct":    60.0,
-    "tendance_collecte_3m":        0.0,
-    "montant_moy_collecte":     5000.0,
-    "ecart_type_collecte":      2000.0,
-    "nb_cycles_manques_12m":       8.0,
-    "taux_remboursement_pct":     75.0,
-    "jours_retard_moyen":          0.0,
-    "jours_retard_max":            0.0,
-    "nb_incidents_paiement":       0.0,
-    "classe_risque_cobac_encode":  0.0,
-    "revenu_mensuel_estime":   50000.0,
-    "anciennete_client_jours":   365.0,
-    "nb_produits_actifs":          2.0,
-    "ratio_collecte_credit":       0.1,
-    "capacite_remboursement":      1.2,
-    "indice_resilience":           0.4,
-    "est_producteur":              1.0,
+    "regularite_collecte_pct": 60.0,
+    "tendance_collecte_3m": 0.0,
+    "montant_moy_collecte": 5000.0,
+    "ecart_type_collecte": 2000.0,
+    "nb_cycles_manques_12m": 8.0,
+    "taux_remboursement_pct": 75.0,
+    "jours_retard_moyen": 0.0,
+    "jours_retard_max": 0.0,
+    "nb_incidents_paiement": 0.0,
+    "classe_risque_cobac_encode": 0.0,
+    "revenu_mensuel_estime": 50000.0,
+    "anciennete_client_jours": 365.0,
+    "nb_produits_actifs": 2.0,
+    "ratio_collecte_credit": 0.1,
+    "capacite_remboursement": 1.2,
+    "indice_resilience": 0.4,
+    "est_producteur": 1.0,
     "prix_produit_principal_moy": 500.0,
-    "volatilite_prix_produit":    50.0,
-    "tendance_prix_30j":           0.0,
-    "prix_lag_30j":              500.0,   # même ordre de grandeur que le prix courant
-    "prix_lag_90j":              500.0,
-    "inflation_mensuelle_moy":     4.0,
-    "taux_directeur_beac":         5.0,
-    "precipitation_moy_mm":       80.0,
-    "indice_secheresse":           0.0,
-    "nb_evenements_negatifs":      0.0,
+    "volatilite_prix_produit": 50.0,
+    "tendance_prix_30j": 0.0,
+    "prix_lag_30j": 500.0,  # même ordre de grandeur que le prix courant
+    "prix_lag_90j": 500.0,
+    "inflation_mensuelle_moy": 4.0,
+    "taux_directeur_beac": 5.0,
+    "precipitation_moy_mm": 80.0,
+    "indice_secheresse": 0.0,
+    "nb_evenements_negatifs": 0.0,
 }
 
 REGION_MAPPING_PATH = Path(__file__).resolve().parents[2] / "region_mapping.json"
@@ -188,16 +190,16 @@ REGION_THRESHOLDS_PATH = Path(__file__).resolve().parents[2] / "region_threshold
 FEATURE_DEFAULTS_PATH = Path(__file__).resolve().parents[2] / "feature_defaults.json"
 
 SEUILS_RISQUE: dict[str, tuple[float, float]] = {
-    "FAIBLE":   (0.00, 0.30),
-    "MODERE":   (0.30, 0.55),
-    "ELEVE":    (0.55, 0.75),
+    "FAIBLE": (0.00, 0.30),
+    "MODERE": (0.30, 0.55),
+    "ELEVE": (0.55, 0.75),
     "CRITIQUE": (0.75, 1.01),
 }
 
 ACTION_PAR_CLASSE: dict[str, str] = {
-    "FAIBLE":   "AUCUNE",
-    "MODERE":   "RELANCE_PREVENTIVE",
-    "ELEVE":    "VISITE_TERRAIN",
+    "FAIBLE": "AUCUNE",
+    "MODERE": "RELANCE_PREVENTIVE",
+    "ELEVE": "VISITE_TERRAIN",
     "CRITIQUE": "MISE_EN_DEMEURE",
 }
 
@@ -205,6 +207,7 @@ COBAC_ENCODE: dict[str, int] = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4}
 
 
 # ─── Dataclasses ─────────────────────────────────────────────────────────────
+
 
 @dataclass
 class McrsParams:
@@ -219,7 +222,9 @@ class McrsParams:
     reg_alpha: float = 0.1
     reg_lambda: float = 1.0
     early_stopping_rounds: int = 50
-    scale_pos_weight: float | str = "auto"  # "auto" = calculé depuis le ratio défaut/sain
+    scale_pos_weight: float | str = (
+        "auto"  # "auto" = calculé depuis le ratio défaut/sain
+    )
     # Poids composantes MCRS
     poids_crs: float = 0.35
     poids_rps: float = 0.45
@@ -228,7 +233,9 @@ class McrsParams:
     n_folds: int = 5
     taille_train_mois: int = 12
     taille_test_mois: int = 3
-    gap_mois: int = 3   # 3 mois évite la fuite d'info sur les créances longues durées (C/D/E ≥ 90j)
+    gap_mois: int = (
+        3  # 3 mois évite la fuite d'info sur les créances longues durées (C/D/E ≥ 90j)
+    )
     # SHAP
     top_n_features: int = 10
     # Intervalle de confiance (bootstrap)
@@ -252,7 +259,7 @@ class ScoreResult:
     score_mcrs_ic_bas: float
     score_mcrs_ic_haut: float
     action_recommandee: str
-    priorite_recouvrement: int       # 1 (faible) à 5 (critique)
+    priorite_recouvrement: int  # 1 (faible) à 5 (critique)
     region_id: str | None = None
     region_name: str | None = None
     seuil_operationnel: float | None = None
@@ -268,6 +275,7 @@ class ScoreResult:
 
 
 # ─── Modèle ──────────────────────────────────────────────────────────────────
+
 
 class MCRSModel:
     """
@@ -289,10 +297,16 @@ class MCRSModel:
         self._explainer: shap.TreeExplainer | None = None
         self.metrics_: dict[str, Any] = {}
         self.feature_importances_: dict[str, float] = {}
-        self._reference_scores: np.ndarray | None = None   # pour PSI
-        self._region_mapping: dict[str, str] = self._charger_json_optionnel(REGION_MAPPING_PATH)
-        self._region_thresholds: dict[str, float] = self._charger_json_optionnel(REGION_THRESHOLDS_PATH)
-        self._feature_defaults: dict[str, float] = self._charger_json_optionnel(FEATURE_DEFAULTS_PATH) or dict(FEATURE_DEFAULTS)
+        self._reference_scores: np.ndarray | None = None  # pour PSI
+        self._region_mapping: dict[str, str] = self._charger_json_optionnel(
+            REGION_MAPPING_PATH
+        )
+        self._region_thresholds: dict[str, float] = self._charger_json_optionnel(
+            REGION_THRESHOLDS_PATH
+        )
+        self._feature_defaults: dict[str, float] = self._charger_json_optionnel(
+            FEATURE_DEFAULTS_PATH
+        ) or dict(FEATURE_DEFAULTS)
         self._initialiser_champs_optionnels()
 
     # ── Entraînement ──────────────────────────────────────────────────────────
@@ -309,7 +323,8 @@ class MCRSModel:
         """
         logger.info(
             "Démarrage entraînement MCRS — %d observations, %.1f%% défauts",
-            len(X), 100 * y.mean(),
+            len(X),
+            100 * y.mean(),
         )
 
         X_feat = self._preparer_features(X)
@@ -317,11 +332,13 @@ class MCRSModel:
 
         # Tri chronologique strict pour le walk-forward
         order = dates.argsort().values
-        X_sorted      = X_feat.iloc[order].reset_index(drop=True)
-        y_sorted      = y.iloc[order].reset_index(drop=True)
-        dates_sorted  = dates.iloc[order].reset_index(drop=True)
+        X_sorted = X_feat.iloc[order].reset_index(drop=True)
+        y_sorted = y.iloc[order].reset_index(drop=True)
+        dates_sorted = dates.iloc[order].reset_index(drop=True)
 
-        splits = _walk_forward_splits(dates_sorted, self.params.n_folds, self.params.gap_mois)
+        splits = _walk_forward_splits(
+            dates_sorted, self.params.n_folds, self.params.gap_mois
+        )
 
         for fold, (train_idx, test_idx) in enumerate(splits):
             X_tr, X_te = X_sorted.iloc[train_idx], X_sorted.iloc[test_idx]
@@ -330,7 +347,8 @@ class MCRSModel:
             spw = self._scale_pos_weight(y_tr)
             model_fold = self._construire_xgboost(spw)
             model_fold.fit(
-                X_tr[ALL_FEATURES], y_tr,
+                X_tr[ALL_FEATURES],
+                y_tr,
                 eval_set=[(X_te[ALL_FEATURES], y_te)],
                 verbose=False,
             )
@@ -340,26 +358,35 @@ class MCRSModel:
             fold_metrics.append(fm)
             logger.info(
                 "Fold %d — AUC=%.4f  Gini=%.4f  KS=%.4f  Brier=%.4f",
-                fold, fm["auc_roc"], fm["gini"], fm["ks_statistic"], fm["brier_score"],
+                fold,
+                fm["auc_roc"],
+                fm["gini"],
+                fm["ks_statistic"],
+                fm["brier_score"],
             )
 
         # Métriques agrégées (moyenne des folds)
         self.metrics_ = {
             k: round(float(np.mean([m[k] for m in fold_metrics])), 4)
-            for k in fold_metrics[0] if k != "fold"
+            for k in fold_metrics[0]
+            if k != "fold"
         }
         self.metrics_["fold_metrics"] = fold_metrics
 
         # Entraînement final sur toutes les données (sans early stopping — pas d'eval_set)
         logger.info("Entraînement final sur dataset complet...")
         spw_global = self._scale_pos_weight(y_sorted)
-        self._model_rps = self._construire_xgboost(spw_global, early_stopping_rounds=None)
+        self._model_rps = self._construire_xgboost(
+            spw_global, early_stopping_rounds=None
+        )
         self._model_rps.fit(X_sorted[ALL_FEATURES], y_sorted, verbose=False)
 
         # Calibration Platt (sur le dernier tiers des données chronologiquement)
         cut = int(len(X_sorted) * 0.67)
         self._calibrated_rps = CalibratedClassifierCV(
-            self._model_rps, cv="prefit", method="isotonic",
+            self._model_rps,
+            cv="prefit",
+            method="isotonic",
         )
         self._calibrated_rps.fit(X_sorted.iloc[cut:][ALL_FEATURES], y_sorted.iloc[cut:])
 
@@ -378,15 +405,22 @@ class MCRSModel:
 
         logger.info(
             "Entraînement MCRS terminé — AUC_moy=%.4f  Gini_moy=%.4f",
-            self.metrics_["auc_roc"], self.metrics_["gini"],
+            self.metrics_["auc_roc"],
+            self.metrics_["gini"],
         )
         return self
 
     def _construire_xgboost(
-        self, scale_pos_weight: float = 1.0, early_stopping_rounds: int | None = _SENTINEL
+        self,
+        scale_pos_weight: float = 1.0,
+        early_stopping_rounds: int | None = _SENTINEL,
     ) -> XGBClassifier:
         p = self.params
-        esr = p.early_stopping_rounds if early_stopping_rounds is _SENTINEL else early_stopping_rounds
+        esr = (
+            p.early_stopping_rounds
+            if early_stopping_rounds is _SENTINEL
+            else early_stopping_rounds
+        )
         return XGBClassifier(
             n_estimators=p.n_estimators,
             max_depth=p.max_depth,
@@ -426,9 +460,9 @@ class MCRSModel:
         X = self._preparer_features(df)
 
         # Probabilité de défaut 90j (RPS) vectorisée
-        proba_90j: np.ndarray = self._calibrated_rps.predict_proba(
-            X[ALL_FEATURES]
-        )[:, 1]
+        proba_90j: np.ndarray = self._calibrated_rps.predict_proba(X[ALL_FEATURES])[
+            :, 1
+        ]
 
         # CRS et CSI vectorisés
         crs_vec: np.ndarray = self._vect_crs(X)
@@ -437,9 +471,7 @@ class MCRSModel:
         # Score composite MCRS
         p = self.params
         mcrs_vec: np.ndarray = (
-            p.poids_crs * crs_vec
-            + p.poids_rps * proba_90j
-            + p.poids_csi * csi_vec
+            p.poids_crs * crs_vec + p.poids_rps * proba_90j + p.poids_csi * csi_vec
         )
         mcrs_vec = np.clip(mcrs_vec, 0.0, 1.0)
 
@@ -457,7 +489,9 @@ class MCRSModel:
             classe = _classifier_risque(mcrs)
             region_id = str(df.iloc[i].get("region_id", "") or "")
             region_name = str(df.iloc[i].get("region_name", "") or "")
-            seuil_op = self._seuil_operationnel(region_id=region_id, region_name=region_name)
+            seuil_op = self._seuil_operationnel(
+                region_id=region_id, region_name=region_name
+            )
             revue_humaine = mcrs >= seuil_op
 
             shap_vals: dict[str, float] = {}
@@ -466,27 +500,35 @@ class MCRSModel:
                 top_idx = np.argsort(np.abs(sv))[::-1][: self.params.top_n_features]
                 shap_vals = {ALL_FEATURES[j]: round(float(sv[j]), 6) for j in top_idx}
 
-            results.append(ScoreResult(
-                client_id_externe=str(df.iloc[i]["client_id_externe"]),
-                imf_code=str(df.iloc[i]["imf_code"]),
-                score_crs=round(float(crs_vec[i]), 4),
-                score_rps=round(float(proba_90j[i]), 4),
-                score_csi=round(float(csi_vec[i]), 4),
-                score_mcrs=round(mcrs, 4),
-                classe_risque=classe,
-                probabilite_defaut_30j=round(float(np.clip(proba_90j[i] * 0.35, 0, 1)), 4),
-                probabilite_defaut_90j=round(float(proba_90j[i]), 4),
-                score_mcrs_ic_bas=round(float(ic_bas[i]), 4),
-                score_mcrs_ic_haut=round(float(ic_haut[i]), 4),
-                action_recommandee=ACTION_PAR_CLASSE[classe],
-                priorite_recouvrement=_priorite(mcrs),
-                region_id=region_id or None,
-                region_name=self._region_mapping.get(region_id, region_name or None),
-                seuil_operationnel=round(float(seuil_op), 4),
-                revue_humaine_requise=bool(revue_humaine),
-                decision_operationnelle="REVUE_HUMAINE" if revue_humaine else "AUTOMATIQUE",
-                shap_values=shap_vals,
-            ))
+            results.append(
+                ScoreResult(
+                    client_id_externe=str(df.iloc[i]["client_id_externe"]),
+                    imf_code=str(df.iloc[i]["imf_code"]),
+                    score_crs=round(float(crs_vec[i]), 4),
+                    score_rps=round(float(proba_90j[i]), 4),
+                    score_csi=round(float(csi_vec[i]), 4),
+                    score_mcrs=round(mcrs, 4),
+                    classe_risque=classe,
+                    probabilite_defaut_30j=round(
+                        float(np.clip(proba_90j[i] * 0.35, 0, 1)), 4
+                    ),
+                    probabilite_defaut_90j=round(float(proba_90j[i]), 4),
+                    score_mcrs_ic_bas=round(float(ic_bas[i]), 4),
+                    score_mcrs_ic_haut=round(float(ic_haut[i]), 4),
+                    action_recommandee=ACTION_PAR_CLASSE[classe],
+                    priorite_recouvrement=_priorite(mcrs),
+                    region_id=region_id or None,
+                    region_name=self._region_mapping.get(
+                        region_id, region_name or None
+                    ),
+                    seuil_operationnel=round(float(seuil_op), 4),
+                    revue_humaine_requise=bool(revue_humaine),
+                    decision_operationnelle=(
+                        "REVUE_HUMAINE" if revue_humaine else "AUTOMATIQUE"
+                    ),
+                    shap_values=shap_vals,
+                )
+            )
 
         return results
 
@@ -499,20 +541,20 @@ class MCRSModel:
 
     def _vect_crs(self, X: pd.DataFrame) -> np.ndarray:
         """Collection Reliability Score vectorisé."""
-        regularite = X["regularite_collecte_pct"].values / 100.0   # normalise 0–100 → 0–1
+        regularite = (
+            X["regularite_collecte_pct"].values / 100.0
+        )  # normalise 0–100 → 0–1
         regularite = np.clip(regularite, 0.0, 1.0)
 
         tendance = X["tendance_collecte_3m"].values
         # Normalisation via sigmoid centrée en 0 (tendance positive = CRS plus bas = moins risqué)
-        tendance_norm = expit(tendance * 5.0)   # tendance > 0 → tendance_norm > 0.5 = bon
+        tendance_norm = expit(
+            tendance * 5.0
+        )  # tendance > 0 → tendance_norm > 0.5 = bon
 
         manques_fraction = np.minimum(X["nb_cycles_manques_12m"].values / 52.0, 1.0)
 
-        crs = (
-            0.50 * regularite
-            + 0.30 * tendance_norm
-            + 0.20 * (1.0 - manques_fraction)
-        )
+        crs = 0.50 * regularite + 0.30 * tendance_norm + 0.20 * (1.0 - manques_fraction)
         # CRS élevé = client FIABLE → score risque FAIBLE
         # Pour cohérence avec MCRS (élevé = risqué) on inverse : risque_crs = 1 - crs
         return np.clip(1.0 - crs, 0.0, 1.0)
@@ -530,25 +572,27 @@ class MCRSModel:
         ne peut pas fournir — notamment pour des chocs de prix à latence de 1–3 mois.
         """
         eps = 1e-9
-        resilience  = np.clip(X["indice_resilience"].values, 0.0, 1.0)
-        volatilite  = X["volatilite_prix_produit"].values
+        resilience = np.clip(X["indice_resilience"].values, 0.0, 1.0)
+        volatilite = X["volatilite_prix_produit"].values
         tendance_px = X["tendance_prix_30j"].values
-        est_prod    = np.clip(X["est_producteur"].values, 0.0, 1.0)
-        evenements  = np.minimum(X["nb_evenements_negatifs"].values / 5.0, 1.0)
-        inflation   = np.minimum(np.abs(X["inflation_mensuelle_moy"].values) / 10.0, 1.0)
-        secheresse  = np.maximum(X["indice_secheresse"].values * -1, 0.0)
-        secheresse  = np.minimum(secheresse / 4.0, 1.0)
+        est_prod = np.clip(X["est_producteur"].values, 0.0, 1.0)
+        evenements = np.minimum(X["nb_evenements_negatifs"].values / 5.0, 1.0)
+        inflation = np.minimum(np.abs(X["inflation_mensuelle_moy"].values) / 10.0, 1.0)
+        secheresse = np.maximum(X["indice_secheresse"].values * -1, 0.0)
+        secheresse = np.minimum(secheresse / 4.0, 1.0)
 
         # Tendance instantanée normalisée [0, 1] (0.5 = stable)
         tendance_norm = expit(tendance_px * 3.0)
 
         # Impact tendance courte (sens selon producteur/consommateur)
-        impact_prix = est_prod * (1.0 - tendance_norm) + (1.0 - est_prod) * tendance_norm
+        impact_prix = (
+            est_prod * (1.0 - tendance_norm) + (1.0 - est_prod) * tendance_norm
+        )
 
         # Variation vs lag 30j : (prix_actuel - prix_lag30j) / prix_lag30j ∈ [-1, 1]
-        prix_actuel  = X["prix_produit_principal_moy"].values
-        prix_lag30   = X["prix_lag_30j"].values
-        prix_lag90   = X["prix_lag_90j"].values
+        prix_actuel = X["prix_produit_principal_moy"].values
+        prix_lag30 = X["prix_lag_30j"].values
+        prix_lag90 = X["prix_lag_90j"].values
         var30 = np.clip((prix_actuel - prix_lag30) / (prix_lag30 + eps), -1.0, 1.0)
         var90 = np.clip((prix_actuel - prix_lag90) / (prix_lag90 + eps), -1.0, 1.0)
 
@@ -566,13 +610,13 @@ class MCRSModel:
         # Poids ajustés pour intégrer les lags (somme = 1.0)
         csi = (
             0.25 * (1.0 - resilience)  # faible résilience = risque élevé
-            + 0.20 * vol_norm          # forte volatilité = risque élevé
-            + 0.15 * impact_prix       # tendance courte (30j instantané)
-            + 0.10 * impact_var30      # variation vs lag 30j
-            + 0.10 * impact_var90      # variation vs lag 90j (chocs latents)
-            + 0.08 * evenements        # événements perturbateurs
-            + 0.07 * inflation         # inflation élevée
-            + 0.05 * secheresse        # sécheresse (impact agriculteurs)
+            + 0.20 * vol_norm  # forte volatilité = risque élevé
+            + 0.15 * impact_prix  # tendance courte (30j instantané)
+            + 0.10 * impact_var30  # variation vs lag 30j
+            + 0.10 * impact_var90  # variation vs lag 90j (chocs latents)
+            + 0.08 * evenements  # événements perturbateurs
+            + 0.07 * inflation  # inflation élevée
+            + 0.05 * secheresse  # sécheresse (impact agriculteurs)
         )
         return np.clip(csi, 0.0, 1.0)
 
@@ -586,7 +630,10 @@ class MCRSModel:
         X = df.copy()
 
         # Encodage classe COBAC → entier
-        if "classe_cobac" in X.columns and "classe_risque_cobac_encode" not in X.columns:
+        if (
+            "classe_cobac" in X.columns
+            and "classe_risque_cobac_encode" not in X.columns
+        ):
             X["classe_risque_cobac_encode"] = (
                 X["classe_cobac"].map(COBAC_ENCODE).fillna(0.0)
             )
@@ -594,12 +641,16 @@ class MCRSModel:
         # Imputation par défaut pour les colonnes manquantes
         for col in ALL_FEATURES:
             if col not in X.columns:
-                default = self._feature_defaults.get(col, FEATURE_DEFAULTS.get(col, 0.0))
+                default = self._feature_defaults.get(
+                    col, FEATURE_DEFAULTS.get(col, 0.0)
+                )
                 X[col] = default
                 logger.debug("Feature '%s' absente — imputée à %.2f", col, default)
             else:
                 # Imputer uniquement les NaN (pas les 0 légitimes)
-                default = self._feature_defaults.get(col, FEATURE_DEFAULTS.get(col, 0.0))
+                default = self._feature_defaults.get(
+                    col, FEATURE_DEFAULTS.get(col, 0.0)
+                )
                 X[col] = X[col].fillna(default)
 
         X[ALL_FEATURES] = X[ALL_FEATURES].astype(float)
@@ -614,16 +665,22 @@ class MCRSModel:
             if isinstance(data, dict):
                 return data
         except Exception:
-            logger.warning("Impossible de charger %s — valeurs par défaut utilisées", path)
+            logger.warning(
+                "Impossible de charger %s — valeurs par défaut utilisées", path
+            )
         return {}
 
     def _initialiser_champs_optionnels(self) -> None:
         if not hasattr(self, "_region_mapping"):
             self._region_mapping = self._charger_json_optionnel(REGION_MAPPING_PATH)
         if not hasattr(self, "_region_thresholds"):
-            self._region_thresholds = self._charger_json_optionnel(REGION_THRESHOLDS_PATH)
+            self._region_thresholds = self._charger_json_optionnel(
+                REGION_THRESHOLDS_PATH
+            )
         if not hasattr(self, "_feature_defaults"):
-            self._feature_defaults = self._charger_json_optionnel(FEATURE_DEFAULTS_PATH) or dict(FEATURE_DEFAULTS)
+            self._feature_defaults = self._charger_json_optionnel(
+                FEATURE_DEFAULTS_PATH
+            ) or dict(FEATURE_DEFAULTS)
         if not hasattr(self, "params"):
             self.params = McrsParams()
 
@@ -637,7 +694,9 @@ class MCRSModel:
                     continue
         return base
 
-    def set_region_threshold(self, region_key: str, threshold: float, persist: bool = True) -> None:
+    def set_region_threshold(
+        self, region_key: str, threshold: float, persist: bool = True
+    ) -> None:
         if not (0.0 < threshold < 1.0):
             raise ValueError("Le seuil opérationnel doit être dans ]0, 1[")
         self._region_thresholds[region_key] = float(threshold)
@@ -647,7 +706,9 @@ class MCRSModel:
                 encoding="utf-8",
             )
 
-    def set_region_thresholds(self, thresholds: dict[str, float], persist: bool = True) -> None:
+    def set_region_thresholds(
+        self, thresholds: dict[str, float], persist: bool = True
+    ) -> None:
         for key, value in thresholds.items():
             self.set_region_threshold(key, float(value), persist=False)
         if persist:
@@ -676,7 +737,7 @@ class MCRSModel:
             size=(len(scores), n),
         )
         samples = np.clip(samples, 0.0, 1.0)
-        ic_bas  = np.percentile(samples, alpha * 100, axis=1)
+        ic_bas = np.percentile(samples, alpha * 100, axis=1)
         ic_haut = np.percentile(samples, (1 - alpha) * 100, axis=1)
         return ic_bas, ic_haut
 
@@ -704,7 +765,7 @@ class MCRSModel:
         """
         eps = 1e-9
         breakpoints = np.percentile(ref_scores, np.linspace(0, 100, bins + 1))
-        breakpoints[0]  = 0.0
+        breakpoints[0] = 0.0
         breakpoints[-1] = 1.0 + eps
 
         ref_counts = np.histogram(ref_scores, bins=breakpoints)[0]
@@ -719,7 +780,9 @@ class MCRSModel:
     def calculer_psi_depuis_reference(self, cur_scores: np.ndarray) -> float:
         """PSI en comparant avec les scores de référence de l'entraînement."""
         if self._reference_scores is None:
-            raise RuntimeError("Scores de référence non disponibles (modèle non entraîné).")
+            raise RuntimeError(
+                "Scores de référence non disponibles (modèle non entraîné)."
+            )
         return self.calculer_psi(self._reference_scores, cur_scores)
 
     # ── Persistance ───────────────────────────────────────────────────────────
@@ -728,8 +791,8 @@ class MCRSModel:
         dossier = Path(dossier)
         dossier.mkdir(parents=True, exist_ok=True)
         model_path = dossier / "mcrs_model.pkl"
-        meta_path  = dossier / "mcrs_meta.json"
-        ref_path   = dossier / "reference_scores.npy"
+        meta_path = dossier / "mcrs_meta.json"
+        ref_path = dossier / "reference_scores.npy"
 
         with open(model_path, "wb") as f:
             pickle.dump(self, f, protocol=5)
@@ -738,20 +801,24 @@ class MCRSModel:
             np.save(ref_path, self._reference_scores)
 
         meta = {
-            "params":              asdict(self.params),
-            "metrics":             self.metrics_,
+            "params": asdict(self.params),
+            "metrics": self.metrics_,
             "feature_importances": self.feature_importances_,
-            "features":            ALL_FEATURES,
-            "n_crs_features":      len(CRS_FEATURES),
-            "n_rps_features":      len(RPS_FEATURES),
-            "n_csi_features":      len(CSI_FEATURES),
-            "saved_at":            datetime.utcnow().isoformat(),
-            "version":             "2.0.0",
+            "features": ALL_FEATURES,
+            "n_crs_features": len(CRS_FEATURES),
+            "n_rps_features": len(RPS_FEATURES),
+            "n_csi_features": len(CSI_FEATURES),
+            "saved_at": datetime.utcnow().isoformat(),
+            "version": "2.0.0",
         }
         with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
 
-        logger.info("Modèle MCRS sauvegardé dans %s (AUC=%.4f)", dossier, self.metrics_.get("auc_roc", 0))
+        logger.info(
+            "Modèle MCRS sauvegardé dans %s (AUC=%.4f)",
+            dossier,
+            self.metrics_.get("auc_roc", 0),
+        )
         return model_path
 
     @classmethod
@@ -774,11 +841,10 @@ class MCRSModel:
 
 # ─── Fonctions utilitaires pures (hors classe) ───────────────────────────────
 
-def _calculer_metriques(
-    y_true: np.ndarray, y_proba: np.ndarray, fold: int
-) -> dict:
+
+def _calculer_metriques(y_true: np.ndarray, y_proba: np.ndarray, fold: int) -> dict:
     """Calcule les métriques de performance d'un fold."""
-    auc  = roc_auc_score(y_true, y_proba)
+    auc = roc_auc_score(y_true, y_proba)
     gini = 2 * auc - 1
 
     # KS statistic propre via scipy.stats
@@ -793,16 +859,16 @@ def _calculer_metriques(
     y_pred = (y_proba >= seuil_optimal).astype(int)
 
     return {
-        "fold":           fold,
-        "auc_roc":        round(auc, 4),
-        "gini":           round(gini, 4),
-        "ks_statistic":   round(float(ks_stat), 4),
-        "precision":      round(precision_score(y_true, y_pred, zero_division=0), 4),
-        "recall":         round(recall_score(y_true, y_pred, zero_division=0), 4),
-        "f1_score":       round(f1_score(y_true, y_pred, zero_division=0), 4),
-        "brier_score":    round(brier_score_loss(y_true, y_proba), 4),
-        "seuil_optimal":  round(seuil_optimal, 4),
-        "taux_defaut":    round(float(y_true.mean()), 4),
+        "fold": fold,
+        "auc_roc": round(auc, 4),
+        "gini": round(gini, 4),
+        "ks_statistic": round(float(ks_stat), 4),
+        "precision": round(precision_score(y_true, y_pred, zero_division=0), 4),
+        "recall": round(recall_score(y_true, y_pred, zero_division=0), 4),
+        "f1_score": round(f1_score(y_true, y_pred, zero_division=0), 4),
+        "brier_score": round(brier_score_loss(y_true, y_proba), 4),
+        "seuil_optimal": round(seuil_optimal, 4),
+        "taux_defaut": round(float(y_true.mean()), 4),
     }
 
 
@@ -830,8 +896,12 @@ def _classifier_risque(score: float) -> str:
 
 def _priorite(score: float) -> int:
     """Priorité de traitement recouvrement : 1 (faible) → 5 (critique immédiat)."""
-    if score < 0.25: return 1
-    if score < 0.40: return 2
-    if score < 0.55: return 3
-    if score < 0.70: return 4
+    if score < 0.25:
+        return 1
+    if score < 0.40:
+        return 2
+    if score < 0.55:
+        return 3
+    if score < 0.70:
+        return 4
     return 5

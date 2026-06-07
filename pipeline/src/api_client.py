@@ -12,21 +12,20 @@ from decimal import Decimal
 from typing import Any
 
 import requests
-from requests.exceptions import ConnectionError, Timeout, RequestException
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-    before_sleep_log,
-)
-
 from config import settings
 from exceptions import (
     AuthenticationError,
     BackendAPIError,
     DuplicateAlertError,
     NetworkError,
+)
+from requests.exceptions import ConnectionError, RequestException, Timeout
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,11 +43,13 @@ class SpringAPIClient:
         self._base_url = settings.api.spring_base_url.rstrip("/")
         self._api_key = settings.api.api_key
         self._session = requests.Session()
-        self._session.headers.update({
-            "X-Internal-Api-Key": self._api_key,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        })
+        self._session.headers.update(
+            {
+                "X-Internal-Api-Key": self._api_key,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+        )
         self._timeout = (
             settings.api.connect_timeout,
             settings.api.read_timeout,

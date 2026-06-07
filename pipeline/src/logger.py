@@ -10,9 +10,8 @@ import sys
 from typing import Any
 
 import structlog
-from structlog.types import EventDict, WrappedLogger
-
 from config import settings
+from structlog.types import EventDict, WrappedLogger
 
 
 def _add_job_context(
@@ -47,7 +46,8 @@ def setup_logging(level: str = "INFO") -> None:
         renderer = structlog.dev.ConsoleRenderer()
 
     structlog.configure(
-        processors=shared_processors + [
+        processors=shared_processors
+        + [
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         wrapper_class=structlog.stdlib.BoundLogger,

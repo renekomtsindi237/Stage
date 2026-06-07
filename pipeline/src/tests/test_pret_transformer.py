@@ -16,7 +16,6 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
-
 from transformers.pret_transformer import (
     EcheanceInfo,
     PretTransformed,
@@ -28,10 +27,10 @@ from transformers.pret_transformer import (
     transform_pret,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _echeance(
     id_: int = 1,
@@ -78,6 +77,7 @@ def _raw_pret(
 # calculate_jours_retard
 # ---------------------------------------------------------------------------
 
+
 class TestCalculateJoursRetard:
 
     def test_aucune_echeance(self):
@@ -109,12 +109,22 @@ class TestCalculateJoursRetard:
     def test_premiere_echeance_impayee_retenue(self):
         """Deux échéances impayées : la date la plus ancienne est retenue."""
         ref = date.today()
-        e1 = _echeance(id_=1, numero=1,
-                       date_echeance=ref - timedelta(days=60),
-                       montant_du="50000", montant_paye="0", statut="EN_RETARD")
-        e2 = _echeance(id_=2, numero=2,
-                       date_echeance=ref - timedelta(days=30),
-                       montant_du="50000", montant_paye="0", statut="EN_RETARD")
+        e1 = _echeance(
+            id_=1,
+            numero=1,
+            date_echeance=ref - timedelta(days=60),
+            montant_du="50000",
+            montant_paye="0",
+            statut="EN_RETARD",
+        )
+        e2 = _echeance(
+            id_=2,
+            numero=2,
+            date_echeance=ref - timedelta(days=30),
+            montant_du="50000",
+            montant_paye="0",
+            statut="EN_RETARD",
+        )
         jours = calculate_jours_retard([e1, e2], date_calcul=ref)
         assert jours == 60
 
@@ -123,7 +133,7 @@ class TestCalculateJoursRetard:
         e = _echeance(
             date_echeance=ref - timedelta(days=20),
             montant_du="50000",
-            montant_paye="10000",   # partiel → en retard
+            montant_paye="10000",  # partiel → en retard
             statut="EN_ATTENTE",
         )
         jours = calculate_jours_retard([e], date_calcul=ref)
@@ -144,7 +154,7 @@ class TestCalculateJoursRetard:
     def test_date_calcul_explicit(self):
         ref = date(2025, 6, 1)
         e = _echeance(
-            date_echeance=date(2025, 4, 1),   # 61 jours avant ref
+            date_echeance=date(2025, 4, 1),  # 61 jours avant ref
             montant_du="50000",
             montant_paye="0",
             statut="EN_RETARD",
@@ -157,18 +167,22 @@ class TestCalculateJoursRetard:
 # classify_par
 # ---------------------------------------------------------------------------
 
+
 class TestClassifyPar:
 
-    @pytest.mark.parametrize("jours,expected", [
-        (0,   "NORMAL"),
-        (-5,  "NORMAL"),
-        (1,   "PAR30"),
-        (30,  "PAR30"),
-        (31,  "PAR90"),
-        (90,  "PAR90"),
-        (91,  "PAR180"),
-        (365, "PAR180"),
-    ])
+    @pytest.mark.parametrize(
+        "jours,expected",
+        [
+            (0, "NORMAL"),
+            (-5, "NORMAL"),
+            (1, "PAR30"),
+            (30, "PAR30"),
+            (31, "PAR90"),
+            (90, "PAR90"),
+            (91, "PAR180"),
+            (365, "PAR180"),
+        ],
+    )
     def test_seuils(self, jours: int, expected: str):
         assert classify_par(jours) == expected
 
@@ -176,6 +190,7 @@ class TestClassifyPar:
 # ---------------------------------------------------------------------------
 # calculate_taux_recouvrement
 # ---------------------------------------------------------------------------
+
 
 class TestCalculateTauxRecouvrement:
 
@@ -210,6 +225,7 @@ class TestCalculateTauxRecouvrement:
 # pret_requires_alerte
 # ---------------------------------------------------------------------------
 
+
 class TestPretRequiresAlerte:
 
     def test_normal_pas_alerte(self):
@@ -232,6 +248,7 @@ class TestPretRequiresAlerte:
 # ---------------------------------------------------------------------------
 # transform_pret
 # ---------------------------------------------------------------------------
+
 
 class TestTransformPret:
 
@@ -290,6 +307,7 @@ class TestTransformPret:
 # transform_batch
 # ---------------------------------------------------------------------------
 
+
 class TestTransformBatch:
 
     def test_batch_vide(self):
@@ -303,20 +321,35 @@ class TestTransformBatch:
             _raw_pret(id_pret="PRE-C"),
         ]
         echeances = {
-            "PRE-A": [_echeance(date_echeance=ref - timedelta(days=5),  statut="EN_RETARD", id_pret="PRE-A")],
-            "PRE-B": [_echeance(date_echeance=ref - timedelta(days=100), statut="EN_RETARD", id_pret="PRE-B")],
+            "PRE-A": [
+                _echeance(
+                    date_echeance=ref - timedelta(days=5),
+                    statut="EN_RETARD",
+                    id_pret="PRE-A",
+                )
+            ],
+            "PRE-B": [
+                _echeance(
+                    date_echeance=ref - timedelta(days=100),
+                    statut="EN_RETARD",
+                    id_pret="PRE-B",
+                )
+            ],
             "PRE-C": [],
         }
         results = transform_batch(prets, echeances, date_calcul=ref)
-        assert results[0].id_pret == "PRE-B"   # 100 jours
-        assert results[1].id_pret == "PRE-A"   # 5 jours
-        assert results[2].id_pret == "PRE-C"   # 0 jours
+        assert results[0].id_pret == "PRE-B"  # 100 jours
+        assert results[1].id_pret == "PRE-A"  # 5 jours
+        assert results[2].id_pret == "PRE-C"  # 0 jours
 
     def test_batch_gere_erreur_sans_arreter(self):
         """Un prêt malformé ne doit pas interrompre les autres."""
         prets = [
             _raw_pret(id_pret="PRE-OK"),
-            {"id_pret": "PRE-BAD", "montant_initial": "not-a-number"},  # lèvera une exception
+            {
+                "id_pret": "PRE-BAD",
+                "montant_initial": "not-a-number",
+            },  # lèvera une exception
         ]
         results = transform_batch(prets, {}, date_calcul=date.today())
         ids = [r.id_pret for r in results]

@@ -15,8 +15,6 @@ from typing import Generator
 import psycopg2
 import psycopg2.extensions
 import psycopg2.extras
-from psycopg2 import OperationalError, DatabaseError as Psycopg2DBError
-
 from config import settings
 from exceptions import (
     DatabaseConnectionError,
@@ -24,6 +22,8 @@ from exceptions import (
     SchemaNotFoundError,
     TransactionError,
 )
+from psycopg2 import DatabaseError as Psycopg2DBError
+from psycopg2 import OperationalError
 
 logger = logging.getLogger(__name__)
 

@@ -28,7 +28,7 @@ from exceptions import (
 )
 from extractors.collecte_extractor import extract_collectes_confirmees
 from extractors.pret_extractor import extract_all_prets_actifs
-from loaders.dw_loader import load_fact_remboursements, load_fact_collectes
+from loaders.dw_loader import load_fact_collectes, load_fact_remboursements
 from loaders.staging_loader import update_statuts_retard
 from transformers.collecte_transformer import transform_collectes
 from transformers.par_transformer import transform_prets_to_fact
@@ -81,23 +81,32 @@ def run_sync_dw_job(since_collecte_id: int = 0) -> SyncDwJobResult:
 
         facts_remb = transform_prets_to_fact(prets)
         result.facts_remb_charges = load_fact_remboursements(facts_remb)
-        logger.info("Phase 1 : %d enregistrements chargés dans fact_remboursements",
-                    result.facts_remb_charges)
+        logger.info(
+            "Phase 1 : %d enregistrements chargés dans fact_remboursements",
+            result.facts_remb_charges,
+        )
 
     except EmptyDatasetError as exc:
         logger.warning("Phase 1 : staging vide — %s", exc)
         # On continue avec les collectes
     except (SchemaNotFoundError, ExtractionError) as exc:
-        raise JobError("sync_dw", f"Phase 1 extraction échouée : {exc}", cause=exc) from exc
+        raise JobError(
+            "sync_dw", f"Phase 1 extraction échouée : {exc}", cause=exc
+        ) from exc
     except LoadingError as exc:
-        raise JobError("sync_dw", f"Phase 1 chargement échoué : {exc}", cause=exc) from exc
+        raise JobError(
+            "sync_dw", f"Phase 1 chargement échoué : {exc}", cause=exc
+        ) from exc
 
     # ── Phase 2 : Mise à jour statuts retard dans staging ────────────────────
     try:
         from extractors.pret_extractor import extract_prets_en_retard
+
         prets_retard = extract_prets_en_retard()
         result.statuts_mis_a_jour = update_statuts_retard(prets_retard)
-        logger.info("Phase 2 : %d statuts de retard mis à jour", result.statuts_mis_a_jour)
+        logger.info(
+            "Phase 2 : %d statuts de retard mis à jour", result.statuts_mis_a_jour
+        )
     except Exception as exc:
         logger.warning("Phase 2 (statuts retard) — erreur non bloquante : %s", exc)
 
@@ -105,14 +114,19 @@ def run_sync_dw_job(since_collecte_id: int = 0) -> SyncDwJobResult:
     try:
         collectes = extract_collectes_confirmees(since_id=since_collecte_id)
         result.collectes_extraites = len(collectes)
-        logger.info("Phase 3 : %d collectes extraites (since_id=%d)",
-                    result.collectes_extraites, since_collecte_id)
+        logger.info(
+            "Phase 3 : %d collectes extraites (since_id=%d)",
+            result.collectes_extraites,
+            since_collecte_id,
+        )
 
         if collectes:
             facts_col = transform_collectes(collectes)
             result.facts_col_charges = load_fact_collectes(facts_col)
-            logger.info("Phase 3 : %d enregistrements chargés dans fact_collectes",
-                        result.facts_col_charges)
+            logger.info(
+                "Phase 3 : %d enregistrements chargés dans fact_collectes",
+                result.facts_col_charges,
+            )
 
     except (SchemaNotFoundError, ExtractionError) as exc:
         logger.error("Phase 3 extraction collectes échouée : %s", exc)

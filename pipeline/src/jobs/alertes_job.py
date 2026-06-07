@@ -66,9 +66,13 @@ def run_alertes_job() -> AlertesJobResult:
     try:
         prets_en_retard = extract_prets_en_retard()
     except SchemaNotFoundError as exc:
-        raise JobError("alertes_impayes", f"Table staging manquante : {exc}", cause=exc) from exc
+        raise JobError(
+            "alertes_impayes", f"Table staging manquante : {exc}", cause=exc
+        ) from exc
     except ExtractionError as exc:
-        raise JobError("alertes_impayes", f"Extraction échouée : {exc}", cause=exc) from exc
+        raise JobError(
+            "alertes_impayes", f"Extraction échouée : {exc}", cause=exc
+        ) from exc
 
     result.total_prets_en_retard = len(prets_en_retard)
 
@@ -124,7 +128,11 @@ def run_alertes_job() -> AlertesJobResult:
 
 def _log_sync(result: AlertesJobResult, job_name: str) -> None:
     """Enregistre le résultat dans app.sync_logs."""
-    statut = "SUCCESS" if result.succes else "PARTIAL_ERROR" if result.erreurs > 0 else "SUCCESS"
+    statut = (
+        "SUCCESS"
+        if result.succes
+        else "PARTIAL_ERROR" if result.erreurs > 0 else "SUCCESS"
+    )
     details = result.message
 
     try:

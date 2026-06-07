@@ -8,7 +8,6 @@ from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from exceptions import (
     DuplicateAlertError,
     ExtractionError,
@@ -16,7 +15,7 @@ from exceptions import (
     NetworkError,
     SchemaNotFoundError,
 )
-from jobs.alertes_job import run_alertes_job, AlertesJobResult
+from jobs.alertes_job import AlertesJobResult, run_alertes_job
 
 
 class TestRunAlertesJob:
@@ -39,10 +38,18 @@ class TestRunAlertesJob:
     @patch("jobs.alertes_job._log_sync")
     def test_alerte_creee_avec_succes(self, mock_log, MockClient, mock_extract):
         mock_extract.return_value = [
-            {"id_pret": "PRE-001", "jours_retard": 45, "solde_restant": Decimal("300000")},
+            {
+                "id_pret": "PRE-001",
+                "jours_retard": 45,
+                "solde_restant": Decimal("300000"),
+            },
         ]
         mock_client = MagicMock()
-        mock_client.creer_alerte.return_value = {"id": 1, "id_pret": "PRE-001", "statut": "ACTIVE"}
+        mock_client.creer_alerte.return_value = {
+            "id": 1,
+            "id_pret": "PRE-001",
+            "statut": "ACTIVE",
+        }
         MockClient.return_value.__enter__ = MagicMock(return_value=mock_client)
         MockClient.return_value.__exit__ = MagicMock(return_value=False)
 
@@ -58,7 +65,11 @@ class TestRunAlertesJob:
     @patch("jobs.alertes_job._log_sync")
     def test_doublon_est_ignore(self, mock_log, MockClient, mock_extract):
         mock_extract.return_value = [
-            {"id_pret": "PRE-001", "jours_retard": 45, "solde_restant": Decimal("300000")},
+            {
+                "id_pret": "PRE-001",
+                "jours_retard": 45,
+                "solde_restant": Decimal("300000"),
+            },
         ]
         mock_client = MagicMock()
         mock_client.creer_alerte.side_effect = DuplicateAlertError("PRE-001")
@@ -74,10 +85,20 @@ class TestRunAlertesJob:
     @patch("jobs.alertes_job.extract_prets_en_retard")
     @patch("jobs.alertes_job.SpringAPIClient")
     @patch("jobs.alertes_job._log_sync")
-    def test_erreur_reseau_comptee_mais_job_continue(self, mock_log, MockClient, mock_extract):
+    def test_erreur_reseau_comptee_mais_job_continue(
+        self, mock_log, MockClient, mock_extract
+    ):
         mock_extract.return_value = [
-            {"id_pret": "PRE-001", "jours_retard": 45, "solde_restant": Decimal("300000")},
-            {"id_pret": "PRE-002", "jours_retard": 60, "solde_restant": Decimal("200000")},
+            {
+                "id_pret": "PRE-001",
+                "jours_retard": 45,
+                "solde_restant": Decimal("300000"),
+            },
+            {
+                "id_pret": "PRE-002",
+                "jours_retard": 60,
+                "solde_restant": Decimal("200000"),
+            },
         ]
         mock_client = MagicMock()
         # PRE-001 → erreur réseau, PRE-002 → succès
@@ -103,12 +124,17 @@ class TestRunAlertesJob:
         with pytest.raises(JobError) as exc_info:
             run_alertes_job()
 
-        assert "staging" in str(exc_info.value).lower() or "stg_prets" in str(exc_info.value).lower()
+        assert (
+            "staging" in str(exc_info.value).lower()
+            or "stg_prets" in str(exc_info.value).lower()
+        )
 
     @patch("jobs.alertes_job.extract_prets_en_retard")
     @patch("jobs.alertes_job._log_sync")
     def test_extraction_error_leve_job_error(self, mock_log, mock_extract):
-        mock_extract.side_effect = ExtractionError("staging.stg_prets", "requête échouée")
+        mock_extract.side_effect = ExtractionError(
+            "staging.stg_prets", "requête échouée"
+        )
 
         with pytest.raises(JobError):
             run_alertes_job()
@@ -118,7 +144,11 @@ class TestRunAlertesJob:
     @patch("jobs.alertes_job._log_sync")
     def test_multiple_prets_tous_crees(self, mock_log, MockClient, mock_extract):
         mock_extract.return_value = [
-            {"id_pret": f"PRE-{i:03d}", "jours_retard": 30 + i, "solde_restant": Decimal("100000")}
+            {
+                "id_pret": f"PRE-{i:03d}",
+                "jours_retard": 30 + i,
+                "solde_restant": Decimal("100000"),
+            }
             for i in range(5)
         ]
         mock_client = MagicMock()

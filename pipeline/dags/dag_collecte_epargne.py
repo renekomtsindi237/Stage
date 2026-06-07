@@ -14,28 +14,29 @@ Pipeline :
   9. notifier_agents         — push FCM aux agents concernés
  10. log_journal             — journal raw.journal_ingestions
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 from scripts.collecte_utils import (
+    calculer_kpis_collecte,
+    enrichir_avec_cycle_agent,
     sync_collectes_depuis_app,
     valider_et_dedupliquer,
-    enrichir_avec_cycle_agent,
-    calculer_kpis_collecte,
     verifier_objectifs_cycle,
 )
+from scripts.dbt_utils import dbt_run_select
+from scripts.ingestion_utils import generer_alertes_operationnelles, log_journal
 from scripts.notification_utils import (
     notifier_agents_fcm,
     notifier_responsables_sse,
 )
-from scripts.dbt_utils import dbt_run_select
-from scripts.ingestion_utils import log_journal, generer_alertes_operationnelles
 
 DEFAULT_ARGS = {
     "owner": "pipeline-imf",
@@ -48,7 +49,7 @@ DEFAULT_ARGS = {
 with DAG(
     dag_id="dag_collecte_epargne",
     description="Ingestion et KPI des collectes d'épargne terrain (temps réel)",
-    schedule_interval="0 */2 * * *",       # toutes les 2h
+    schedule_interval="0 */2 * * *",  # toutes les 2h
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -58,7 +59,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     sync_app = PythonOperator(
         task_id="sync_collectes_app",
@@ -92,7 +93,9 @@ with DAG(
     dbt_intermediate = PythonOperator(
         task_id="dbt_int_collectes",
         python_callable=dbt_run_select,
-        op_kwargs={"select": "intermediate.int_collectes_par_agent intermediate.int_collectes_par_cycle"},
+        op_kwargs={
+            "select": "intermediate.int_collectes_par_agent intermediate.int_collectes_par_cycle"
+        },
     )
 
     kpis = PythonOperator(
@@ -139,7 +142,10 @@ with DAG(
     journal = PythonOperator(
         task_id="log_journal",
         python_callable=log_journal,
-        op_kwargs={"dag_id": "dag_collecte_epargne", "table_cible": "staging.stg_collectes_epargne"},
+        op_kwargs={
+            "dag_id": "dag_collecte_epargne",
+            "table_cible": "staging.stg_collectes_epargne",
+        },
         trigger_rule=TriggerRule.ALL_DONE,
     )
 

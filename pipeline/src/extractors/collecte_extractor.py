@@ -12,14 +12,19 @@ from decimal import Decimal
 from typing import Any
 
 from config import settings
-from database import readonly_session, check_table_exists
+from database import check_table_exists, readonly_session
 from exceptions import ExtractionError, SchemaNotFoundError
 
 logger = logging.getLogger(__name__)
 
 REQUIRED_COLUMNS = {
-    "id", "id_pret", "agent_id", "montant", "canal",
-    "date_collecte", "statut",
+    "id",
+    "id_pret",
+    "agent_id",
+    "montant",
+    "canal",
+    "date_collecte",
+    "statut",
 }
 
 
@@ -73,7 +78,9 @@ def extract_collectes_confirmees(since_id: int = 0) -> list[dict[str, Any]]:
     except SchemaNotFoundError:
         raise
     except Exception as exc:
-        raise ExtractionError(source, "requête collectes échouée", details=str(exc)) from exc
+        raise ExtractionError(
+            source, "requête collectes échouée", details=str(exc)
+        ) from exc
 
     result: list[dict[str, Any]] = []
     for row in rows:
@@ -81,7 +88,11 @@ def extract_collectes_confirmees(since_id: int = 0) -> list[dict[str, Any]]:
         for col in REQUIRED_COLUMNS:
             if col not in d:
                 # Montant manquant = collecte invalide, on skip avec warning
-                logger.warning("Colonne manquante '%s' dans collecte id=%s — ignorée", col, d.get("id"))
+                logger.warning(
+                    "Colonne manquante '%s' dans collecte id=%s — ignorée",
+                    col,
+                    d.get("id"),
+                )
                 break
         else:
             d["montant"] = Decimal(str(d["montant"]))
@@ -89,6 +100,8 @@ def extract_collectes_confirmees(since_id: int = 0) -> list[dict[str, Any]]:
 
     logger.info(
         "Extrait %d collecte(s) CONFIRMEE depuis %s (since_id=%d)",
-        len(result), source, since_id,
+        len(result),
+        source,
+        since_id,
     )
     return result

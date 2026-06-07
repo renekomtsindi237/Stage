@@ -15,30 +15,31 @@ Entraînement complet du modèle MCRS avec walk-forward temporelle :
  10. sauvegarder_artefacts    — pickle + JSON params dans /ml/models/
  11. log_mlflow               — insert ml.model_runs avec toutes les métriques
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
+from scripts.ingestion_utils import log_journal
 from scripts.ml_training_utils import (
-    preparer_dataset_entrainement,
-    split_walk_forward_temporel,
-    entrainer_xgboost_mcrs,
-    valider_cross_validation,
-    calibrer_platt_scaling,
-    tracer_reliability_diagram,
     ajuster_analyse_survie_cox,
-    evaluer_shap_global,
+    calibrer_platt_scaling,
     comparer_champion_challenger,
+    enregistrer_run_mlflow,
+    entrainer_xgboost_mcrs,
+    evaluer_shap_global,
+    preparer_dataset_entrainement,
     promouvoir_challenger,
     sauvegarder_artefacts_modele,
-    enregistrer_run_mlflow,
+    split_walk_forward_temporel,
+    tracer_reliability_diagram,
+    valider_cross_validation,
 )
-from scripts.ingestion_utils import log_journal
 
 DEFAULT_ARGS = {
     "owner": "pipeline-imf",
@@ -56,7 +57,7 @@ def _brancher_promotion(**ctx):
 with DAG(
     dag_id="dag_ml_training",
     description="Entraînement hebdomadaire MCRS — walk-forward, XGBoost, Platt, Cox, SHAP",
-    schedule_interval="0 2 * * 0",         # dimanche 02h00
+    schedule_interval="0 2 * * 0",  # dimanche 02h00
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -66,12 +67,12 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     dataset = PythonOperator(
         task_id="preparer_dataset",
         python_callable=preparer_dataset_entrainement,
-        op_kwargs={"fenetre_historique_jours": 730},   # 2 ans
+        op_kwargs={"fenetre_historique_jours": 730},  # 2 ans
     )
 
     split = PythonOperator(
@@ -81,7 +82,7 @@ with DAG(
             "n_folds": 5,
             "taille_train_mois": 12,
             "taille_test_mois": 3,
-            "gap_mois": 3,   # 3 mois : évite la fuite sur créances COBAC C/D/E (horizon ≥ 90j)
+            "gap_mois": 3,  # 3 mois : évite la fuite sur créances COBAC C/D/E (horizon ≥ 90j)
         },
     )
 
@@ -90,37 +91,51 @@ with DAG(
         python_callable=entrainer_xgboost_mcrs,
         op_kwargs={
             "params": {
-                "n_estimators":       500,
-                "max_depth":          6,
-                "learning_rate":      0.05,
-                "subsample":          0.8,
-                "colsample_bytree":   0.8,
-                "scale_pos_weight":   "auto",           # déséquilibre classes
-                "objective":          "binary:logistic",
-                "eval_metric":        ["auc", "logloss"],
+                "n_estimators": 500,
+                "max_depth": 6,
+                "learning_rate": 0.05,
+                "subsample": 0.8,
+                "colsample_bytree": 0.8,
+                "scale_pos_weight": "auto",  # déséquilibre classes
+                "objective": "binary:logistic",
+                "eval_metric": ["auc", "logloss"],
                 "early_stopping_rounds": 50,
             },
             "composantes": {
                 "crs_features": [
-                    "nb_collectes_12m", "regularite_collecte_pct",
-                    "tendance_collecte_3m", "nb_cycles_manques_12m",
-                    "montant_moy_collecte", "ecart_type_collecte",
+                    "nb_collectes_12m",
+                    "regularite_collecte_pct",
+                    "tendance_collecte_3m",
+                    "nb_cycles_manques_12m",
+                    "montant_moy_collecte",
+                    "ecart_type_collecte",
                 ],
                 "rps_features": [
-                    "taux_remboursement_pct", "jours_retard_moyen",
-                    "jours_retard_max", "nb_incidents_paiement",
-                    "montant_impaye_courant", "categorie_par",
+                    "taux_remboursement_pct",
+                    "jours_retard_moyen",
+                    "jours_retard_max",
+                    "nb_incidents_paiement",
+                    "montant_impaye_courant",
+                    "categorie_par",
                     "classe_risque_cobac",
                 ],
                 "csi_features": [
-                    "revenu_mensuel_estime", "anciennete_client_jours",
-                    "ratio_collecte_credit", "capacite_remboursement",
-                    "indice_resilience", "nb_produits_vendus",
-                    "prix_produit_principal_moy", "volatilite_prix_produit",
-                    "tendance_prix_30j", "inflation_mensuelle_moy",
-                    "taux_directeur_beac", "precipitation_moy_mm",
-                    "indice_secheresse_max", "nb_evenements_negatifs",
-                    "distance_agence_km", "distance_marche_km",
+                    "revenu_mensuel_estime",
+                    "anciennete_client_jours",
+                    "ratio_collecte_credit",
+                    "capacite_remboursement",
+                    "indice_resilience",
+                    "nb_produits_vendus",
+                    "prix_produit_principal_moy",
+                    "volatilite_prix_produit",
+                    "tendance_prix_30j",
+                    "inflation_mensuelle_moy",
+                    "taux_directeur_beac",
+                    "precipitation_moy_mm",
+                    "indice_secheresse_max",
+                    "nb_evenements_negatifs",
+                    "distance_agence_km",
+                    "distance_marche_km",
                 ],
             },
             "poids_composantes": {"crs": 0.35, "rps": 0.45, "csi": 0.20},
@@ -130,7 +145,9 @@ with DAG(
     cv = PythonOperator(
         task_id="validation_croisee",
         python_callable=valider_cross_validation,
-        op_kwargs={"metriques": ["auc_roc", "gini", "ks_statistic", "brier_score", "f1"]},
+        op_kwargs={
+            "metriques": ["auc_roc", "gini", "ks_statistic", "brier_score", "f1"]
+        },
     )
 
     platt = PythonOperator(

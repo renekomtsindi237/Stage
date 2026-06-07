@@ -12,7 +12,6 @@ from decimal import Decimal
 
 import pytest
 import responses as resp_lib
-
 from api_client import SpringAPIClient
 from exceptions import (
     AuthenticationError,
@@ -20,7 +19,6 @@ from exceptions import (
     DuplicateAlertError,
     NetworkError,
 )
-
 
 BASE_URL = "http://localhost:8080"
 

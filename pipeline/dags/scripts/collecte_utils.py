@@ -8,6 +8,7 @@ Appelé par dag_collecte_epargne (toutes les 2h) pour :
 4. Calculer les KPIs (taux de réalisation, progression du cycle).
 5. Vérifier les objectifs de fin de cycle.
 """
+
 from __future__ import annotations
 
 import logging
@@ -19,10 +20,10 @@ from pipeline.src.database import db_session, readonly_session
 logger = logging.getLogger(__name__)
 
 # Seuils de validation par défaut
-_MONTANT_MIN_DEFAULT     = 500.0       # FCFA
-_MONTANT_MAX_DEFAULT     = 5_000_000.0 # FCFA
-_RAYON_GPS_MAX_DEFAULT   = 50.0        # km (zone de collecte max)
-_EARTH_RADIUS_KM         = 6_371.0
+_MONTANT_MIN_DEFAULT = 500.0  # FCFA
+_MONTANT_MAX_DEFAULT = 5_000_000.0  # FCFA
+_RAYON_GPS_MAX_DEFAULT = 50.0  # km (zone de collecte max)
+_EARTH_RADIUS_KM = 6_371.0
 
 
 def sync_collectes_depuis_app(**ctx) -> dict:
@@ -94,7 +95,7 @@ def sync_collectes_depuis_app(**ctx) -> dict:
 
     ti = ctx.get("ti")
     if ti:
-        ti.xcom_push(key="lignes_lues",     value=n_lu)
+        ti.xcom_push(key="lignes_lues", value=n_lu)
         ti.xcom_push(key="lignes_inserees", value=n_ins)
         ti.xcom_push(key="lignes_rejetees", value=n_rej)
 
@@ -104,7 +105,7 @@ def sync_collectes_depuis_app(**ctx) -> dict:
 def valider_et_dedupliquer(
     seuil_montant_min: float = _MONTANT_MIN_DEFAULT,
     seuil_montant_max: float = _MONTANT_MAX_DEFAULT,
-    rayon_gps_max_km:  float = _RAYON_GPS_MAX_DEFAULT,
+    rayon_gps_max_km: float = _RAYON_GPS_MAX_DEFAULT,
     **ctx,
 ) -> dict:
     """
@@ -157,15 +158,18 @@ def valider_et_dedupliquer(
     """
 
     n_rej_montant = 0
-    n_rej_gps     = 0
-    n_valides     = 0
+    n_rej_gps = 0
+    n_valides = 0
 
     with db_session() as cur:
-        cur.execute(sql_montant, {
-            "motif": f"Montant hors bornes [{seuil_montant_min:.0f}, {seuil_montant_max:.0f}] FCFA",
-            "min":   seuil_montant_min,
-            "max":   seuil_montant_max,
-        })
+        cur.execute(
+            sql_montant,
+            {
+                "motif": f"Montant hors bornes [{seuil_montant_min:.0f}, {seuil_montant_max:.0f}] FCFA",
+                "min": seuil_montant_min,
+                "max": seuil_montant_max,
+            },
+        )
         n_rej_montant = cur.rowcount
 
         cur.execute(sql_gps, {"rayon": rayon_gps_max_km})
@@ -176,13 +180,15 @@ def valider_et_dedupliquer(
 
     logger.info(
         "Validation collectes : valides=%d, rejetés montant=%d, rejetés GPS=%d",
-        n_valides, n_rej_montant, n_rej_gps,
+        n_valides,
+        n_rej_montant,
+        n_rej_gps,
     )
     return {
-        "valides":       n_valides,
+        "valides": n_valides,
         "rejetes_montant": n_rej_montant,
-        "rejetes_gps":     n_rej_gps,
-        "rejetes_total":   n_rej_montant + n_rej_gps,
+        "rejetes_gps": n_rej_gps,
+        "rejetes_total": n_rej_montant + n_rej_gps,
     }
 
 
@@ -331,6 +337,7 @@ def verifier_objectifs_cycle(**ctx) -> dict:
 
     logger.info(
         "Objectifs cycle : %d mis à jour, %d en retard (< 70%% à J-3)",
-        n_updated, n_retard,
+        n_updated,
+        n_retard,
     )
     return {"objectifs_mis_a_jour": n_updated, "objectifs_en_retard": n_retard}

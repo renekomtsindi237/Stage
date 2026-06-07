@@ -16,15 +16,16 @@ Démarrage
 ---------
 uvicorn pipeline.src.ml.api_service:app --host 0.0.0.0 --port 8090 --workers 2
 """
+
 from __future__ import annotations
 
+import json
 import logging
 import os
 import time
-import json
-from pathlib import Path as _Path
 from contextlib import asynccontextmanager
 from pathlib import Path
+from pathlib import Path as _Path
 from typing import Any
 
 import numpy as np
@@ -33,7 +34,14 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
-from sklearn.metrics import brier_score_loss, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import (
+    brier_score_loss,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 
 from pipeline.src.ml.mcrs_model import (
     ALL_FEATURES,
@@ -48,8 +56,12 @@ logging.basicConfig(level=logging.INFO)
 # ─── Chemins ─────────────────────────────────────────────────────────────────
 
 MODEL_DIR = Path(os.getenv("MCRS_MODEL_DIR", "/ml/models/mcrs/champion"))
-MANUAL_REVIEW_CONFIG_PATH = Path(__file__).resolve().parents[2] / "manual_review_config.json"
-HUMAN_REVIEWS_LOG = Path(__file__).resolve().parents[2] / "result" / "human_reviews.jsonl"
+MANUAL_REVIEW_CONFIG_PATH = (
+    Path(__file__).resolve().parents[2] / "manual_review_config.json"
+)
+HUMAN_REVIEWS_LOG = (
+    Path(__file__).resolve().parents[2] / "result" / "human_reviews.jsonl"
+)
 
 # ─── État global du service ───────────────────────────────────────────────────
 
@@ -65,11 +77,15 @@ def _charger_modele(dossier: Path = MODEL_DIR) -> MCRSModel:
     meta_path = dossier / "mcrs_meta.json"
     if meta_path.exists():
         import json
+
         with open(meta_path, encoding="utf-8") as f:
             _model_meta = json.load(f)
     _model = model
     _model_loaded_at = time.time()
-    logger.info("Modèle MCRS chargé (AUC=%.4f)", _model_meta.get("metrics", {}).get("auc_roc", 0))
+    logger.info(
+        "Modèle MCRS chargé (AUC=%.4f)",
+        _model_meta.get("metrics", {}).get("auc_roc", 0),
+    )
     return model
 
 
@@ -87,12 +103,16 @@ def _load_manual_review_config() -> None:
             if mode in ("critical", "always", "none"):
                 _manual_review_mode = mode
     except Exception:
-        logger.warning("Impossible de charger la configuration de revue humaine, mode par défaut utilisé")
+        logger.warning(
+            "Impossible de charger la configuration de revue humaine, mode par défaut utilisé"
+        )
 
 
 def _save_manual_review_config(mode: str) -> None:
     try:
-        MANUAL_REVIEW_CONFIG_PATH.write_text(json.dumps({"mode": mode}, ensure_ascii=False, indent=2), encoding="utf-8")
+        MANUAL_REVIEW_CONFIG_PATH.write_text(
+            json.dumps({"mode": mode}, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
     except Exception:
         logger.exception("Impossible de sauvegarder la configuration de revue humaine")
 
@@ -107,6 +127,7 @@ def _get_model() -> MCRSModel:
 
 
 # ─── Lifespan ─────────────────────────────────────────────────────────────────
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -131,23 +152,31 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],   # Spring Boot uniquement
+    allow_origins=["http://localhost:8080"],  # Spring Boot uniquement
     allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
 
 # ─── Middleware logging ───────────────────────────────────────────────────────
 
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     t0 = time.perf_counter()
     response = await call_next(request)
     ms = round((time.perf_counter() - t0) * 1000, 1)
-    logger.info("%s %s — %d — %.1f ms", request.method, request.url.path, response.status_code, ms)
+    logger.info(
+        "%s %s — %d — %.1f ms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        ms,
+    )
     return response
 
 
 # ─── Schémas de requête / réponse ────────────────────────────────────────────
+
 
 class FeatureInput(BaseModel):
     """
@@ -155,45 +184,50 @@ class FeatureInput(BaseModel):
     Toutes les features sont optionnelles — les manquantes sont imputées
     avec les médianes sectorielles (voir FEATURE_DEFAULTS dans mcrs_model.py).
     """
+
     client_id_externe: str = Field(..., description="Identifiant client côté CBS/app")
-    imf_code: str          = Field(..., description="Code IMF (multi-tenant)")
-    region_id: str | None = Field(default=None, description="Code région administratif (optionnel)")
-    region_name: str | None = Field(default=None, description="Nom de région Cameroon (optionnel)")
+    imf_code: str = Field(..., description="Code IMF (multi-tenant)")
+    region_id: str | None = Field(
+        default=None, description="Code région administratif (optionnel)"
+    )
+    region_name: str | None = Field(
+        default=None, description="Nom de région Cameroon (optionnel)"
+    )
 
     # CRS
-    nb_collectes_12m:            float | None = None
-    regularite_collecte_pct:     float | None = None
-    tendance_collecte_3m:        float | None = None
-    montant_moy_collecte:        float | None = None
-    ecart_type_collecte:         float | None = None
-    nb_cycles_manques_12m:       float | None = None
+    nb_collectes_12m: float | None = None
+    regularite_collecte_pct: float | None = None
+    tendance_collecte_3m: float | None = None
+    montant_moy_collecte: float | None = None
+    ecart_type_collecte: float | None = None
+    nb_cycles_manques_12m: float | None = None
     montant_total_collectes_12m: float | None = None
 
     # RPS
-    taux_remboursement_pct:      float | None = None
-    jours_retard_moyen:          float | None = None
-    jours_retard_max:            float | None = None
-    nb_incidents_paiement:       float | None = None
-    montant_impaye_courant:      float | None = None
-    nb_remboursements_12m:       float | None = None
-    classe_risque_cobac_encode:  float | None = None   # 0=A, 1=B, 2=C, 3=D, 4=E
+    taux_remboursement_pct: float | None = None
+    jours_retard_moyen: float | None = None
+    jours_retard_max: float | None = None
+    nb_incidents_paiement: float | None = None
+    montant_impaye_courant: float | None = None
+    nb_remboursements_12m: float | None = None
+    classe_risque_cobac_encode: float | None = None  # 0=A, 1=B, 2=C, 3=D, 4=E
 
     # CSI
-    revenu_mensuel_estime:       float | None = None
-    anciennete_client_jours:     float | None = None
-    nb_produits_actifs:          float | None = None
-    ratio_collecte_credit:       float | None = None
-    capacite_remboursement:      float | None = None
-    indice_resilience:           float | None = None
-    est_producteur:              float | None = None   # 1 = producteur/vendeur, 0 = consommateur net
-    prix_produit_principal_moy:  float | None = None
-    volatilite_prix_produit:     float | None = None
-    tendance_prix_30j:           float | None = None
-    inflation_mensuelle_moy:     float | None = None
-    taux_directeur_beac:         float | None = None
-    precipitation_moy_mm:        float | None = None
-    indice_secheresse:           float | None = None
-    nb_evenements_negatifs:      float | None = None
+    revenu_mensuel_estime: float | None = None
+    anciennete_client_jours: float | None = None
+    nb_produits_actifs: float | None = None
+    ratio_collecte_credit: float | None = None
+    capacite_remboursement: float | None = None
+    indice_resilience: float | None = None
+    est_producteur: float | None = None  # 1 = producteur/vendeur, 0 = consommateur net
+    prix_produit_principal_moy: float | None = None
+    volatilite_prix_produit: float | None = None
+    tendance_prix_30j: float | None = None
+    inflation_mensuelle_moy: float | None = None
+    taux_directeur_beac: float | None = None
+    precipitation_moy_mm: float | None = None
+    indice_secheresse: float | None = None
+    nb_evenements_negatifs: float | None = None
 
     @field_validator("regularite_collecte_pct")
     @classmethod
@@ -289,6 +323,7 @@ class ManualReviewConfig(BaseModel):
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
+
 @app.get("/model/health", tags=["Modèle"])
 def healthcheck():
     """Vérifie que le modèle est chargé et opérationnel."""
@@ -363,6 +398,7 @@ def score_batch(request: BatchScoreRequest):
     t0 = time.perf_counter()
 
     import pandas as pd
+
     rows = [c.to_dict() for c in request.clients]
     df = pd.DataFrame(rows)
 
@@ -409,7 +445,9 @@ def calculer_drift(request: DriftRequest):
         cur = np.array(request.current_scores, dtype=float)
         psi = model.calculer_psi_depuis_reference(cur)
     except RuntimeError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
 
     if psi < 0.10:
         interp = "Distribution stable — aucune action requise"
@@ -447,7 +485,9 @@ def monitoring_batch(request: MonitoringBatchRequest):
     proba = np.array(predictions, dtype=float)
     pred = (proba >= 0.5).astype(int)
 
-    def _metrics(y_true: np.ndarray, y_pred: np.ndarray, y_proba: np.ndarray) -> dict[str, float | None]:
+    def _metrics(
+        y_true: np.ndarray, y_pred: np.ndarray, y_proba: np.ndarray
+    ) -> dict[str, float | None]:
         try:
             auc = float(round(roc_auc_score(y_true, y_proba), 4))
         except Exception:
@@ -468,9 +508,13 @@ def monitoring_batch(request: MonitoringBatchRequest):
         psi = float(round(model.calculer_psi_depuis_reference(proba), 6))
         drift_detecte = psi >= 0.20
         interpretation = (
-            "Distribution stable — aucune action requise" if psi < 0.10 else
-            "Drift modéré — surveiller l'évolution" if psi < 0.20 else
-            "Drift significatif — recalibration / retraining recommandé"
+            "Distribution stable — aucune action requise"
+            if psi < 0.10
+            else (
+                "Drift modéré — surveiller l'évolution"
+                if psi < 0.20
+                else "Drift significatif — recalibration / retraining recommandé"
+            )
         )
     except Exception:
         pass
@@ -481,7 +525,9 @@ def monitoring_batch(request: MonitoringBatchRequest):
         "drift_detecte": drift_detecte,
         "interpretation": interpretation,
         "n": int(len(df)),
-        "review_rate": float(round(float(np.mean([s.revue_humaine_requise for s in scores])), 4)),
+        "review_rate": float(
+            round(float(np.mean([s.revue_humaine_requise for s in scores])), 4)
+        ),
     }
 
     if "region_name" in df.columns or "region_id" in df.columns:
@@ -489,24 +535,30 @@ def monitoring_batch(request: MonitoringBatchRequest):
         grouped = []
         for region, sub in df.groupby(region_col, dropna=False):
             idx = sub.index.to_numpy()
-            grouped.append({
-                "region": None if pd.isna(region) else str(region),
-                "n": int(len(sub)),
-                **_metrics(labels[idx], pred[idx], proba[idx]),
-            })
+            grouped.append(
+                {
+                    "region": None if pd.isna(region) else str(region),
+                    "n": int(len(sub)),
+                    **_metrics(labels[idx], pred[idx], proba[idx]),
+                }
+            )
         reports["by_region"] = grouped
 
     if "capacite_remboursement" in df.columns:
         tmp = df.copy()
-        tmp["cap_q"] = pd.qcut(tmp["capacite_remboursement"].fillna(0), q=4, duplicates="drop").astype(str)
+        tmp["cap_q"] = pd.qcut(
+            tmp["capacite_remboursement"].fillna(0), q=4, duplicates="drop"
+        ).astype(str)
         grouped = []
         for q, sub in tmp.groupby("cap_q"):
             idx = sub.index.to_numpy()
-            grouped.append({
-                "cap_group": q,
-                "n": int(len(sub)),
-                **_metrics(labels[idx], pred[idx], proba[idx]),
-            })
+            grouped.append(
+                {
+                    "cap_group": q,
+                    "n": int(len(sub)),
+                    **_metrics(labels[idx], pred[idx], proba[idx]),
+                }
+            )
         reports["by_capacite_quartile"] = grouped
 
     return {"summary": reports, "scores": scores}
@@ -519,7 +571,9 @@ def update_regional_thresholds(update: RegionalThresholdsUpdate):
     try:
         model.set_region_thresholds(update.thresholds, persist=True)
     except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
     return {"status": "ok", "thresholds": update.thresholds}
 
 
@@ -529,7 +583,9 @@ def set_manual_review_config(cfg: ManualReviewConfig):
     global _manual_review_mode
     mode = cfg.mode
     if mode not in ("critical", "always", "none"):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Mode invalide")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Mode invalide"
+        )
     _manual_review_mode = mode
     try:
         _save_manual_review_config(mode)
@@ -547,11 +603,18 @@ def submit_review(sub: ReviewSubmission):
         record["received_at"] = time.time()
         with open(HUMAN_REVIEWS_LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        logger.info("Revue humaine soumise: %s %s by %s", sub.client_id_externe, sub.imf_code, sub.reviewer_id)
+        logger.info(
+            "Revue humaine soumise: %s %s by %s",
+            sub.client_id_externe,
+            sub.imf_code,
+            sub.reviewer_id,
+        )
         return {"status": "ok"}
     except Exception as exc:
         logger.exception("Erreur en enregistrant la revue humaine")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
+        ) from exc
 
 
 @app.post("/model/reload", tags=["Modèle"])
@@ -568,6 +631,7 @@ def reload_model():
 
 
 # ─── Gestionnaire d'erreurs global ───────────────────────────────────────────
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

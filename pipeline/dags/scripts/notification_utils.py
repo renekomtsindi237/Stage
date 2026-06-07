@@ -4,6 +4,7 @@ notification_utils.py — Notifications FCM, SSE et e-mail depuis les DAGs.
 Appelé par dag_collecte_epargne et dag_recouvrement après chaque traitement
 pour informer les agents, responsables et directeurs des événements métier.
 """
+
 from __future__ import annotations
 
 import logging
@@ -22,24 +23,27 @@ logger = logging.getLogger(__name__)
 # Variables d'environnement (lues depuis settings ou env)
 import os
 
-FCM_SERVER_KEY   = os.getenv("FCM_SERVER_KEY", "")
-FCM_URL          = "https://fcm.googleapis.com/fcm/send"
-SSE_ENDPOINT     = os.getenv("SSE_PUSH_URL", f"{settings.api.spring_base_url}/internal/sse/push")
-SMTP_HOST        = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT        = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER        = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD    = os.getenv("SMTP_PASSWORD", "")
-EMAIL_FROM       = os.getenv("EMAIL_FROM", "noreply@imf-pipeline.cm")
+FCM_SERVER_KEY = os.getenv("FCM_SERVER_KEY", "")
+FCM_URL = "https://fcm.googleapis.com/fcm/send"
+SSE_ENDPOINT = os.getenv(
+    "SSE_PUSH_URL", f"{settings.api.spring_base_url}/internal/sse/push"
+)
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@imf-pipeline.cm")
 
 ROLES_DESTINATAIRES = {
-    "AGENT":                  "agents",
+    "AGENT": "agents",
     "RESPONSABLE_RECOUVREMENT": "responsables",
-    "DIRECTEUR":              "directeurs",
-    "ANALYSTE":               "analystes",
+    "DIRECTEUR": "directeurs",
+    "ANALYSTE": "analystes",
 }
 
 
 # ─── FCM (push mobile Flutter) ───────────────────────────────────────────────
+
 
 def notifier_agents_fcm(type_notif: str, **ctx) -> int:
     """
@@ -96,6 +100,7 @@ def notifier_directeurs_fcm(type_notif: str, **ctx) -> int:
 
 # ─── E-mail ───────────────────────────────────────────────────────────────────
 
+
 def envoyer_email_resume_quotidien(
     destinataires_role: str | list[str] = "DIRECTEUR",
     **ctx,
@@ -106,7 +111,11 @@ def envoyer_email_resume_quotidien(
     Construit le corps HTML depuis les KPIs du jour en base et le transmet
     via SMTP (TLS). Retourne le nombre d'e-mails envoyés.
     """
-    roles = [destinataires_role] if isinstance(destinataires_role, str) else destinataires_role
+    roles = (
+        [destinataires_role]
+        if isinstance(destinataires_role, str)
+        else destinataires_role
+    )
     destinataires: list[str] = []
     for role in roles:
         destinataires.extend(_recuperer_emails(role=role))
@@ -117,8 +126,8 @@ def envoyer_email_resume_quotidien(
         return 0
 
     kpis = _charger_kpis_journaliers()
-    html  = _construire_html_resume(kpis)
-    _date = kpis.get('date', "aujourd'hui")
+    html = _construire_html_resume(kpis)
+    _date = kpis.get("date", "aujourd'hui")
     sujet = f"Résumé pipeline IMF — {_date}"
 
     n_ok = 0
@@ -134,6 +143,7 @@ def envoyer_email_resume_quotidien(
 
 
 # ─── Helpers privés ───────────────────────────────────────────────────────────
+
 
 def _recuperer_tokens_fcm(role: str) -> list[str]:
     """Retourne les tokens FCM des utilisateurs actifs du rôle donné."""
@@ -290,12 +300,12 @@ def _charger_kpis_journaliers() -> dict:
 
 
 def _construire_html_resume(kpis: dict) -> str:
-    date_str    = str(kpis.get("date", "N/A"))
-    encours     = kpis.get("encours_total") or 0
-    par90       = (kpis.get("par90_moyen") or 0) * 100
-    recouvre    = kpis.get("recouvre_30j") or 0
-    n_agences   = kpis.get("n_agences", 0)
-    runs        = kpis.get("journal_runs") or []
+    date_str = str(kpis.get("date", "N/A"))
+    encours = kpis.get("encours_total") or 0
+    par90 = (kpis.get("par90_moyen") or 0) * 100
+    recouvre = kpis.get("recouvre_30j") or 0
+    n_agences = kpis.get("n_agences", 0)
+    runs = kpis.get("journal_runs") or []
 
     runs_html = "".join(
         f"<tr><td>{r.get('dag_id','')}</td>"
@@ -333,8 +343,8 @@ def _envoyer_email_smtp(to: str, sujet: str, html: str) -> None:
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = sujet
-    msg["From"]    = EMAIL_FROM
-    msg["To"]      = to
+    msg["From"] = EMAIL_FROM
+    msg["To"] = to
     msg.attach(MIMEText(html, "html", "utf-8"))
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:

@@ -14,6 +14,7 @@ Tâches :
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta
 
 from airflow import DAG
@@ -21,21 +22,20 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.dates import days_ago
 
-import logging
-
 log = logging.getLogger(__name__)
 
 POSTGRES_CONN = "imf_pipeline_db"
 
 DEFAULT_ARGS = {
-    "owner":            "imf-pipeline",
-    "retries":          2,
-    "retry_delay":      timedelta(minutes=5),
+    "owner": "imf-pipeline",
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
     "email_on_failure": False,
 }
 
 
 # ─── Tâches ──────────────────────────────────────────────────────────────────
+
 
 def valider_nouvelles_collectes(**ctx) -> dict:
     """
@@ -44,9 +44,9 @@ def valider_nouvelles_collectes(**ctx) -> dict:
     - Marque CONFIRMEE les collectes valides
     - Marque DOUBLON les doublons détectés
     """
-    pg   = PostgresHook(postgres_conn_id=POSTGRES_CONN)
+    pg = PostgresHook(postgres_conn_id=POSTGRES_CONN)
     conn = pg.get_conn()
-    cur  = conn.cursor()
+    cur = conn.cursor()
 
     # Doublons : même id_collecte_mobile, statut déjà CONFIRMEE
     cur.execute("""
@@ -76,7 +76,9 @@ def valider_nouvelles_collectes(**ctx) -> dict:
     cur.close()
     conn.close()
 
-    log.info("Validation collectes : %d confirmées, %d doublons", n_confirmees, n_doublons)
+    log.info(
+        "Validation collectes : %d confirmées, %d doublons", n_confirmees, n_doublons
+    )
     return {"confirmees": n_confirmees, "doublons": n_doublons}
 
 
@@ -85,12 +87,13 @@ def calculer_kpi_collecte(**ctx) -> None:
     Calcule et insère (ou met à jour) les KPI collectes dans app.kpi_collecte_snapshots.
     Calculés par IMF, agence, agent et jour courant.
     """
-    date_j = ctx["ds"]   # YYYY-MM-DD
-    pg     = PostgresHook(postgres_conn_id=POSTGRES_CONN)
-    conn   = pg.get_conn()
-    cur    = conn.cursor()
+    date_j = ctx["ds"]  # YYYY-MM-DD
+    pg = PostgresHook(postgres_conn_id=POSTGRES_CONN)
+    conn = pg.get_conn()
+    cur = conn.cursor()
 
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO app.kpi_collecte_snapshots
             (imf_id, agence_id, agent_id, date_snapshot,
              montant_total_jour, nb_collectes_jour,
@@ -122,7 +125,9 @@ def calculer_kpi_collecte(**ctx) -> None:
             montant_mobile_money = EXCLUDED.montant_mobile_money,
             montant_virement   = EXCLUDED.montant_virement,
             nb_agents_actifs   = EXCLUDED.nb_agents_actifs
-    """, {"date_j": date_j})
+    """,
+        {"date_j": date_j},
+    )
 
     conn.commit()
     cur.close()
@@ -136,9 +141,9 @@ def alerter_objectifs_non_atteints(**ctx) -> None:
     configuré (défaut 70%) à J-3 de la fin de cycle (EF-C06).
     Insère une alerte dans app.alertes_impayes.
     """
-    pg   = PostgresHook(postgres_conn_id=POSTGRES_CONN)
+    pg = PostgresHook(postgres_conn_id=POSTGRES_CONN)
     conn = pg.get_conn()
-    cur  = conn.cursor()
+    cur = conn.cursor()
 
     cur.execute("""
         INSERT INTO app.alertes_impayes

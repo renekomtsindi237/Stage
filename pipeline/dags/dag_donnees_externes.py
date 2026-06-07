@@ -15,28 +15,29 @@ Collecte tous les facteurs externes nécessaires aux features ML MCRS :
  10. maj_app_tables            — upsert app.prix_produits + app.facteurs_macro + app.donnees_meteo
  11. log_journal
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
+from scripts.dbt_utils import dbt_run_select
 from scripts.donnees_externes_utils import (
-    fetch_prix_marche_agents_terrain,
-    fetch_prix_mincommerce,
+    fetch_evenements_calendrier,
     fetch_indicateurs_beac,
     fetch_indicateurs_ins_cameroun,
     fetch_meteo_open_meteo,
-    fetch_evenements_calendrier,
-    mapper_produits_generiques,
-    maj_app_prix_produits,
-    maj_app_facteurs_macro,
+    fetch_prix_marche_agents_terrain,
+    fetch_prix_mincommerce,
     maj_app_donnees_meteo,
+    maj_app_facteurs_macro,
+    maj_app_prix_produits,
+    mapper_produits_generiques,
 )
-from scripts.dbt_utils import dbt_run_select
 from scripts.ingestion_utils import log_journal
 
 DEFAULT_ARGS = {
@@ -49,7 +50,7 @@ DEFAULT_ARGS = {
 with DAG(
     dag_id="dag_donnees_externes",
     description="Collecte quotidienne données externes — prix produits, macro, météo, événements",
-    schedule_interval="0 4 * * *",         # 04h00 avant le scoring ML
+    schedule_interval="0 4 * * *",  # 04h00 avant le scoring ML
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -59,7 +60,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     # ── Fetch parallèle des sources ─────────────────────────────────────────
     prix_terrain = PythonOperator(
@@ -74,8 +75,16 @@ with DAG(
         op_kwargs={
             "url_base": "https://www.mincommerce.cm",
             "produits_suivis": [
-                "MAIS","MANIOC","PLANTAIN","ARACHIDE","TOMATE",
-                "HUILE_P","POISSON_S","POULET","CACAO","CAFE_R"
+                "MAIS",
+                "MANIOC",
+                "PLANTAIN",
+                "ARACHIDE",
+                "TOMATE",
+                "HUILE_P",
+                "POISSON_S",
+                "POULET",
+                "CACAO",
+                "CAFE_R",
             ],
         },
         doc="Scraping prix officiels MINCOMMERCE Cameroun",
@@ -111,20 +120,22 @@ with DAG(
         python_callable=fetch_meteo_open_meteo,
         op_kwargs={
             "zones": {
-                "YAOUNDE":      {"lat": 3.848,  "lon": 11.502},
-                "DOUALA":       {"lat": 4.050,  "lon": 9.700},
-                "GAROUA":       {"lat": 9.301,  "lon": 13.398},
-                "BAFOUSSAM":    {"lat": 5.479,  "lon": 10.418},
-                "BERTOUA":      {"lat": 4.578,  "lon": 13.685},
-                "MAROUA":       {"lat": 10.591, "lon": 14.317},
-                "EBOLOWA":      {"lat": 2.900,  "lon": 11.150},
-                "BAMENDA":      {"lat": 5.961,  "lon": 10.146},
-                "NGAOUNDERE":   {"lat": 7.328,  "lon": 13.584},
-                "BUEA":         {"lat": 4.154,  "lon": 9.243},
+                "YAOUNDE": {"lat": 3.848, "lon": 11.502},
+                "DOUALA": {"lat": 4.050, "lon": 9.700},
+                "GAROUA": {"lat": 9.301, "lon": 13.398},
+                "BAFOUSSAM": {"lat": 5.479, "lon": 10.418},
+                "BERTOUA": {"lat": 4.578, "lon": 13.685},
+                "MAROUA": {"lat": 10.591, "lon": 14.317},
+                "EBOLOWA": {"lat": 2.900, "lon": 11.150},
+                "BAMENDA": {"lat": 5.961, "lon": 10.146},
+                "NGAOUNDERE": {"lat": 7.328, "lon": 13.584},
+                "BUEA": {"lat": 4.154, "lon": 9.243},
             },
             "variables": [
-                "temperature_2m_min", "temperature_2m_max",
-                "precipitation_sum", "relative_humidity_2m_mean",
+                "temperature_2m_min",
+                "temperature_2m_max",
+                "precipitation_sum",
+                "relative_humidity_2m_mean",
             ],
         },
     )
@@ -187,7 +198,10 @@ with DAG(
     journal = PythonOperator(
         task_id="log_journal",
         python_callable=log_journal,
-        op_kwargs={"dag_id": "dag_donnees_externes", "table_cible": "staging.stg_prix_produits"},
+        op_kwargs={
+            "dag_id": "dag_donnees_externes",
+            "table_cible": "staging.stg_prix_produits",
+        },
         trigger_rule=TriggerRule.ALL_DONE,
     )
 

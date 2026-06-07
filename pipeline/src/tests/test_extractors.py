@@ -5,23 +5,22 @@ test_extractors.py — Tests des extracteurs (mocking de la base de données).
 from __future__ import annotations
 
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 from exceptions import (
     ColumnMissingError,
     EmptyDatasetError,
     ExtractionError,
     SchemaNotFoundError,
 )
-from extractors.pret_extractor import (
-    extract_prets_en_retard,
-    extract_all_prets_actifs,
-    _validate_row,
-    REQUIRED_COLUMNS,
-)
 from extractors.collecte_extractor import extract_collectes_confirmees
+from extractors.pret_extractor import (
+    REQUIRED_COLUMNS,
+    _validate_row,
+    extract_all_prets_actifs,
+    extract_prets_en_retard,
+)
 
 
 def _sample_pret_row(id_pret: str = "PRE-001", jours_retard: int = 45) -> dict:
@@ -43,6 +42,7 @@ def _sample_pret_row(id_pret: str = "PRE-001", jours_retard: int = 45) -> dict:
 
 # ── Tests _validate_row ───────────────────────────────────────────────────────
 
+
 class TestValidateRow:
 
     def test_row_complet_valide(self):
@@ -63,6 +63,7 @@ class TestValidateRow:
 
 
 # ── Tests extract_prets_en_retard ─────────────────────────────────────────────
+
 
 class TestExtractPretsEnRetard:
 
@@ -109,6 +110,7 @@ class TestExtractPretsEnRetard:
 
 # ── Tests extract_all_prets_actifs ────────────────────────────────────────────
 
+
 class TestExtractAllPretsActifs:
 
     @patch("extractors.pret_extractor.check_table_exists", return_value=True)
@@ -137,6 +139,7 @@ class TestExtractAllPretsActifs:
 
 # ── Tests extract_collectes_confirmees ────────────────────────────────────────
 
+
 class TestExtractCollectesConfirmees:
 
     @patch("extractors.collecte_extractor.check_table_exists", return_value=False)
@@ -150,10 +153,17 @@ class TestExtractCollectesConfirmees:
         mock_cur = MagicMock()
         mock_cur.fetchall.return_value = [
             {
-                "id": 1, "id_pret": "PRE-001", "agent_id": 1, "nom_agent": "ag01",
-                "montant": Decimal("50000"), "canal": "ESPECES",
-                "latitude": None, "longitude": None,
-                "date_collecte": "2024-03-01", "statut": "CONFIRMEE", "created_at": "2024-03-01",
+                "id": 1,
+                "id_pret": "PRE-001",
+                "agent_id": 1,
+                "nom_agent": "ag01",
+                "montant": Decimal("50000"),
+                "canal": "ESPECES",
+                "latitude": None,
+                "longitude": None,
+                "date_collecte": "2024-03-01",
+                "statut": "CONFIRMEE",
+                "created_at": "2024-03-01",
             }
         ]
         mock_session.return_value.__enter__ = MagicMock(return_value=mock_cur)

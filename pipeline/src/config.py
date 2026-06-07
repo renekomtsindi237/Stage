@@ -5,10 +5,9 @@ Toutes les variables sont lues depuis l'environnement (ou .env en dev).
 
 from __future__ import annotations
 
+from exceptions import ConfigurationError
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-from exceptions import ConfigurationError
 
 
 class DatabaseSettings(BaseSettings):
@@ -51,7 +50,9 @@ class DatabaseSettings(BaseSettings):
 class APISettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="", extra="ignore")
 
-    spring_base_url: str = Field(default="http://localhost:8080", alias="SPRING_BASE_URL")
+    spring_base_url: str = Field(
+        default="http://localhost:8080", alias="SPRING_BASE_URL"
+    )
     api_key: str = Field(default="changeme_internal_api_key", alias="SPRING_API_KEY")
 
     # Timeouts en secondes
@@ -111,23 +112,23 @@ class MLSettings(BaseSettings):
     poids_csi: float = Field(default=0.20, alias="MCRS_POIDS_CSI")
 
     # Seuils de risque
-    seuil_risque_modere:  float = Field(default=0.30, alias="MCRS_SEUIL_MODERE")
-    seuil_risque_eleve:   float = Field(default=0.55, alias="MCRS_SEUIL_ELEVE")
+    seuil_risque_modere: float = Field(default=0.30, alias="MCRS_SEUIL_MODERE")
+    seuil_risque_eleve: float = Field(default=0.55, alias="MCRS_SEUIL_ELEVE")
     seuil_risque_critique: float = Field(default=0.75, alias="MCRS_SEUIL_CRITIQUE")
 
     # Détection drift PSI
     psi_threshold: float = Field(default=0.20, alias="MCRS_PSI_THRESHOLD")
     psi_fenetre_reference_jours: int = Field(default=90, alias="MCRS_PSI_FENETRE_REF")
-    psi_fenetre_courante_jours:  int = Field(default=7,  alias="MCRS_PSI_FENETRE_CUR")
+    psi_fenetre_courante_jours: int = Field(default=7, alias="MCRS_PSI_FENETRE_CUR")
 
     # Entraînement
     fenetre_historique_jours: int = Field(default=730, alias="MCRS_HISTORIQUE_JOURS")
-    n_folds_cv:    int   = Field(default=5,    alias="MCRS_N_FOLDS")
+    n_folds_cv: int = Field(default=5, alias="MCRS_N_FOLDS")
     seuil_promo_auc: float = Field(default=0.005, alias="MCRS_SEUIL_PROMO_AUC")
 
     # Intervalles de confiance (bootstrap)
-    ic_n_bootstrap: int   = Field(default=200,  alias="MCRS_IC_BOOTSTRAP")
-    ic_niveau:      float = Field(default=0.90,  alias="MCRS_IC_NIVEAU")
+    ic_n_bootstrap: int = Field(default=200, alias="MCRS_IC_BOOTSTRAP")
+    ic_niveau: float = Field(default=0.90, alias="MCRS_IC_NIVEAU")
 
     # URL du service FastAPI ML (appelé par Airflow et Spring Boot)
     api_url: str = Field(default="http://ml-api:8090", alias="MCRS_API_URL")
@@ -136,11 +137,13 @@ class MLSettings(BaseSettings):
     @property
     def champion_dir(self) -> str:
         import os
+
         return os.path.join(self.model_dir, self.champion_subdir)
 
     @property
     def challenger_dir(self) -> str:
         import os
+
         return os.path.join(self.model_dir, self.challenger_subdir)
 
     model_config = SettingsConfigDict(

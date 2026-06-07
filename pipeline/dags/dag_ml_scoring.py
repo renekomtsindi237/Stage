@@ -16,27 +16,31 @@ Pipeline MCRS (Multi-Criteria Recovery Scoring) :
 
 Retrain séparé (hebdomadaire) : dag_ml_training
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.utils.trigger_rule import TriggerRule
 
+from scripts.dbt_utils import dbt_run_select
+from scripts.ingestion_utils import log_journal
+from scripts.ml_alertes_utils import generer_alertes_predictives
 from scripts.ml_scoring_utils import (
-    charger_modele_actif,
-    scorer_clients_batch,
     calculer_shap_values,
+    charger_modele_actif,
     detecter_drift_psi_segmente,
     maj_priorites_dossiers_recouvrement,
+    scorer_clients_batch,
 )
-from scripts.ml_alertes_utils import generer_alertes_predictives
-from scripts.dbt_utils import dbt_run_select
-from scripts.notification_utils import notifier_responsables_sse, notifier_directeurs_fcm
-from scripts.ingestion_utils import log_journal
+from scripts.notification_utils import (
+    notifier_directeurs_fcm,
+    notifier_responsables_sse,
+)
 
 DEFAULT_ARGS = {
     "owner": "pipeline-imf",
@@ -54,7 +58,7 @@ def _brancher_retrain(**ctx):
 with DAG(
     dag_id="dag_ml_scoring",
     description="Scoring MCRS quotidien — CRS+RPS+CSI, SHAP, alertes prédictives, drift",
-    schedule_interval="30 7 * * *",        # 07h30
+    schedule_interval="30 7 * * *",  # 07h30
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -64,7 +68,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     feat_comportemental = PythonOperator(
         task_id="feat_comportemental",

@@ -5,6 +5,7 @@ Fonctions partagées par tous les DAGs pour :
 - Écrire dans raw.journal_ingestions le bilan d'exécution.
 - Générer des alertes dans app.alertes_operationnelles.
 """
+
 from __future__ import annotations
 
 import logging
@@ -48,7 +49,7 @@ def log_journal(
     if ti:
         try:
             start = ti.start_date
-            end   = ti.end_date or datetime.now(timezone.utc)
+            end = ti.end_date or datetime.now(timezone.utc)
             duree_ms = int((end - start).total_seconds() * 1000)
         except Exception:
             pass
@@ -66,18 +67,26 @@ def log_journal(
     """
     try:
         with db_session() as cur:
-            cur.execute(sql, {
-                "dag_id":          dag_id,
-                "run_id":          run_id,
-                "table_cible":     table_cible,
-                "statut":          statut,
-                "lignes_lues":     lignes_lues,
-                "lignes_valides":  lignes_valides,
-                "lignes_rejetees": lignes_rejetees,
-                "duree_ms":        duree_ms,
-                "message":         message[:500],
-            })
-        logger.info("Journal [%s] écrit : %s — %d lignes valides", dag_id, statut, lignes_valides)
+            cur.execute(
+                sql,
+                {
+                    "dag_id": dag_id,
+                    "run_id": run_id,
+                    "table_cible": table_cible,
+                    "statut": statut,
+                    "lignes_lues": lignes_lues,
+                    "lignes_valides": lignes_valides,
+                    "lignes_rejetees": lignes_rejetees,
+                    "duree_ms": duree_ms,
+                    "message": message[:500],
+                },
+            )
+        logger.info(
+            "Journal [%s] écrit : %s — %d lignes valides",
+            dag_id,
+            statut,
+            lignes_valides,
+        )
     except Exception as exc:
         logger.error("Échec écriture journal pour DAG %s : %s", dag_id, exc)
 
@@ -134,15 +143,18 @@ def _inserer_alerte(
         ON CONFLICT DO NOTHING
     """
     with db_session() as cur:
-        cur.execute(sql, {
-            "imf_id":      imf_id,
-            "agence_id":   agence_id,
-            "type_alerte": type_alerte,
-            "message":     message[:500],
-            "niveau":      niveau,
-            "entite_id":   entite_id,
-            "entite_type": entite_type,
-        })
+        cur.execute(
+            sql,
+            {
+                "imf_id": imf_id,
+                "agence_id": agence_id,
+                "type_alerte": type_alerte,
+                "message": message[:500],
+                "niveau": niveau,
+                "entite_id": entite_id,
+                "entite_type": entite_type,
+            },
+        )
 
 
 def _alerte_par_depasse(seuil_pct: float) -> int:

@@ -17,33 +17,34 @@ Pipeline :
  12. notifier_directeurs      — push FCM + SSE DIRECTEUR / RESPONSABLE
  13. log_journal
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
-from scripts.recouvrement_utils import (
-    ingerer_export_cbs,
-    valider_donnees_cbs,
-    calculer_par_et_provisions,
-    synchroniser_creances_app,
-    creer_dossiers_automatiques,
-    prioriser_dossiers_par_score,
-    verifier_promesses_echeues,
-    calculer_kpis_recouvrement,
-    calculer_benchmarks_agences,
-)
+from scripts.dbt_utils import dbt_run_select
+from scripts.ingestion_utils import generer_alertes_operationnelles, log_journal
 from scripts.notification_utils import (
+    envoyer_email_resume_quotidien,
     notifier_directeurs_fcm,
     notifier_responsables_sse,
-    envoyer_email_resume_quotidien,
 )
-from scripts.dbt_utils import dbt_run_select
-from scripts.ingestion_utils import log_journal, generer_alertes_operationnelles
+from scripts.recouvrement_utils import (
+    calculer_benchmarks_agences,
+    calculer_kpis_recouvrement,
+    calculer_par_et_provisions,
+    creer_dossiers_automatiques,
+    ingerer_export_cbs,
+    prioriser_dossiers_par_score,
+    synchroniser_creances_app,
+    valider_donnees_cbs,
+    verifier_promesses_echeues,
+)
 
 DEFAULT_ARGS = {
     "owner": "pipeline-imf",
@@ -55,7 +56,7 @@ DEFAULT_ARGS = {
 with DAG(
     dag_id="dag_recouvrement",
     description="Pipeline quotidien recouvrement créances — CBS, PAR, provisions COBAC, benchmarks",
-    schedule_interval="0 6 * * *",         # 06h00 chaque jour
+    schedule_interval="0 6 * * *",  # 06h00 chaque jour
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -65,7 +66,7 @@ with DAG(
 ) as dag:
 
     debut = EmptyOperator(task_id="debut")
-    fin   = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
+    fin = EmptyOperator(task_id="fin", trigger_rule=TriggerRule.ALL_DONE)
 
     ingerer_cbs = PythonOperator(
         task_id="ingerer_export_cbs",
@@ -91,10 +92,10 @@ with DAG(
         python_callable=calculer_par_et_provisions,
         op_kwargs={
             "seuils_cobac": {
-                "B": {"jours_min": 30,  "jours_max": 89,  "taux": 20},
-                "C": {"jours_min": 90,  "jours_max": 179, "taux": 50},
+                "B": {"jours_min": 30, "jours_max": 89, "taux": 20},
+                "C": {"jours_min": 90, "jours_max": 179, "taux": 50},
                 "D": {"jours_min": 180, "jours_max": 359, "taux": 80},
-                "E": {"jours_min": 360, "jours_max": None,"taux": 100},
+                "E": {"jours_min": 360, "jours_max": None, "taux": 100},
             }
         },
         doc="Calcule PAR30/60/90/180, classe COBAC A-E et montant provision réglementaire",
@@ -141,7 +142,11 @@ with DAG(
         task_id="alertes_par",
         python_callable=generer_alertes_operationnelles,
         op_kwargs={
-            "types": ["PAR_SEUIL_DEPASSE", "PROVISION_INSUFFISANTE", "DOSSIER_SANS_ACTION"],
+            "types": [
+                "PAR_SEUIL_DEPASSE",
+                "PROVISION_INSUFFISANTE",
+                "DOSSIER_SANS_ACTION",
+            ],
             "seuil_par90_pct": 5.0,
         },
     )
