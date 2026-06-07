@@ -28,7 +28,9 @@ class AgentControllerTest {
     @Autowired MockMvc mockMvc;
     @MockBean IAgentService agentService;
 
-    private static final AgentResponse AGENT = new AgentResponse("AG001", "Amadou Diallo", "ANC01", "Agence Nord");
+    private static final AgentResponse AGENT = new AgentResponse(
+            "AG001", null, "Amadou Diallo", "ANC01", "Agence Nord",
+            null, null, null, null, null, false, false, null);
 
     @Test
     @WithMockUser(roles = "ANALYSTE")
