@@ -1,15 +1,19 @@
 .app-navbar {
   height: 68px;
-  background: #FFFFFF;  // Fond blanc
+  background: #ffffff; // Fond blanc
   backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid #E5E7EB;  // Bordure grise claire
+  border-bottom: 1px solid #e5e7eb; // Bordure grise claire
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   z-index: 100;
-  box-shadow: 0 1px 0 #E5E7EB, 0 2px 8px rgba(0, 0, 0, 0.04);  // Ombre douce
-  transition: background 0.3s ease, border-color 0.3s ease;
+  box-shadow:
+    0 1px 0 #e5e7eb,
+    0 2px 8px rgba(0, 0, 0, 0.04); // Ombre douce
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease;
 }
 
 // ── Gauche ──────────────────────────────────────────────────────
@@ -21,29 +25,33 @@
 }
 
 .menu-toggle {
-  color: #6B7280;  // Gris moyen
+  color: #6b7280; // Gris moyen
   transition: color 0.2s;
-  &:hover { color: #0066FF; }  // Bleu Blucash
-  @media (min-width: 951px) { display: none; }
+  &:hover {
+    color: #0066ff;
+  } // Bleu Blucash
+  @media (min-width: 951px) {
+    display: none;
+  }
 }
 
 // ── Barre de recherche Blucash ───────────────────────────────────
 .search-bar {
   display: flex;
   align-items: center;
-  background: #F9FAFB;
+  background: #f9fafb;
   border-radius: 100px;
   padding: 9px 20px;
   width: 100%;
   max-width: 520px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   transition: all 0.25s ease;
 
   mat-icon {
     font-size: 17px;
     width: 17px;
     height: 17px;
-    color: #9CA3AF;  // Gris moyen
+    color: #9ca3af; // Gris moyen
   }
 
   input {
@@ -51,25 +59,31 @@
     background: transparent;
     padding-left: 10px;
     font-size: 0.84rem;
-    color: #1A1A1A;  // Texte sombre
+    color: #1a1a1a; // Texte sombre
     width: 100%;
     outline: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
 
-    &::placeholder { color: #9CA3AF; }  // Gris moyen
+    &::placeholder {
+      color: #9ca3af;
+    } // Gris moyen
   }
 
   &:focus-within {
-    background: #FFFFFF;  // Fond blanc
-    border-color: #0066FF;  // Bleu Blucash
+    background: #ffffff; // Fond blanc
+    border-color: #0066ff; // Bleu Blucash
     box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
-    
+
     mat-icon {
-      color: #0066FF;  // Bleu Blucash
+      color: #0066ff; // Bleu Blucash
     }
   }
 
-  @media (max-width: 768px) { display: none; }
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 // ── Droite ──────────────────────────────────────────────────────
@@ -80,22 +94,22 @@
 }
 
 .nav-icon-btn {
-  color: #6B7280;  // Gris moyen
+  color: #6b7280; // Gris moyen
   transition: all 0.2s;
   border-radius: 50% !important;
   width: 38px !important;
   height: 38px !important;
 
   &:hover {
-    color: #0066FF;  // Bleu Blucash
-    background: #E6F0FF !important;  // Bleu Blucash très pâle
+    color: #0066ff; // Bleu Blucash
+    background: #e6f0ff !important; // Bleu Blucash très pâle
   }
 }
 
 .nav-divider {
   width: 1px;
   height: 22px;
-  background: #E5E7EB;  // Bordure grise claire
+  background: #e5e7eb; // Bordure grise claire
   margin: 0 4px;
 }
 
@@ -126,12 +140,19 @@
     white-space: nowrap;
   }
 
-  @media (max-width: 640px) { display: none; }
+  @media (max-width: 640px) {
+    display: none;
+  }
 }
 
 @keyframes pulse-online {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25); }
-  50%       { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+  }
 }
 
 // ── Utilisateur pill ─────────────────────────────────────────────
@@ -141,14 +162,14 @@
   gap: 10px;
   padding: 6px 14px;
   border-radius: 100px;
-  background: #F9FAFB;  // Gris très clair
-  border: 1px solid #E5E7EB;  // Bordure grise claire
+  background: #f9fafb; // Gris très clair
+  border: 1px solid #e5e7eb; // Bordure grise claire
   transition: all 0.22s ease;
   cursor: pointer;
 
   &:hover {
-    background: #E6F0FF;  // Bleu Blucash très pâle
-    border-color: #0066FF;  // Bleu Blucash
+    background: #e6f0ff; // Bleu Blucash très pâle
+    border-color: #0066ff; // Bleu Blucash
     box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
   }
 }
@@ -159,30 +180,32 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0066FF, #3385FF);  // Gradient Blucash
+  background: linear-gradient(135deg, #0066ff, #3385ff); // Gradient Blucash
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 0.88rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25);
   transition: all 0.3s ease;
   overflow: hidden;
   cursor: pointer;
 
   &.user-avatar-wrap--super {
-    background: linear-gradient(135deg, #FF9500, #FFB020);  // Orange Blucash
+    background: linear-gradient(135deg, #ff9500, #ffb020); // Orange Blucash
     box-shadow: 0 2px 8px rgba(255, 149, 0, 0.35);
   }
 
   &:hover {
     transform: scale(1.07);
-    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.40);
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
 
     &.user-avatar-wrap--super {
-      box-shadow: 0 4px 12px rgba(255, 149, 0, 0.50);
+      box-shadow: 0 4px 12px rgba(255, 149, 0, 0.5);
     }
   }
 
@@ -199,8 +222,8 @@
     right: 0;
     width: 11px;
     height: 11px;
-    background: #00D084;  // Vert Blucash
-    border: 2px solid #FFFFFF;  // Bordure blanche
+    background: #00d084; // Vert Blucash
+    border: 2px solid #ffffff; // Bordure blanche
     border-radius: 50%;
     z-index: 1;
     box-shadow: 0 0 6px rgba(0, 208, 132, 0.5);
@@ -216,22 +239,26 @@
   .navbar-user-name {
     font-size: 0.86rem;
     font-weight: 700;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-    color: #1A1A1A;  // Texte sombre
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
+    color: #1a1a1a; // Texte sombre
   }
 
   .navbar-user-role {
     font-size: 0.68rem;
     font-weight: 600;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-    color: #0066FF;  // Bleu Blucash
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
+    color: #0066ff; // Bleu Blucash
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 }
 
 .user-chevron {
-  color: #9CA3AF;  // Gris moyen
+  color: #9ca3af; // Gris moyen
   font-size: 18px !important;
   width: 18px !important;
 }
@@ -244,19 +271,23 @@
     padding: 12px 16px;
     font-weight: 800;
     font-size: 0.72rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #0066FF;  // Bleu Blucash
-    border-bottom: 1px solid #E5E7EB;  // Bordure grise claire
+    color: #0066ff; // Bleu Blucash
+    border-bottom: 1px solid #e5e7eb; // Bordure grise claire
     margin-bottom: 6px;
   }
 
   .notif-empty {
     padding: 20px;
     text-align: center;
-    color: #9CA3AF;  // Gris moyen
+    color: #9ca3af; // Gris moyen
     font-size: 0.84rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }

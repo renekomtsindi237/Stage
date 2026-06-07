@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
 :host {
   display: block;
@@ -11,20 +11,24 @@
   display: grid;
   place-items: center;
   padding: 40px 20px;
-  font-family: 'Manrope', 'Plus Jakarta Sans', sans-serif;
+  font-family: "Manrope", "Plus Jakarta Sans", sans-serif;
   color: #0f172a;
   position: relative;
-  background-image: url('assets/Fintech.jpeg');
+  background-image: url("assets/Fintech.jpeg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
 }
 
 .login-root::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(8, 12, 20, 0.65), rgba(8, 12, 20, 0.7));
+  background: linear-gradient(
+    180deg,
+    rgba(8, 12, 20, 0.65),
+    rgba(8, 12, 20, 0.7)
+  );
   z-index: 0;
 }
 
@@ -52,7 +56,11 @@
   font-size: 0.82rem;
   transition: all 0.2s ease;
 
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 
   &:hover {
     border-color: #94a3b8;
@@ -73,13 +81,18 @@
   backdrop-filter: none;
 }
 
-
-.media-panel { display: none; }
+.media-panel {
+  display: none;
+}
 
 .media-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0.75));
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.15),
+    rgba(15, 23, 42, 0.75)
+  );
   z-index: 0;
 }
 
@@ -96,8 +109,13 @@
   font-weight: 700;
 }
 
-.media-logo { width: 30px; height: 30px; }
-.media-title { font-size: 1rem; }
+.media-logo {
+  width: 30px;
+  height: 30px;
+}
+.media-title {
+  font-size: 1rem;
+}
 
 .media-quote {
   background: rgba(15, 23, 42, 0.45);
@@ -155,7 +173,10 @@
   gap: 18px;
 }
 
-.field-group { display: grid; gap: 8px; }
+.field-group {
+  display: grid;
+  gap: 8px;
+}
 
 .field-label {
   font-size: 0.85rem;
@@ -184,7 +205,9 @@
   box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
 }
 
-.field-icon { color: #94a3b8; }
+.field-icon {
+  color: #94a3b8;
+}
 
 .field-input {
   border: none;

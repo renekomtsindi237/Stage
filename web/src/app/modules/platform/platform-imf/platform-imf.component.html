@@ -1,5 +1,9 @@
 <!-- ── Erreur session ── -->
-<div class="session-error" *ngIf="errorCode === 403 || errorCode === 401" @fadeInUp>
+<div
+  class="session-error"
+  *ngIf="errorCode === 403 || errorCode === 401"
+  @fadeInUp
+>
   <div class="err-icon"><mat-icon>lock_person</mat-icon></div>
   <div class="err-body">
     <strong>Session expirée</strong>
@@ -19,9 +23,18 @@
   <div class="header-actions">
     <div class="search-wrap">
       <mat-icon class="search-icon">search</mat-icon>
-      <input class="search-input" placeholder="Rechercher une IMF…" (input)="applyFilter($event)">
+      <input
+        class="search-input"
+        placeholder="Rechercher une IMF…"
+        (input)="applyFilter($event)"
+      />
     </div>
-    <button mat-stroked-button class="btn-refresh" (click)="loadImfs()" [disabled]="loading">
+    <button
+      mat-stroked-button
+      class="btn-refresh"
+      (click)="loadImfs()"
+      [disabled]="loading"
+    >
       <mat-icon [class.spinning]="loading">refresh</mat-icon>
     </button>
     <button mat-flat-button class="btn-create" (click)="openCreateImf()">
@@ -33,7 +46,7 @@
 
 <!-- ── Table skeleton ── -->
 <div class="table-panel glass" *ngIf="loading && errorCode === 0">
-  <div class="sk-row" *ngFor="let i of [1,2,3,4,5]">
+  <div class="sk-row" *ngFor="let i of [1, 2, 3, 4, 5]">
     <div class="sk-avatar"></div>
     <div class="sk-lines">
       <div class="sk-line sk-lg"></div>
@@ -44,7 +57,6 @@
 
 <!-- ── Table ── -->
 <div class="table-panel glass" *ngIf="!loading && errorCode === 0" @fadeInUp>
-
   <!-- Vide -->
   <div class="empty-state" *ngIf="dataSource.data.length === 0">
     <mat-icon>inbox</mat-icon>
@@ -56,16 +68,21 @@
 
   <ng-container *ngIf="dataSource.data.length > 0">
     <table mat-table [dataSource]="dataSource" matSort class="imf-table">
-
       <!-- Avatar col -->
       <ng-container matColumnDef="avatar">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row">
-          <div class="row-avatar-wrap" [class.row-avatar--off]="!row.actif"
-               (click)="pickImfLogo(row)" matTooltip="Changer le logo">
-            <img [src]="getImfLogo(row.code)"
-                 [alt]="row.nom"
-                 class="row-avatar-img">
+          <div
+            class="row-avatar-wrap"
+            [class.row-avatar--off]="!row.actif"
+            (click)="pickImfLogo(row)"
+            matTooltip="Changer le logo"
+          >
+            <img
+              [src]="getImfLogo(row.code)"
+              [alt]="row.nom"
+              class="row-avatar-img"
+            />
             <div class="row-avatar-overlay">
               <mat-icon>photo_camera</mat-icon>
             </div>
@@ -99,9 +116,13 @@
       <ng-container matColumnDef="statut">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
         <td mat-cell *matCellDef="let row">
-          <span class="status-chip" [class.chip-active]="row.actif" [class.chip-off]="!row.actif">
+          <span
+            class="status-chip"
+            [class.chip-active]="row.actif"
+            [class.chip-off]="!row.actif"
+          >
             <span class="chip-dot"></span>
-            {{ row.actif ? 'Active' : 'Inactive' }}
+            {{ row.actif ? "Active" : "Inactive" }}
           </span>
         </td>
       </ng-container>
@@ -109,7 +130,9 @@
       <!-- Date col -->
       <ng-container matColumnDef="createdAt">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Créée le</th>
-        <td mat-cell *matCellDef="let row" class="cell-date">{{ formatDate(row.createdAt) }}</td>
+        <td mat-cell *matCellDef="let row" class="cell-date">
+          {{ formatDate(row.createdAt) }}
+        </td>
       </ng-container>
 
       <!-- Actions col -->
@@ -117,30 +140,52 @@
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row">
           <div class="row-actions">
-            <button mat-stroked-button class="btn-consult"
-                    [routerLink]="['/platform/imf', row.id, 'supervision']"
-                    matTooltip="Consulter les données de cette IMF">
+            <button
+              mat-stroked-button
+              class="btn-consult"
+              [routerLink]="['/platform/imf', row.id, 'supervision']"
+              matTooltip="Consulter les données de cette IMF"
+            >
               <mat-icon>visibility</mat-icon>
               Consulter
             </button>
-            <button mat-stroked-button class="btn-dsi"
-                    [class.btn-dsi--has]="row.hasDsi"
-                    (click)="openCreateAdmin(row)"
-                    [disabled]="!row.actif"
-                    [matTooltip]="row.hasDsi ? 'Mettre à jour le compte DSI' : 'Créer un compte DSI'">
-              <mat-icon>{{ row.hasDsi ? 'manage_accounts' : 'person_add' }}</mat-icon>
-              {{ row.hasDsi ? 'DSI ✓' : 'DSI' }}
+            <button
+              mat-stroked-button
+              class="btn-dsi"
+              [class.btn-dsi--has]="row.hasDsi"
+              (click)="openCreateAdmin(row)"
+              [disabled]="!row.actif"
+              [matTooltip]="
+                row.hasDsi
+                  ? 'Mettre à jour le compte DSI'
+                  : 'Créer un compte DSI'
+              "
+            >
+              <mat-icon>{{
+                row.hasDsi ? "manage_accounts" : "person_add"
+              }}</mat-icon>
+              {{ row.hasDsi ? "DSI ✓" : "DSI" }}
             </button>
-            <button mat-icon-button class="btn-toggle"
-                    [matTooltip]="row.actif ? 'Désactiver' : 'Activer'"
-                    (click)="toggleStatus(row)">
-              <mat-icon [style.color]="row.actif ? 'var(--color-success)' : 'var(--color-text-muted)'">
-                {{ row.actif ? 'toggle_on' : 'toggle_off' }}
+            <button
+              mat-icon-button
+              class="btn-toggle"
+              [matTooltip]="row.actif ? 'Désactiver' : 'Activer'"
+              (click)="toggleStatus(row)"
+            >
+              <mat-icon
+                [style.color]="
+                  row.actif ? 'var(--color-success)' : 'var(--color-text-muted)'
+                "
+              >
+                {{ row.actif ? "toggle_on" : "toggle_off" }}
               </mat-icon>
             </button>
-            <button mat-icon-button class="btn-delete-row"
-                    matTooltip="Supprimer définitivement"
-                    (click)="openDeleteImf(row)">
+            <button
+              mat-icon-button
+              class="btn-delete-row"
+              matTooltip="Supprimer définitivement"
+              (click)="openDeleteImf(row)"
+            >
               <mat-icon>delete_forever</mat-icon>
             </button>
           </div>
@@ -148,30 +193,36 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-          class="imf-row" [class.row-inactive]="!row.actif"></tr>
-
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="imf-row"
+        [class.row-inactive]="!row.actif"
+      ></tr>
     </table>
 
-    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons
-                   class="table-paginator"></mat-paginator>
+    <mat-paginator
+      [pageSizeOptions]="[10, 25, 50]"
+      showFirstLastButtons
+      class="table-paginator"
+    ></mat-paginator>
   </ng-container>
-
 </div>
 
 <!-- ══════════════════════════════════
      MODALES
      ══════════════════════════════════ -->
 <div class="modal-overlay" *ngIf="modalMode" (click)="closeModal()" @fadeInUp>
-  <div class="modal-panel glass"
-       [class.wz-panel]="modalMode === 'create-imf'"
-       (click)="$event.stopPropagation()" @reveal>
-
+  <div
+    class="modal-panel glass"
+    [class.wz-panel]="modalMode === 'create-imf'"
+    (click)="$event.stopPropagation()"
+    @reveal
+  >
     <!-- ════════════════════════════════
          WIZARD — Créer IMF
          ════════════════════════════════ -->
     <ng-container *ngIf="modalMode === 'create-imf'">
-
       <!-- En-tête dark navy -->
       <div class="wz-hd">
         <div class="wz-hd-bg"></div>
@@ -183,28 +234,48 @@
             <p class="wz-hd-sub">Enregistrement d'un nouveau tenant</p>
           </div>
         </div>
-        <button mat-icon-button class="wz-hd-close" (click)="closeModal()"><mat-icon>close</mat-icon></button>
+        <button mat-icon-button class="wz-hd-close" (click)="closeModal()">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
 
       <!-- Stepper dark -->
       <div class="wz-steps">
-        <div class="wz-step" [class.wz-step--active]="wizardStep === 1" [class.wz-step--done]="isStepDone(1)">
+        <div
+          class="wz-step"
+          [class.wz-step--active]="wizardStep === 1"
+          [class.wz-step--done]="isStepDone(1)"
+        >
           <div class="wz-step-circle">
             <mat-icon *ngIf="isStepDone(1)">check</mat-icon>
             <span *ngIf="!isStepDone(1)">1</span>
           </div>
           <span class="wz-step-label">Identité</span>
         </div>
-        <div class="wz-step-line" [class.wz-step-line--done]="isStepDone(1)"></div>
-        <div class="wz-step" [class.wz-step--active]="wizardStep === 2" [class.wz-step--done]="isStepDone(2)">
+        <div
+          class="wz-step-line"
+          [class.wz-step-line--done]="isStepDone(1)"
+        ></div>
+        <div
+          class="wz-step"
+          [class.wz-step--active]="wizardStep === 2"
+          [class.wz-step--done]="isStepDone(2)"
+        >
           <div class="wz-step-circle">
             <mat-icon *ngIf="isStepDone(2)">check</mat-icon>
             <span *ngIf="!isStepDone(2)">2</span>
           </div>
           <span class="wz-step-label">Capital</span>
         </div>
-        <div class="wz-step-line" [class.wz-step-line--done]="isStepDone(2)"></div>
-        <div class="wz-step" [class.wz-step--active]="wizardStep === 3" [class.wz-step--done]="isStepDone(3)">
+        <div
+          class="wz-step-line"
+          [class.wz-step-line--done]="isStepDone(2)"
+        ></div>
+        <div
+          class="wz-step"
+          [class.wz-step--active]="wizardStep === 3"
+          [class.wz-step--done]="isStepDone(3)"
+        >
           <div class="wz-step-circle">
             <mat-icon *ngIf="isStepDone(3)">check</mat-icon>
             <span *ngIf="!isStepDone(3)">3</span>
@@ -223,15 +294,15 @@
 
       <!-- Zone scrollable -->
       <div class="wz-body" *ngIf="!modalSuccess">
-
         <!-- ── ÉTAPE 1 : Identité & Constitution ── -->
         <form [formGroup]="step1Form" class="wz-form" *ngIf="wizardStep === 1">
-
           <div class="wz-step-hd">
             <div class="wz-step-icon"><mat-icon>corporate_fare</mat-icon></div>
             <div>
               <h4 class="wz-step-title">Identité &amp; Constitution</h4>
-              <p class="wz-step-desc">Informations légales pour l'enregistrement officiel (COBAC)</p>
+              <p class="wz-step-desc">
+                Informations légales pour l'enregistrement officiel (COBAC)
+              </p>
             </div>
           </div>
 
@@ -239,27 +310,56 @@
             <!-- Code IMF -->
             <div class="wz-field wz-field--short">
               <label class="wz-label">Code IMF</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step1Form.get('code')?.invalid && step1Form.get('code')?.touched">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step1Form.get('code')?.invalid &&
+                  step1Form.get('code')?.touched
+                "
+              >
                 <mat-icon class="wz-icon">tag</mat-icon>
-                <input class="wz-input" formControlName="code" type="text"
-                       placeholder="ex: CAMCCUL" style="text-transform:uppercase">
+                <input
+                  class="wz-input"
+                  formControlName="code"
+                  type="text"
+                  placeholder="ex: CAMCCUL"
+                  style="text-transform: uppercase"
+                />
               </div>
               <span class="wz-hint">Maj + chiffres, 2-20 car.</span>
-              <span class="wz-error" *ngIf="step1Form.get('code')?.invalid && step1Form.get('code')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step1Form.get('code')?.invalid &&
+                  step1Form.get('code')?.touched
+                "
+              >
                 Code invalide (A-Z0-9, 2-20 car.)
               </span>
             </div>
             <!-- Nom -->
             <div class="wz-field wz-field--grow">
               <label class="wz-label">Nom de l'institution</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step1Form.get('nom')?.invalid && step1Form.get('nom')?.touched">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step1Form.get('nom')?.invalid && step1Form.get('nom')?.touched
+                "
+              >
                 <mat-icon class="wz-icon">business</mat-icon>
-                <input class="wz-input" formControlName="nom" type="text"
-                       placeholder="ex: CamCCUL Nord-Ouest">
+                <input
+                  class="wz-input"
+                  formControlName="nom"
+                  type="text"
+                  placeholder="ex: CamCCUL Nord-Ouest"
+                />
               </div>
-              <span class="wz-error" *ngIf="step1Form.get('nom')?.invalid && step1Form.get('nom')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step1Form.get('nom')?.invalid && step1Form.get('nom')?.touched
+                "
+              >
                 Nom requis (min. 3 car.)
               </span>
             </div>
@@ -269,13 +369,28 @@
             <!-- Dénomination sociale -->
             <div class="wz-field wz-field--grow">
               <label class="wz-label">Dénomination sociale</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step1Form.get('denominationSociale')?.invalid && step1Form.get('denominationSociale')?.touched">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step1Form.get('denominationSociale')?.invalid &&
+                  step1Form.get('denominationSociale')?.touched
+                "
+              >
                 <mat-icon class="wz-icon">gavel</mat-icon>
-                <input class="wz-input" formControlName="denominationSociale" type="text"
-                       placeholder="Raison sociale officielle">
+                <input
+                  class="wz-input"
+                  formControlName="denominationSociale"
+                  type="text"
+                  placeholder="Raison sociale officielle"
+                />
               </div>
-              <span class="wz-error" *ngIf="step1Form.get('denominationSociale')?.invalid && step1Form.get('denominationSociale')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step1Form.get('denominationSociale')?.invalid &&
+                  step1Form.get('denominationSociale')?.touched
+                "
+              >
                 Dénomination requise (min. 3 car.)
               </span>
             </div>
@@ -284,7 +399,7 @@
               <label class="wz-label">Pays</label>
               <div class="wz-wrap">
                 <mat-icon class="wz-icon">flag</mat-icon>
-                <input class="wz-input" formControlName="pays" type="text">
+                <input class="wz-input" formControlName="pays" type="text" />
               </div>
             </div>
           </div>
@@ -293,25 +408,45 @@
             <!-- Forme juridique -->
             <div class="wz-field wz-field--grow">
               <label class="wz-label">Forme juridique</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step1Form.get('formeJuridique')?.invalid && step1Form.get('formeJuridique')?.touched">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step1Form.get('formeJuridique')?.invalid &&
+                  step1Form.get('formeJuridique')?.touched
+                "
+              >
                 <mat-icon class="wz-icon">account_balance</mat-icon>
                 <select class="wz-select" formControlName="formeJuridique">
                   <option value="" disabled>Sélectionner…</option>
-                  <option *ngFor="let f of formesJuridiques" [value]="f">{{ f }}</option>
+                  <option *ngFor="let f of formesJuridiques" [value]="f">
+                    {{ f }}
+                  </option>
                 </select>
                 <mat-icon class="wz-select-arrow">expand_more</mat-icon>
               </div>
-              <span class="wz-error" *ngIf="step1Form.get('formeJuridique')?.invalid && step1Form.get('formeJuridique')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step1Form.get('formeJuridique')?.invalid &&
+                  step1Form.get('formeJuridique')?.touched
+                "
+              >
                 Forme juridique requise
               </span>
             </div>
             <!-- N° agrément -->
             <div class="wz-field wz-field--short">
-              <label class="wz-label">N° agrément <span class="wz-opt">(optionnel)</span></label>
+              <label class="wz-label"
+                >N° agrément <span class="wz-opt">(optionnel)</span></label
+              >
               <div class="wz-wrap">
                 <mat-icon class="wz-icon">verified</mat-icon>
-                <input class="wz-input" formControlName="numAgrement" type="text" placeholder="—">
+                <input
+                  class="wz-input"
+                  formControlName="numAgrement"
+                  type="text"
+                  placeholder="—"
+                />
               </div>
             </div>
           </div>
@@ -319,13 +454,28 @@
           <!-- Adresse siège -->
           <div class="wz-field">
             <label class="wz-label">Adresse du siège social</label>
-            <div class="wz-wrap"
-                 [class.wz-wrap--error]="step1Form.get('adresseSiege')?.invalid && step1Form.get('adresseSiege')?.touched">
+            <div
+              class="wz-wrap"
+              [class.wz-wrap--error]="
+                step1Form.get('adresseSiege')?.invalid &&
+                step1Form.get('adresseSiege')?.touched
+              "
+            >
               <mat-icon class="wz-icon">location_on</mat-icon>
-              <input class="wz-input" formControlName="adresseSiege" type="text"
-                     placeholder="ex: Avenue Kennedy, Bafoussam">
+              <input
+                class="wz-input"
+                formControlName="adresseSiege"
+                type="text"
+                placeholder="ex: Avenue Kennedy, Bafoussam"
+              />
             </div>
-            <span class="wz-error" *ngIf="step1Form.get('adresseSiege')?.invalid && step1Form.get('adresseSiege')?.touched">
+            <span
+              class="wz-error"
+              *ngIf="
+                step1Form.get('adresseSiege')?.invalid &&
+                step1Form.get('adresseSiege')?.touched
+              "
+            >
               Adresse requise (min. 5 car.)
             </span>
           </div>
@@ -334,12 +484,28 @@
             <!-- Email -->
             <div class="wz-field wz-field--grow">
               <label class="wz-label">Email de contact</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step1Form.get('email')?.invalid && step1Form.get('email')?.touched">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step1Form.get('email')?.invalid &&
+                  step1Form.get('email')?.touched
+                "
+              >
                 <mat-icon class="wz-icon">email</mat-icon>
-                <input class="wz-input" formControlName="email" type="email" placeholder="contact@imf.cm">
+                <input
+                  class="wz-input"
+                  formControlName="email"
+                  type="email"
+                  placeholder="contact@imf.cm"
+                />
               </div>
-              <span class="wz-error" *ngIf="step1Form.get('email')?.invalid && step1Form.get('email')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step1Form.get('email')?.invalid &&
+                  step1Form.get('email')?.touched
+                "
+              >
                 Adresse email invalide
               </span>
             </div>
@@ -348,53 +514,87 @@
               <label class="wz-label">Téléphone</label>
               <div class="wz-wrap">
                 <mat-icon class="wz-icon">phone</mat-icon>
-                <input class="wz-input" formControlName="telephone" type="text"
-                       placeholder="+237 6XX XXX XXX">
+                <input
+                  class="wz-input"
+                  formControlName="telephone"
+                  type="text"
+                  placeholder="+237 6XX XXX XXX"
+                />
               </div>
             </div>
           </div>
 
           <!-- Aperçu live -->
-          <div class="wz-preview" *ngIf="step1Form.get('code')?.value || step1Form.get('nom')?.value">
+          <div
+            class="wz-preview"
+            *ngIf="step1Form.get('code')?.value || step1Form.get('nom')?.value"
+          >
             <div class="wz-preview-avatar-wrap">
-              <img [src]="wizardLogoPreview || 'assets/photo_profil.jpg'"
-                   alt="Logo IMF"
-                   class="wz-preview-avatar-img">
-              <button type="button" class="wz-preview-avatar-btn" (click)="pickWizardLogo()">
+              <img
+                [src]="wizardLogoPreview || 'assets/photo_profil.jpg'"
+                alt="Logo IMF"
+                class="wz-preview-avatar-img"
+              />
+              <button
+                type="button"
+                class="wz-preview-avatar-btn"
+                (click)="pickWizardLogo()"
+              >
                 <mat-icon>photo_camera</mat-icon>
               </button>
             </div>
             <div class="wz-preview-info">
-              <span class="wz-preview-name">{{ step1Form.get('nom')?.value || 'Nom de l\'institution' }}</span>
-              <span class="wz-preview-meta">{{ step1Form.get('code')?.value || '—' }} · {{ step1Form.get('pays')?.value }}</span>
+              <span class="wz-preview-name">{{
+                step1Form.get("nom")?.value || "Nom de l'institution"
+              }}</span>
+              <span class="wz-preview-meta"
+                >{{ step1Form.get("code")?.value || "—" }} ·
+                {{ step1Form.get("pays")?.value }}</span
+              >
             </div>
             <span class="wz-preview-badge">Nouveau tenant</span>
           </div>
-
         </form>
 
         <!-- ── ÉTAPE 2 : Capital & Segmentation ── -->
         <form [formGroup]="step2Form" class="wz-form" *ngIf="wizardStep === 2">
-
           <div class="wz-step-hd">
             <div class="wz-step-icon"><mat-icon>payments</mat-icon></div>
             <div>
               <h4 class="wz-step-title">Capital &amp; Segmentation</h4>
-              <p class="wz-step-desc">Structure du capital social et profil de la clientèle cible</p>
+              <p class="wz-step-desc">
+                Structure du capital social et profil de la clientèle cible
+              </p>
             </div>
           </div>
 
           <!-- Capital social -->
           <div class="wz-field">
             <label class="wz-label">Capital social (FCFA)</label>
-            <div class="wz-wrap"
-                 [class.wz-wrap--error]="step2Form.get('capitalSocial')?.invalid && step2Form.get('capitalSocial')?.touched">
+            <div
+              class="wz-wrap"
+              [class.wz-wrap--error]="
+                step2Form.get('capitalSocial')?.invalid &&
+                step2Form.get('capitalSocial')?.touched
+              "
+            >
               <mat-icon class="wz-icon">account_balance_wallet</mat-icon>
-              <input class="wz-input" formControlName="capitalSocial" type="number" min="1"
-                     placeholder="ex: 50000000">
+              <input
+                class="wz-input"
+                formControlName="capitalSocial"
+                type="number"
+                min="1"
+                placeholder="ex: 50000000"
+              />
             </div>
             <span class="wz-hint">Montant total en FCFA</span>
-            <span class="wz-error" *ngIf="step2Form.get('capitalSocial')?.invalid && step2Form.get('capitalSocial')?.touched">
+            <span
+              class="wz-error"
+              *ngIf="
+                step2Form.get('capitalSocial')?.invalid &&
+                step2Form.get('capitalSocial')?.touched
+              "
+            >
               Capital social requis (valeur positive)
             </span>
           </div>
@@ -406,9 +606,17 @@
               <span>Segments clients <em class="wz-required">*</em></span>
             </div>
             <div class="wz-chips-grid">
-              <div class="wz-chip" *ngFor="let seg of segmentsDisponibles"
-                   [class.wz-chip--on]="selectedSegments[seg]" (click)="toggleSegment(seg)">
-                <mat-icon>{{ selectedSegments[seg] ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+              <div
+                class="wz-chip"
+                *ngFor="let seg of segmentsDisponibles"
+                [class.wz-chip--on]="selectedSegments[seg]"
+                (click)="toggleSegment(seg)"
+              >
+                <mat-icon>{{
+                  selectedSegments[seg]
+                    ? "check_box"
+                    : "check_box_outline_blank"
+                }}</mat-icon>
                 <span>{{ seg }}</span>
               </div>
             </div>
@@ -424,9 +632,17 @@
               <span>Types de garanties acceptées</span>
             </div>
             <div class="wz-chips-grid">
-              <div class="wz-chip" *ngFor="let gar of garantiesDisponibles"
-                   [class.wz-chip--on]="selectedGaranties[gar]" (click)="toggleGarantie(gar)">
-                <mat-icon>{{ selectedGaranties[gar] ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+              <div
+                class="wz-chip"
+                *ngFor="let gar of garantiesDisponibles"
+                [class.wz-chip--on]="selectedGaranties[gar]"
+                (click)="toggleGarantie(gar)"
+              >
+                <mat-icon>{{
+                  selectedGaranties[gar]
+                    ? "check_box"
+                    : "check_box_outline_blank"
+                }}</mat-icon>
                 <span>{{ gar }}</span>
               </div>
             </div>
@@ -445,112 +661,199 @@
               </div>
             </div>
           </div>
-
         </form>
 
         <!-- ── ÉTAPE 3 : Paramètres métier ── -->
         <form [formGroup]="step3Form" class="wz-form" *ngIf="wizardStep === 3">
-
           <div class="wz-step-hd">
             <div class="wz-step-icon"><mat-icon>tune</mat-icon></div>
             <div>
               <h4 class="wz-step-title">Paramètres Métier</h4>
-              <p class="wz-step-desc">Variables de crédit, épargne et recouvrement</p>
+              <p class="wz-step-desc">
+                Variables de crédit, épargne et recouvrement
+              </p>
             </div>
           </div>
 
-          <div class="wz-section-label"><mat-icon>credit_card</mat-icon> Crédit</div>
+          <div class="wz-section-label">
+            <mat-icon>credit_card</mat-icon> Crédit
+          </div>
           <div class="wz-row">
             <div class="wz-field wz-field--grow">
               <label class="wz-label">Taux d'intérêt annuel (%)</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step3Form.get('tauxInteretAnnuel')?.invalid && step3Form.get('tauxInteretAnnuel')?.touched">
-                <input class="wz-input wz-input--no-icon" formControlName="tauxInteretAnnuel"
-                       type="number" min="0" max="100" step="0.1">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step3Form.get('tauxInteretAnnuel')?.invalid &&
+                  step3Form.get('tauxInteretAnnuel')?.touched
+                "
+              >
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="tauxInteretAnnuel"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
               </div>
               <span class="wz-hint">Taux effectif global annuel</span>
-              <span class="wz-error" *ngIf="step3Form.get('tauxInteretAnnuel')?.invalid && step3Form.get('tauxInteretAnnuel')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step3Form.get('tauxInteretAnnuel')?.invalid &&
+                  step3Form.get('tauxInteretAnnuel')?.touched
+                "
+              >
                 Requis (0–100 %)
               </span>
             </div>
             <div class="wz-field wz-field--short">
               <label class="wz-label">Durée max. (mois)</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step3Form.get('dureeMaxCreditMois')?.invalid && step3Form.get('dureeMaxCreditMois')?.touched">
-                <input class="wz-input wz-input--no-icon" formControlName="dureeMaxCreditMois"
-                       type="number" min="1" max="360">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step3Form.get('dureeMaxCreditMois')?.invalid &&
+                  step3Form.get('dureeMaxCreditMois')?.touched
+                "
+              >
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="dureeMaxCreditMois"
+                  type="number"
+                  min="1"
+                  max="360"
+                />
               </div>
               <span class="wz-hint">Maturité maximale</span>
-              <span class="wz-error" *ngIf="step3Form.get('dureeMaxCreditMois')?.invalid && step3Form.get('dureeMaxCreditMois')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step3Form.get('dureeMaxCreditMois')?.invalid &&
+                  step3Form.get('dureeMaxCreditMois')?.touched
+                "
+              >
                 Requis (1–360)
               </span>
             </div>
           </div>
 
-          <div class="wz-section-label"><mat-icon>policy</mat-icon> Recouvrement</div>
+          <div class="wz-section-label">
+            <mat-icon>policy</mat-icon> Recouvrement
+          </div>
           <div class="wz-row">
             <div class="wz-field wz-field--grow">
               <label class="wz-label">Pénalité de retard (%/mois)</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step3Form.get('tauxPenaliteRetard')?.invalid && step3Form.get('tauxPenaliteRetard')?.touched">
-                <input class="wz-input wz-input--no-icon" formControlName="tauxPenaliteRetard"
-                       type="number" min="0" step="0.01">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step3Form.get('tauxPenaliteRetard')?.invalid &&
+                  step3Form.get('tauxPenaliteRetard')?.touched
+                "
+              >
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="tauxPenaliteRetard"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                />
               </div>
-              <span class="wz-error" *ngIf="step3Form.get('tauxPenaliteRetard')?.invalid && step3Form.get('tauxPenaliteRetard')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step3Form.get('tauxPenaliteRetard')?.invalid &&
+                  step3Form.get('tauxPenaliteRetard')?.touched
+                "
+              >
                 Requis (≥ 0)
               </span>
             </div>
             <div class="wz-field wz-field--short">
               <label class="wz-label">Seuil de relance (j.)</label>
-              <div class="wz-wrap"
-                   [class.wz-wrap--error]="step3Form.get('seuilRelanceJours')?.invalid && step3Form.get('seuilRelanceJours')?.touched">
-                <input class="wz-input wz-input--no-icon" formControlName="seuilRelanceJours"
-                       type="number" min="1">
+              <div
+                class="wz-wrap"
+                [class.wz-wrap--error]="
+                  step3Form.get('seuilRelanceJours')?.invalid &&
+                  step3Form.get('seuilRelanceJours')?.touched
+                "
+              >
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="seuilRelanceJours"
+                  type="number"
+                  min="1"
+                />
               </div>
               <span class="wz-hint">Jours avant 1ʳᵉ relance</span>
-              <span class="wz-error" *ngIf="step3Form.get('seuilRelanceJours')?.invalid && step3Form.get('seuilRelanceJours')?.touched">
+              <span
+                class="wz-error"
+                *ngIf="
+                  step3Form.get('seuilRelanceJours')?.invalid &&
+                  step3Form.get('seuilRelanceJours')?.touched
+                "
+              >
                 Requis (≥ 1)
               </span>
             </div>
           </div>
 
           <div class="wz-section-label wz-section-label--opt">
-            <mat-icon>savings</mat-icon> Épargne <span class="wz-opt-tag">optionnel</span>
+            <mat-icon>savings</mat-icon> Épargne
+            <span class="wz-opt-tag">optionnel</span>
           </div>
           <div class="wz-row wz-row--3">
             <div class="wz-field">
               <label class="wz-label">Taux rémunération (%)</label>
               <div class="wz-wrap">
-                <input class="wz-input wz-input--no-icon" formControlName="tauxEpargne"
-                       type="number" min="0" step="0.01">
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="tauxEpargne"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                />
               </div>
             </div>
             <div class="wz-field">
               <label class="wz-label">Solde minimum (FCFA)</label>
               <div class="wz-wrap">
-                <input class="wz-input wz-input--no-icon" formControlName="soldeMinEpargne"
-                       type="number" min="0">
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="soldeMinEpargne"
+                  type="number"
+                  min="0"
+                />
               </div>
             </div>
             <div class="wz-field">
               <label class="wz-label">Frais tenue/mois (FCFA)</label>
               <div class="wz-wrap">
-                <input class="wz-input wz-input--no-icon" formControlName="fraisTenueCompte"
-                       type="number" min="0">
+                <input
+                  class="wz-input wz-input--no-icon"
+                  formControlName="fraisTenueCompte"
+                  type="number"
+                  min="0"
+                />
               </div>
             </div>
           </div>
-
         </form>
-
-      </div><!-- /wz-body -->
+      </div>
+      <!-- /wz-body -->
 
       <!-- Pied fixe navigation -->
       <div class="wz-foot" *ngIf="!modalSuccess">
         <ng-container *ngIf="wizardStep === 1">
-          <button class="wz-btn-ghost" type="button" (click)="closeModal()">Annuler</button>
-          <button class="wz-btn-primary" type="button"
-                  [disabled]="!isStepValid(1)" (click)="nextStep()">
+          <button class="wz-btn-ghost" type="button" (click)="closeModal()">
+            Annuler
+          </button>
+          <button
+            class="wz-btn-primary"
+            type="button"
+            [disabled]="!isStepValid(1)"
+            (click)="nextStep()"
+          >
             Suivant <mat-icon>arrow_forward</mat-icon>
           </button>
         </ng-container>
@@ -558,8 +861,12 @@
           <button class="wz-btn-ghost" type="button" (click)="prevStep()">
             <mat-icon>arrow_back</mat-icon> Retour
           </button>
-          <button class="wz-btn-primary" type="button"
-                  [disabled]="!isStepValid(2)" (click)="nextStep()">
+          <button
+            class="wz-btn-primary"
+            type="button"
+            [disabled]="!isStepValid(2)"
+            (click)="nextStep()"
+          >
             Suivant <mat-icon>arrow_forward</mat-icon>
           </button>
         </ng-container>
@@ -567,32 +874,47 @@
           <button class="wz-btn-ghost" type="button" (click)="prevStep()">
             <mat-icon>arrow_back</mat-icon> Retour
           </button>
-          <button class="wz-btn-primary" type="button"
-                  [disabled]="!isStepValid(3) || modalLoading" (click)="submitCreateImf()">
+          <button
+            class="wz-btn-primary"
+            type="button"
+            [disabled]="!isStepValid(3) || modalLoading"
+            (click)="submitCreateImf()"
+          >
             <mat-spinner *ngIf="modalLoading" diameter="18"></mat-spinner>
             <mat-icon *ngIf="!modalLoading">add_business</mat-icon>
-            <span>{{ modalLoading ? '' : "Créer l'IMF" }}</span>
+            <span>{{ modalLoading ? "" : "Créer l'IMF" }}</span>
           </button>
         </ng-container>
       </div>
-
     </ng-container>
 
     <!-- ════════════════════════════════
          Créer / Mettre à jour DSI
          ════════════════════════════════ -->
     <ng-container *ngIf="modalMode === 'create-admin'">
-
       <!-- En-tête -->
       <div class="modal-hd dsi-modal-hd">
         <div class="dsi-hd-icon" [class.dsi-icon-gold]="selectedImf?.hasDsi">
-          <mat-icon>{{ selectedImf?.hasDsi ? 'manage_accounts' : 'person_add' }}</mat-icon>
+          <mat-icon>{{
+            selectedImf?.hasDsi ? "manage_accounts" : "person_add"
+          }}</mat-icon>
         </div>
         <div class="modal-hd-content">
-          <h3>{{ selectedImf?.hasDsi ? 'Mettre à jour le DSI' : 'Créer un compte DSI' }}</h3>
-          <p>Pour <strong>{{ selectedImf?.nom }}</strong> · <span class="dsi-hd-code">{{ selectedImf?.code }}</span></p>
+          <h3>
+            {{
+              selectedImf?.hasDsi
+                ? "Mettre à jour le DSI"
+                : "Créer un compte DSI"
+            }}
+          </h3>
+          <p>
+            Pour <strong>{{ selectedImf?.nom }}</strong> ·
+            <span class="dsi-hd-code">{{ selectedImf?.code }}</span>
+          </p>
         </div>
-        <button mat-icon-button (click)="closeModal()" class="modal-close"><mat-icon>close</mat-icon></button>
+        <button mat-icon-button (click)="closeModal()" class="modal-close">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
 
       <!-- Feedback -->
@@ -604,26 +926,39 @@
       </div>
 
       <!-- Formulaire -->
-      <form [formGroup]="adminForm" (ngSubmit)="submitCreateAdmin()" class="dsi-form" *ngIf="!modalSuccess" @fadeInUp>
-
+      <form
+        [formGroup]="adminForm"
+        (ngSubmit)="submitCreateAdmin()"
+        class="dsi-form"
+        *ngIf="!modalSuccess"
+        @fadeInUp
+      >
         <!-- Carte récap IMF -->
         <div class="dsi-imf-card">
           <div class="dsi-imf-avatar-wrap">
-            <img [src]="getImfLogo(selectedImf?.code || '')"
-                 [alt]="selectedImf?.nom"
-                 class="dsi-imf-avatar-img">
+            <img
+              [src]="getImfLogo(selectedImf?.code || '')"
+              [alt]="selectedImf?.nom"
+              class="dsi-imf-avatar-img"
+            />
           </div>
           <div class="dsi-imf-info">
             <span class="dsi-imf-name">{{ selectedImf?.nom }}</span>
             <span class="dsi-imf-meta">
               <span class="dsi-imf-code">{{ selectedImf?.code }}</span>
               <span class="dsi-sep">·</span>
-              <span class="dsi-status-dot" [class.dot-active]="selectedImf?.actif"></span>
-              <span>{{ selectedImf?.actif ? 'Active' : 'Inactive' }}</span>
+              <span
+                class="dsi-status-dot"
+                [class.dot-active]="selectedImf?.actif"
+              ></span>
+              <span>{{ selectedImf?.actif ? "Active" : "Inactive" }}</span>
             </span>
           </div>
-          <span class="dsi-imf-badge" [class.badge-update]="selectedImf?.hasDsi">
-            {{ selectedImf?.hasDsi ? 'Mise à jour' : 'Nouveau DSI' }}
+          <span
+            class="dsi-imf-badge"
+            [class.badge-update]="selectedImf?.hasDsi"
+          >
+            {{ selectedImf?.hasDsi ? "Mise à jour" : "Nouveau DSI" }}
           </span>
         </div>
 
@@ -633,24 +968,41 @@
             <mat-icon>alternate_email</mat-icon>
             Identifiant DSI
           </label>
-          <div class="dsi-field-wrap"
-               [class.dsi-focused]="usernameFocused"
-               [class.dsi-error]="adminForm.get('username')?.invalid && adminForm.get('username')?.touched">
+          <div
+            class="dsi-field-wrap"
+            [class.dsi-focused]="usernameFocused"
+            [class.dsi-error]="
+              adminForm.get('username')?.invalid &&
+              adminForm.get('username')?.touched
+            "
+          >
             <mat-icon class="dsi-field-icon">person_outline</mat-icon>
-            <input class="dsi-field-input"
-                   formControlName="username"
-                   type="text"
-                   placeholder="ex : dsi_camccul"
-                   autocomplete="off"
-                   (focus)="usernameFocused = true"
-                   (blur)="usernameFocused = false">
+            <input
+              class="dsi-field-input"
+              formControlName="username"
+              type="text"
+              placeholder="ex : dsi_camccul"
+              autocomplete="off"
+              (focus)="usernameFocused = true"
+              (blur)="usernameFocused = false"
+            />
           </div>
-          <span class="dsi-error-msg"
-                *ngIf="adminForm.get('username')?.hasError('required') && adminForm.get('username')?.touched">
+          <span
+            class="dsi-error-msg"
+            *ngIf="
+              adminForm.get('username')?.hasError('required') &&
+              adminForm.get('username')?.touched
+            "
+          >
             L'identifiant est requis
           </span>
-          <span class="dsi-error-msg"
-                *ngIf="adminForm.get('username')?.hasError('minlength') && adminForm.get('username')?.touched">
+          <span
+            class="dsi-error-msg"
+            *ngIf="
+              adminForm.get('username')?.hasError('minlength') &&
+              adminForm.get('username')?.touched
+            "
+          >
             Minimum 3 caractères requis
           </span>
         </div>
@@ -661,40 +1013,71 @@
             <mat-icon>lock_outline</mat-icon>
             Mot de passe temporaire
           </label>
-          <div class="dsi-field-wrap"
-               [class.dsi-focused]="passwordFocused"
-               [class.dsi-error]="adminForm.get('password')?.invalid && adminForm.get('password')?.touched">
+          <div
+            class="dsi-field-wrap"
+            [class.dsi-focused]="passwordFocused"
+            [class.dsi-error]="
+              adminForm.get('password')?.invalid &&
+              adminForm.get('password')?.touched
+            "
+          >
             <mat-icon class="dsi-field-icon">key</mat-icon>
-            <input class="dsi-field-input"
-                   formControlName="password"
-                   [type]="hideAdminPassword ? 'password' : 'text'"
-                   placeholder="Min. 8 caractères"
-                   autocomplete="new-password"
-                   (focus)="passwordFocused = true"
-                   (blur)="passwordFocused = false">
-            <button type="button" class="dsi-eye-btn"
-                    (click)="hideAdminPassword = !hideAdminPassword" tabindex="-1">
-              <mat-icon>{{ hideAdminPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            <input
+              class="dsi-field-input"
+              formControlName="password"
+              [type]="hideAdminPassword ? 'password' : 'text'"
+              placeholder="Min. 8 caractères"
+              autocomplete="new-password"
+              (focus)="passwordFocused = true"
+              (blur)="passwordFocused = false"
+            />
+            <button
+              type="button"
+              class="dsi-eye-btn"
+              (click)="hideAdminPassword = !hideAdminPassword"
+              tabindex="-1"
+            >
+              <mat-icon>{{
+                hideAdminPassword ? "visibility_off" : "visibility"
+              }}</mat-icon>
             </button>
           </div>
 
           <!-- Barre de force -->
-          <div class="dsi-strength-track" *ngIf="adminForm.get('password')?.value">
-            <div class="dsi-strength-fill"
-                 [style.width]="passwordStrength + '%'"
-                 [ngClass]="passwordStrengthClass"></div>
+          <div
+            class="dsi-strength-track"
+            *ngIf="adminForm.get('password')?.value"
+          >
+            <div
+              class="dsi-strength-fill"
+              [style.width]="passwordStrength + '%'"
+              [ngClass]="passwordStrengthClass"
+            ></div>
           </div>
-          <span class="dsi-strength-lbl" *ngIf="adminForm.get('password')?.value"
-                [ngClass]="passwordStrengthClass">
+          <span
+            class="dsi-strength-lbl"
+            *ngIf="adminForm.get('password')?.value"
+            [ngClass]="passwordStrengthClass"
+          >
             Mot de passe : {{ passwordStrengthLabel }}
           </span>
 
-          <span class="dsi-error-msg"
-                *ngIf="adminForm.get('password')?.hasError('required') && adminForm.get('password')?.touched">
+          <span
+            class="dsi-error-msg"
+            *ngIf="
+              adminForm.get('password')?.hasError('required') &&
+              adminForm.get('password')?.touched
+            "
+          >
             Le mot de passe est requis
           </span>
-          <span class="dsi-error-msg"
-                *ngIf="adminForm.get('password')?.hasError('minlength') && adminForm.get('password')?.touched">
+          <span
+            class="dsi-error-msg"
+            *ngIf="
+              adminForm.get('password')?.hasError('minlength') &&
+              adminForm.get('password')?.touched
+            "
+          >
             Minimum 8 caractères requis
           </span>
         </div>
@@ -702,26 +1085,40 @@
         <!-- Note informative -->
         <div class="dsi-info-note">
           <mat-icon>info_outline</mat-icon>
-          <span>Ce compte DSI aura accès complet à l'espace <strong>{{ selectedImf?.nom }}</strong>.
-                Le DSI devra changer ce mot de passe à sa première connexion.</span>
+          <span
+            >Ce compte DSI aura accès complet à l'espace
+            <strong>{{ selectedImf?.nom }}</strong
+            >. Le DSI devra changer ce mot de passe à sa première
+            connexion.</span
+          >
         </div>
 
         <!-- Actions -->
         <div class="dsi-actions">
-          <button mat-stroked-button type="button" (click)="closeModal()" class="dsi-btn-cancel">
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="closeModal()"
+            class="dsi-btn-cancel"
+          >
             Annuler
           </button>
-          <button mat-flat-button type="submit" class="dsi-btn-submit"
-                  [class.dsi-btn-gold]="selectedImf?.hasDsi"
-                  [disabled]="adminForm.invalid || modalLoading">
+          <button
+            mat-flat-button
+            type="submit"
+            class="dsi-btn-submit"
+            [class.dsi-btn-gold]="selectedImf?.hasDsi"
+            [disabled]="adminForm.invalid || modalLoading"
+          >
             <mat-spinner *ngIf="modalLoading" diameter="18"></mat-spinner>
             <ng-container *ngIf="!modalLoading">
-              <mat-icon>{{ selectedImf?.hasDsi ? 'save' : 'person_add' }}</mat-icon>
-              {{ selectedImf?.hasDsi ? 'Mettre à jour' : 'Créer le compte' }}
+              <mat-icon>{{
+                selectedImf?.hasDsi ? "save" : "person_add"
+              }}</mat-icon>
+              {{ selectedImf?.hasDsi ? "Mettre à jour" : "Créer le compte" }}
             </ng-container>
           </button>
         </div>
-
       </form>
     </ng-container>
 
@@ -733,9 +1130,14 @@
         <div class="modal-icon danger"><mat-icon>delete_forever</mat-icon></div>
         <div>
           <h3>Supprimer l'IMF</h3>
-          <p>Action <strong>irréversible</strong> — toutes les données seront perdues</p>
+          <p>
+            Action <strong>irréversible</strong> — toutes les données seront
+            perdues
+          </p>
         </div>
-        <button mat-icon-button (click)="closeModal()" class="modal-close"><mat-icon>close</mat-icon></button>
+        <button mat-icon-button (click)="closeModal()" class="modal-close">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
 
       <div class="modal-feedback success" *ngIf="modalSuccess">
@@ -747,10 +1149,14 @@
           <mat-icon>warning_amber</mat-icon>
           <div>
             <strong>Vous êtes sur le point de supprimer :</strong>
-            <p class="delete-target">{{ selectedImf?.nom }} <span class="delete-code">({{ selectedImf?.code }})</span></p>
+            <p class="delete-target">
+              {{ selectedImf?.nom }}
+              <span class="delete-code">({{ selectedImf?.code }})</span>
+            </p>
             <p class="delete-note">
               Cette action supprime définitivement le tenant de la plateforme.
-              Les utilisateurs rattachés à cette IMF doivent être supprimés au préalable.
+              Les utilisateurs rattachés à cette IMF doivent être supprimés au
+              préalable.
             </p>
           </div>
         </div>
@@ -763,15 +1169,19 @@
           <button mat-stroked-button type="button" (click)="closeModal()">
             Annuler
           </button>
-          <button mat-flat-button type="button" class="btn-danger"
-                  [disabled]="modalLoading" (click)="submitDeleteImf()">
+          <button
+            mat-flat-button
+            type="button"
+            class="btn-danger"
+            [disabled]="modalLoading"
+            (click)="submitDeleteImf()"
+          >
             <mat-spinner *ngIf="modalLoading" diameter="18"></mat-spinner>
             <mat-icon *ngIf="!modalLoading">delete_forever</mat-icon>
-            <span>{{ modalLoading ? '' : 'Supprimer définitivement' }}</span>
+            <span>{{ modalLoading ? "" : "Supprimer définitivement" }}</span>
           </button>
         </div>
       </ng-container>
     </ng-container>
-
   </div>
 </div>

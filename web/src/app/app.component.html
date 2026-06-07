@@ -9,7 +9,6 @@
 
 <!-- Application principale -->
 <ng-container *ngIf="!showSplash">
-
   <!-- Lueur interactive qui suit la souris en arrière-plan -->
   <div class="mouse-glow-bg"></div>
 
@@ -23,9 +22,7 @@
     <div class="app-shell">
       <imf-sidebar></imf-sidebar>
       <div class="app-content">
-        <imf-navbar
-          (toggleSidenav)="sidenavOpen = !sidenavOpen">
-        </imf-navbar>
+        <imf-navbar (toggleSidenav)="sidenavOpen = !sidenavOpen"> </imf-navbar>
         <main class="app-main">
           <router-outlet></router-outlet>
         </main>
@@ -37,5 +34,4 @@
   <ng-container *ngIf="!isShellless && !auth.isLoggedIn()">
     <router-outlet></router-outlet>
   </ng-container>
-
 </ng-container>

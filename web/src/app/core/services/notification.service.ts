@@ -1,15 +1,14 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ApiResponse, NotificationItem } from '../models/api-response.model';
-import { SseService } from './sse.service';
-import { AuthService } from './auth.service';
+import { Injectable, OnDestroy } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { BehaviorSubject, Observable, Subscription } from "rxjs";
+import { map } from "rxjs/operators";
+import { ApiResponse, NotificationItem } from "../models/api-response.model";
+import { SseService } from "./sse.service";
+import { AuthService } from "./auth.service";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class NotificationService implements OnDestroy {
-
-  private readonly API = '/api/notifications';
+  private readonly API = "/api/notifications";
 
   private items$ = new BehaviorSubject<NotificationItem[]>([]);
   private sseSub?: Subscription;
@@ -23,8 +22,8 @@ export class NotificationService implements OnDestroy {
   /** Initialise le service : charge l'historique + écoute le flux SSE. */
   init(): void {
     this.loadInitial();
-    this.sseSub = this.sseService.connect().subscribe(event => {
-      if (event.type === 'HEARTBEAT') return;
+    this.sseSub = this.sseService.connect().subscribe((event) => {
+      if (event.type === "HEARTBEAT") return;
       // Prépend une notification locale depuis l'événement SSE
       const item: NotificationItem = {
         id: 0, // ID temporaire — sera remplacé au prochain reload
@@ -45,29 +44,38 @@ export class NotificationService implements OnDestroy {
   }
 
   get unreadCount$(): Observable<number> {
-    return this.items$.pipe(map(items => items.filter(n => !n.lu).length));
+    return this.items$.pipe(map((items) => items.filter((n) => !n.lu).length));
   }
 
   loadInitial(): void {
     if (!this.auth.isLoggedIn()) return;
-    this.http.get<ApiResponse<{ content: NotificationItem[] }>>(`${this.API}?page=0&size=30`)
-      .pipe(map(r => r.data?.content ?? []))
-      .subscribe({ next: items => this.items$.next(items), error: () => {} });
+    this.http
+      .get<ApiResponse<{ content: NotificationItem[] }>>(
+        `${this.API}?page=0&size=30`,
+      )
+      .pipe(map((r) => r.data?.content ?? []))
+      .subscribe({ next: (items) => this.items$.next(items), error: () => {} });
   }
 
   markAsRead(id: number): void {
     if (id === 0) return;
-    this.http.put<ApiResponse<void>>(`${this.API}/${id}/read`, {})
-      .subscribe({ next: () => {
-        this.items$.next(this.items$.value.map(n => n.id === id ? { ...n, lu: true } : n));
-      }, error: () => {} });
+    this.http.put<ApiResponse<void>>(`${this.API}/${id}/read`, {}).subscribe({
+      next: () => {
+        this.items$.next(
+          this.items$.value.map((n) => (n.id === id ? { ...n, lu: true } : n)),
+        );
+      },
+      error: () => {},
+    });
   }
 
   markAllAsRead(): void {
-    this.http.put<ApiResponse<void>>(`${this.API}/read-all`, {})
-      .subscribe({ next: () => {
-        this.items$.next(this.items$.value.map(n => ({ ...n, lu: true })));
-      }, error: () => {} });
+    this.http.put<ApiResponse<void>>(`${this.API}/read-all`, {}).subscribe({
+      next: () => {
+        this.items$.next(this.items$.value.map((n) => ({ ...n, lu: true })));
+      },
+      error: () => {},
+    });
   }
 
   reset(): void {
@@ -81,13 +89,13 @@ export class NotificationService implements OnDestroy {
 
   private titleForType(type: string): string {
     const titles: Record<string, string> = {
-      ALERTE_CREATED:     'Nouvelle alerte impayé',
-      ALERTE_UPDATED:     'Alerte mise à jour',
-      COLLECTE_CONFIRMED: 'Collecte confirmée',
-      KPI_UPDATED:        'KPI mis à jour',
-      PIPELINE_STATUS:    'Statut pipeline',
-      SYNC_COMPLETED:     'Synchronisation terminée',
+      ALERTE_CREATED: "Nouvelle alerte impayé",
+      ALERTE_UPDATED: "Alerte mise à jour",
+      COLLECTE_CONFIRMED: "Collecte confirmée",
+      KPI_UPDATED: "KPI mis à jour",
+      PIPELINE_STATUS: "Statut pipeline",
+      SYNC_COMPLETED: "Synchronisation terminée",
     };
-    return titles[type] ?? 'Notification';
+    return titles[type] ?? "Notification";
   }
 }

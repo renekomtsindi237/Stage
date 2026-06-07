@@ -1,41 +1,48 @@
 // ── Host component background ────────────────────────────────────────────────
 :host {
   display: block;
-  background: #FAFBFC;  // Fond clair Blucash
+  background: #fafbfc; // Fond clair Blucash
   min-height: 100%;
 }
 
 // ── En-tête ───────────────────────────────────────────────────────────────────
 .create-header {
-  display: flex; align-items: center; gap: 16px; margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
 
   .header-content {
     flex: 1;
   }
 
-  h1 { 
-    font-size: 1.9rem; 
-    font-weight: 900; 
-    letter-spacing: -1px; 
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 900;
+    letter-spacing: -1px;
     margin: 0 0 4px;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-    color: #000000;  // Noir pur pour les titres
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
+    color: #000000; // Noir pur pour les titres
   }
-  .page-sub { 
-    font-size: 0.85rem; 
-    color: #1A1A1A;  // Noir légèrement atténué
+  .page-sub {
+    font-size: 0.85rem;
+    color: #1a1a1a; // Noir légèrement atténué
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }
 
 .btn-back {
-  color: #0066FF !important;  // Bleu Blucash
+  color: #0066ff !important; // Bleu Blucash
   flex-shrink: 0;
   transition: all 0.2s ease;
-  &:hover { 
-    background: #E6F0FF !important;  // Bleu très pâle
-    color: #3385FF !important;  // Bleu plus clair
+  &:hover {
+    background: #e6f0ff !important; // Bleu très pâle
+    color: #3385ff !important; // Bleu plus clair
   }
 }
 
@@ -46,17 +53,21 @@
   gap: 28px;
   align-items: start;
 
-  @media (max-width: 900px) { grid-template-columns: 1fr; }
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 // ── Formulaire ────────────────────────────────────────────────────────────────
 .form-panel {
-  border-radius: 16px;  // Coins arrondis style Blucash
-  border: none !important;  // Pas de bordure
+  border-radius: 16px; // Coins arrondis style Blucash
+  border: none !important; // Pas de bordure
   padding: 0;
   overflow: hidden;
-  background: #FFFFFF !important;  // Fond blanc
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06) !important;  // Ombre douce
+  background: #ffffff !important; // Fond blanc
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.06) !important; // Ombre douce
 }
 
 // ── Stepper Progress ──────────────────────────────────────────────────────────
@@ -65,8 +76,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px 28px;
-  background: #FAFBFC;  // Fond gris très clair
-  border-bottom: 1px solid #E5E7EB;  // Bordure grise claire
+  background: #fafbfc; // Fond gris très clair
+  border-bottom: 1px solid #e5e7eb; // Bordure grise claire
 }
 
 .step {
@@ -78,18 +89,18 @@
   transition: all 0.3s ease;
 
   &.active .step-circle {
-    background: #0066FF;  // Bleu Blucash pur
-    color: #FFFFFF;
+    background: #0066ff; // Bleu Blucash pur
+    color: #ffffff;
     border-color: transparent;
     box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
     transform: scale(1.1);
   }
 
   &.completed .step-circle {
-    background: #00D084;  // Vert Blucash
-    color: #FFFFFF;
+    background: #00d084; // Vert Blucash
+    color: #ffffff;
     border-color: transparent;
-    
+
     mat-icon {
       font-size: 18px;
       width: 18px;
@@ -102,14 +113,14 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #FFFFFF;
-  border: 2px solid #E5E7EB;  // Bordure grise claire
+  background: #ffffff;
+  border: 2px solid #e5e7eb; // Bordure grise claire
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.9rem;
   font-weight: 800;
-  color: #6B7280;  // Gris
+  color: #6b7280; // Gris
   transition: all 0.3s ease;
 
   span {
@@ -120,40 +131,47 @@
 .step-label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #6B7280;  // Gris
+  color: #6b7280; // Gris
   text-align: center;
   transition: color 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 
   .step.active & {
-    color: #0066FF;  // Bleu Blucash
+    color: #0066ff; // Bleu Blucash
   }
 
   .step.completed & {
-    color: #00D084;  // Vert Blucash
+    color: #00d084; // Vert Blucash
   }
 }
 
 .step-line {
   flex: 1;
   height: 2px;
-  background: #E5E7EB;  // Gris clair
+  background: #e5e7eb; // Gris clair
   margin: 0 8px;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
 
   &.completed {
-    background: #00D084;  // Vert Blucash
-    
+    background: #00d084; // Vert Blucash
+
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+      );
       animation: shimmer-line 1.5s infinite;
     }
   }
@@ -161,7 +179,7 @@
 
 .modern-form {
   padding: 28px 32px 32px;
-  background: #FFFFFF;  // Fond blanc pur comme Blucash
+  background: #ffffff; // Fond blanc pur comme Blucash
 }
 
 .form-step {
@@ -169,7 +187,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background: #FFFFFF;  // Fond blanc pur
+  background: #ffffff; // Fond blanc pur
 }
 
 .step-header {
@@ -182,7 +200,7 @@
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: #E6F0FF;  // Bleu Blucash très pâle
+    background: #e6f0ff; // Bleu Blucash très pâle
     display: flex;
     align-items: center;
     justify-content: center;
@@ -192,7 +210,7 @@
       font-size: 24px;
       width: 24px;
       height: 24px;
-      color: #0066FF;  // Bleu Blucash
+      color: #0066ff; // Bleu Blucash
     }
   }
 
@@ -200,16 +218,20 @@
     font-size: 1.05rem;
     font-weight: 800;
     margin: 0 0 4px;
-    color: #000000;  // Noir pur pour les titres
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    color: #000000; // Noir pur pour les titres
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 
   p {
     font-size: 0.85rem;
-    color: #1A1A1A;  // Noir légèrement atténué
+    color: #1a1a1a; // Noir légèrement atténué
     margin: 0;
     line-height: 1.4;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }
 
@@ -222,19 +244,19 @@
     }
 
     .mat-mdc-text-field-wrapper {
-      background: #FFFFFF !important;  // Fond blanc pur
+      background: #ffffff !important; // Fond blanc pur
       border-radius: var(--radius-md) !important;
     }
 
     .mat-mdc-form-field-icon-prefix {
       padding-right: 12px;
-      color: #0066FF;  // Icône bleue Blucash
+      color: #0066ff; // Icône bleue Blucash
     }
 
     input {
       font-size: 0.95rem;
       font-weight: 500;
-      color: #000000;  // Texte noir pur
+      color: #000000; // Texte noir pur
     }
   }
 }
@@ -243,8 +265,8 @@
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: #E6F0FF;  // Fond bleu très pâle Blucash
-  border: 1px solid #BFDBFE;  // Bordure bleue claire
+  background: #e6f0ff; // Fond bleu très pâle Blucash
+  border: 1px solid #bfdbfe; // Bordure bleue claire
   border-radius: var(--radius-md);
   font-size: 0.85rem;
   line-height: 1.5;
@@ -253,13 +275,13 @@
     font-size: 20px;
     width: 20px;
     height: 20px;
-    color: #0066FF;  // Icône bleue Blucash
+    color: #0066ff; // Icône bleue Blucash
     flex-shrink: 0;
     margin-top: 2px;
   }
 
   strong {
-    color: #000000;  // Noir pur
+    color: #000000; // Noir pur
     font-weight: 700;
   }
 
@@ -273,8 +295,8 @@
   .tip-badge {
     display: inline-block;
     padding: 4px 10px;
-    background: #E6F0FF;  // Fond bleu pâle
-    color: #0066FF;  // Texte bleu Blucash
+    background: #e6f0ff; // Fond bleu pâle
+    color: #0066ff; // Texte bleu Blucash
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 800;
@@ -286,8 +308,12 @@
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: linear-gradient(135deg, rgba(168,85,247,0.05), rgba(192,132,252,0.05));
-  border: 1px solid rgba(168,85,247,0.15);
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.05),
+    rgba(192, 132, 252, 0.05)
+  );
+  border: 1px solid rgba(168, 85, 247, 0.15);
   border-radius: var(--radius-md);
   font-size: 0.85rem;
   line-height: 1.5;
@@ -296,7 +322,7 @@
     font-size: 20px;
     width: 20px;
     height: 20px;
-    color: #A855F7;
+    color: #a855f7;
     flex-shrink: 0;
     margin-top: 2px;
   }
@@ -327,26 +353,26 @@
 
 .role-card {
   padding: 16px;
-  border: 2px solid #E5E7EB;  // Bordure grise claire
-  border-radius: 12px;  // Coins arrondis style Blucash
+  border: 2px solid #e5e7eb; // Bordure grise claire
+  border-radius: 12px; // Coins arrondis style Blucash
   cursor: pointer;
   transition: all 0.3s ease;
-  background: #FFFFFF;  // Fond blanc pur
+  background: #ffffff; // Fond blanc pur
 
   &:hover {
-    border-color: #0066FF;  // Bordure bleue au hover
-    background: #E6F0FF;  // Fond bleu très pâle
+    border-color: #0066ff; // Bordure bleue au hover
+    background: #e6f0ff; // Fond bleu très pâle
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
   }
 
   &.selected {
-    border-color: #0066FF;  // Bordure bleue
-    background: #E6F0FF;  // Fond bleu très pâle
+    border-color: #0066ff; // Bordure bleue
+    background: #e6f0ff; // Fond bleu très pâle
     box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
 
     .role-card-header {
-      color: #0066FF;  // Texte bleu
+      color: #0066ff; // Texte bleu
     }
   }
 }
@@ -361,28 +387,32 @@
     font-size: 20px;
     width: 20px;
     height: 20px;
-    color: #0066FF;  // Icône bleue
+    color: #0066ff; // Icône bleue
   }
 
   .check-icon {
     margin-left: auto;
-    color: #00D084;  // Vert Blucash
+    color: #00d084; // Vert Blucash
   }
 }
 
 .role-card-title {
   font-size: 0.9rem;
   font-weight: 800;
-  color: #000000;  // Noir pur
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  color: #000000; // Noir pur
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 .role-card-desc {
   font-size: 0.8rem;
-  color: #6B7280;  // Gris
+  color: #6b7280; // Gris
   margin: 0;
   line-height: 1.5;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 .form-error {
@@ -390,8 +420,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(229,72,77,0.07);
-  border: 1px solid rgba(229,72,77,0.25);
+  background: rgba(229, 72, 77, 0.07);
+  border: 1px solid rgba(229, 72, 77, 0.25);
   border-radius: var(--radius-md);
   color: var(--color-warn);
   font-size: 0.85rem;
@@ -406,8 +436,8 @@
 
 .form-summary {
   padding: 18px;
-  background: #E6F9F3;  // Fond vert très pâle
-  border: 1px solid #A7F3D0;  // Bordure verte claire
+  background: #e6f9f3; // Fond vert très pâle
+  border: 1px solid #a7f3d0; // Bordure verte claire
   border-radius: var(--radius-md);
 }
 
@@ -438,68 +468,120 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  background: #FFFFFF;  // Fond blanc pur
+  background: #ffffff; // Fond blanc pur
   border-radius: 8px;
 }
 
 .summary-label {
   font-size: 0.82rem;
-  color: #6B7280;  // Gris
+  color: #6b7280; // Gris
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 .summary-value {
   font-size: 0.88rem;
-  color: #000000;  // Noir pur
+  color: #000000; // Noir pur
   font-weight: 700;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
-.form-field { width: 100%; margin-bottom: 20px; display: block; }
+.form-field {
+  width: 100%;
+  margin-bottom: 20px;
+  display: block;
+}
 
 .error-banner {
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: rgba(229, 72, 77, 0.07);
   border: 1px solid rgba(229, 72, 77, 0.25);
   border-radius: var(--radius-md);
-  padding: 12px 16px; margin-bottom: 20px;
-  color: var(--color-warn); font-size: 0.88rem; font-weight: 600;
-  mat-icon { font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  color: var(--color-warn);
+  font-size: 0.88rem;
+  font-weight: 600;
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
 }
 
-.optional { font-size: 0.75rem; font-weight: 400; color: var(--color-text-muted); }
+.optional {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
 
 // ── Rôle ──────────────────────────────────────────────────────────────────────
 .role-option {
-  display: flex; align-items: center; gap: 10px;
-  mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--color-primary); }
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary);
+  }
 }
 
 .role-desc {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 14px 16px; margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
   background: var(--color-primary-light);
   border: 1px solid rgba(37, 99, 235, 0.15);
-  border-radius: var(--radius-md); font-size: 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--color-primary); flex-shrink: 0; margin-top: 2px; }
-  strong { font-weight: 800; color: var(--color-text-primary); display: block; margin-bottom: 3px; }
-  p { color: var(--color-text-muted); margin: 0; line-height: 1.5; }
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  strong {
+    font-weight: 800;
+    color: var(--color-text-primary);
+    display: block;
+    margin-bottom: 3px;
+  }
+  p {
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
 .form-actions {
-  display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;
-  background: #FFFFFF;  // Fond blanc
-  
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  background: #ffffff; // Fond blanc
+
   &.modern {
     margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid #E5E7EB;  // Bordure grise claire
+    border-top: 1px solid #e5e7eb; // Bordure grise claire
   }
-  
-  button { 
+
+  button {
     border-radius: var(--radius-md) !important;
     font-weight: 700 !important;
   }
@@ -511,139 +593,230 @@
 
 .btn-back-step {
   gap: 6px;
-  background: #FFFFFF !important;
-  color: #0066FF !important;  // Texte bleu
-  border: 2px solid #0066FF !important;  // Bordure bleue
+  background: #ffffff !important;
+  color: #0066ff !important; // Texte bleu
+  border: 2px solid #0066ff !important; // Bordure bleue
   border-radius: 12px !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
-  
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif !important;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
   &:hover:not(:disabled) {
-    background: #E6F0FF !important;  // Fond bleu très pâle
-    border-color: #3385FF !important;
-    color: #3385FF !important;
+    background: #e6f0ff !important; // Fond bleu très pâle
+    border-color: #3385ff !important;
+    color: #3385ff !important;
   }
 }
 
 .btn-cancel {
   gap: 6px;
-  background: #FFFFFF !important;
-  color: #FF3B30 !important;  // Texte rouge
-  border: 2px solid #FF3B30 !important;  // Bordure rouge
+  background: #ffffff !important;
+  color: #ff3b30 !important; // Texte rouge
+  border: 2px solid #ff3b30 !important; // Bordure rouge
   border-radius: 12px !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
-  
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif !important;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
   &:hover:not(:disabled) {
-    background: #FFE6E6 !important;  // Fond rouge très pâle
-    border-color: #DC2626 !important;
-    color: #DC2626 !important;
+    background: #ffe6e6 !important; // Fond rouge très pâle
+    border-color: #dc2626 !important;
+    color: #dc2626 !important;
   }
 }
 
 .btn-next {
-  background: #0066FF !important;  // Bleu Blucash pur
+  background: #0066ff !important; // Bleu Blucash pur
   color: #fff !important;
   gap: 6px;
-  border-radius: 12px !important;  // Coins arrondis style Blucash
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  
+  border-radius: 12px !important; // Coins arrondis style Blucash
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif !important;
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
   &:hover:not(:disabled) {
-    background: #3385FF !important;  // Bleu plus clair
+    background: #3385ff !important; // Bleu plus clair
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(0, 102, 255, 0.3) !important;
   }
 }
 
 .btn-submit {
-  background: #0066FF !important;  // Bleu Blucash pur
-  color: #fff !important; 
+  background: #0066ff !important; // Bleu Blucash pur
+  color: #fff !important;
   font-weight: 700 !important;
-  border-radius: 12px !important;  // Coins arrondis style Blucash
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
-  display: flex; align-items: center; gap: 8px;
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  mat-spinner { display: inline-block; }
-  &:hover:not(:disabled) { 
-    background: #3385FF !important;  // Bleu plus clair
-    transform: translateY(-1px); 
-    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.3) !important; 
+  border-radius: 12px !important; // Coins arrondis style Blucash
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  mat-spinner {
+    display: inline-block;
+  }
+  &:hover:not(:disabled) {
+    background: #3385ff !important; // Bleu plus clair
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.3) !important;
   }
 }
 
 // ── Panneau info (droite) ─────────────────────────────────────────��───────────
-.info-panel { display: flex; flex-direction: column; gap: 16px; }
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .info-card {
-  border-radius: var(--radius-lg); border: 1px solid var(--color-border) !important; padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border) !important;
+  padding: 20px;
 
   .info-card-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: linear-gradient(135deg, rgba(27,79,138,0.1), rgba(37,99,235,0.07));
-    display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
-    mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--color-primary); }
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(
+      135deg,
+      rgba(27, 79, 138, 0.1),
+      rgba(37, 99, 235, 0.07)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: var(--color-primary);
+    }
     &.gold {
-      background: linear-gradient(135deg, rgba(200,146,58,0.1), rgba(200,146,58,0.06));
-      mat-icon { color: var(--brand-gold); }
+      background: linear-gradient(
+        135deg,
+        rgba(200, 146, 58, 0.1),
+        rgba(200, 146, 58, 0.06)
+      );
+      mat-icon {
+        color: var(--brand-gold);
+      }
     }
   }
-  h4 { 
-    font-size: 0.9rem; 
-    font-weight: 800; 
-    margin: 0 0 8px; 
-    color: #000000;  // Noir pur
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  h4 {
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin: 0 0 8px;
+    color: #000000; // Noir pur
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
-  p  { 
-    font-size: 0.82rem; 
-    color: #1A1A1A;  // Noir légèrement atténué
-    margin: 0; 
+  p {
+    font-size: 0.82rem;
+    color: #1a1a1a; // Noir légèrement atténué
+    margin: 0;
     line-height: 1.6;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }
 
 .roles-summary {
-  border-radius: var(--radius-lg); border: 1px solid var(--color-border) !important; padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border) !important;
+  padding: 20px;
 
   .roles-summary-title {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.6px; color: var(--color-text-muted); margin-bottom: 16px;
-    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--color-text-muted);
+    margin-bottom: 16px;
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
   }
 }
 
 .role-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--color-border);
-  &:last-child { border-bottom: none; padding-bottom: 0; }
-
-  mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--color-primary); flex-shrink: 0; margin-top: 2px; }
-  .role-item-label { 
-    display: block; 
-    font-size: 0.85rem; 
-    font-weight: 700; 
-    color: #000000;  // Noir pur
-    margin-bottom: 2px;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
   }
-  .role-item-desc  { 
-    display: block; 
-    font-size: 0.75rem; 
-    color: #6B7280;  // Gris
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .role-item-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #000000; // Noir pur
+    margin-bottom: 2px;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
+  }
+  .role-item-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280; // Gris
     line-height: 1.4;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }
 
 // ── Animations ────────────────────────────────────────────────────────────────
 @keyframes shimmer-line {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 // ── GPS Section ───────────────────────────────────────────────────────────────
@@ -709,7 +882,9 @@
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.18s, color 0.18s;
+  transition:
+    background 0.18s,
+    color 0.18s;
 
   mat-icon {
     font-size: 16px;
@@ -727,7 +902,9 @@
     cursor: not-allowed;
   }
 
-  mat-spinner { opacity: 0.75; }
+  mat-spinner {
+    opacity: 0.75;
+  }
 }
 
 .btn-gps-clear {
@@ -741,9 +918,15 @@
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 
   &:hover {
     background: #fee2e2;
@@ -764,7 +947,12 @@
   color: #dc2626;
   font-size: 0.82rem;
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; flex-shrink: 0; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
 }
 
 .gps-coords {
@@ -793,7 +981,7 @@
 
   .coord-val {
     color: var(--color-text);
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-family: "SF Mono", "Fira Code", monospace;
   }
 }
 
@@ -821,7 +1009,12 @@
   color: var(--color-text-muted);
   border-top: 1px solid var(--color-border);
 
-  mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--color-primary); }
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--color-primary);
+  }
 }
 
 .gps-hint {

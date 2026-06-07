@@ -1,5 +1,4 @@
 <div class="reporting-container">
-
   <!-- En-tête moderne -->
   <header class="reporting-header">
     <div class="header-content">
@@ -8,7 +7,9 @@
       </div>
       <div>
         <h1>Reporting & Exports</h1>
-        <p class="header-subtitle">Générez et téléchargez vos rapports d'activité</p>
+        <p class="header-subtitle">
+          Générez et téléchargez vos rapports d'activité
+        </p>
       </div>
     </div>
     <div class="header-badge">
@@ -28,34 +29,59 @@
         <p>Sélectionnez la plage de dates pour vos rapports</p>
       </div>
     </div>
-    
+
     <form [formGroup]="form" class="periode-form">
       <mat-form-field appearance="outline" class="modern-field">
         <mat-label>Date de début</mat-label>
-        <input matInput [matDatepicker]="pickerDebut" formControlName="dateDebut">
+        <input
+          matInput
+          [matDatepicker]="pickerDebut"
+          formControlName="dateDebut"
+        />
         <mat-icon matPrefix>event</mat-icon>
-        <mat-datepicker-toggle matSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="pickerDebut"
+        ></mat-datepicker-toggle>
         <mat-datepicker #pickerDebut></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="modern-field">
         <mat-label>Date de fin</mat-label>
-        <input matInput [matDatepicker]="pickerFin" formControlName="dateFin">
+        <input matInput [matDatepicker]="pickerFin" formControlName="dateFin" />
         <mat-icon matPrefix>event</mat-icon>
-        <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="pickerFin"
+        ></mat-datepicker-toggle>
         <mat-datepicker #pickerFin></mat-datepicker>
       </mat-form-field>
 
       <div class="quick-filters">
-        <button mat-stroked-button type="button" (click)="setQuickFilter(7)" class="quick-btn">
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="setQuickFilter(7)"
+          class="quick-btn"
+        >
           <mat-icon>today</mat-icon>
           7 jours
         </button>
-        <button mat-stroked-button type="button" (click)="setQuickFilter(30)" class="quick-btn">
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="setQuickFilter(30)"
+          class="quick-btn"
+        >
           <mat-icon>date_range</mat-icon>
           30 jours
         </button>
-        <button mat-stroked-button type="button" (click)="setQuickFilter(90)" class="quick-btn">
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="setQuickFilter(90)"
+          class="quick-btn"
+        >
           <mat-icon>calendar_month</mat-icon>
           90 jours
         </button>
@@ -65,7 +91,6 @@
 
   <!-- Grille de rapports -->
   <div class="reports-grid">
-
     <!-- Rapport Collectes -->
     <div class="report-card glass">
       <div class="report-header blue-gradient">
@@ -77,11 +102,14 @@
           Populaire
         </div>
       </div>
-      
+
       <div class="report-content">
         <h3 class="report-title">Collectes Terrain</h3>
-        <p class="report-description">Toutes les collectes confirmées sur la période sélectionnée avec détails des agents et montants.</p>
-        
+        <p class="report-description">
+          Toutes les collectes confirmées sur la période sélectionnée avec
+          détails des agents et montants.
+        </p>
+
         <div class="report-stats">
           <div class="stat-item">
             <mat-icon>check_circle</mat-icon>
@@ -95,17 +123,37 @@
       </div>
 
       <div class="report-actions">
-        <button mat-flat-button class="btn-export csv" (click)="exportCollectesCSV()"
-                [disabled]="form.invalid || isLoading('collectes-csv')">
-          <mat-spinner *ngIf="isLoading('collectes-csv')" diameter="18"></mat-spinner>
+        <button
+          mat-flat-button
+          class="btn-export csv"
+          (click)="exportCollectesCSV()"
+          [disabled]="form.invalid || isLoading('collectes-csv')"
+        >
+          <mat-spinner
+            *ngIf="isLoading('collectes-csv')"
+            diameter="18"
+          ></mat-spinner>
           <mat-icon *ngIf="!isLoading('collectes-csv')">download</mat-icon>
-          <span>{{ isLoading('collectes-csv') ? 'Export...' : 'Exporter CSV' }}</span>
+          <span>{{
+            isLoading("collectes-csv") ? "Export..." : "Exporter CSV"
+          }}</span>
         </button>
-        <button mat-stroked-button class="btn-export pdf" (click)="exportCollectesPDF()"
-                [disabled]="form.invalid || isLoading('collectes-pdf')">
-          <mat-spinner *ngIf="isLoading('collectes-pdf')" diameter="18"></mat-spinner>
-          <mat-icon *ngIf="!isLoading('collectes-pdf')">picture_as_pdf</mat-icon>
-          <span>{{ isLoading('collectes-pdf') ? 'Export...' : 'Exporter PDF' }}</span>
+        <button
+          mat-stroked-button
+          class="btn-export pdf"
+          (click)="exportCollectesPDF()"
+          [disabled]="form.invalid || isLoading('collectes-pdf')"
+        >
+          <mat-spinner
+            *ngIf="isLoading('collectes-pdf')"
+            diameter="18"
+          ></mat-spinner>
+          <mat-icon *ngIf="!isLoading('collectes-pdf')"
+            >picture_as_pdf</mat-icon
+          >
+          <span>{{
+            isLoading("collectes-pdf") ? "Export..." : "Exporter PDF"
+          }}</span>
         </button>
       </div>
     </div>
@@ -121,11 +169,14 @@
           Critique
         </div>
       </div>
-      
+
       <div class="report-content">
         <h3 class="report-title">Prêts en Retard</h3>
-        <p class="report-description">Portfolio complet des prêts avec jours de retard supérieur à 0, incluant PAR30 et PAR90.</p>
-        
+        <p class="report-description">
+          Portfolio complet des prêts avec jours de retard supérieur à 0,
+          incluant PAR30 et PAR90.
+        </p>
+
         <div class="report-stats">
           <div class="stat-item">
             <mat-icon>priority_high</mat-icon>
@@ -139,17 +190,35 @@
       </div>
 
       <div class="report-actions">
-        <button mat-flat-button class="btn-export csv" (click)="exportPretsCSV()"
-                [disabled]="isLoading('prets-csv')">
-          <mat-spinner *ngIf="isLoading('prets-csv')" diameter="18"></mat-spinner>
+        <button
+          mat-flat-button
+          class="btn-export csv"
+          (click)="exportPretsCSV()"
+          [disabled]="isLoading('prets-csv')"
+        >
+          <mat-spinner
+            *ngIf="isLoading('prets-csv')"
+            diameter="18"
+          ></mat-spinner>
           <mat-icon *ngIf="!isLoading('prets-csv')">download</mat-icon>
-          <span>{{ isLoading('prets-csv') ? 'Export...' : 'Exporter CSV' }}</span>
+          <span>{{
+            isLoading("prets-csv") ? "Export..." : "Exporter CSV"
+          }}</span>
         </button>
-        <button mat-stroked-button class="btn-export pdf" (click)="exportPretsPDF()"
-                [disabled]="isLoading('prets-pdf')">
-          <mat-spinner *ngIf="isLoading('prets-pdf')" diameter="18"></mat-spinner>
+        <button
+          mat-stroked-button
+          class="btn-export pdf"
+          (click)="exportPretsPDF()"
+          [disabled]="isLoading('prets-pdf')"
+        >
+          <mat-spinner
+            *ngIf="isLoading('prets-pdf')"
+            diameter="18"
+          ></mat-spinner>
           <mat-icon *ngIf="!isLoading('prets-pdf')">picture_as_pdf</mat-icon>
-          <span>{{ isLoading('prets-pdf') ? 'Export...' : 'Exporter PDF' }}</span>
+          <span>{{
+            isLoading("prets-pdf") ? "Export..." : "Exporter PDF"
+          }}</span>
         </button>
       </div>
     </div>
@@ -165,11 +234,14 @@
           Complet
         </div>
       </div>
-      
+
       <div class="report-content">
         <h3 class="report-title">Rapport KPI Complet</h3>
-        <p class="report-description">Synthèse complète : PAR30/PAR90, collectes, alertes et indicateurs de performance sur la période.</p>
-        
+        <p class="report-description">
+          Synthèse complète : PAR30/PAR90, collectes, alertes et indicateurs de
+          performance sur la période.
+        </p>
+
         <div class="report-stats">
           <div class="stat-item">
             <mat-icon>insights</mat-icon>
@@ -183,11 +255,19 @@
       </div>
 
       <div class="report-actions single">
-        <button mat-flat-button class="btn-export pdf full" (click)="exportKpiPDF()"
-                [disabled]="form.invalid || isLoading('kpi-pdf')">
+        <button
+          mat-flat-button
+          class="btn-export pdf full"
+          (click)="exportKpiPDF()"
+          [disabled]="form.invalid || isLoading('kpi-pdf')"
+        >
           <mat-spinner *ngIf="isLoading('kpi-pdf')" diameter="18"></mat-spinner>
           <mat-icon *ngIf="!isLoading('kpi-pdf')">picture_as_pdf</mat-icon>
-          <span>{{ isLoading('kpi-pdf') ? 'Génération...' : 'Télécharger le rapport PDF' }}</span>
+          <span>{{
+            isLoading("kpi-pdf")
+              ? "Génération..."
+              : "Télécharger le rapport PDF"
+          }}</span>
         </button>
       </div>
     </div>
@@ -214,13 +294,11 @@
           </div>
         </li>
       </ul>
-      
+
       <div class="info-footer">
         <mat-icon>schedule</mat-icon>
         <span>Génération instantanée</span>
       </div>
     </div>
-
   </div>
-
 </div>

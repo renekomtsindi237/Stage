@@ -17,8 +17,12 @@
           <span class="sep">·</span>
           {{ imf.pays }}
           <span class="sep">·</span>
-          <span class="status-dot" [class.dot-active]="imf.actif" [class.dot-off]="!imf.actif"></span>
-          {{ imf.actif ? 'Active' : 'Inactive' }}
+          <span
+            class="status-dot"
+            [class.dot-active]="imf.actif"
+            [class.dot-off]="!imf.actif"
+          ></span>
+          {{ imf.actif ? "Active" : "Inactive" }}
         </p>
       </div>
     </div>
@@ -27,11 +31,15 @@
     <div class="header-stats" *ngIf="summary">
       <div class="stat-pill">
         <mat-icon>people</mat-icon>
-        <span><strong>{{ summary.userCount }}</strong> utilisateurs</span>
+        <span
+          ><strong>{{ summary.userCount }}</strong> utilisateurs</span
+        >
       </div>
       <div class="stat-pill">
         <mat-icon>account_balance</mat-icon>
-        <span><strong>{{ summary.agenceCount }}</strong> agences</span>
+        <span
+          ><strong>{{ summary.agenceCount }}</strong> agences</span
+        >
       </div>
     </div>
   </ng-container>
@@ -52,16 +60,32 @@
 
 <!-- ── Onglets ── -->
 <div class="tabs-bar" @fadeInUp>
-  <button class="tab-btn" [class.active]="activeTab === 'resume'"  (click)="selectTab('resume')">
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'resume'"
+    (click)="selectTab('resume')"
+  >
     <mat-icon>dashboard</mat-icon> Résumé
   </button>
-  <button class="tab-btn" [class.active]="activeTab === 'users'"   (click)="selectTab('users')">
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'users'"
+    (click)="selectTab('users')"
+  >
     <mat-icon>people</mat-icon> Utilisateurs
   </button>
-  <button class="tab-btn" [class.active]="activeTab === 'agences'" (click)="selectTab('agences')">
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'agences'"
+    (click)="selectTab('agences')"
+  >
     <mat-icon>account_balance</mat-icon> Agences
   </button>
-  <button class="tab-btn" [class.active]="activeTab === 'audit'"   (click)="selectTab('audit')">
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'audit'"
+    (click)="selectTab('audit')"
+  >
     <mat-icon>history</mat-icon> Audit
   </button>
 </div>
@@ -70,9 +94,7 @@
 <!-- ── Onglet RÉSUMÉ ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'resume'" @fadeInUp>
-
   <div class="summary-grid" *ngIf="imf">
-
     <!-- Constitution -->
     <div class="info-card">
       <div class="info-card-header">
@@ -82,32 +104,32 @@
       <div class="info-rows">
         <div class="info-row">
           <span class="info-label">Dénomination sociale</span>
-          <span class="info-value">{{ imf.denominationSociale || '—' }}</span>
+          <span class="info-value">{{ imf.denominationSociale || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Forme juridique</span>
-          <span class="info-value">{{ imf.formeJuridique || '—' }}</span>
+          <span class="info-value">{{ imf.formeJuridique || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">N° agrément</span>
-          <span class="info-value">{{ imf.numAgrement || '—' }}</span>
+          <span class="info-value">{{ imf.numAgrement || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Adresse siège</span>
-          <span class="info-value">{{ imf.adresseSiege || '—' }}</span>
+          <span class="info-value">{{ imf.adresseSiege || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Téléphone</span>
-          <span class="info-value">{{ imf.telephone || '—' }}</span>
+          <span class="info-value">{{ imf.telephone || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Email</span>
-          <span class="info-value">{{ imf.email || '—' }}</span>
+          <span class="info-value">{{ imf.email || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Capital social</span>
           <span class="info-value" *ngIf="imf.capitalSocial != null">
-            {{ imf.capitalSocial | number:'1.0-0' }} XAF
+            {{ imf.capitalSocial | number: "1.0-0" }} XAF
           </span>
           <span class="info-value" *ngIf="imf.capitalSocial == null">—</span>
         </div>
@@ -123,19 +145,29 @@
       <div class="info-rows">
         <div class="info-row">
           <span class="info-label">Taux d'intérêt annuel</span>
-          <span class="info-value">{{ imf.tauxInteretAnnuel != null ? (imf.tauxInteretAnnuel + ' %') : '—' }}</span>
+          <span class="info-value">{{
+            imf.tauxInteretAnnuel != null ? imf.tauxInteretAnnuel + " %" : "—"
+          }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Durée max. crédit</span>
-          <span class="info-value">{{ imf.dureeMaxCreditMois != null ? (imf.dureeMaxCreditMois + ' mois') : '—' }}</span>
+          <span class="info-value">{{
+            imf.dureeMaxCreditMois != null
+              ? imf.dureeMaxCreditMois + " mois"
+              : "—"
+          }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Taux pénalité retard</span>
-          <span class="info-value">{{ imf.tauxPenaliteRetard != null ? (imf.tauxPenaliteRetard + ' %') : '—' }}</span>
+          <span class="info-value">{{
+            imf.tauxPenaliteRetard != null ? imf.tauxPenaliteRetard + " %" : "—"
+          }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Seuil relance</span>
-          <span class="info-value">{{ imf.seuilRelanceJours != null ? (imf.seuilRelanceJours + ' j') : '—' }}</span>
+          <span class="info-value">{{
+            imf.seuilRelanceJours != null ? imf.seuilRelanceJours + " j" : "—"
+          }}</span>
         </div>
       </div>
     </div>
@@ -149,16 +181,22 @@
       <div class="info-rows">
         <div class="info-row">
           <span class="info-label">Taux épargne</span>
-          <span class="info-value">{{ imf.tauxEpargne != null ? (imf.tauxEpargne + ' %') : '—' }}</span>
+          <span class="info-value">{{
+            imf.tauxEpargne != null ? imf.tauxEpargne + " %" : "—"
+          }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Solde min. épargne</span>
-          <span class="info-value" *ngIf="imf.soldeMinEpargne != null">{{ imf.soldeMinEpargne | number:'1.0-0' }} XAF</span>
+          <span class="info-value" *ngIf="imf.soldeMinEpargne != null"
+            >{{ imf.soldeMinEpargne | number: "1.0-0" }} XAF</span
+          >
           <span class="info-value" *ngIf="imf.soldeMinEpargne == null">—</span>
         </div>
         <div class="info-row">
           <span class="info-label">Frais tenue compte</span>
-          <span class="info-value" *ngIf="imf.fraisTenueCompte != null">{{ imf.fraisTenueCompte | number:'1.0-0' }} XAF</span>
+          <span class="info-value" *ngIf="imf.fraisTenueCompte != null"
+            >{{ imf.fraisTenueCompte | number: "1.0-0" }} XAF</span
+          >
           <span class="info-value" *ngIf="imf.fraisTenueCompte == null">—</span>
         </div>
       </div>
@@ -173,17 +211,21 @@
       <div class="info-rows">
         <div class="info-row">
           <span class="info-label">Segments clients</span>
-          <span class="info-value">{{ imf.segmentsClients || '—' }}</span>
+          <span class="info-value">{{ imf.segmentsClients || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Types de garanties</span>
-          <span class="info-value">{{ imf.typesGaranties || '—' }}</span>
+          <span class="info-value">{{ imf.typesGaranties || "—" }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">DSI configuré</span>
-          <span class="badge-bool" [class.yes]="imf.hasDsi" [class.no]="!imf.hasDsi">
-            <mat-icon>{{ imf.hasDsi ? 'check_circle' : 'cancel' }}</mat-icon>
-            {{ imf.hasDsi ? 'Oui' : 'Non' }}
+          <span
+            class="badge-bool"
+            [class.yes]="imf.hasDsi"
+            [class.no]="!imf.hasDsi"
+          >
+            <mat-icon>{{ imf.hasDsi ? "check_circle" : "cancel" }}</mat-icon>
+            {{ imf.hasDsi ? "Oui" : "Non" }}
           </span>
         </div>
         <div class="info-row">
@@ -192,7 +234,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -200,7 +241,6 @@
 <!-- ── Onglet UTILISATEURS ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'users'" @fadeInUp>
-
   <!-- Loader -->
   <div class="tab-loading" *ngIf="usersLoading">
     <mat-spinner diameter="36"></mat-spinner>
@@ -223,7 +263,11 @@
             <td>
               <div class="user-cell">
                 <div class="user-avatar-sm">
-                  <img *ngIf="u.avatarUrl" [src]="u.avatarUrl" [alt]="u.username">
+                  <img
+                    *ngIf="u.avatarUrl"
+                    [src]="u.avatarUrl"
+                    [alt]="u.username"
+                  />
                   <mat-icon *ngIf="!u.avatarUrl">person</mat-icon>
                 </div>
                 <div>
@@ -235,10 +279,14 @@
             <td>
               <span class="role-tag">{{ roleLabel(u.role) }}</span>
             </td>
-            <td>{{ u.zoneId || '—' }}</td>
+            <td>{{ u.zoneId || "—" }}</td>
             <td>
-              <span class="status-badge" [class.active]="u.actif" [class.off]="!u.actif">
-                {{ u.actif ? 'Actif' : 'Inactif' }}
+              <span
+                class="status-badge"
+                [class.active]="u.actif"
+                [class.off]="!u.actif"
+              >
+                {{ u.actif ? "Actif" : "Inactif" }}
               </span>
             </td>
             <td class="date-cell">{{ formatDate(u.lastLogin) }}</td>
@@ -248,11 +296,21 @@
 
       <!-- Pagination -->
       <div class="table-pagination" *ngIf="usersTotalPages > 1">
-        <button class="pag-btn" (click)="usersPrevPage()" [disabled]="usersPage === 0">
+        <button
+          class="pag-btn"
+          (click)="usersPrevPage()"
+          [disabled]="usersPage === 0"
+        >
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <span class="pag-info">Page {{ usersPage + 1 }} / {{ usersTotalPages }}</span>
-        <button class="pag-btn" (click)="usersNextPage()" [disabled]="usersPage + 1 >= usersTotalPages">
+        <span class="pag-info"
+          >Page {{ usersPage + 1 }} / {{ usersTotalPages }}</span
+        >
+        <button
+          class="pag-btn"
+          (click)="usersNextPage()"
+          [disabled]="usersPage + 1 >= usersTotalPages"
+        >
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
@@ -265,14 +323,12 @@
       </div>
     </ng-template>
   </ng-container>
-
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <!-- ── Onglet AGENCES ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'agences'" @fadeInUp>
-
   <div class="tab-loading" *ngIf="agencesLoading">
     <mat-spinner diameter="36"></mat-spinner>
   </div>
@@ -288,8 +344,12 @@
             <h4>{{ a.nom }}</h4>
             <span class="agence-ville">{{ a.ville }}</span>
           </div>
-          <span class="status-badge ml-auto" [class.active]="a.actif" [class.off]="!a.actif">
-            {{ a.actif ? 'Active' : 'Inactive' }}
+          <span
+            class="status-badge ml-auto"
+            [class.active]="a.actif"
+            [class.off]="!a.actif"
+          >
+            {{ a.actif ? "Active" : "Inactive" }}
           </span>
         </div>
         <div class="agence-body">
@@ -316,14 +376,12 @@
       </div>
     </ng-template>
   </ng-container>
-
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <!-- ── Onglet AUDIT ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'audit'" @fadeInUp>
-
   <div class="tab-loading" *ngIf="auditLoading">
     <mat-spinner diameter="36"></mat-spinner>
   </div>
@@ -352,23 +410,37 @@
             </td>
             <td>
               <span class="entite-tag">{{ e.entite }}</span>
-              <span class="entite-id" *ngIf="e.entiteId">#{{ e.entiteId }}</span>
+              <span class="entite-id" *ngIf="e.entiteId"
+                >#{{ e.entiteId }}</span
+              >
             </td>
             <td>
-              <span class="statut-badge" [class]="statutClass(e.statut)">{{ e.statut }}</span>
+              <span class="statut-badge" [class]="statutClass(e.statut)">{{
+                e.statut
+              }}</span>
             </td>
-            <td class="ip-cell">{{ e.ipClient || '—' }}</td>
+            <td class="ip-cell">{{ e.ipClient || "—" }}</td>
           </tr>
         </tbody>
       </table>
 
       <!-- Pagination -->
       <div class="table-pagination" *ngIf="auditTotalPages > 1">
-        <button class="pag-btn" (click)="auditPrevPage()" [disabled]="auditPage === 0">
+        <button
+          class="pag-btn"
+          (click)="auditPrevPage()"
+          [disabled]="auditPage === 0"
+        >
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <span class="pag-info">Page {{ auditPage + 1 }} / {{ auditTotalPages }}</span>
-        <button class="pag-btn" (click)="auditNextPage()" [disabled]="auditPage + 1 >= auditTotalPages">
+        <span class="pag-info"
+          >Page {{ auditPage + 1 }} / {{ auditTotalPages }}</span
+        >
+        <button
+          class="pag-btn"
+          (click)="auditNextPage()"
+          [disabled]="auditPage + 1 >= auditTotalPages"
+        >
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
@@ -381,5 +453,4 @@
       </div>
     </ng-template>
   </ng-container>
-
 </div>

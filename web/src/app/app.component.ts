@@ -1,16 +1,15 @@
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { filter, Subscription } from 'rxjs';
-import { AuthService } from './core/services/auth.service';
-import { NotificationService } from './core/services/notification.service';
+import { Component, OnInit, OnDestroy, NgZone } from "@angular/core";
+import { Router, NavigationEnd } from "@angular/router";
+import { filter, Subscription } from "rxjs";
+import { AuthService } from "./core/services/auth.service";
+import { NotificationService } from "./core/services/notification.service";
 
 @Component({
-  selector: 'imf-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  selector: "imf-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit, OnDestroy {
-
   /** Pages sans shell (sidebar + navbar) */
   isShellless = true;
   sidenavOpen = true;
@@ -19,7 +18,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
 
   /** Routes qui n'affichent pas le shell de navigation */
-  private readonly SHELLLESS_ROUTES = ['/', '/login'];
+  private readonly SHELLLESS_ROUTES = ["/", "/login"];
 
   constructor(
     public auth: AuthService,
@@ -29,22 +28,28 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.sub = this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd)
-    ).subscribe((e) => {
-      const nav = e as NavigationEnd;
-      const url = nav.urlAfterRedirects;
-      this.isShellless = this.SHELLLESS_ROUTES.includes(url) || url === '/';
-    });
+    this.sub = this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        const nav = e as NavigationEnd;
+        const url = nav.urlAfterRedirects;
+        this.isShellless = this.SHELLLESS_ROUTES.includes(url) || url === "/";
+      });
 
     if (this.auth.isLoggedIn()) {
       this.notifService.init();
     }
 
     this.ngZone.runOutsideAngular(() => {
-      document.addEventListener('mousemove', (e: MouseEvent) => {
-        document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-        document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+      document.addEventListener("mousemove", (e: MouseEvent) => {
+        document.documentElement.style.setProperty(
+          "--mouse-x",
+          `${e.clientX}px`,
+        );
+        document.documentElement.style.setProperty(
+          "--mouse-y",
+          `${e.clientY}px`,
+        );
       });
     });
   }

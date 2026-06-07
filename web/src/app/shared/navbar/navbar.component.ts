@@ -1,20 +1,19 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
-import { AuthService } from '@core/services/auth.service';
-import { ConfirmationDialogService } from '@core/services/confirmation-dialog.service';
-import { FullscreenToastService } from '@core/services/fullscreen-toast.service';
-import { NotificationService } from '@core/services/notification.service';
-import { OnlineUsersService } from '@core/services/online-users.service';
-import { MatDialog } from '@angular/material/dialog';
-import { ChangePasswordComponent } from '../change-password/change-password.component';
-import { Observable } from 'rxjs';
+import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core";
+import { AuthService } from "@core/services/auth.service";
+import { ConfirmationDialogService } from "@core/services/confirmation-dialog.service";
+import { FullscreenToastService } from "@core/services/fullscreen-toast.service";
+import { NotificationService } from "@core/services/notification.service";
+import { OnlineUsersService } from "@core/services/online-users.service";
+import { MatDialog } from "@angular/material/dialog";
+import { ChangePasswordComponent } from "../change-password/change-password.component";
+import { Observable } from "rxjs";
 
 @Component({
-  selector: 'imf-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  selector: "imf-navbar",
+  templateUrl: "./navbar.component.html",
+  styleUrls: ["./navbar.component.scss"],
 })
 export class NavbarComponent implements OnInit {
-
   @Output() toggleSidenav = new EventEmitter<void>();
   @Input() alerteBadge = 0;
 
@@ -46,21 +45,21 @@ export class NavbarComponent implements OnInit {
 
   openChangePassword(): void {
     this.dialog.open(ChangePasswordComponent, {
-      width: '460px',
-      panelClass: 'cp-dialog-panel',
+      width: "460px",
+      panelClass: "cp-dialog-panel",
       disableClose: false,
     });
   }
 
   async logout(): Promise<void> {
     const confirmed = await this.confirmDialog.confirm(
-      'Confirmation de déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      "Confirmation de déconnexion",
+      "Êtes-vous sûr de vouloir vous déconnecter ?",
       {
-        confirmText: 'Oui, me déconnecter',
-        cancelText: 'Annuler',
-        type: 'warning'
-      }
+        confirmText: "Oui, me déconnecter",
+        cancelText: "Annuler",
+        type: "warning",
+      },
     );
 
     if (confirmed) {
@@ -72,9 +71,9 @@ export class NavbarComponent implements OnInit {
   openProfileMenu(): void {
     // TODO: Ouvrir un menu ou modal pour changer la photo de profil
     // Pour l'instant, on peut utiliser un input file
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.onchange = (event: any) => {
       const file = event.target.files[0];
       if (file) {

@@ -5,8 +5,8 @@ import {
   OnInit,
   OnDestroy,
   ViewChild,
-  AfterViewInit
-} from '@angular/core';
+  AfterViewInit,
+} from "@angular/core";
 import {
   Clock,
   Mesh,
@@ -16,8 +16,8 @@ import {
   ShaderMaterial,
   Vector2,
   Vector3,
-  WebGLRenderer
-} from 'three';
+  WebGLRenderer,
+} from "three";
 
 const MAX_GRADIENT_STOPS = 8;
 
@@ -28,15 +28,18 @@ interface WavePosition {
 }
 
 @Component({
-  selector: 'app-floating-lines',
-  templateUrl: './floating-lines.component.html',
-  styleUrls: ['./floating-lines.component.scss']
+  selector: "app-floating-lines",
+  templateUrl: "./floating-lines.component.html",
+  styleUrls: ["./floating-lines.component.scss"],
 })
-export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('container', { static: true }) containerRef!: ElementRef<HTMLDivElement>;
+export class FloatingLinesComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
+  @ViewChild("container", { static: true })
+  containerRef!: ElementRef<HTMLDivElement>;
 
   @Input() linesGradient: string[] = [];
-  @Input() enabledWaves: string[] = ['top', 'middle', 'bottom'];
+  @Input() enabledWaves: string[] = ["top", "middle", "bottom"];
   @Input() lineCount: number | number[] = 5;
   @Input() lineDistance: number | number[] = 5;
   @Input() topWavePosition: WavePosition = { x: 10.0, y: 0.5, rotate: -0.4 };
@@ -49,7 +52,7 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
   @Input() mouseDamping: number = 0.05;
   @Input() parallax: boolean = true;
   @Input() parallaxStrength: number = 0.2;
-  @Input() mixBlendMode: string = 'screen';
+  @Input() mixBlendMode: string = "screen";
 
   private renderer!: WebGLRenderer;
   private scene!: Scene;
@@ -258,18 +261,22 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
       this.renderer.dispose();
       this.renderer.forceContextLoss();
       if (this.renderer.domElement.parentElement) {
-        this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);
+        this.renderer.domElement.parentElement.removeChild(
+          this.renderer.domElement,
+        );
       }
     }
   }
 
   private hexToVec3(hex: string): Vector3 {
     let value = hex.trim();
-    if (value.startsWith('#')) {
+    if (value.startsWith("#")) {
       value = value.slice(1);
     }
 
-    let r = 255, g = 255, b = 255;
+    let r = 255,
+      g = 255,
+      b = 255;
 
     if (value.length === 3) {
       r = parseInt(value[0] + value[0], 16);
@@ -285,14 +292,14 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private getLineCount(waveType: string): number {
-    if (typeof this.lineCount === 'number') return this.lineCount;
+    if (typeof this.lineCount === "number") return this.lineCount;
     if (!this.enabledWaves.includes(waveType)) return 0;
     const index = this.enabledWaves.indexOf(waveType);
     return this.lineCount[index] ?? 6;
   }
 
   private getLineDistance(waveType: string): number {
-    if (typeof this.lineDistance === 'number') return this.lineDistance;
+    if (typeof this.lineDistance === "number") return this.lineDistance;
     if (!this.enabledWaves.includes(waveType)) return 0.1;
     const index = this.enabledWaves.indexOf(waveType);
     return this.lineDistance[index] ?? 0.1;
@@ -307,26 +314,38 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
 
     this.renderer = new WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.domElement.style.width = '100%';
-    this.renderer.domElement.style.height = '100%';
+    this.renderer.domElement.style.width = "100%";
+    this.renderer.domElement.style.height = "100%";
     this.renderer.domElement.style.mixBlendMode = this.mixBlendMode;
     container.appendChild(this.renderer.domElement);
 
-    const topLineCount = this.enabledWaves.includes('top') ? this.getLineCount('top') : 0;
-    const middleLineCount = this.enabledWaves.includes('middle') ? this.getLineCount('middle') : 0;
-    const bottomLineCount = this.enabledWaves.includes('bottom') ? this.getLineCount('bottom') : 0;
+    const topLineCount = this.enabledWaves.includes("top")
+      ? this.getLineCount("top")
+      : 0;
+    const middleLineCount = this.enabledWaves.includes("middle")
+      ? this.getLineCount("middle")
+      : 0;
+    const bottomLineCount = this.enabledWaves.includes("bottom")
+      ? this.getLineCount("bottom")
+      : 0;
 
-    const topLineDistance = this.enabledWaves.includes('top') ? this.getLineDistance('top') * 0.01 : 0.01;
-    const middleLineDistance = this.enabledWaves.includes('middle') ? this.getLineDistance('middle') * 0.01 : 0.01;
-    const bottomLineDistance = this.enabledWaves.includes('bottom') ? this.getLineDistance('bottom') * 0.01 : 0.01;
+    const topLineDistance = this.enabledWaves.includes("top")
+      ? this.getLineDistance("top") * 0.01
+      : 0.01;
+    const middleLineDistance = this.enabledWaves.includes("middle")
+      ? this.getLineDistance("middle") * 0.01
+      : 0.01;
+    const bottomLineDistance = this.enabledWaves.includes("bottom")
+      ? this.getLineDistance("bottom") * 0.01
+      : 0.01;
 
     const uniforms = {
       iTime: { value: 0 },
       iResolution: { value: new Vector3(1, 1, 1) },
       animationSpeed: { value: this.animationSpeed },
-      enableTop: { value: this.enabledWaves.includes('top') },
-      enableMiddle: { value: this.enabledWaves.includes('middle') },
-      enableBottom: { value: this.enabledWaves.includes('bottom') },
+      enableTop: { value: this.enabledWaves.includes("top") },
+      enableMiddle: { value: this.enabledWaves.includes("middle") },
+      enableBottom: { value: this.enabledWaves.includes("bottom") },
       topLineCount: { value: topLineCount },
       middleLineCount: { value: middleLineCount },
       bottomLineCount: { value: bottomLineCount },
@@ -337,22 +356,22 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
         value: new Vector3(
           this.topWavePosition.x,
           this.topWavePosition.y,
-          this.topWavePosition.rotate
-        )
+          this.topWavePosition.rotate,
+        ),
       },
       middleWavePosition: {
         value: new Vector3(
           this.middleWavePosition.x,
           this.middleWavePosition.y,
-          this.middleWavePosition.rotate
-        )
+          this.middleWavePosition.rotate,
+        ),
       },
       bottomWavePosition: {
         value: new Vector3(
           this.bottomWavePosition.x,
           this.bottomWavePosition.y,
-          this.bottomWavePosition.rotate
-        )
+          this.bottomWavePosition.rotate,
+        ),
       },
       iMouse: { value: new Vector2(-1000, -1000) },
       interactive: { value: this.interactive },
@@ -363,9 +382,12 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
       parallaxStrength: { value: this.parallaxStrength },
       parallaxOffset: { value: new Vector2(0, 0) },
       lineGradient: {
-        value: Array.from({ length: MAX_GRADIENT_STOPS }, () => new Vector3(1, 1, 1))
+        value: Array.from(
+          { length: MAX_GRADIENT_STOPS },
+          () => new Vector3(1, 1, 1),
+        ),
       },
-      lineGradientCount: { value: 0 }
+      lineGradientCount: { value: 0 },
     };
 
     if (this.linesGradient && this.linesGradient.length > 0) {
@@ -380,7 +402,7 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
     this.material = new ShaderMaterial({
       uniforms,
       vertexShader: this.vertexShader,
-      fragmentShader: this.fragmentShader
+      fragmentShader: this.fragmentShader,
     });
 
     const geometry = new PlaneGeometry(2, 2);
@@ -397,8 +419,14 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
     this.resizeObserver.observe(container);
 
     if (this.interactive) {
-      this.renderer.domElement.addEventListener('pointermove', this.handlePointerMove.bind(this));
-      this.renderer.domElement.addEventListener('pointerleave', this.handlePointerLeave.bind(this));
+      this.renderer.domElement.addEventListener(
+        "pointermove",
+        this.handlePointerMove.bind(this),
+      );
+      this.renderer.domElement.addEventListener(
+        "pointerleave",
+        this.handlePointerLeave.bind(this),
+      );
     }
 
     this.animate();
@@ -414,7 +442,11 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
     const canvasWidth = this.renderer.domElement.width;
     const canvasHeight = this.renderer.domElement.height;
 
-    this.material.uniforms['iResolution'].value.set(canvasWidth, canvasHeight, 1);
+    this.material.uniforms["iResolution"].value.set(
+      canvasWidth,
+      canvasHeight,
+      1,
+    );
   }
 
   private handlePointerMove(event: PointerEvent): void {
@@ -431,7 +463,10 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
       const centerY = rect.height / 2;
       const offsetX = (x - centerX) / rect.width;
       const offsetY = -(y - centerY) / rect.height;
-      this.targetParallax.set(offsetX * this.parallaxStrength, offsetY * this.parallaxStrength);
+      this.targetParallax.set(
+        offsetX * this.parallaxStrength,
+        offsetY * this.parallaxStrength,
+      );
     }
   }
 
@@ -440,19 +475,20 @@ export class FloatingLinesComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private animate(): void {
-    this.material.uniforms['iTime'].value = this.clock.getElapsedTime();
+    this.material.uniforms["iTime"].value = this.clock.getElapsedTime();
 
     if (this.interactive) {
       this.currentMouse.lerp(this.targetMouse, this.mouseDamping);
-      this.material.uniforms['iMouse'].value.copy(this.currentMouse);
+      this.material.uniforms["iMouse"].value.copy(this.currentMouse);
 
-      this.currentInfluence += (this.targetInfluence - this.currentInfluence) * this.mouseDamping;
-      this.material.uniforms['bendInfluence'].value = this.currentInfluence;
+      this.currentInfluence +=
+        (this.targetInfluence - this.currentInfluence) * this.mouseDamping;
+      this.material.uniforms["bendInfluence"].value = this.currentInfluence;
     }
 
     if (this.parallax) {
       this.currentParallax.lerp(this.targetParallax, this.mouseDamping);
-      this.material.uniforms['parallaxOffset'].value.copy(this.currentParallax);
+      this.material.uniforms["parallaxOffset"].value.copy(this.currentParallax);
     }
 
     this.renderer.render(this.scene, this.camera);

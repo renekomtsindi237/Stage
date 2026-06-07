@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.3);  // Overlay plus léger et transparent
+  background: rgba(0, 0, 0, 0.3); // Overlay plus léger et transparent
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -16,16 +16,18 @@
 .fs-card {
   width: 100%;
   max-width: 520px;
-  background: #FFFFFF;  // Fond blanc
-  border: none;  // Pas de bordure
-  border-radius: 16px;  // Coins arrondis style Blucash
+  background: #ffffff; // Fond blanc
+  border: none; // Pas de bordure
+  border-radius: 16px; // Coins arrondis style Blucash
   padding: 56px 48px 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 20px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);  // Ombre douce
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.06); // Ombre douce
   position: relative;
   overflow: hidden;
 
@@ -51,7 +53,7 @@
   flex-shrink: 0;
 
   &.fs-ring-success {
-    background: #E6F9F3;  // Vert pâle
+    background: #e6f9f3; // Vert pâle
     box-shadow:
       0 0 0 12px rgba(0, 208, 132, 0.1),
       0 0 0 24px rgba(0, 208, 132, 0.05);
@@ -59,7 +61,7 @@
   }
 
   &.fs-ring-error {
-    background: #FFE6E6;  // Rouge pâle
+    background: #ffe6e6; // Rouge pâle
     box-shadow:
       0 0 0 12px rgba(255, 59, 48, 0.1),
       0 0 0 24px rgba(255, 59, 48, 0.05);
@@ -67,7 +69,7 @@
   }
 
   &.fs-ring-gold {
-    background: #FFF4E6;  // Orange pâle
+    background: #fff4e6; // Orange pâle
     box-shadow:
       0 0 0 12px rgba(255, 149, 0, 0.1),
       0 0 0 24px rgba(255, 149, 0, 0.05);
@@ -81,8 +83,12 @@
   width: 58px !important;
   height: 58px !important;
 
-  .fs-ring-success & { color: #00D084; }  // Vert Blucash
-  .fs-ring-error   & { color: #FF3B30; }  // Rouge Blucash
+  .fs-ring-success & {
+    color: #00d084;
+  } // Vert Blucash
+  .fs-ring-error & {
+    color: #ff3b30;
+  } // Rouge Blucash
 }
 
 // ── Avatar logout ─────────────────────────────────────────────────
@@ -90,18 +96,24 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF9500, #FFB020);  // Orange Blucash
+  background: linear-gradient(135deg, #ff9500, #ffb020); // Orange Blucash
   color: #fff;
   font-size: 2rem;
   font-weight: 900;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(255, 149, 0, 0.35);
   letter-spacing: -1px;
 
-  mat-icon { font-size: 34px; width: 34px; height: 34px; }
+  mat-icon {
+    font-size: 34px;
+    width: 34px;
+    height: 34px;
+  }
 }
 
 // ── Icône wave (logout) ───────────────────────────────────────────
@@ -109,7 +121,7 @@
   font-size: 38px !important;
   width: 38px !important;
   height: 38px !important;
-  color: #FF9500;  // Orange Blucash
+  color: #ff9500; // Orange Blucash
   margin-top: -8px;
   animation: wave-hand 1.6s ease-in-out 1;
   transform-origin: 70% 80%;
@@ -119,36 +131,44 @@
 .fs-title {
   font-size: 2rem;
   font-weight: 900;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   letter-spacing: -1px;
   margin: 0;
   line-height: 1.15;
 
-  @media (max-width: 480px) { font-size: 1.6rem; }
+  @media (max-width: 480px) {
+    font-size: 1.6rem;
+  }
 
   &.fs-title-success {
-    color: #00D084;  // Vert Blucash
+    color: #00d084; // Vert Blucash
   }
 
   &.fs-title-error {
-    color: #FF3B30;  // Rouge Blucash
+    color: #ff3b30; // Rouge Blucash
   }
 
   &.fs-title-gold {
-    color: #FF9500;  // Orange Blucash
+    color: #ff9500; // Orange Blucash
   }
 }
 
 // ── Message ───────────────────────────────────────────────────────
 .fs-message {
   font-size: 1.1rem;
-  color: #6B7280;  // Gris moyen
+  color: #6b7280; // Gris moyen
   margin: 0;
   line-height: 1.6;
   max-width: 380px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 
-  @media (max-width: 480px) { font-size: 1rem; }
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 }
 
 // ── Ligne de redirection (succès) ─────────────────────────────────
@@ -157,13 +177,15 @@
   align-items: center;
   gap: 10px;
   margin-top: 4px;
-  color: #9CA3AF;  // Gris moyen
+  color: #9ca3af; // Gris moyen
   font-size: 0.88rem;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 
   ::ng-deep .mat-mdc-progress-spinner circle {
-    stroke: #00D084 !important;  // Vert Blucash
+    stroke: #00d084 !important; // Vert Blucash
   }
 }
 
@@ -174,33 +196,43 @@
   gap: 8px;
   margin-top: 8px;
   padding: 14px 36px;
-  background: #FF3B30;  // Rouge Blucash
+  background: #ff3b30; // Rouge Blucash
   color: #fff;
   border: none;
-  border-radius: 12px;  // Coins arrondis style Blucash
+  border-radius: 12px; // Coins arrondis style Blucash
   font-size: 1rem;
   font-weight: 700;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &:hover {
-    background: #FF6B63;  // Rouge plus clair
+    background: #ff6b63; // Rouge plus clair
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(255, 59, 48, 0.4);
   }
 
-  &:active { transform: translateY(0); }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 // ── Barre de progression ──────────────────────────────────────────
 .fs-progress-wrap {
   width: 100%;
   height: 4px;
-  background: #E5E7EB;  // Gris clair
+  background: #e5e7eb; // Gris clair
   border-radius: 4px;
   overflow: hidden;
   margin-top: 12px;
@@ -212,42 +244,85 @@
   animation: bar-shrink linear forwards;
 
   &.fs-progress-success {
-    background: #00D084;  // Vert Blucash
+    background: #00d084; // Vert Blucash
     animation-duration: 2s;
   }
 
   &.fs-progress-gold {
-    background: #FF9500;  // Orange Blucash
+    background: #ff9500; // Orange Blucash
     animation-duration: 2.5s;
   }
 }
 
 // ── Keyframes ─────────────────────────────────────────────────────
 @keyframes bar-shrink {
-  from { width: 100%; }
-  to   { width: 0%; }
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
 
 @keyframes wave-hand {
-  0%   { transform: rotate(0deg); }
-  15%  { transform: rotate(22deg); }
-  35%  { transform: rotate(-14deg); }
-  55%  { transform: rotate(20deg); }
-  75%  { transform: rotate(-8deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(22deg);
+  }
+  35% {
+    transform: rotate(-14deg);
+  }
+  55% {
+    transform: rotate(20deg);
+  }
+  75% {
+    transform: rotate(-8deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes pulse-success {
-  0%, 100% { box-shadow: 0 0 0 12px rgba(0,208,132,0.1), 0 0 0 24px rgba(0,208,132,0.05); }
-  50%       { box-shadow: 0 0 0 18px rgba(0,208,132,0.15), 0 0 0 32px rgba(0,208,132,0.08); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(0, 208, 132, 0.1),
+      0 0 0 24px rgba(0, 208, 132, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 18px rgba(0, 208, 132, 0.15),
+      0 0 0 32px rgba(0, 208, 132, 0.08);
+  }
 }
 
 @keyframes pulse-error {
-  0%, 100% { box-shadow: 0 0 0 12px rgba(255,59,48,0.1), 0 0 0 24px rgba(255,59,48,0.05); }
-  50%       { box-shadow: 0 0 0 18px rgba(255,59,48,0.15), 0 0 0 32px rgba(255,59,48,0.08); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(255, 59, 48, 0.1),
+      0 0 0 24px rgba(255, 59, 48, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 18px rgba(255, 59, 48, 0.15),
+      0 0 0 32px rgba(255, 59, 48, 0.08);
+  }
 }
 
 @keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 12px rgba(255,149,0,0.1), 0 0 0 24px rgba(255,149,0,0.05); }
-  50%       { box-shadow: 0 0 0 18px rgba(255,149,0,0.15), 0 0 0 32px rgba(255,149,0,0.08); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(255, 149, 0, 0.1),
+      0 0 0 24px rgba(255, 149, 0, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 18px rgba(255, 149, 0, 0.15),
+      0 0 0 32px rgba(255, 149, 0, 0.08);
+  }
 }

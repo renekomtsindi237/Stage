@@ -1,9 +1,9 @@
 export type StatutPret =
-  | 'ACTIF'
-  | 'EN_RETARD'
-  | 'EN_RECOUVREMENT'
-  | 'SOLDE'
-  | 'PERTE';
+  | "ACTIF"
+  | "EN_RETARD"
+  | "EN_RECOUVREMENT"
+  | "SOLDE"
+  | "PERTE";
 
 export interface PretResponse {
   idPret: string;

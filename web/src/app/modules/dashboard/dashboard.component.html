@@ -1,5 +1,4 @@
 <div class="dashboard-container">
-
   <!-- ══ En-tête ══ -->
   <header class="db-header" @reveal>
     <div class="db-header-left">
@@ -13,9 +12,14 @@
     <div class="db-header-right">
       <div class="db-date-chip">
         <mat-icon>calendar_today</mat-icon>
-        <span>{{ today | date:'EEEE d MMMM yyyy' }}</span>
+        <span>{{ today | date: "EEEE d MMMM yyyy" }}</span>
       </div>
-      <div class="db-alerte-chip" *ngIf="nouvelleAlerte" (click)="dismissAlerteBadge()" title="Cliquer pour masquer">
+      <div
+        class="db-alerte-chip"
+        *ngIf="nouvelleAlerte"
+        (click)="dismissAlerteBadge()"
+        title="Cliquer pour masquer"
+      >
         <mat-icon>notifications_active</mat-icon>
         <span>Nouvelle alerte</span>
       </div>
@@ -25,23 +29,26 @@
   <!-- ══ Skeletons ══ -->
   <ng-container *ngIf="loading">
     <div class="kpi-grid">
-      <div class="kpi-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+      <div class="kpi-card skeleton-card" *ngFor="let i of [1, 2, 3, 4]">
         <div class="skeleton-icon"></div>
-        <div class="skeleton-line" style="width: 55%; height: 11px;"></div>
-        <div class="skeleton-line" style="width: 70%; height: 26px;"></div>
-        <div class="skeleton-line" style="width: 40%; height: 11px;"></div>
+        <div class="skeleton-line" style="width: 55%; height: 11px"></div>
+        <div class="skeleton-line" style="width: 70%; height: 26px"></div>
+        <div class="skeleton-line" style="width: 40%; height: 11px"></div>
       </div>
     </div>
   </ng-container>
 
   <!-- ══ Contenu principal ══ -->
   <ng-container *ngIf="!loading && summary">
-
     <!-- ── Liens rapides DSI ── -->
     <div class="dsi-links-section" *ngIf="isDsi" @fadeInUp>
       <p class="section-label">Actions rapides</p>
       <div class="dsi-links-grid">
-        <a *ngFor="let link of dsiLinks" [routerLink]="link.route" class="dsi-link-card">
+        <a
+          *ngFor="let link of dsiLinks"
+          [routerLink]="link.route"
+          class="dsi-link-card"
+        >
           <div class="dsi-link-icon" [style.background]="link.bg">
             <mat-icon [style.color]="link.color">{{ link.icon }}</mat-icon>
           </div>
@@ -60,21 +67,29 @@
         <p class="kpi-label">{{ kpi.label }}</p>
         <h3 class="kpi-value">{{ kpi.value }}</h3>
         <div class="kpi-bottom">
-          <span *ngIf="kpi.trend" class="kpi-trend"
+          <span
+            *ngIf="kpi.trend"
+            class="kpi-trend"
             [class.trend-up]="kpi.trendPositive === true"
-            [class.trend-down]="kpi.trendPositive === false">
+            [class.trend-down]="kpi.trendPositive === false"
+          >
             <mat-icon *ngIf="kpi.trendPositive === true">trending_up</mat-icon>
-            <mat-icon *ngIf="kpi.trendPositive === false">trending_down</mat-icon>
+            <mat-icon *ngIf="kpi.trendPositive === false"
+              >trending_down</mat-icon
+            >
             {{ kpi.trend }}
           </span>
-          <span *ngIf="kpi.footnote && kpi.trend === undefined" class="kpi-footnote">{{ kpi.footnote }}</span>
+          <span
+            *ngIf="kpi.footnote && kpi.trend === undefined"
+            class="kpi-footnote"
+            >{{ kpi.footnote }}</span
+          >
         </div>
       </div>
     </div>
 
     <!-- ── Rangée 1 : PAR + Canaux ── -->
     <div class="charts-row" @fadeInUp>
-
       <!-- PAR30 / PAR90 (toujours visible) -->
       <div class="chart-card">
         <div class="chart-card-header">
@@ -82,13 +97,21 @@
             <h4 class="chart-title">Évolution PAR30 / PAR90</h4>
             <p class="chart-desc">Performance hebdomadaire du portefeuille</p>
           </div>
-          <span class="chart-badge" style="background:rgba(37,99,235,0.1);color:#2563EB;">
+          <span
+            class="chart-badge"
+            style="background: rgba(37, 99, 235, 0.1); color: #2563eb"
+          >
             <mat-icon>show_chart</mat-icon> Risque
           </span>
         </div>
         <div class="chart-body">
-          <imf-par-chart *ngIf="parStats.length > 0" [parStats]="parStats"></imf-par-chart>
-          <p class="chart-empty" *ngIf="parStats.length === 0">Aucune donnée PAR disponible</p>
+          <imf-par-chart
+            *ngIf="parStats.length > 0"
+            [parStats]="parStats"
+          ></imf-par-chart>
+          <p class="chart-empty" *ngIf="parStats.length === 0">
+            Aucune donnée PAR disponible
+          </p>
         </div>
         <div class="chart-footer">
           <mat-icon>access_time</mat-icon>
@@ -103,25 +126,31 @@
             <h4 class="chart-title">Volume par Canal</h4>
             <p class="chart-desc">Répartition des modes de collecte</p>
           </div>
-          <span class="chart-badge" style="background:rgba(16,185,129,0.1);color:#10B981;">
+          <span
+            class="chart-badge"
+            style="background: rgba(16, 185, 129, 0.1); color: #10b981"
+          >
             <mat-icon>payments</mat-icon> Collectes
           </span>
         </div>
         <div class="chart-body">
-          <imf-collecte-chart *ngIf="collecteStats.length > 0" [collecteStats]="collecteStats"></imf-collecte-chart>
-          <p class="chart-empty" *ngIf="collecteStats.length === 0">Aucune donnée de collecte</p>
+          <imf-collecte-chart
+            *ngIf="collecteStats.length > 0"
+            [collecteStats]="collecteStats"
+          ></imf-collecte-chart>
+          <p class="chart-empty" *ngIf="collecteStats.length === 0">
+            Aucune donnée de collecte
+          </p>
         </div>
         <div class="chart-footer">
           <mat-icon>access_time</mat-icon>
           <span>Mis à jour quotidiennement</span>
         </div>
       </div>
-
     </div>
 
     <!-- ── Rangée 2 : Statut + Agences ── -->
     <div class="charts-row" *ngIf="showStatutChart" @fadeInUp>
-
       <!-- Statut des prêts (DIRECTEUR, RESPONSABLE, ANALYSTE) -->
       <div class="chart-card">
         <div class="chart-card-header">
@@ -129,13 +158,22 @@
             <h4 class="chart-title">Répartition par Statut</h4>
             <p class="chart-desc">Distribution des prêts selon leur état</p>
           </div>
-          <span class="chart-badge" style="background:rgba(139,92,246,0.1);color:#8B5CF6;">
-            <mat-icon>pie_chart</mat-icon> {{ statutPretsData.length }} catégories
+          <span
+            class="chart-badge"
+            style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6"
+          >
+            <mat-icon>pie_chart</mat-icon>
+            {{ statutPretsData.length }} catégories
           </span>
         </div>
         <div class="chart-body">
-          <imf-pie-chart *ngIf="statutPretsData.length > 0" [data]="statutPretsData"></imf-pie-chart>
-          <p class="chart-empty" *ngIf="statutPretsData.length === 0">Aucune donnée de statut</p>
+          <imf-pie-chart
+            *ngIf="statutPretsData.length > 0"
+            [data]="statutPretsData"
+          ></imf-pie-chart>
+          <p class="chart-empty" *ngIf="statutPretsData.length === 0">
+            Aucune donnée de statut
+          </p>
         </div>
         <div class="chart-footer">
           <mat-icon>donut_small</mat-icon>
@@ -150,7 +188,10 @@
             <h4 class="chart-title">Top 5 Agences</h4>
             <p class="chart-desc">Meilleures performances de collecte</p>
           </div>
-          <span class="chart-badge" style="background:rgba(245,158,11,0.1);color:#F59E0B;">
+          <span
+            class="chart-badge"
+            style="background: rgba(245, 158, 11, 0.1); color: #f59e0b"
+          >
             <mat-icon>emoji_events</mat-icon> {{ agencesTotalMCFA }}M
           </span>
         </div>
@@ -159,16 +200,18 @@
             *ngIf="agencesPerformanceData.length > 0"
             [data]="agencesPerformanceData"
             [centerValue]="agencesTotalMCFA + 'M'"
-            centerLabel="Total FCFA">
+            centerLabel="Total FCFA"
+          >
           </imf-doughnut-chart>
-          <p class="chart-empty" *ngIf="agencesPerformanceData.length === 0">Aucune donnée d'agence</p>
+          <p class="chart-empty" *ngIf="agencesPerformanceData.length === 0">
+            Aucune donnée d'agence
+          </p>
         </div>
         <div class="chart-footer">
           <mat-icon>location_on</mat-icon>
           <span>Classement du mois en cours</span>
         </div>
       </div>
-
     </div>
 
     <!-- ── Rangée 3 : Évolution mensuelle (pleine largeur, non-AGENT) ── -->
@@ -177,9 +220,14 @@
         <div class="chart-card-header">
           <div>
             <h4 class="chart-title">Évolution Mensuelle</h4>
-            <p class="chart-desc">Comparaison prêts accordés vs remboursements (en MFCFA)</p>
+            <p class="chart-desc">
+              Comparaison prêts accordés vs remboursements (en MFCFA)
+            </p>
           </div>
-          <span class="chart-badge" style="background:rgba(13,148,136,0.1);color:#0D9488;">
+          <span
+            class="chart-badge"
+            style="background: rgba(13, 148, 136, 0.1); color: #0d9488"
+          >
             <mat-icon>trending_up</mat-icon> 6 mois
           </span>
         </div>
@@ -187,9 +235,15 @@
           <imf-stacked-bar-chart
             *ngIf="evolutionMensuelleDatasets.length > 0"
             [labels]="evolutionMensuelleLabels"
-            [datasets]="evolutionMensuelleDatasets">
+            [datasets]="evolutionMensuelleDatasets"
+          >
           </imf-stacked-bar-chart>
-          <p class="chart-empty" *ngIf="evolutionMensuelleDatasets.length === 0">Aucune donnée mensuelle</p>
+          <p
+            class="chart-empty"
+            *ngIf="evolutionMensuelleDatasets.length === 0"
+          >
+            Aucune donnée mensuelle
+          </p>
         </div>
         <div class="chart-footer">
           <mat-icon>calendar_month</mat-icon>
@@ -200,7 +254,6 @@
 
     <!-- ── Rangée inférieure : Tâches + Agents (DIRECTEUR / RESPONSABLE) ── -->
     <div class="data-row" *ngIf="showTasksSection || showAgentsTable" @fadeInUp>
-
       <!-- Tâches prioritaires (DIRECTEUR) -->
       <div class="data-card" *ngIf="showTasksSection">
         <div class="data-header">
@@ -208,24 +261,32 @@
             <h4 class="data-title">Actions prioritaires</h4>
             <p class="data-subtitle">Tâches en attente de traitement</p>
           </div>
-          <mat-icon style="color:var(--color-primary)">task_alt</mat-icon>
+          <mat-icon style="color: var(--color-primary)">task_alt</mat-icon>
         </div>
         <div class="data-content">
           <div class="task-item">
             <mat-checkbox></mat-checkbox>
-            <span class="task-text">Valider les nouveaux dossiers IMF en attente</span>
+            <span class="task-text"
+              >Valider les nouveaux dossiers IMF en attente</span
+            >
           </div>
           <div class="task-item">
             <mat-checkbox [checked]="true"></mat-checkbox>
-            <span class="task-text task-done">Optimiser le pipeline d'import — Node 4</span>
+            <span class="task-text task-done"
+              >Optimiser le pipeline d'import — Node 4</span
+            >
           </div>
           <div class="task-item">
             <mat-checkbox></mat-checkbox>
-            <span class="task-text">Générer le rapport consolidé PAR90 du mois</span>
+            <span class="task-text"
+              >Générer le rapport consolidé PAR90 du mois</span
+            >
           </div>
           <div class="task-item">
             <mat-checkbox></mat-checkbox>
-            <span class="task-text">Réviser les seuils d'alerte automatique</span>
+            <span class="task-text"
+              >Réviser les seuils d'alerte automatique</span
+            >
           </div>
         </div>
       </div>
@@ -237,7 +298,7 @@
             <h4 class="data-title">Performance des agents</h4>
             <p class="data-subtitle">Top agents de recouvrement ce mois</p>
           </div>
-          <mat-icon style="color:#F59E0B">leaderboard</mat-icon>
+          <mat-icon style="color: #f59e0b">leaderboard</mat-icon>
         </div>
         <div class="data-content">
           <table class="simple-table">
@@ -272,9 +333,7 @@
           </table>
         </div>
       </div>
-
     </div>
-
   </ng-container>
 
   <!-- ══ Erreur ══ -->
@@ -293,5 +352,4 @@
       <p>Aucune donnée disponible pour le moment.</p>
     </div>
   </ng-container>
-
 </div>

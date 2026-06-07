@@ -1,18 +1,40 @@
 <div class="landing-root">
-
   <!-- ══ HEADER ══ -->
   <header class="site-header" [class.scrolled]="headerScrolled">
     <div class="header-inner">
       <a class="header-logo" routerLink="/">
-        <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="logo-img">
-        <span class="logo-text"><span class="logo-micro">Micro</span><span class="logo-recouv">Recouv</span></span>
+        <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="logo-img" />
+        <span class="logo-text"
+          ><span class="logo-micro">Micro</span
+          ><span class="logo-recouv">Recouv</span></span
+        >
       </a>
 
       <nav class="header-nav">
-        <a href="#section-how" class="nav-link" (click)="scrollTo('section-how', $event)">Fonctionnement</a>
-        <a href="#section-features" class="nav-link" (click)="scrollTo('section-features', $event)">Fonctionnalites</a>
-        <a href="#section-benefits" class="nav-link" (click)="scrollTo('section-benefits', $event)">Benefices</a>
-        <a href="#section-faq" class="nav-link" (click)="scrollTo('section-faq', $event)">FAQ</a>
+        <a
+          href="#section-how"
+          class="nav-link"
+          (click)="scrollTo('section-how', $event)"
+          >Fonctionnement</a
+        >
+        <a
+          href="#section-features"
+          class="nav-link"
+          (click)="scrollTo('section-features', $event)"
+          >Fonctionnalites</a
+        >
+        <a
+          href="#section-benefits"
+          class="nav-link"
+          (click)="scrollTo('section-benefits', $event)"
+          >Benefices</a
+        >
+        <a
+          href="#section-faq"
+          class="nav-link"
+          (click)="scrollTo('section-faq', $event)"
+          >FAQ</a
+        >
       </nav>
 
       <div class="header-cta">
@@ -29,10 +51,17 @@
     <div class="hero-blur hero-blur-left"></div>
     <div class="hero-blur hero-blur-right"></div>
 
-    <app-floating-lines class="floating-lines-bg"
+    <app-floating-lines
+      class="floating-lines-bg"
       [enabledWaves]="['top', 'middle', 'bottom']"
-      [lineCount]="4" [lineDistance]="6" [bendRadius]="5" [bendStrength]="-0.4"
-      [interactive]="true" [parallax]="true" [mixBlendMode]="'screen'">
+      [lineCount]="4"
+      [lineDistance]="6"
+      [bendRadius]="5"
+      [bendStrength]="-0.4"
+      [interactive]="true"
+      [parallax]="true"
+      [mixBlendMode]="'screen'"
+    >
     </app-floating-lines>
 
     <div class="hero-card" @fadeInUp>
@@ -56,7 +85,11 @@
           <mat-icon>rocket_launch</mat-icon>
           Acceder a la plateforme
         </button>
-        <button mat-stroked-button class="btn-ghost-hero" (click)="scrollTo('section-how', $event)">
+        <button
+          mat-stroked-button
+          class="btn-ghost-hero"
+          (click)="scrollTo('section-how', $event)"
+        >
           Decouvrir comment ca marche
           <mat-icon>south</mat-icon>
         </button>
@@ -80,7 +113,9 @@
   <section class="metrics-section" id="section-metrics">
     <div class="metrics-inner">
       <div *ngFor="let m of metrics" class="metric-item">
-        <div class="metric-icon"><mat-icon>{{ m.icon }}</mat-icon></div>
+        <div class="metric-icon">
+          <mat-icon>{{ m.icon }}</mat-icon>
+        </div>
         <div class="metric-body">
           <span class="metric-value">{{ m.value }}</span>
           <span class="metric-label">{{ m.label }}</span>
@@ -92,7 +127,6 @@
   <!-- ══ COMMENT ÇA MARCHE ══ -->
   <section class="steps-section" id="section-how">
     <div class="section-container">
-
       <div class="section-label-row">
         <span class="section-tag">Comment ça fonctionne</span>
         <div class="tag-line"></div>
@@ -100,18 +134,26 @@
 
       <div class="section-heading-row">
         <h2 class="section-heading">Trois étapes vers l'efficacité</h2>
-        <p class="section-sub">De la connexion à l'action, tout est automatisé</p>
+        <p class="section-sub">
+          De la connexion à l'action, tout est automatisé
+        </p>
       </div>
 
       <div class="steps-grid">
         <div *ngFor="let step of steps; let i = index" class="step-card">
-          <div class="step-number">{{ (i + 1).toString().padStart(2, '0') }}</div>
+          <div class="step-number">
+            {{ (i + 1).toString().padStart(2, "0") }}
+          </div>
           <div class="step-icon-wrap" [style.background]="step.color + '18'">
             <mat-icon [style.color]="step.color">{{ step.icon }}</mat-icon>
           </div>
           <h3 class="step-title">{{ step.title }}</h3>
           <p class="step-desc">{{ step.desc }}</p>
-          <button class="step-connector" *ngIf="i < steps.length - 1" (click)="toggleStep(i); playStepAnimation(i)">
+          <button
+            class="step-connector"
+            *ngIf="i < steps.length - 1"
+            (click)="toggleStep(i); playStepAnimation(i)"
+          >
             <mat-icon>arrow_forward</mat-icon>
             <span class="connector-label">Voir</span>
             <div class="connector-panel" [class.open]="activeStepIndex === i">
@@ -122,7 +164,6 @@
           </button>
         </div>
       </div>
-
     </div>
   </section>
 
@@ -138,7 +179,6 @@
   <!-- ══ FONCTIONNALITÉS ══ -->
   <section class="features-section" id="section-features">
     <div class="section-container">
-
       <div class="section-label-row">
         <span class="section-tag">Fonctionnalités</span>
         <div class="tag-line"></div>
@@ -146,13 +186,17 @@
 
       <div class="section-heading-row">
         <h2 class="section-heading">Tout ce dont votre IMF a besoin</h2>
-        <p class="section-sub">Une suite complète d'outils pensés pour la microfinance africaine</p>
+        <p class="section-sub">
+          Une suite complète d'outils pensés pour la microfinance africaine
+        </p>
       </div>
 
       <div class="features-grid">
         <div *ngFor="let f of features; let i = index" class="feature-card">
           <div class="feature-top">
-            <span class="feature-num">{{ (i + 1).toString().padStart(2, '0') }}</span>
+            <span class="feature-num">{{
+              (i + 1).toString().padStart(2, "0")
+            }}</span>
             <div class="feature-icon-wrap" [style.background]="f.color + '15'">
               <mat-icon [style.color]="f.color">{{ f.icon }}</mat-icon>
             </div>
@@ -161,14 +205,12 @@
           <p class="feature-desc">{{ f.desc }}</p>
         </div>
       </div>
-
     </div>
   </section>
 
   <!-- ══ BÉNÉFICES ══ -->
   <section class="benefits-section" id="section-benefits">
     <div class="section-container">
-
       <div class="section-label-row">
         <span class="section-tag">Benefices</span>
         <div class="tag-line"></div>
@@ -176,7 +218,10 @@
 
       <div class="section-heading-row">
         <h2 class="section-heading">Des gains visibles, des risques limites</h2>
-        <p class="section-sub">Chaque action est tracee, chaque alerte est priorisee, chaque decision est guidee.</p>
+        <p class="section-sub">
+          Chaque action est tracee, chaque alerte est priorisee, chaque decision
+          est guidee.
+        </p>
       </div>
 
       <div class="benefits-grid">
@@ -190,14 +235,12 @@
           </div>
         </div>
       </div>
-
     </div>
   </section>
 
   <!-- ══ INTÉGRATIONS ══ -->
   <section class="integrations-section" id="section-integrations">
     <div class="section-container">
-
       <div class="section-label-row">
         <span class="section-tag">Integrations</span>
         <div class="tag-line"></div>
@@ -205,7 +248,9 @@
 
       <div class="section-heading-row">
         <h2 class="section-heading">Connecte a vos outils existants</h2>
-        <p class="section-sub">Import automatique, synchronisation fluide et API unifiee.</p>
+        <p class="section-sub">
+          Import automatique, synchronisation fluide et API unifiee.
+        </p>
       </div>
 
       <div class="integrations-grid">
@@ -214,7 +259,6 @@
           <span class="integration-desc">{{ i.desc }}</span>
         </div>
       </div>
-
     </div>
   </section>
 
@@ -228,7 +272,9 @@
 
       <div class="section-heading-row">
         <h2 class="section-heading">Reponses aux questions frequentes</h2>
-        <p class="section-sub">On vous aide a demarrer vite, sans exposition de donnees sensibles.</p>
+        <p class="section-sub">
+          On vous aide a demarrer vite, sans exposition de donnees sensibles.
+        </p>
       </div>
 
       <div class="faq-list">
@@ -246,9 +292,17 @@
       <div class="cta-glow"></div>
       <div class="cta-content">
         <span class="section-tag">Prêt à commencer ?</span>
-        <h2 class="cta-heading">Transformez la gestion de votre IMF dès aujourd'hui</h2>
-        <p class="cta-sub">Connectez-vous et accédez à votre tableau de bord en quelques secondes</p>
-        <button mat-flat-button class="btn-primary-hero btn-cta-big" (click)="goToLogin()">
+        <h2 class="cta-heading">
+          Transformez la gestion de votre IMF dès aujourd'hui
+        </h2>
+        <p class="cta-sub">
+          Connectez-vous et accédez à votre tableau de bord en quelques secondes
+        </p>
+        <button
+          mat-flat-button
+          class="btn-primary-hero btn-cta-big"
+          (click)="goToLogin()"
+        >
           <mat-icon>login</mat-icon>
           Accéder à MicroRecouv
         </button>
@@ -257,44 +311,61 @@
   </section>
 
   <!-- ══ Bouton retour haut + progression ══ -->
-  <button class="scroll-top-btn"
-          [class.scroll-top-visible]="showScrollTop"
-          (click)="scrollToTop()"
-          aria-label="Retour en haut de page">
-
+  <button
+    class="scroll-top-btn"
+    [class.scroll-top-visible]="showScrollTop"
+    (click)="scrollToTop()"
+    aria-label="Retour en haut de page"
+  >
     <svg class="scroll-ring" viewBox="0 0 52 52" fill="none">
       <!-- Piste grise -->
-      <circle cx="26" cy="26" [attr.r]="SCROLL_RADIUS"
-              stroke-width="3" class="ring-track"/>
+      <circle
+        cx="26"
+        cy="26"
+        [attr.r]="SCROLL_RADIUS"
+        stroke-width="3"
+        class="ring-track"
+      />
       <!-- Arc de progression -->
-      <circle cx="26" cy="26" [attr.r]="SCROLL_RADIUS"
-              stroke-width="3" class="ring-fill"
-              [attr.stroke-dasharray]="scrollCircumference"
-              [attr.stroke-dashoffset]="strokeDashoffset"
-              stroke-linecap="round"
-              transform="rotate(-90 26 26)"/>
+      <circle
+        cx="26"
+        cy="26"
+        [attr.r]="SCROLL_RADIUS"
+        stroke-width="3"
+        class="ring-fill"
+        [attr.stroke-dasharray]="scrollCircumference"
+        [attr.stroke-dashoffset]="strokeDashoffset"
+        stroke-linecap="round"
+        transform="rotate(-90 26 26)"
+      />
     </svg>
 
     <mat-icon class="scroll-arrow">keyboard_arrow_up</mat-icon>
 
     <span class="scroll-pct">{{ scrollProgress }}%</span>
-
   </button>
 
   <!-- ══ FOOTER ══ -->
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="footer-logo-img">
+        <img
+          src="assets/MicroRecouv.png"
+          alt="MicroRecouv"
+          class="footer-logo-img"
+        />
         <span class="footer-brand-name">
-          <span class="logo-micro">Micro</span><span class="logo-recouv">Recouv</span>
+          <span class="logo-micro">Micro</span
+          ><span class="logo-recouv">Recouv</span>
         </span>
       </div>
-      <p class="footer-copy">© 2025 MicroRecouv — Gestion &amp; Recouvrement Intelligents pour la Microfinance</p>
+      <p class="footer-copy">
+        © 2025 MicroRecouv — Gestion &amp; Recouvrement Intelligents pour la
+        Microfinance
+      </p>
       <button mat-stroked-button class="btn-footer-login" (click)="goToLogin()">
         <mat-icon>login</mat-icon> Se connecter
       </button>
     </div>
   </footer>
-
 </div>

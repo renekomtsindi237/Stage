@@ -7,7 +7,7 @@
       <span class="imf-code-badge">{{ imfInfo.code }}</span>
       <span class="imf-status-chip" [class.chip-active]="imfInfo.actif">
         <span class="chip-dot"></span>
-        {{ imfInfo.actif ? 'Active' : 'Inactive' }}
+        {{ imfInfo.actif ? "Active" : "Inactive" }}
       </span>
     </div>
     <div class="imf-meta-sub">
@@ -18,7 +18,8 @@
         <mat-icon>people</mat-icon>{{ imfInfo.segmentsClients }}
       </span>
       <span>
-        <mat-icon>manage_accounts</mat-icon>{{ total }} utilisateur(s) · {{ totalActive }} actif(s)
+        <mat-icon>manage_accounts</mat-icon>{{ total }} utilisateur(s) ·
+        {{ totalActive }} actif(s)
       </span>
     </div>
   </div>
@@ -37,9 +38,18 @@
   <div class="header-actions">
     <div class="search-wrap">
       <mat-icon class="search-icon">search</mat-icon>
-      <input class="search-input" placeholder="Rechercher…" (input)="applyFilter($event)">
+      <input
+        class="search-input"
+        placeholder="Rechercher…"
+        (input)="applyFilter($event)"
+      />
     </div>
-    <button mat-stroked-button class="btn-refresh" (click)="loadUsers()" [disabled]="loading">
+    <button
+      mat-stroked-button
+      class="btn-refresh"
+      (click)="loadUsers()"
+      [disabled]="loading"
+    >
       <mat-icon [class.spinning]="loading">refresh</mat-icon>
     </button>
     <button mat-flat-button class="btn-create" routerLink="/admin/create-user">
@@ -57,7 +67,7 @@
 
 <!-- ── Skeleton ── -->
 <div class="table-panel glass" *ngIf="loading">
-  <div class="sk-row" *ngFor="let i of [1,2,3,4,5]">
+  <div class="sk-row" *ngFor="let i of [1, 2, 3, 4, 5]">
     <div class="sk-avatar"></div>
     <div class="sk-lines">
       <div class="sk-line sk-lg"></div>
@@ -68,32 +78,56 @@
 
 <!-- ── Table ── -->
 <div class="table-panel glass" *ngIf="!loading">
-
   <div class="empty-state" *ngIf="filteredUsers.length === 0">
     <mat-icon>manage_accounts</mat-icon>
-    <p>Aucun utilisateur{{ searchQuery ? ' correspondant à votre recherche' : ' enregistré' }}.</p>
-    <button mat-flat-button class="btn-create" routerLink="/admin/create-user" *ngIf="!searchQuery">
+    <p>
+      Aucun utilisateur{{
+        searchQuery ? " correspondant à votre recherche" : " enregistré"
+      }}.
+    </p>
+    <button
+      mat-flat-button
+      class="btn-create"
+      routerLink="/admin/create-user"
+      *ngIf="!searchQuery"
+    >
       Créer le premier compte
     </button>
   </div>
 
   <ng-container *ngIf="filteredUsers.length > 0">
     <table mat-table [dataSource]="filteredUsers" class="users-table">
-
       <!-- Avatar -->
       <ng-container matColumnDef="avatar">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let u">
-          <div class="row-avatar-wrap" (click)="pickAvatarFor(u)" matTooltip="Changer la photo">
-            <mat-spinner *ngIf="avatarUploadingId === u.id" diameter="36" class="avatar-spinner"></mat-spinner>
-            <img *ngIf="u.avatarUrl && avatarUploadingId !== u.id"
-                 [src]="u.avatarUrl" [alt]="u.username"
-                 class="row-avatar-img" [class.row-avatar-img--off]="!u.actif">
-            <div *ngIf="!u.avatarUrl && avatarUploadingId !== u.id"
-                 class="row-avatar" [class.row-avatar--off]="!u.actif">
+          <div
+            class="row-avatar-wrap"
+            (click)="pickAvatarFor(u)"
+            matTooltip="Changer la photo"
+          >
+            <mat-spinner
+              *ngIf="avatarUploadingId === u.id"
+              diameter="36"
+              class="avatar-spinner"
+            ></mat-spinner>
+            <img
+              *ngIf="u.avatarUrl && avatarUploadingId !== u.id"
+              [src]="u.avatarUrl"
+              [alt]="u.username"
+              class="row-avatar-img"
+              [class.row-avatar-img--off]="!u.actif"
+            />
+            <div
+              *ngIf="!u.avatarUrl && avatarUploadingId !== u.id"
+              class="row-avatar"
+              [class.row-avatar--off]="!u.actif"
+            >
               {{ u.username.charAt(0).toUpperCase() }}
             </div>
-            <div class="avatar-edit-overlay"><mat-icon>photo_camera</mat-icon></div>
+            <div class="avatar-edit-overlay">
+              <mat-icon>photo_camera</mat-icon>
+            </div>
           </div>
         </td>
       </ng-container>
@@ -122,7 +156,7 @@
       <ng-container matColumnDef="zone">
         <th mat-header-cell *matHeaderCellDef>Zone</th>
         <td mat-cell *matCellDef="let u" class="cell-zone">
-          {{ u.zoneId ?? '—' }}
+          {{ u.zoneId ?? "—" }}
         </td>
       </ng-container>
 
@@ -130,9 +164,13 @@
       <ng-container matColumnDef="statut">
         <th mat-header-cell *matHeaderCellDef>Statut</th>
         <td mat-cell *matCellDef="let u">
-          <span class="status-chip" [class.chip-active]="u.actif" [class.chip-off]="!u.actif">
+          <span
+            class="status-chip"
+            [class.chip-active]="u.actif"
+            [class.chip-off]="!u.actif"
+          >
             <span class="chip-dot"></span>
-            {{ u.actif ? 'Actif' : 'Inactif' }}
+            {{ u.actif ? "Actif" : "Inactif" }}
           </span>
         </td>
       </ng-container>
@@ -141,7 +179,7 @@
       <ng-container matColumnDef="lastLogin">
         <th mat-header-cell *matHeaderCellDef>Dernier accès</th>
         <td mat-cell *matCellDef="let u" class="cell-date">
-          {{ u.lastLogin ? (u.lastLogin | date:'dd MMM yyyy, HH:mm') : '—' }}
+          {{ u.lastLogin ? (u.lastLogin | date: "dd MMM yyyy, HH:mm") : "—" }}
         </td>
       </ng-container>
 
@@ -150,16 +188,26 @@
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let u">
           <div class="row-actions">
-            <button mat-icon-button class="btn-reset-pw"
-                    matTooltip="Réinitialiser le mot de passe"
-                    (click)="resetPassword(u)">
+            <button
+              mat-icon-button
+              class="btn-reset-pw"
+              matTooltip="Réinitialiser le mot de passe"
+              (click)="resetPassword(u)"
+            >
               <mat-icon>lock_reset</mat-icon>
             </button>
-            <button mat-icon-button class="btn-toggle"
-                    [matTooltip]="u.actif ? 'Désactiver' : 'Réactiver'"
-                    (click)="toggleActif(u)">
-              <mat-icon [style.color]="u.actif ? 'var(--color-success)' : 'var(--color-text-muted)'">
-                {{ u.actif ? 'toggle_on' : 'toggle_off' }}
+            <button
+              mat-icon-button
+              class="btn-toggle"
+              [matTooltip]="u.actif ? 'Désactiver' : 'Réactiver'"
+              (click)="toggleActif(u)"
+            >
+              <mat-icon
+                [style.color]="
+                  u.actif ? 'var(--color-success)' : 'var(--color-text-muted)'
+                "
+              >
+                {{ u.actif ? "toggle_on" : "toggle_off" }}
               </mat-icon>
             </button>
           </div>
@@ -167,15 +215,22 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-          class="user-row" [class.row-inactive]="!row.actif"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="user-row"
+        [class.row-inactive]="!row.actif"
+      ></tr>
     </table>
 
-    <mat-paginator [length]="total" [pageSize]="pageSize"
-                   [pageSizeOptions]="[10, 20, 50]"
-                   (page)="onPageChange($event)"
-                   showFirstLastButtons
-                   class="table-paginator">
+    <mat-paginator
+      [length]="total"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+      class="table-paginator"
+    >
     </mat-paginator>
   </ng-container>
 </div>

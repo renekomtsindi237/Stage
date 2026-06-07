@@ -1,5 +1,4 @@
 <div class="agences-container">
-
   <!-- En-tête moderne -->
   <header class="agences-header">
     <div class="header-content">
@@ -13,7 +12,11 @@
     </div>
     <div class="header-badge">
       <mat-icon>location_city</mat-icon>
-      <span>{{ totalActif }} agence{{ totalActif > 1 ? 's' : '' }} active{{ totalActif > 1 ? 's' : '' }}</span>
+      <span
+        >{{ totalActif }} agence{{ totalActif > 1 ? "s" : "" }} active{{
+          totalActif > 1 ? "s" : ""
+        }}</span
+      >
     </div>
   </header>
 
@@ -33,35 +36,51 @@
       <mat-form-field appearance="outline" class="modern-field">
         <mat-label>Nom de l'agence *</mat-label>
         <mat-icon matPrefix>business_center</mat-icon>
-        <input matInput formControlName="nom" placeholder="Ex: Agence Centre">
-        <mat-error *ngIf="form.get('nom')?.hasError('required')">Le nom est obligatoire</mat-error>
-        <mat-error *ngIf="form.get('nom')?.hasError('maxlength')">100 caractères maximum</mat-error>
+        <input matInput formControlName="nom" placeholder="Ex: Agence Centre" />
+        <mat-error *ngIf="form.get('nom')?.hasError('required')"
+          >Le nom est obligatoire</mat-error
+        >
+        <mat-error *ngIf="form.get('nom')?.hasError('maxlength')"
+          >100 caractères maximum</mat-error
+        >
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="modern-field">
         <mat-label>Ville</mat-label>
         <mat-icon matPrefix>location_on</mat-icon>
-        <input matInput formControlName="ville" placeholder="Ex: Yaoundé">
+        <input matInput formControlName="ville" placeholder="Ex: Yaoundé" />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="modern-field">
         <mat-label>Responsable</mat-label>
         <mat-icon matPrefix>person</mat-icon>
-        <input matInput formControlName="responsable" placeholder="Nom du responsable">
+        <input
+          matInput
+          formControlName="responsable"
+          placeholder="Nom du responsable"
+        />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="modern-field">
         <mat-label>Téléphone</mat-label>
         <mat-icon matPrefix>phone</mat-icon>
-        <input matInput formControlName="telephone" placeholder="+237 6XX XXX XXX">
+        <input
+          matInput
+          formControlName="telephone"
+          placeholder="+237 6XX XXX XXX"
+        />
       </mat-form-field>
 
       <div class="form-action">
-        <button mat-flat-button type="submit" class="btn-create"
-                [disabled]="form.invalid || loadingCreate">
+        <button
+          mat-flat-button
+          type="submit"
+          class="btn-create"
+          [disabled]="form.invalid || loadingCreate"
+        >
           <mat-spinner *ngIf="loadingCreate" diameter="18"></mat-spinner>
           <mat-icon *ngIf="!loadingCreate">add_circle</mat-icon>
-          <span>{{ loadingCreate ? 'Création...' : 'Créer l\'agence' }}</span>
+          <span>{{ loadingCreate ? "Création..." : "Créer l'agence" }}</span>
         </button>
       </div>
     </form>
@@ -84,16 +103,23 @@
 
   <!-- Grille des agences -->
   <div *ngIf="!loadingList && agences.length > 0" class="agences-grid">
-
     <div *ngFor="let agence of agences" class="agence-card glass">
       <!-- Bandeau coloré -->
-      <div class="card-header" [class.active-gradient]="agence.actif" [class.inactive-gradient]="!agence.actif">
+      <div
+        class="card-header"
+        [class.active-gradient]="agence.actif"
+        [class.inactive-gradient]="!agence.actif"
+      >
         <div class="card-icon">
-          <mat-icon>{{ agence.actif ? 'storefront' : 'store_off' }}</mat-icon>
+          <mat-icon>{{ agence.actif ? "storefront" : "store_off" }}</mat-icon>
         </div>
-        <div class="card-badge" [class.badge-active]="agence.actif" [class.badge-inactive]="!agence.actif">
+        <div
+          class="card-badge"
+          [class.badge-active]="agence.actif"
+          [class.badge-inactive]="!agence.actif"
+        >
           <span class="badge-dot"></span>
-          {{ agence.actif ? 'Active' : 'Inactive' }}
+          {{ agence.actif ? "Active" : "Inactive" }}
         </div>
       </div>
 
@@ -114,7 +140,10 @@
             <mat-icon>phone</mat-icon>
             <span>{{ agence.telephone }}</span>
           </div>
-          <div class="detail-row detail-muted" *ngIf="!agence.ville && !agence.responsable && !agence.telephone">
+          <div
+            class="detail-row detail-muted"
+            *ngIf="!agence.ville && !agence.responsable && !agence.telephone"
+          >
             <mat-icon>info_outline</mat-icon>
             <span>Aucune information complémentaire</span>
           </div>
@@ -123,22 +152,38 @@
 
       <!-- Actions -->
       <div class="card-actions" *ngIf="confirmDeleteId !== agence.id">
-        <button mat-stroked-button class="btn-toggle"
-                [class.btn-deactivate]="agence.actif"
-                [class.btn-activate]="!agence.actif"
-                [disabled]="isToggling(agence.id)"
-                (click)="toggle(agence)"
-                [matTooltip]="agence.actif ? 'Désactiver l\'agence' : 'Activer l\'agence'">
-          <mat-spinner *ngIf="isToggling(agence.id)" diameter="18"></mat-spinner>
-          <mat-icon *ngIf="!isToggling(agence.id)">{{ agence.actif ? 'toggle_on' : 'toggle_off' }}</mat-icon>
-          <span>{{ agence.actif ? 'Désactiver' : 'Activer' }}</span>
+        <button
+          mat-stroked-button
+          class="btn-toggle"
+          [class.btn-deactivate]="agence.actif"
+          [class.btn-activate]="!agence.actif"
+          [disabled]="isToggling(agence.id)"
+          (click)="toggle(agence)"
+          [matTooltip]="
+            agence.actif ? 'Désactiver l\'agence' : 'Activer l\'agence'
+          "
+        >
+          <mat-spinner
+            *ngIf="isToggling(agence.id)"
+            diameter="18"
+          ></mat-spinner>
+          <mat-icon *ngIf="!isToggling(agence.id)">{{
+            agence.actif ? "toggle_on" : "toggle_off"
+          }}</mat-icon>
+          <span>{{ agence.actif ? "Désactiver" : "Activer" }}</span>
         </button>
 
-        <button mat-icon-button class="btn-delete"
-                [disabled]="isDeleting(agence.id)"
-                (click)="requestDelete(agence.id)"
-                matTooltip="Supprimer l'agence">
-          <mat-spinner *ngIf="isDeleting(agence.id)" diameter="18"></mat-spinner>
+        <button
+          mat-icon-button
+          class="btn-delete"
+          [disabled]="isDeleting(agence.id)"
+          (click)="requestDelete(agence.id)"
+          matTooltip="Supprimer l'agence"
+        >
+          <mat-spinner
+            *ngIf="isDeleting(agence.id)"
+            diameter="18"
+          ></mat-spinner>
           <mat-icon *ngIf="!isDeleting(agence.id)">delete_outline</mat-icon>
         </button>
       </div>
@@ -148,16 +193,22 @@
         <mat-icon class="confirm-icon">warning_amber</mat-icon>
         <span>Supprimer cette agence ?</span>
         <div class="confirm-buttons">
-          <button mat-stroked-button class="btn-confirm-yes" (click)="confirmDelete(agence.id)">
+          <button
+            mat-stroked-button
+            class="btn-confirm-yes"
+            (click)="confirmDelete(agence.id)"
+          >
             <mat-icon>check</mat-icon> Confirmer
           </button>
-          <button mat-stroked-button class="btn-confirm-no" (click)="cancelDelete()">
+          <button
+            mat-stroked-button
+            class="btn-confirm-no"
+            (click)="cancelDelete()"
+          >
             <mat-icon>close</mat-icon> Annuler
           </button>
         </div>
       </div>
     </div>
-
   </div>
-
 </div>

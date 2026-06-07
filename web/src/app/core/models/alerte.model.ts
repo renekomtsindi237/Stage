@@ -1,4 +1,4 @@
-export type StatutAlerte = 'ACTIVE' | 'CLOTUREE' | 'ESCALADEE';
+export type StatutAlerte = "ACTIVE" | "CLOTUREE" | "ESCALADEE";
 
 export interface AlerteResponse {
   id: number;

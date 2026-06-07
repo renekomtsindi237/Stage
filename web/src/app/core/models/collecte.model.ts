@@ -1,10 +1,6 @@
-import { CanalPaiement } from './recouvrement.model';
+import { CanalPaiement } from "./recouvrement.model";
 
-export type StatutCollecte =
-  | 'SOUMISE'
-  | 'CONFIRMEE'
-  | 'DOUBLON'
-  | 'REJETEE';
+export type StatutCollecte = "SOUMISE" | "CONFIRMEE" | "DOUBLON" | "REJETEE";
 
 export interface CollecteResponse {
   id: number;

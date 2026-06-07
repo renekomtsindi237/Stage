@@ -1,9 +1,9 @@
 export type StatutEcheance =
-  | 'EN_ATTENTE'
-  | 'PAYEE'
-  | 'PARTIELLE'
-  | 'EN_RETARD'
-  | 'ANNULEE';
+  | "EN_ATTENTE"
+  | "PAYEE"
+  | "PARTIELLE"
+  | "EN_RETARD"
+  | "ANNULEE";
 
 export interface EcheanceResponse {
   id: number;

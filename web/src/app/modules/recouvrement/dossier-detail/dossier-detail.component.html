@@ -1,23 +1,32 @@
-<div *ngIf="loading" class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
-<mat-card *ngIf="error"><mat-card-content>{{ error }}</mat-card-content></mat-card>
+<div *ngIf="loading" class="loading-center">
+  <mat-spinner diameter="40"></mat-spinner>
+</div>
+<mat-card *ngIf="error"
+  ><mat-card-content>{{ error }}</mat-card-content></mat-card
+>
 
 <ng-container *ngIf="dossier && !loading">
-
   <!-- En-tête -->
   <div class="detail-header">
-    <button mat-icon-button routerLink="/admin/recouvrement" matTooltip="Retour à la liste">
+    <button
+      mat-icon-button
+      routerLink="/admin/recouvrement"
+      matTooltip="Retour à la liste"
+    >
       <mat-icon>arrow_back</mat-icon>
     </button>
     <div class="header-info">
       <h2>Dossier — {{ dossier.idPret }}</h2>
       <p class="header-sub">
-        Ouvert le {{ dossier.dateOuverture | date:'dd/MM/yyyy' }}
-        · Dernière MàJ {{ dossier.updatedAt | date:'dd/MM/yyyy HH:mm' }}
+        Ouvert le {{ dossier.dateOuverture | date: "dd/MM/yyyy" }} · Dernière
+        MàJ {{ dossier.updatedAt | date: "dd/MM/yyyy HH:mm" }}
       </p>
     </div>
-    <span class="badge-phase" [ngClass]="getPhaseClass(dossier.phase)">{{ getPhaseLabel(dossier.phase) }}</span>
+    <span class="badge-phase" [ngClass]="getPhaseClass(dossier.phase)">{{
+      getPhaseLabel(dossier.phase)
+    }}</span>
     <span class="badge-statut" [ngClass]="dossier.clos ? 'solde' : 'actif'">
-      {{ dossier.clos ? 'Clos' : 'Ouvert' }}
+      {{ dossier.clos ? "Clos" : "Ouvert" }}
     </span>
   </div>
 
@@ -32,25 +41,38 @@
     <button mat-stroked-button (click)="showAccordForm = !showAccordForm">
       <mat-icon>handshake</mat-icon> Accord rééchelonnement
     </button>
-    <button mat-stroked-button color="warn" (click)="showCloreConfirm = !showCloreConfirm">
+    <button
+      mat-stroked-button
+      color="warn"
+      (click)="showCloreConfirm = !showCloreConfirm"
+    >
       <mat-icon>lock</mat-icon> Clôturer
     </button>
   </div>
 
   <!-- ── Formulaire : Ajouter une action ───────────────────────────────────── -->
   <mat-card class="form-card" *ngIf="showActionForm">
-    <mat-card-header><mat-card-title>Enregistrer une action</mat-card-title></mat-card-header>
+    <mat-card-header
+      ><mat-card-title>Enregistrer une action</mat-card-title></mat-card-header
+    >
     <mat-card-content>
-      <form [formGroup]="actionForm" (ngSubmit)="ajouterAction()" class="inline-form">
+      <form
+        [formGroup]="actionForm"
+        (ngSubmit)="ajouterAction()"
+        class="inline-form"
+      >
         <div class="form-row">
-          <mat-form-field appearance="outline" style="flex:2 1 220px">
+          <mat-form-field appearance="outline" style="flex: 2 1 220px">
             <mat-label>Type d'action</mat-label>
             <mat-select formControlName="typeAction">
               <mat-option *ngFor="let t of typeActionOptions" [value]="t.value">
                 {{ t.label }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="actionForm.get('typeAction')?.hasError('required')">Requis</mat-error>
+            <mat-error
+              *ngIf="actionForm.get('typeAction')?.hasError('required')"
+              >Requis</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -58,29 +80,43 @@
             <mat-select formControlName="resultat">
               <mat-option value="EN_ATTENTE">En attente</mat-option>
               <mat-option value="CONTACT_ETABLI">Contact établi</mat-option>
-              <mat-option value="PROMESSE_PAIEMENT">Promesse de paiement</mat-option>
+              <mat-option value="PROMESSE_PAIEMENT"
+                >Promesse de paiement</mat-option
+              >
               <mat-option value="SANS_REPONSE">Sans réponse</mat-option>
               <mat-option value="REFUSE">Refus</mat-option>
-              <mat-option value="PAIEMENT_EFFECTUE">Paiement effectué</mat-option>
+              <mat-option value="PAIEMENT_EFFECTUE"
+                >Paiement effectué</mat-option
+              >
               <mat-option value="ACCORD_OBTENU">Accord obtenu</mat-option>
             </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Frais engagés (FCFA)</mat-label>
-            <input matInput type="number" formControlName="fraisEngages" min="0">
+            <input
+              matInput
+              type="number"
+              formControlName="fraisEngages"
+              min="0"
+            />
           </mat-form-field>
         </div>
 
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Date promesse de paiement</mat-label>
-            <input matInput type="date" formControlName="promesseDate">
+            <input matInput type="date" formControlName="promesseDate" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Montant promis (FCFA)</mat-label>
-            <input matInput type="number" formControlName="promesseMontant" min="0">
+            <input
+              matInput
+              type="number"
+              formControlName="promesseMontant"
+              min="0"
+            />
           </mat-form-field>
         </div>
 
@@ -98,12 +134,16 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Référence transaction</mat-label>
-            <input matInput formControlName="referenceTransaction">
+            <input matInput formControlName="referenceTransaction" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>N° téléphone paiement</mat-label>
-            <input matInput formControlName="numeroTelephonePaiement" placeholder="6XX XXX XXX">
+            <input
+              matInput
+              formControlName="numeroTelephonePaiement"
+              placeholder="6XX XXX XXX"
+            />
             <mat-hint>MTN MoMo ou Orange Money</mat-hint>
           </mat-form-field>
 
@@ -117,16 +157,26 @@
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline" style="width:100%">
+        <mat-form-field appearance="outline" style="width: 100%">
           <mat-label>Observation</mat-label>
-          <textarea matInput formControlName="observation" rows="3"
-                    placeholder="Résumé de l'action menée…"></textarea>
+          <textarea
+            matInput
+            formControlName="observation"
+            rows="3"
+            placeholder="Résumé de l'action menée…"
+          ></textarea>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-button type="button" (click)="showActionForm = false">Annuler</button>
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="actionForm.invalid || savingAction">
+          <button mat-button type="button" (click)="showActionForm = false">
+            Annuler
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="actionForm.invalid || savingAction"
+          >
             <mat-spinner diameter="16" *ngIf="savingAction"></mat-spinner>
             Enregistrer
           </button>
@@ -137,28 +187,49 @@
 
   <!-- ── Formulaire : Escalader ────────────────────────────────────────────── -->
   <mat-card class="form-card" *ngIf="showEscaladeForm">
-    <mat-card-header><mat-card-title>Escalader le dossier</mat-card-title></mat-card-header>
+    <mat-card-header
+      ><mat-card-title>Escalader le dossier</mat-card-title></mat-card-header
+    >
     <mat-card-content>
-      <form [formGroup]="escaladeForm" (ngSubmit)="escalader()" class="inline-form">
+      <form
+        [formGroup]="escaladeForm"
+        (ngSubmit)="escalader()"
+        class="inline-form"
+      >
         <div class="form-row">
-          <mat-form-field appearance="outline" style="flex:2 1 240px">
+          <mat-form-field appearance="outline" style="flex: 2 1 240px">
             <mat-label>Nouvelle phase</mat-label>
             <mat-select formControlName="nouvellePhase">
-              <mat-option *ngFor="let p of phasesEscalade" [value]="p.value">{{ p.label }}</mat-option>
+              <mat-option *ngFor="let p of phasesEscalade" [value]="p.value">{{
+                p.label
+              }}</mat-option>
             </mat-select>
-            <mat-error *ngIf="escaladeForm.get('nouvellePhase')?.hasError('required')">Requis</mat-error>
+            <mat-error
+              *ngIf="escaladeForm.get('nouvellePhase')?.hasError('required')"
+              >Requis</mat-error
+            >
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="flex:3 1 300px">
+          <mat-form-field appearance="outline" style="flex: 3 1 300px">
             <mat-label>Motif</mat-label>
-            <input matInput formControlName="motif" placeholder="Justification de l'escalade…">
+            <input
+              matInput
+              formControlName="motif"
+              placeholder="Justification de l'escalade…"
+            />
           </mat-form-field>
         </div>
 
         <div class="form-actions">
-          <button mat-button type="button" (click)="showEscaladeForm = false">Annuler</button>
-          <button mat-raised-button color="accent" type="submit"
-                  [disabled]="escaladeForm.invalid || savingEscalade">
+          <button mat-button type="button" (click)="showEscaladeForm = false">
+            Annuler
+          </button>
+          <button
+            mat-raised-button
+            color="accent"
+            type="submit"
+            [disabled]="escaladeForm.invalid || savingEscalade"
+          >
             <mat-spinner diameter="16" *ngIf="savingEscalade"></mat-spinner>
             Confirmer l'escalade
           </button>
@@ -171,45 +242,99 @@
   <mat-card class="form-card" *ngIf="showAccordForm">
     <mat-card-header>
       <mat-card-title>Accord de rééchelonnement</mat-card-title>
-      <mat-card-subtitle>Un accord actif ne peut être qu'un seul à la fois. L'accord précédent sera désactivé automatiquement.</mat-card-subtitle>
+      <mat-card-subtitle
+        >Un accord actif ne peut être qu'un seul à la fois. L'accord précédent
+        sera désactivé automatiquement.</mat-card-subtitle
+      >
     </mat-card-header>
     <mat-card-content>
-      <form [formGroup]="accordForm" (ngSubmit)="creerAccord()" class="inline-form">
+      <form
+        [formGroup]="accordForm"
+        (ngSubmit)="creerAccord()"
+        class="inline-form"
+      >
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Nouveau mensuel (FCFA)</mat-label>
-            <input matInput type="number" formControlName="nouveauMontantMensuel" min="1">
-            <mat-error *ngIf="accordForm.get('nouveauMontantMensuel')?.hasError('required')">Requis</mat-error>
+            <input
+              matInput
+              type="number"
+              formControlName="nouveauMontantMensuel"
+              min="1"
+            />
+            <mat-error
+              *ngIf="
+                accordForm.get('nouveauMontantMensuel')?.hasError('required')
+              "
+              >Requis</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Nombre d'échéances</mat-label>
-            <input matInput type="number" formControlName="nombreNouvellesEcheances" min="1">
-            <mat-error *ngIf="accordForm.get('nombreNouvellesEcheances')?.hasError('required')">Requis</mat-error>
+            <input
+              matInput
+              type="number"
+              formControlName="nombreNouvellesEcheances"
+              min="1"
+            />
+            <mat-error
+              *ngIf="
+                accordForm.get('nombreNouvellesEcheances')?.hasError('required')
+              "
+              >Requis</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Date début nouvel échéancier</mat-label>
-            <input matInput type="date" formControlName="dateDebutNouvelEcheancier">
-            <mat-error *ngIf="accordForm.get('dateDebutNouvelEcheancier')?.hasError('required')">Requis</mat-error>
+            <input
+              matInput
+              type="date"
+              formControlName="dateDebutNouvelEcheancier"
+            />
+            <mat-error
+              *ngIf="
+                accordForm
+                  .get('dateDebutNouvelEcheancier')
+                  ?.hasError('required')
+              "
+              >Requis</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Taux d'intérêt annuel (%)</mat-label>
-            <input matInput type="number" formControlName="tauxInteretAnnuel" min="0" step="0.1">
+            <input
+              matInput
+              type="number"
+              formControlName="tauxInteretAnnuel"
+              min="0"
+              step="0.1"
+            />
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline" style="width:100%">
+        <mat-form-field appearance="outline" style="width: 100%">
           <mat-label>Observations</mat-label>
-          <textarea matInput formControlName="observations" rows="2"
-                    placeholder="Conditions particulières, contexte de l'accord…"></textarea>
+          <textarea
+            matInput
+            formControlName="observations"
+            rows="2"
+            placeholder="Conditions particulières, contexte de l'accord…"
+          ></textarea>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-button type="button" (click)="showAccordForm = false">Annuler</button>
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="accordForm.invalid || savingAccord">
+          <button mat-button type="button" (click)="showAccordForm = false">
+            Annuler
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="accordForm.invalid || savingAccord"
+          >
             <mat-spinner diameter="16" *ngIf="savingAccord"></mat-spinner>
             Enregistrer l'accord
           </button>
@@ -222,17 +347,27 @@
   <mat-card class="form-card warn-card" *ngIf="showCloreConfirm">
     <mat-card-header>
       <mat-icon color="warn">warning</mat-icon>
-      <mat-card-title style="color:var(--color-warn)">Clôturer le dossier</mat-card-title>
+      <mat-card-title style="color: var(--color-warn)"
+        >Clôturer le dossier</mat-card-title
+      >
     </mat-card-header>
     <mat-card-content>
-      <mat-form-field appearance="outline" style="width:100%">
+      <mat-form-field appearance="outline" style="width: 100%">
         <mat-label>Motif de clôture</mat-label>
-        <input matInput [(ngModel)]="motifClore" placeholder="Paiement intégral, accord amiable, radiation…">
+        <input
+          matInput
+          [(ngModel)]="motifClore"
+          placeholder="Paiement intégral, accord amiable, radiation…"
+        />
       </mat-form-field>
       <div class="form-actions">
         <button mat-button (click)="showCloreConfirm = false">Annuler</button>
-        <button mat-raised-button color="warn" (click)="cloreDossier()"
-                [disabled]="savingClore">
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="cloreDossier()"
+          [disabled]="savingClore"
+        >
           <mat-spinner diameter="16" *ngIf="savingClore"></mat-spinner>
           Confirmer la clôture
         </button>
@@ -242,57 +377,89 @@
 
   <!-- ── Grille de détails ─────────────────────────────────────────────────── -->
   <div class="detail-grid">
-
     <!-- Informations dossier -->
     <mat-card>
-      <mat-card-header><mat-card-title>Dossier</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title>Dossier</mat-card-title></mat-card-header
+      >
       <mat-card-content>
         <dl class="info-list">
-          <dt>Référence prêt</dt>   <dd class="mono">{{ dossier.idPret }}</dd>
-          <dt>Montant impayé</dt>   <dd><strong>{{ dossier.montantImpaye | number:'1.0-0' }} FCFA</strong></dd>
-          <dt>Jours de retard</dt>  <dd>{{ dossier.joursRetard }} jours</dd>
-          <dt>Frais engagés</dt>    <dd>{{ dossier.fraisRecouvrement | number:'1.0-0' }} FCFA</dd>
-          <dt *ngIf="dossier.datePremiereEcheanceImpayee">1ère échéance impayée</dt>
-          <dd *ngIf="dossier.datePremiereEcheanceImpayee">{{ dossier.datePremiereEcheanceImpayee | date:'dd/MM/yyyy' }}</dd>
+          <dt>Référence prêt</dt>
+          <dd class="mono">{{ dossier.idPret }}</dd>
+          <dt>Montant impayé</dt>
+          <dd>
+            <strong>{{ dossier.montantImpaye | number: "1.0-0" }} FCFA</strong>
+          </dd>
+          <dt>Jours de retard</dt>
+          <dd>{{ dossier.joursRetard }} jours</dd>
+          <dt>Frais engagés</dt>
+          <dd>{{ dossier.fraisRecouvrement | number: "1.0-0" }} FCFA</dd>
+          <dt *ngIf="dossier.datePremiereEcheanceImpayee">
+            1ère échéance impayée
+          </dt>
+          <dd *ngIf="dossier.datePremiereEcheanceImpayee">
+            {{ dossier.datePremiereEcheanceImpayee | date: "dd/MM/yyyy" }}
+          </dd>
           <dt *ngIf="dossier.clos && dossier.motifCloture">Motif clôture</dt>
-          <dd *ngIf="dossier.clos && dossier.motifCloture">{{ dossier.motifCloture }}</dd>
+          <dd *ngIf="dossier.clos && dossier.motifCloture">
+            {{ dossier.motifCloture }}
+          </dd>
         </dl>
       </mat-card-content>
     </mat-card>
 
     <!-- Provisionnement COBAC -->
     <mat-card>
-      <mat-card-header><mat-card-title>Provisionnement COBAC</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title>Provisionnement COBAC</mat-card-title></mat-card-header
+      >
       <mat-card-content>
         <div class="cobac-block">
-          <span class="badge-cobac {{ getCobacClass(dossier.categorieCobtac) }} cobac-large">
+          <span
+            class="badge-cobac {{
+              getCobacClass(dossier.categorieCobtac)
+            }} cobac-large"
+          >
             {{ getCobacLabel(dossier.categorieCobtac) }}
           </span>
         </div>
         <dl class="info-list">
           <dt>Taux provision</dt>
-          <dd><strong>{{ dossier.tauxProvision | number:'1.1-1' }} %</strong></dd>
+          <dd>
+            <strong>{{ dossier.tauxProvision | number: "1.1-1" }} %</strong>
+          </dd>
           <dt>Montant provision</dt>
-          <dd><strong>{{ dossier.montantProvision | number:'1.0-0' }} FCFA</strong></dd>
+          <dd>
+            <strong
+              >{{ dossier.montantProvision | number: "1.0-0" }} FCFA</strong
+            >
+          </dd>
         </dl>
       </mat-card-content>
     </mat-card>
 
     <!-- Garantie / Caution -->
     <mat-card *ngIf="dossier.nomCaution || dossier.typeGarantie">
-      <mat-card-header><mat-card-title>Garantie &amp; Caution</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title
+          >Garantie &amp; Caution</mat-card-title
+        ></mat-card-header
+      >
       <mat-card-content>
         <dl class="info-list">
           <dt *ngIf="dossier.typeGarantie">Type de garantie</dt>
-          <dd *ngIf="dossier.typeGarantie">{{ dossier.typeGarantie | titlecase }}</dd>
+          <dd *ngIf="dossier.typeGarantie">
+            {{ dossier.typeGarantie | titlecase }}
+          </dd>
           <dt *ngIf="dossier.nomCaution">Cautionnaire</dt>
           <dd *ngIf="dossier.nomCaution">{{ dossier.nomCaution }}</dd>
           <dt *ngIf="dossier.telephoneCaution">Téléphone</dt>
-          <dd *ngIf="dossier.telephoneCaution">{{ dossier.telephoneCaution }}</dd>
+          <dd *ngIf="dossier.telephoneCaution">
+            {{ dossier.telephoneCaution }}
+          </dd>
         </dl>
       </mat-card-content>
     </mat-card>
-
   </div>
 
   <!-- ── Accords de rééchelonnement ───────────────────────────────────────── -->
@@ -305,20 +472,36 @@
     </mat-card-header>
     <mat-card-content>
       <div class="accord-list">
-        <div *ngFor="let a of accords" class="accord-item" [class.accord-actif]="a.actif">
+        <div
+          *ngFor="let a of accords"
+          class="accord-item"
+          [class.accord-actif]="a.actif"
+        >
           <div class="accord-header">
             <span class="accord-badge" [class.badge-actif]="a.actif">
-              {{ a.actif ? 'Actif' : 'Archivé' }}
+              {{ a.actif ? "Actif" : "Archivé" }}
             </span>
-            <span class="accord-date">Créé le {{ a.createdAt | date:'dd/MM/yyyy' }}</span>
+            <span class="accord-date"
+              >Créé le {{ a.createdAt | date: "dd/MM/yyyy" }}</span
+            >
           </div>
           <dl class="info-list info-list--inline">
-            <dt>Mensualité</dt>   <dd><strong>{{ a.nouveauMontantMensuel | number:'1.0-0' }} FCFA</strong></dd>
-            <dt>Échéances</dt>    <dd>{{ a.nombreNouvellesEcheances }} mois</dd>
-            <dt>Début</dt>        <dd>{{ a.dateDebutNouvelEcheancier | date:'dd/MM/yyyy' }}</dd>
+            <dt>Mensualité</dt>
+            <dd>
+              <strong
+                >{{ a.nouveauMontantMensuel | number: "1.0-0" }} FCFA</strong
+              >
+            </dd>
+            <dt>Échéances</dt>
+            <dd>{{ a.nombreNouvellesEcheances }} mois</dd>
+            <dt>Début</dt>
+            <dd>{{ a.dateDebutNouvelEcheancier | date: "dd/MM/yyyy" }}</dd>
             <dt *ngIf="a.tauxInteretAnnuel">Taux</dt>
-            <dd *ngIf="a.tauxInteretAnnuel">{{ a.tauxInteretAnnuel | number:'1.1-1' }} % / an</dd>
-            <dt>Approuvé par</dt> <dd>{{ a.approuveParUsername }}</dd>
+            <dd *ngIf="a.tauxInteretAnnuel">
+              {{ a.tauxInteretAnnuel | number: "1.1-1" }} % / an
+            </dd>
+            <dt>Approuvé par</dt>
+            <dd>{{ a.approuveParUsername }}</dd>
           </dl>
           <p class="accord-obs" *ngIf="a.observations">{{ a.observations }}</p>
         </div>
@@ -350,20 +533,31 @@
           <div class="timeline-body">
             <div class="timeline-top">
               <strong>{{ getActionLabel(a.typeAction) }}</strong>
-              <span class="timeline-date">{{ a.dateAction | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="timeline-date">{{
+                a.dateAction | date: "dd/MM/yyyy HH:mm"
+              }}</span>
               <span class="timeline-auteur">— {{ a.agentUsername }}</span>
             </div>
-            <p class="timeline-desc" *ngIf="a.observation">{{ a.observation }}</p>
+            <p class="timeline-desc" *ngIf="a.observation">
+              {{ a.observation }}
+            </p>
             <div class="timeline-meta">
-              <span *ngIf="a.fraisEngages && a.fraisEngages > 0" class="meta-chip">
+              <span
+                *ngIf="a.fraisEngages && a.fraisEngages > 0"
+                class="meta-chip"
+              >
                 <mat-icon>payments</mat-icon>
-                {{ a.fraisEngages | number:'1.0-0' }} FCFA
+                {{ a.fraisEngages | number: "1.0-0" }} FCFA
               </span>
               <span *ngIf="a.numeroTelephonePaiement" class="meta-chip">
                 <mat-icon>smartphone</mat-icon>
                 {{ a.numeroTelephonePaiement }}
               </span>
-              <span *ngIf="a.statutVerifMomo" class="meta-chip" [ngClass]="getMomoStatutClass(a.statutVerifMomo)">
+              <span
+                *ngIf="a.statutVerifMomo"
+                class="meta-chip"
+                [ngClass]="getMomoStatutClass(a.statutVerifMomo)"
+              >
                 <mat-icon>mobile_friendly</mat-icon>
                 MoMo : {{ a.statutVerifMomo }}
               </span>
@@ -373,5 +567,4 @@
       </div>
     </mat-card-content>
   </mat-card>
-
 </ng-container>

@@ -15,7 +15,7 @@ export interface CollecteEpargne {
   referenceTransaction?: string;
   latitude?: number;
   longitude?: number;
-  statut: 'SOUMISE' | 'VALIDEE' | 'DOUBLON' | 'REJETEE' | 'EN_ATTENTE';
+  statut: "SOUMISE" | "VALIDEE" | "DOUBLON" | "REJETEE" | "EN_ATTENTE";
   motifRejet?: string;
   observation?: string;
   syncedAt?: string;

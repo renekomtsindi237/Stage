@@ -1,12 +1,17 @@
-<div class="fs-overlay" *ngIf="toast.show" [@overlayFade] (click)="toast.type === 'error' && close()">
+<div
+  class="fs-overlay"
+  *ngIf="toast.show"
+  [@overlayFade]
+  (click)="toast.type === 'error' && close()"
+>
   <div class="fs-card" [@cardPop] (click)="$event.stopPropagation()">
-
     <!-- ══ LOGOUT ══════════════════════════════════════════════ -->
     <ng-container *ngIf="toast.type === 'logout'">
-
       <div class="fs-icon-ring fs-ring-gold">
         <div class="fs-avatar-gold">
-          <span *ngIf="toast.username">{{ toast.username.charAt(0).toUpperCase() }}</span>
+          <span *ngIf="toast.username">{{
+            toast.username.charAt(0).toUpperCase()
+          }}</span>
           <mat-icon *ngIf="!toast.username">person</mat-icon>
         </div>
       </div>
@@ -19,12 +24,10 @@
       <div class="fs-progress-wrap">
         <div class="fs-progress fs-progress-gold"></div>
       </div>
-
     </ng-container>
 
     <!-- ══ SUCCÈS ══════════════════════════════════════════════ -->
     <ng-container *ngIf="toast.type === 'success'">
-
       <div class="fs-icon-ring fs-ring-success" [@iconBounce]>
         <mat-icon class="fs-icon-main">check_circle</mat-icon>
       </div>
@@ -40,12 +43,10 @@
       <div class="fs-progress-wrap">
         <div class="fs-progress fs-progress-success"></div>
       </div>
-
     </ng-container>
 
     <!-- ══ ERREUR ══════════════════════════════════════════════ -->
     <ng-container *ngIf="toast.type === 'error'">
-
       <div class="fs-icon-ring fs-ring-error" [@iconBounce]>
         <mat-icon class="fs-icon-main">error_outline</mat-icon>
       </div>
@@ -57,8 +58,6 @@
         <mat-icon>close</mat-icon>
         Fermer
       </button>
-
     </ng-container>
-
   </div>
 </div>

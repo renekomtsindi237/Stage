@@ -1,10 +1,10 @@
 export type Role =
-  | 'SUPER_ADMIN'
-  | 'DIRECTEUR'
-  | 'RESPONSABLE_RECOUVREMENT'
-  | 'ANALYSTE'
-  | 'DSI'
-  | 'AGENT';
+  | "SUPER_ADMIN"
+  | "DIRECTEUR"
+  | "RESPONSABLE_RECOUVREMENT"
+  | "ANALYSTE"
+  | "DSI"
+  | "AGENT";
 
 export interface AuthResponse {
   accessToken: string;

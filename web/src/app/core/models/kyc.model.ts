@@ -1,37 +1,40 @@
-export type NiveauKyc = 'NIVEAU_1' | 'NIVEAU_2' | 'NIVEAU_3';
+export type NiveauKyc = "NIVEAU_1" | "NIVEAU_2" | "NIVEAU_3";
 
 export type StatutKyc =
-  | 'EN_ATTENTE'
-  | 'DOCUMENTS_SOUMIS'
-  | 'EN_COURS_VERIFICATION'
-  | 'COMPLEMENT_REQUIS'
-  | 'APPROUVE'
-  | 'REJETE'
-  | 'EXPIRE'
-  | 'SUSPENDU';
+  | "EN_ATTENTE"
+  | "DOCUMENTS_SOUMIS"
+  | "EN_COURS_VERIFICATION"
+  | "COMPLEMENT_REQUIS"
+  | "APPROUVE"
+  | "REJETE"
+  | "EXPIRE"
+  | "SUSPENDU";
 
-export type NiveauRisque = 'FAIBLE' | 'MOYEN' | 'ELEVE' | 'TRES_ELEVE';
+export type NiveauRisque = "FAIBLE" | "MOYEN" | "ELEVE" | "TRES_ELEVE";
 
-export type ResultatVerificationKyc = 'APPROUVE' | 'REJETE' | 'COMPLEMENT_REQUIS';
+export type ResultatVerificationKyc =
+  | "APPROUVE"
+  | "REJETE"
+  | "COMPLEMENT_REQUIS";
 
 export type TypeDocumentKyc =
-  | 'CNI_RECTO'
-  | 'CNI_VERSO'
-  | 'PASSEPORT'
-  | 'PERMIS_CONDUIRE'
-  | 'CARTE_SEJOUR'
-  | 'JUSTIFICATIF_DOMICILE'
-  | 'CERTIFICAT_RESIDENCE'
-  | 'CONTRAT_BAIL'
-  | 'FICHE_PAIE'
-  | 'CONTRAT_TRAVAIL'
-  | 'DECLARATION_ACTIVITE'
-  | 'REGISTRE_COMMERCE'
-  | 'EXTRAIT_BANCAIRE'
-  | 'DECLARATION_SOURCE_FONDS'
-  | 'ATTESTATION_PPE'
-  | 'PHOTO_BIOMETRIQUE'
-  | 'AUTRE';
+  | "CNI_RECTO"
+  | "CNI_VERSO"
+  | "PASSEPORT"
+  | "PERMIS_CONDUIRE"
+  | "CARTE_SEJOUR"
+  | "JUSTIFICATIF_DOMICILE"
+  | "CERTIFICAT_RESIDENCE"
+  | "CONTRAT_BAIL"
+  | "FICHE_PAIE"
+  | "CONTRAT_TRAVAIL"
+  | "DECLARATION_ACTIVITE"
+  | "REGISTRE_COMMERCE"
+  | "EXTRAIT_BANCAIRE"
+  | "DECLARATION_SOURCE_FONDS"
+  | "ATTESTATION_PPE"
+  | "PHOTO_BIOMETRIQUE"
+  | "AUTRE";
 
 export interface KycDossierResponse {
   id: number;

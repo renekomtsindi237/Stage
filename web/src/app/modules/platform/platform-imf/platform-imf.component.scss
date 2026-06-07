@@ -1,7 +1,7 @@
 // ── Host component background ────────────────────────────────────────────────
 :host {
   display: block;
-  background: #FAFBFC;  // Fond clair Blucash
+  background: #fafbfc; // Fond clair Blucash
   min-height: 100%;
 }
 
@@ -18,18 +18,36 @@
   flex-wrap: wrap;
 
   .err-icon {
-    width: 52px; height: 52px;
+    width: 52px;
+    height: 52px;
     border-radius: 14px;
     background: rgba(229, 72, 77, 0.12);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    mat-icon { color: var(--color-warn); font-size: 26px; width: 26px; height: 26px; }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    mat-icon {
+      color: var(--color-warn);
+      font-size: 26px;
+      width: 26px;
+      height: 26px;
+    }
   }
 
   .err-body {
     flex: 1;
-    display: flex; flex-direction: column; gap: 4px;
-    strong { font-size: 1rem; font-weight: 800; color: var(--color-warn); }
-    span { font-size: 0.88rem; color: var(--color-text-secondary); }
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    strong {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--color-warn);
+    }
+    span {
+      font-size: 0.88rem;
+      color: var(--color-text-secondary);
+    }
   }
 
   .btn-recon {
@@ -38,7 +56,11 @@
     color: #fff !important;
     font-weight: 700 !important;
     gap: 8px;
-    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
   }
 }
 
@@ -56,15 +78,19 @@
     font-weight: 900;
     letter-spacing: -1px;
     margin: 0 0 4px;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-    color: #000000;  // Noir pur pour les titres principaux
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
+    color: #000000; // Noir pur pour les titres principaux
   }
 
   .page-sub {
     font-size: 0.85rem;
-    color: #6B7280;  // Gris pour texte secondaire
+    color: #6b7280; // Gris pour texte secondaire
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }
 
@@ -84,7 +110,9 @@
   .search-icon {
     position: absolute;
     left: 10px;
-    font-size: 18px; width: 18px; height: 18px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
     color: var(--color-text-muted);
     pointer-events: none;
   }
@@ -92,22 +120,28 @@
   .search-input {
     height: 38px;
     padding: 0 12px 0 36px;
-    border: 1px solid #E5E7EB;  // Bordure grise claire
-    border-radius: 12px;  // Coins arrondis style Blucash
-    background: #FFFFFF;  // Fond blanc
-    color: #000000;  // Noir pur pour le texte de saisie
+    border: 1px solid #e5e7eb; // Bordure grise claire
+    border-radius: 12px; // Coins arrondis style Blucash
+    background: #ffffff; // Fond blanc
+    color: #000000; // Noir pur pour le texte de saisie
     font-size: 0.88rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
     outline: none;
     width: 220px;
-    transition: border-color 0.2s ease, width 0.3s ease;
+    transition:
+      border-color 0.2s ease,
+      width 0.3s ease;
 
     &:focus {
-      border-color: #0066FF;  // Bleu Blucash
+      border-color: #0066ff; // Bleu Blucash
       width: 280px;
     }
 
-    &::placeholder { color: #9CA3AF; }  // Gris pour placeholder
+    &::placeholder {
+      color: #9ca3af;
+    } // Gris pour placeholder
   }
 }
 
@@ -120,22 +154,34 @@
   height: 40px !important;
   padding: 0 !important;
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; }
-  .spinning { animation: spin 1s linear infinite; }
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
 }
 
 .btn-create {
-  border-radius: 12px !important;  // Coins arrondis style Blucash
-  background: #0066FF !important;  // Bleu Blucash pur
+  border-radius: 12px !important; // Coins arrondis style Blucash
+  background: #0066ff !important; // Bleu Blucash pur
   color: #fff !important;
   font-weight: 700 !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif !important;
   gap: 6px;
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  &:hover { 
-    background: #3385FF !important;  // Bleu plus clair
-    transform: translateY(-1px); 
-    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.3) !important; 
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  &:hover {
+    background: #3385ff !important; // Bleu plus clair
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.3) !important;
   }
 }
 
@@ -144,8 +190,10 @@
   border-radius: 16px;
   border: none !important;
   overflow: hidden;
-  background: #FFFFFF !important;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
@@ -154,29 +202,41 @@
   align-items: center;
   gap: 16px;
   padding: 18px 24px;
-  border-bottom: 1px solid #F3F4F6;
-  &:last-child { border-bottom: none; }
+  border-bottom: 1px solid #f3f4f6;
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .sk-avatar {
-  width: 38px; height: 38px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  background: #F3F4F6;
+  background: #f3f4f6;
   flex-shrink: 0;
   animation: shimmer 1.5s infinite;
 }
 
 .sk-lines {
-  flex: 1; display: flex; flex-direction: column; gap: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .sk-line {
-  border-radius: 6px; height: 10px;
-  background: linear-gradient(90deg, #F3F4F6 25%, #E6F0FF 50%, #F3F4F6 75%);
+  border-radius: 6px;
+  height: 10px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e6f0ff 50%, #f3f4f6 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  &.sk-lg { width: 45%; height: 14px; }
-  &.sk-sm { width: 65%; }
+  &.sk-lg {
+    width: 45%;
+    height: 14px;
+  }
+  &.sk-sm {
+    width: 65%;
+  }
 }
 
 // ── Empty state ───────────────────────────────────────────────────────────────
@@ -187,10 +247,18 @@
   justify-content: center;
   gap: 14px;
   padding: 64px 24px;
-  color: #9CA3AF;
+  color: #9ca3af;
 
-  mat-icon { font-size: 48px; width: 48px; height: 48px; opacity: 0.4; }
-  p { font-size: 0.95rem; margin: 0; }
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.4;
+  }
+  p {
+    font-size: 0.95rem;
+    margin: 0;
+  }
 }
 
 // ── Table ────────────────────────────────────────────────────────────────────
@@ -204,13 +272,13 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: #374151 !important;
-    border-bottom: 1px solid #E5E7EB !important;
-    background: #F9FAFB !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: #f9fafb !important;
     padding: 14px 16px;
   }
 
   td.mat-cell {
-    border-bottom: 1px solid #F3F4F6 !important;
+    border-bottom: 1px solid #f3f4f6 !important;
     padding: 0 16px;
     font-size: 0.9rem;
     color: #111827 !important;
@@ -223,17 +291,21 @@
   cursor: default;
 
   &:hover {
-    background: #F8FAFF !important;
+    background: #f8faff !important;
 
     .row-avatar {
       transform: scale(1.05);
     }
   }
 
-  &:last-child td { border-bottom: none !important; }
+  &:last-child td {
+    border-bottom: none !important;
+  }
 }
 
-.row-inactive { opacity: 0.5; }
+.row-inactive {
+  opacity: 0.5;
+}
 
 // ── Row avatar ────────────────────────────────────────────────────────────────
 .row-avatar-wrap {
@@ -245,7 +317,9 @@
   cursor: pointer;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: scale(1.05);
@@ -283,7 +357,7 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
-    color: #FFFFFF;
+    color: #ffffff;
   }
 }
 
@@ -296,20 +370,22 @@
 
 .code-badge {
   display: inline-block;
-  background: #EFF6FF;
-  color: #0066FF !important;
+  background: #eff6ff;
+  color: #0066ff !important;
   font-size: 0.72rem;
   font-weight: 700;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   letter-spacing: 0.8px;
   padding: 4px 10px;
   border-radius: 8px;
   text-transform: uppercase;
-  border: 1px solid #DBEAFE;
+  border: 1px solid #dbeafe;
 }
 
 .cell-pays {
-  color: #1A1A1A !important;
+  color: #1a1a1a !important;
   font-size: 0.88rem;
   font-weight: 500;
 }
@@ -327,27 +403,34 @@
   gap: 6px;
   font-size: 0.75rem;
   font-weight: 700;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   padding: 5px 12px;
   border-radius: 20px;
 
   .chip-dot {
-    width: 6px; height: 6px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
   }
 
   &.chip-active {
-    background: #ECFDF5;
+    background: #ecfdf5;
     color: #059669;
-    border: 1px solid #A7F3D0;
-    .chip-dot { background: #10B981; }
+    border: 1px solid #a7f3d0;
+    .chip-dot {
+      background: #10b981;
+    }
   }
 
   &.chip-off {
-    background: #F9FAFB;
-    color: #9CA3AF;
-    border: 1px solid #E5E7EB;
-    .chip-dot { background: #D1D5DB; }
+    background: #f9fafb;
+    color: #9ca3af;
+    border: 1px solid #e5e7eb;
+    .chip-dot {
+      background: #d1d5db;
+    }
   }
 }
 
@@ -362,79 +445,99 @@
   border-radius: 8px !important;
   font-size: 0.78rem !important;
   font-weight: 600 !important;
-  border-color: #DBEAFE !important;
-  color: #0066FF !important;
-  background: #EFF6FF !important;
+  border-color: #dbeafe !important;
+  color: #0066ff !important;
+  background: #eff6ff !important;
   gap: 4px;
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 10px !important;
   transition: all 0.2s ease !important;
-  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 
-  &:hover { background: #DBEAFE !important; }
+  &:hover {
+    background: #dbeafe !important;
+  }
 }
 
 .btn-dsi {
   border-radius: 8px !important;
   font-size: 0.78rem !important;
   font-weight: 600 !important;
-  border-color: #E5E7EB !important;
-  color: #6B7280 !important;
+  border-color: #e5e7eb !important;
+  color: #6b7280 !important;
   gap: 4px;
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 10px !important;
   transition: all 0.2s ease !important;
-  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 
   &:hover:not(:disabled) {
-    border-color: #0066FF !important;
-    color: #0066FF !important;
-    background: #EFF6FF !important;
+    border-color: #0066ff !important;
+    color: #0066ff !important;
+    background: #eff6ff !important;
   }
 
   &.btn-dsi--has {
-    border-color: #A7F3D0 !important;
+    border-color: #a7f3d0 !important;
     color: #059669 !important;
-    background: #ECFDF5 !important;
+    background: #ecfdf5 !important;
 
     &:hover:not(:disabled) {
-      background: #D1FAE5 !important;
+      background: #d1fae5 !important;
     }
   }
 }
 
 .btn-toggle {
-  color: #9CA3AF;
-  mat-icon { font-size: 26px; width: 26px; height: 26px; }
-  &:hover { background: transparent !important; }
+  color: #9ca3af;
+  mat-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+  &:hover {
+    background: transparent !important;
+  }
 }
 
 .btn-delete-row {
-  color: #EF4444 !important;
+  color: #ef4444 !important;
   opacity: 0.3;
   transition: opacity 0.2s ease;
-  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &:hover {
     opacity: 1;
-    background: #FEF2F2 !important;
+    background: #fef2f2 !important;
   }
 }
 
 // ── Paginator ────────────────────────────────────────────────────────────────
 .table-paginator {
-  border-top: 1px solid #F3F4F6;
-  background: #FAFBFC !important;
-  color: #6B7280 !important;
+  border-top: 1px solid #f3f4f6;
+  background: #fafbfc !important;
+  color: #6b7280 !important;
 }
 
 // ── Modal overlay ─────────────────────────────────────────────────────────────
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);  // Overlay plus léger et transparent
+  background: rgba(0, 0, 0, 0.3); // Overlay plus léger et transparent
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -470,18 +573,18 @@
   align-items: center;
   gap: 16px;
   padding: 24px 28px;
-  background: #FFFFFF;  // Fond blanc pur
-  border-bottom: 1px solid #E5E7EB;  // Bordure grise claire
+  background: #ffffff; // Fond blanc pur
+  border-bottom: 1px solid #e5e7eb; // Bordure grise claire
   flex-shrink: 0;
   overflow: hidden;
 }
 
 .wz-hd-bg {
-  display: none;  // Masquer le fond avec grille
+  display: none; // Masquer le fond avec grille
 }
 
 .wz-hd-glow {
-  display: none;  // Masquer l'effet glow
+  display: none; // Masquer l'effet glow
 }
 
 .wz-hd-brand {
@@ -497,8 +600,8 @@
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: #E6F0FF;  // Fond bleu très pâle Blucash
-  border: 1px solid #BFDBFE;  // Bordure bleue claire
+  background: #e6f0ff; // Fond bleu très pâle Blucash
+  border: 1px solid #bfdbfe; // Bordure bleue claire
   display: flex;
   align-items: center;
   justify-content: center;
@@ -508,7 +611,7 @@
     font-size: 24px;
     width: 24px;
     height: 24px;
-    color: #0066FF;  // Icône bleue Blucash
+    color: #0066ff; // Icône bleue Blucash
   }
 }
 
@@ -516,26 +619,26 @@
   font-size: 1.05rem;
   font-weight: 900;
   letter-spacing: -0.4px;
-  color: #000000;  // Titre noir pur
+  color: #000000; // Titre noir pur
   margin: 0 0 2px;
 }
 
 .wz-hd-sub {
   font-size: 0.8rem;
-  color: #6B7280;  // Sous-titre gris
+  color: #6b7280; // Sous-titre gris
   margin: 0;
 }
 
 .wz-hd-close {
   position: relative;
   z-index: 1;
-  color: #6B7280 !important;  // Icône grise
+  color: #6b7280 !important; // Icône grise
   transition: all 0.2s ease;
   flex-shrink: 0;
 
   &:hover {
-    color: #000000 !important;  // Noir au hover
-    background: #F3F4F6 !important;  // Fond gris très clair
+    color: #000000 !important; // Noir au hover
+    background: #f3f4f6 !important; // Fond gris très clair
   }
 }
 
@@ -545,8 +648,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 32px;
-  background: #FAFBFC;  // Fond gris très clair
-  border-bottom: 1px solid #E5E7EB;  // Bordure grise claire
+  background: #fafbfc; // Fond gris très clair
+  border-bottom: 1px solid #e5e7eb; // Bordure grise claire
   flex-shrink: 0;
 }
 
@@ -559,7 +662,7 @@
   transition: all 0.3s ease;
 
   &.wz-step--active .wz-step-circle {
-    background: #0066FF;  // Bleu Blucash
+    background: #0066ff; // Bleu Blucash
     color: #fff;
     border-color: transparent;
     box-shadow: 0 4px 14px rgba(0, 102, 255, 0.3);
@@ -567,10 +670,14 @@
   }
 
   &.wz-step--done .wz-step-circle {
-    background: #00D084;  // Vert Blucash
+    background: #00d084; // Vert Blucash
     color: #fff;
     border-color: transparent;
-    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
   }
 }
 
@@ -578,38 +685,42 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #FFFFFF;  // Fond blanc
-  border: 1.5px solid #E5E7EB;  // Bordure grise
+  background: #ffffff; // Fond blanc
+  border: 1.5px solid #e5e7eb; // Bordure grise
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 800;
-  color: #6B7280;  // Texte gris
+  color: #6b7280; // Texte gris
   transition: all 0.3s ease;
 }
 
 .wz-step-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #6B7280;  // Texte gris
+  color: #6b7280; // Texte gris
   transition: color 0.3s ease;
   text-align: center;
 
-  .wz-step--active & { color: #0066FF; }  // Bleu actif
-  .wz-step--done &   { color: #00D084; }  // Vert complété
+  .wz-step--active & {
+    color: #0066ff;
+  } // Bleu actif
+  .wz-step--done & {
+    color: #00d084;
+  } // Vert complété
 }
 
 .wz-step-line {
   flex: 1;
   height: 1.5px;
-  background: #E5E7EB;  // Ligne grise
+  background: #e5e7eb; // Ligne grise
   margin: 0 8px;
   margin-bottom: 20px;
   transition: background 0.3s ease;
 
   &.wz-step-line--done {
-    background: #00D084;  // Ligne verte pour complété
+    background: #00d084; // Ligne verte pour complété
   }
 }
 
@@ -625,17 +736,22 @@
   font-weight: 600;
   flex-shrink: 0;
 
-  mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
 
   &.wz-feedback--success {
-    background: rgba(16,185,129,0.1);
-    color: #10B981;
-    border: 1px solid rgba(16,185,129,0.2);
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
   }
   &.wz-feedback--error {
-    background: rgba(239,68,68,0.1);
-    color: #F87171;
-    border: 1px solid rgba(239,68,68,0.2);
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
   }
 }
 
@@ -644,14 +760,20 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #FFFFFF;  // Fond blanc pur comme Blucash
+  background: #ffffff; // Fond blanc pur comme Blucash
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 102, 255, 0.2);  // Scrollbar bleue
+    background: rgba(0, 102, 255, 0.2); // Scrollbar bleue
     border-radius: 4px;
-    &:hover { background: rgba(0, 102, 255, 0.3); }
+    &:hover {
+      background: rgba(0, 102, 255, 0.3);
+    }
   }
 }
 
@@ -661,7 +783,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 22px 28px 26px;
-  background: #FFFFFF;  // Fond blanc pur comme Blucash
+  background: #ffffff; // Fond blanc pur comme Blucash
 }
 
 // ── Step sub-header ───────────────────────────────────────────────
@@ -670,15 +792,15 @@
   align-items: flex-start;
   gap: 14px;
   margin-bottom: 4px;
-  background: #FFFFFF;  // Fond blanc
+  background: #ffffff; // Fond blanc
 }
 
 .wz-step-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #E6F0FF;  // Fond bleu très pâle Blucash
-  border: 1px solid #BFDBFE;  // Bordure bleue claire
+  background: #e6f0ff; // Fond bleu très pâle Blucash
+  border: 1px solid #bfdbfe; // Bordure bleue claire
   display: flex;
   align-items: center;
   justify-content: center;
@@ -688,7 +810,7 @@
     font-size: 22px;
     width: 22px;
     height: 22px;
-    color: #0066FF;  // Icône bleue Blucash
+    color: #0066ff; // Icône bleue Blucash
   }
 }
 
@@ -696,12 +818,12 @@
   font-size: 1rem;
   font-weight: 800;
   margin: 0 0 3px;
-  color: #000000;  // Noir pur pour les titres d'étapes
+  color: #000000; // Noir pur pour les titres d'étapes
 }
 
 .wz-step-desc {
   font-size: 0.83rem;
-  color: #6B7280;  // Gris pour les descriptions
+  color: #6b7280; // Gris pour les descriptions
   margin: 0;
   line-height: 1.4;
 }
@@ -712,10 +834,19 @@
   gap: 12px;
   align-items: flex-start;
 
-  &.wz-row--3 { gap: 10px; > .wz-field { flex: 1; } }
+  &.wz-row--3 {
+    gap: 10px;
+    > .wz-field {
+      flex: 1;
+    }
+  }
 
-  .wz-field--short { flex: 0 0 138px; }
-  .wz-field--grow  { flex: 1; }
+  .wz-field--short {
+    flex: 0 0 138px;
+  }
+  .wz-field--grow {
+    flex: 1;
+  }
 }
 
 // ── Champ individuel ──────────────────────────────────────────────
@@ -728,14 +859,14 @@
 .wz-label {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #1A1A1A;  // Noir atténué pour les labels
+  color: #1a1a1a; // Noir atténué pour les labels
   letter-spacing: 0.2px;
 }
 
 .wz-opt {
   font-size: 0.72rem;
   font-weight: 500;
-  color: #6B7280;  // Gris pour les textes optionnels
+  color: #6b7280; // Gris pour les textes optionnels
   font-style: normal;
 }
 
@@ -744,23 +875,28 @@
   position: relative;
   display: flex;
   align-items: center;
-  background: #FFFFFF;  // Fond blanc pur
-  border: 1.5px solid #E5E7EB;  // Bordure grise claire
+  background: #ffffff; // Fond blanc pur
+  border: 1.5px solid #e5e7eb; // Bordure grise claire
   border-radius: 10px;
   overflow: hidden;
-  transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
 
   &:focus-within {
-    border-color: #0066FF;  // Bordure bleue Blucash au focus
-    background: #FFFFFF;  // Fond blanc maintenu
-    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);  // Ombre bleue
+    border-color: #0066ff; // Bordure bleue Blucash au focus
+    background: #ffffff; // Fond blanc maintenu
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1); // Ombre bleue
 
-    .wz-icon { color: #0066FF; }  // Icône bleue au focus
+    .wz-icon {
+      color: #0066ff;
+    } // Icône bleue au focus
   }
 
   &.wz-wrap--error {
-    border-color: #FF3B30;  // Bordure rouge pour erreur
-    background: #FFF5F5;  // Fond rouge très pâle pour erreur
+    border-color: #ff3b30; // Bordure rouge pour erreur
+    background: #fff5f5; // Fond rouge très pâle pour erreur
   }
 }
 
@@ -768,7 +904,7 @@
   font-size: 17px !important;
   width: 17px !important;
   height: 17px !important;
-  color: #0066FF;  // Icône bleue Blucash par défaut
+  color: #0066ff; // Icône bleue Blucash par défaut
   margin: 0 4px 0 13px;
   flex-shrink: 0;
   pointer-events: none;
@@ -784,18 +920,26 @@
   outline: none;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #000000;  // Noir pur pour le texte de saisie
+  color: #000000; // Noir pur pour le texte de saisie
   font-family: inherit;
 
-  &::placeholder { color: #9CA3AF; opacity: 0.7; }  // Gris pour placeholder
+  &::placeholder {
+    color: #9ca3af;
+    opacity: 0.7;
+  } // Gris pour placeholder
 
-  &.wz-input--no-icon { padding-left: 14px; }
+  &.wz-input--no-icon {
+    padding-left: 14px;
+  }
 
   // Remove number arrows
   &[type="number"] {
     -moz-appearance: textfield;
     &::-webkit-outer-spin-button,
-    &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
   }
 
   // Autofill override
@@ -817,14 +961,14 @@
   outline: none;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #000000;  // Noir pur pour le texte sélectionné
+  color: #000000; // Noir pur pour le texte sélectionné
   font-family: inherit;
   appearance: none;
   cursor: pointer;
 
   option {
     background: var(--color-surface);
-    color: #000000;  // Noir pur pour les options
+    color: #000000; // Noir pur pour les options
   }
 }
 
@@ -834,22 +978,26 @@
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
-  color: #0066FF;  // Flèche bleue Blucash
+  color: #0066ff; // Flèche bleue Blucash
   pointer-events: none;
 }
 
 // ── Messages aide / erreur ────────────────────────────────────────
 .wz-hint {
   font-size: 0.75rem;
-  color: #6B7280;  // Gris pour les hints
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  color: #6b7280; // Gris pour les hints
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 .wz-error {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #FF3B30;  // Rouge Blucash pour les erreurs
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  color: #ff3b30; // Rouge Blucash pour les erreurs
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 // ── Aperçu live (étape 1) ─────────────────────────────────────────
@@ -858,8 +1006,8 @@
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  background: #E6F0FF;  // Bleu Blucash très pâle
-  border: 1.5px dashed #0066FF;  // Bleu Blucash
+  background: #e6f0ff; // Bleu Blucash très pâle
+  border: 1.5px dashed #0066ff; // Bleu Blucash
   border-radius: 12px;
   margin-top: 4px;
   transition: all 0.3s ease;
@@ -904,7 +1052,7 @@
     font-size: 18px;
     width: 18px;
     height: 18px;
-    color: #FFFFFF;
+    color: #ffffff;
   }
 }
 
@@ -918,24 +1066,30 @@
 .wz-preview-name {
   font-size: 0.9rem;
   font-weight: 700;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-  color: #000000;  // Noir pur pour le nom
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
+  color: #000000; // Noir pur pour le nom
 }
 
 .wz-preview-meta {
   font-size: 0.75rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-  color: #6B7280;  // Gris pour les métadonnées
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
+  color: #6b7280; // Gris pour les métadonnées
 }
 
 .wz-preview-badge {
   font-size: 0.67rem;
   font-weight: 800;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
   padding: 3px 10px;
   border-radius: 20px;
-  background: rgba(0,208,132,0.12);  // Vert Blucash
-  color: #00D084;
+  background: rgba(0, 208, 132, 0.12); // Vert Blucash
+  color: #00d084;
   flex-shrink: 0;
 }
 
@@ -952,18 +1106,18 @@
   gap: 8px;
   font-size: 0.84rem;
   font-weight: 700;
-  color: #1A1A1A;  // Noir atténué pour les labels
+  color: #1a1a1a; // Noir atténué pour les labels
 
   mat-icon {
     font-size: 18px;
     width: 18px;
     height: 18px;
-    color: #0066FF;  // Bleu Blucash pour les icônes
+    color: #0066ff; // Bleu Blucash pour les icônes
   }
 }
 
 .wz-required {
-  color: #FF3B30;  // Rouge Blucash pour requis
+  color: #ff3b30; // Rouge Blucash pour requis
   font-style: normal;
   margin-left: 2px;
 }
@@ -985,31 +1139,39 @@
   cursor: pointer;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #1A1A1A;  // Noir atténué pour le texte
+  color: #1a1a1a; // Noir atténué pour le texte
   transition: all 0.18s ease;
   user-select: none;
 
-  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
 
   &:hover {
-    border-color: #0066FF;  // Bleu Blucash
-    color: #0066FF;  // Bleu Blucash
+    border-color: #0066ff; // Bleu Blucash
+    color: #0066ff; // Bleu Blucash
   }
 
   &.wz-chip--on {
-    border-color: #0066FF;  // Bleu Blucash
-    background: #E6F0FF;  // Bleu Blucash très pâle
-    color: #0066FF;  // Bleu Blucash
+    border-color: #0066ff; // Bleu Blucash
+    background: #e6f0ff; // Bleu Blucash très pâle
+    color: #0066ff; // Bleu Blucash
     font-weight: 700;
-    mat-icon { color: #0066FF; }  // Bleu Blucash
+    mat-icon {
+      color: #0066ff;
+    } // Bleu Blucash
   }
 }
 
 .wz-chips-error {
   font-size: 0.76rem;
   font-weight: 600;
-  color: #FF3B30;  // Rouge Blucash pour erreur
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  color: #ff3b30; // Rouge Blucash pour erreur
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 // ── Info box COBAC ────────────────────────────────────────────────
@@ -1017,8 +1179,8 @@
   display: flex;
   gap: 12px;
   padding: 14px 16px;
-  background: #E6F0FF;  // Fond bleu très pâle Blucash
-  border: 1px solid #BFDBFE;  // Bordure bleue claire
+  background: #e6f0ff; // Fond bleu très pâle Blucash
+  border: 1px solid #bfdbfe; // Bordure bleue claire
   border-radius: 10px;
   font-size: 0.83rem;
   line-height: 1.5;
@@ -1027,24 +1189,28 @@
     font-size: 18px;
     width: 18px;
     height: 18px;
-    color: #0066FF;  // Icône bleue Blucash
+    color: #0066ff; // Icône bleue Blucash
     flex-shrink: 0;
     margin-top: 2px;
   }
 
   strong {
-    color: #000000;  // Noir pur pour les titres importants
+    color: #000000; // Noir pur pour les titres importants
     font-weight: 700;
     display: block;
     margin-bottom: 2px;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 
   p {
     margin: 0 0 8px;
-    color: #1A1A1A;  // Noir atténué pour le texte
+    color: #1a1a1a; // Noir atténué pour le texte
     font-size: 0.8rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+      sans-serif;
   }
 }
 
@@ -1057,13 +1223,15 @@
 .wz-info-badge {
   display: inline-block;
   padding: 3px 10px;
-  background: #E6F0FF;  // Fond bleu très pâle Blucash
-  color: #0066FF;  // Texte bleu Blucash
+  background: #e6f0ff; // Fond bleu très pâle Blucash
+  color: #0066ff; // Texte bleu Blucash
   border-radius: 6px;
   font-size: 0.73rem;
   font-weight: 800;
   letter-spacing: 0.4px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 }
 
 // ── Sous-labels de section (étape 3) ──────────────────────────────
@@ -1075,13 +1243,22 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: #000000;  // Noir pur pour les labels de section
+  color: #000000; // Noir pur pour les labels de section
   margin: 4px 0 2px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    sans-serif;
 
-  mat-icon { font-size: 15px; width: 15px; height: 15px; color: #0066FF; }  // Icône bleue Blucash
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #0066ff;
+  } // Icône bleue Blucash
 
-  &.wz-section-label--opt mat-icon { color: #FF9500; }  // Orange pour optionnel
+  &.wz-section-label--opt mat-icon {
+    color: #ff9500;
+  } // Orange pour optionnel
 }
 
 .wz-opt-tag {
@@ -1102,8 +1279,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 28px;
-  border-top: 1px solid #E5E7EB;  // Bordure grise claire
-  background: #FAFBFC;  // Fond gris très clair
+  border-top: 1px solid #e5e7eb; // Bordure grise claire
+  background: #fafbfc; // Fond gris très clair
   gap: 12px;
 }
 
@@ -1114,23 +1291,30 @@
   height: 42px;
   padding: 0 20px;
   border-radius: 10px;
-  border: 1.5px solid #E5E7EB;  // Bordure grise
-  background: #FFFFFF;  // Fond blanc
-  color: #6B7280;  // Texte gris
+  border: 1.5px solid #e5e7eb; // Bordure grise
+  background: #ffffff; // Fond blanc
+  color: #6b7280; // Texte gris
   font-size: 0.88rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
 
-  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
 
   &:hover:not(:disabled) {
-    border-color: #0066FF;  // Bordure bleue au hover
-    color: #0066FF;  // Texte bleu
-    background: #E6F0FF;  // Fond bleu très pâle
+    border-color: #0066ff; // Bordure bleue au hover
+    color: #0066ff; // Texte bleu
+    background: #e6f0ff; // Fond bleu très pâle
   }
-  &:disabled { opacity: 0.35; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
 }
 
 .wz-btn-primary {
@@ -1141,8 +1325,8 @@
   padding: 0 24px;
   border-radius: 10px;
   border: none;
-  background: #0066FF;  // Bleu Blucash
-  color: #FFFFFF;
+  background: #0066ff; // Bleu Blucash
+  color: #ffffff;
   font-size: 0.92rem;
   font-weight: 800;
   font-family: inherit;
@@ -1150,18 +1334,32 @@
   cursor: pointer;
   transition: all 0.22s ease;
 
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  mat-spinner { display: inline-block; ::ng-deep circle { stroke: #FFFFFF !important; } }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  mat-spinner {
+    display: inline-block;
+    ::ng-deep circle {
+      stroke: #ffffff !important;
+    }
+  }
 
   &:hover:not(:disabled) {
-    background: #3385FF;  // Bleu plus clair
+    background: #3385ff; // Bleu plus clair
     transform: translateY(-1px);
     box-shadow: 0 8px 24px rgba(0, 102, 255, 0.3);
   }
-  &:active:not(:disabled) { transform: translateY(0); }
-  &:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  &:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+    transform: none;
+  }
 }
-
 
 // ── Modal header ──────────────────────────────────────────────────────────────
 .modal-hd {
@@ -1171,41 +1369,71 @@
   padding: 22px 24px;
   border-bottom: 1px solid var(--color-border);
 
-  h3 { font-size: 1rem; font-weight: 800; margin: 0 0 2px; }
-  p  { font-size: 0.82rem; color: var(--color-text-muted); margin: 0; }
+  h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0 0 2px;
+  }
+  p {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
 }
 
 .modal-hd-content {
   flex: 1;
-  h3 { 
-    font-size: 1.15rem; 
-    font-weight: 900; 
-    letter-spacing: -0.5px; 
-    color: #000000;  // Noir pur pour les titres de modal
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: #000000; // Noir pur pour les titres de modal
   }
-  p { 
-    font-size: 0.88rem; 
-    color: #6B7280;  // Gris pour les sous-titres
+  p {
+    font-size: 0.88rem;
+    color: #6b7280; // Gris pour les sous-titres
   }
 }
 
 .modal-icon {
-  width: 44px; height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
 
-  &.navy   { background: rgba(27,79,138,0.12);  mat-icon { color: var(--color-primary); } }
-  &.gold   { background: rgba(200,146,58,0.12); mat-icon { color: var(--brand-gold); } }
-  &.danger { background: rgba(229,72,77,0.12);  mat-icon { color: var(--color-warn); } }
+  &.navy {
+    background: rgba(27, 79, 138, 0.12);
+    mat-icon {
+      color: var(--color-primary);
+    }
+  }
+  &.gold {
+    background: rgba(200, 146, 58, 0.12);
+    mat-icon {
+      color: var(--brand-gold);
+    }
+  }
+  &.danger {
+    background: rgba(229, 72, 77, 0.12);
+    mat-icon {
+      color: var(--color-warn);
+    }
+  }
 }
-
 
 .modal-close {
   margin-left: auto;
   color: var(--color-text-muted) !important;
   transition: all 0.2s ease;
-  
+
   &:hover {
     color: var(--color-text-primary) !important;
     background: var(--color-border) !important;
@@ -1223,14 +1451,19 @@
   font-size: 0.88rem;
   font-weight: 600;
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
 
   &.success {
-    background: rgba(16,185,129,0.1);
+    background: rgba(16, 185, 129, 0.1);
     color: var(--color-success);
   }
   &.error {
-    background: rgba(229,72,77,0.1);
+    background: rgba(229, 72, 77, 0.1);
     color: var(--color-warn);
   }
 }
@@ -1249,16 +1482,20 @@
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, var(--brand-navy), #2563EB) !important;
+  background: linear-gradient(135deg, var(--brand-navy), #2563eb) !important;
   color: #fff !important;
   font-weight: 700 !important;
-  display: flex; align-items: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-  mat-spinner { display: inline-block; }
+  mat-spinner {
+    display: inline-block;
+  }
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(27,79,138,0.3) !important;
+    box-shadow: 0 6px 16px rgba(27, 79, 138, 0.3) !important;
   }
 }
 
@@ -1273,7 +1510,9 @@
   border-radius: var(--radius-md);
 
   > mat-icon {
-    font-size: 24px; width: 24px; height: 24px;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
     color: var(--color-warn);
     flex-shrink: 0;
     margin-top: 2px;
@@ -1309,18 +1548,24 @@
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #EF4444, #DC2626) !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
   color: #fff !important;
   font-weight: 700 !important;
   display: flex;
   align-items: center;
   gap: 8px;
 
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  mat-spinner { display: inline-block; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  mat-spinner {
+    display: inline-block;
+  }
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #DC2626, #B91C1C) !important;
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3) !important;
   }
@@ -1334,11 +1579,26 @@
 }
 
 // ── Animations ────────────────────────────────────────────────────────────────
-@keyframes spin    { to { transform: rotate(360deg); } }
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
 @keyframes shimmer-line {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1347,31 +1607,41 @@
 
 // En-tête DSI
 .dsi-modal-hd {
-  background: #FFFFFF;
-  border-bottom: 1px solid #F3F4F6;
+  background: #ffffff;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .dsi-hd-icon {
-  width: 48px; height: 48px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: #EFF6FF;
-  border: 1px solid #DBEAFE;
-  mat-icon { font-size: 24px; width: 24px; height: 24px; color: #0066FF; }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #0066ff;
+  }
 
   &.dsi-icon-gold {
-    background: #FFF7ED;
-    border-color: #FED7AA;
-    mat-icon { color: #D97706; }
+    background: #fff7ed;
+    border-color: #fed7aa;
+    mat-icon {
+      color: #d97706;
+    }
   }
 }
 
 .dsi-hd-code {
   font-weight: 700;
-  color: #0066FF;
+  color: #0066ff;
   font-size: 0.82rem;
-  background: #EFF6FF;
+  background: #eff6ff;
   padding: 2px 8px;
   border-radius: 6px;
 }
@@ -1382,7 +1652,7 @@
   flex-direction: column;
   gap: 18px;
   padding: 20px 24px 24px;
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 // Carte IMF récap
@@ -1391,8 +1661,8 @@
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  background: #F8FAFF;
-  border: 1px solid #DBEAFE;
+  background: #f8faff;
+  border: 1px solid #dbeafe;
   border-radius: 12px;
 }
 
@@ -1414,87 +1684,118 @@
 
 .dsi-imf-info {
   flex: 1;
-  display: flex; flex-direction: column; gap: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .dsi-imf-name {
-  font-size: 0.9rem; font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: #000000 !important;
 }
 
 .dsi-imf-meta {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 0.75rem; color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .dsi-imf-code {
   font-weight: 700;
-  color: #0066FF;
+  color: #0066ff;
   letter-spacing: 0.3px;
 }
 
-.dsi-sep { opacity: 0.4; }
+.dsi-sep {
+  opacity: 0.4;
+}
 
 .dsi-status-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #D1D5DB;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d1d5db;
   flex-shrink: 0;
-  &.dot-active { background: #10B981; box-shadow: 0 0 4px rgba(16,185,129,0.5); }
+  &.dot-active {
+    background: #10b981;
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+  }
 }
 
 .dsi-imf-badge {
-  font-size: 0.67rem; font-weight: 700;
+  font-size: 0.67rem;
+  font-weight: 700;
   padding: 4px 10px;
   border-radius: 20px;
-  background: #EFF6FF;
-  color: #0066FF;
+  background: #eff6ff;
+  color: #0066ff;
   white-space: nowrap;
   flex-shrink: 0;
 
   &.badge-update {
-    background: #ECFDF5;
+    background: #ecfdf5;
     color: #059669;
   }
 }
 
 // Label de champ
 .dsi-label {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.8rem; font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: #374151;
   letter-spacing: 0.1px;
-  mat-icon { font-size: 14px; width: 14px; height: 14px; color: #0066FF; }
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #0066ff;
+  }
 }
 
 .dsi-field-group {
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 // Conteneur champ
 .dsi-field-wrap {
   position: relative;
-  display: flex; align-items: center;
-  background: #FFFFFF;
-  border: 1.5px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
   border-radius: 10px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &.dsi-focused {
-    border-color: #0066FF;
+    border-color: #0066ff;
     box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
-    .dsi-field-icon { color: #0066FF; }
+    .dsi-field-icon {
+      color: #0066ff;
+    }
   }
 
   &.dsi-error {
-    border-color: #EF4444;
-    background: #FEF2F2;
+    border-color: #ef4444;
+    background: #fef2f2;
   }
 }
 
 .dsi-field-icon {
-  font-size: 17px !important; width: 17px !important; height: 17px !important;
-  color: #0066FF;
+  font-size: 17px !important;
+  width: 17px !important;
+  height: 17px !important;
+  color: #0066ff;
   margin: 0 4px 0 14px;
   flex-shrink: 0;
   pointer-events: none;
@@ -1506,39 +1807,49 @@
   height: 46px;
   padding: 0 14px 0 8px;
   background: transparent;
-  border: none; outline: none;
-  font-size: 0.9rem; font-weight: 500;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: #000000 !important;
   font-family: inherit;
 
   &::placeholder {
-    color: #9CA3AF;
+    color: #9ca3af;
     font-weight: 400;
   }
 
   &:-webkit-autofill,
   &:-webkit-autofill:focus {
     -webkit-text-fill-color: #000000;
-    -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
   }
 }
 
 .dsi-eye-btn {
-  background: none; border: none;
+  background: none;
+  border: none;
   padding: 0 12px;
   cursor: pointer;
-  color: #9CA3AF;
-  display: flex; align-items: center;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
   transition: color 0.2s ease;
-  mat-icon { font-size: 17px; width: 17px; height: 17px; }
-  &:hover { color: #374151; }
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+  &:hover {
+    color: #374151;
+  }
 }
 
 // Indicateur de force du mot de passe
 .dsi-strength-track {
   height: 4px;
-  background: #F3F4F6;
+  background: #f3f4f6;
   border-radius: 4px;
   overflow: hidden;
   margin-top: -2px;
@@ -1547,110 +1858,181 @@
 .dsi-strength-fill {
   height: 100%;
   border-radius: 4px;
-  transition: width 0.4s ease, background-color 0.3s ease;
+  transition:
+    width 0.4s ease,
+    background-color 0.3s ease;
 
-  &.weak        { background: #EF4444; }
-  &.medium      { background: #F59E0B; }
-  &.strong      { background: #10B981; }
-  &.very-strong { background: linear-gradient(90deg, #10B981, #34D399); }
+  &.weak {
+    background: #ef4444;
+  }
+  &.medium {
+    background: #f59e0b;
+  }
+  &.strong {
+    background: #10b981;
+  }
+  &.very-strong {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
 }
 
 .dsi-strength-lbl {
-  font-size: 0.73rem; font-weight: 700;
-  &.weak        { color: #EF4444; }
-  &.medium      { color: #F59E0B; }
-  &.strong      { color: #10B981; }
-  &.very-strong { color: #10B981; }
+  font-size: 0.73rem;
+  font-weight: 700;
+  &.weak {
+    color: #ef4444;
+  }
+  &.medium {
+    color: #f59e0b;
+  }
+  &.strong {
+    color: #10b981;
+  }
+  &.very-strong {
+    color: #10b981;
+  }
 }
 
 .dsi-error-msg {
-  font-size: 0.74rem; font-weight: 600;
-  color: #EF4444;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #ef4444;
 }
 
 // Note info
 .dsi-info-note {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 12px 14px;
-  background: #F0F9FF;
-  border: 1px solid #BAE6FD;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
   border-radius: 10px;
   font-size: 0.8rem;
   color: #374151;
   line-height: 1.5;
 
   mat-icon {
-    font-size: 16px; width: 16px; height: 16px;
-    color: #0066FF;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #0066ff;
     flex-shrink: 0;
     margin-top: 1px;
   }
 
-  strong { color: #000000; font-weight: 700; }
+  strong {
+    color: #000000;
+    font-weight: 700;
+  }
 }
 
 // Actions DSI
 .dsi-actions {
-  display: flex; justify-content: flex-end; gap: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
   padding-top: 16px;
-  border-top: 1px solid #F3F4F6;
+  border-top: 1px solid #f3f4f6;
   margin-top: 4px;
 }
 
 .dsi-btn-cancel {
   border-radius: 10px !important;
-  border-color: #E5E7EB !important;
-  color: #6B7280 !important;
+  border-color: #e5e7eb !important;
+  color: #6b7280 !important;
   font-weight: 600 !important;
-  background: #FFFFFF !important;
+  background: #ffffff !important;
   transition: all 0.2s ease !important;
 
   &:hover {
-    border-color: #EF4444 !important;
-    color: #EF4444 !important;
-    background: #FEF2F2 !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+    background: #fef2f2 !important;
   }
 }
 
 .dsi-btn-submit {
   border-radius: 10px !important;
-  background: #0066FF !important;
+  background: #0066ff !important;
   color: #fff !important;
   font-weight: 700 !important;
-  display: inline-flex !important; align-items: center !important; gap: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
   min-width: 160px !important;
   justify-content: center !important;
   box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25) !important;
 
-  mat-icon   { font-size: 18px; width: 18px; height: 18px; }
-  mat-spinner { display: inline-block; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  mat-spinner {
+    display: inline-block;
+  }
 
   &.dsi-btn-gold {
-    background: linear-gradient(135deg, #D97706, #F59E0B) !important;
-    box-shadow: 0 4px 14px rgba(217,119,6,0.28) !important;
+    background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.28) !important;
   }
 
   &:hover:not(:disabled) {
-    background: #3385FF !important;
+    background: #3385ff !important;
     transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3) !important;
   }
 
-  &:disabled { opacity: 0.48; cursor: not-allowed; transform: none !important; }
+  &:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+    transform: none !important;
+  }
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
-  .imf-header { flex-direction: column; align-items: flex-start; }
-  .header-actions { width: 100%; }
-  .search-input { width: 100% !important; }
-  .search-wrap { flex: 1; }
-  .wz-panel { height: 100vh; max-width: 100%; border-radius: 0; }
-  .wz-row { flex-direction: column; .wz-field--short { flex: none; width: 100%; } }
-  .wz-row--3 { flex-direction: column; > .wz-field { width: 100%; } }
+  .imf-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-actions {
+    width: 100%;
+  }
+  .search-input {
+    width: 100% !important;
+  }
+  .search-wrap {
+    flex: 1;
+  }
+  .wz-panel {
+    height: 100vh;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  .wz-row {
+    flex-direction: column;
+    .wz-field--short {
+      flex: none;
+      width: 100%;
+    }
+  }
+  .wz-row--3 {
+    flex-direction: column;
+    > .wz-field {
+      width: 100%;
+    }
+  }
 }
 
 @media (max-width: 480px) {
-  .modal-panel { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
-  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal-panel {
+    max-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
 }

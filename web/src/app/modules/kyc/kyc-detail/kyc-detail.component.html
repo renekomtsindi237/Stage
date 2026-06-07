@@ -1,21 +1,31 @@
-<div *ngIf="loading" class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
-<mat-card *ngIf="error"><mat-card-content>{{ error }}</mat-card-content></mat-card>
+<div *ngIf="loading" class="loading-center">
+  <mat-spinner diameter="40"></mat-spinner>
+</div>
+<mat-card *ngIf="error"
+  ><mat-card-content>{{ error }}</mat-card-content></mat-card
+>
 
 <ng-container *ngIf="dossier && !loading">
-
   <!-- En-tête -->
   <div class="detail-header">
-    <button mat-icon-button routerLink="/admin/kyc" matTooltip="Retour à la liste">
+    <button
+      mat-icon-button
+      routerLink="/admin/kyc"
+      matTooltip="Retour à la liste"
+    >
       <mat-icon>arrow_back</mat-icon>
     </button>
     <div class="header-info">
       <h2>KYC — {{ dossier.nomClient }} {{ dossier.prenomClient }}</h2>
       <p class="header-sub">
-        Client : <code>{{ dossier.clientId }}</code> ·
-        Initié le {{ dossier.createdAt | date:'dd/MM/yyyy' }}
+        Client : <code>{{ dossier.clientId }}</code> · Initié le
+        {{ dossier.createdAt | date: "dd/MM/yyyy" }}
       </p>
     </div>
-    <span class="badge-niveau" [ngClass]="'niv-' + dossier.niveauActuel.slice(-1)">
+    <span
+      class="badge-niveau"
+      [ngClass]="'niv-' + dossier.niveauActuel.slice(-1)"
+    >
       {{ getNiveauLabel(dossier.niveauActuel) }}
     </span>
     <span class="badge-statut-kyc" [ngClass]="getStatutClass(dossier.statut)">
@@ -29,60 +39,91 @@
     <button mat-stroked-button (click)="showDocForm = !showDocForm">
       <mat-icon>upload_file</mat-icon> Soumettre un document
     </button>
-    <button mat-stroked-button color="accent" (click)="showRisqueForm = !showRisqueForm">
+    <button
+      mat-stroked-button
+      color="accent"
+      (click)="showRisqueForm = !showRisqueForm"
+    >
       <mat-icon>security</mat-icon> Évaluation risque LBC/FT
     </button>
-    <button mat-stroked-button color="primary"
-            (click)="showVerifForm = !showVerifForm"
-            [disabled]="dossier.statut === 'APPROUVE' || dossier.statut === 'SUSPENDU'">
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="showVerifForm = !showVerifForm"
+      [disabled]="
+        dossier.statut === 'APPROUVE' || dossier.statut === 'SUSPENDU'
+      "
+    >
       <mat-icon>verified_user</mat-icon> Décision de vérification
     </button>
   </div>
 
   <!-- ── Formulaire : Soumettre un document ──────────────────────────────────── -->
   <mat-card class="form-card" *ngIf="showDocForm">
-    <mat-card-header><mat-card-title>Soumettre un document</mat-card-title></mat-card-header>
+    <mat-card-header
+      ><mat-card-title>Soumettre un document</mat-card-title></mat-card-header
+    >
     <mat-card-content>
-      <form [formGroup]="docForm" (ngSubmit)="soumettreDocument()" class="inline-form">
+      <form
+        [formGroup]="docForm"
+        (ngSubmit)="soumettreDocument()"
+        class="inline-form"
+      >
         <div class="form-row">
-          <mat-form-field appearance="outline" style="flex:2 1 220px">
+          <mat-form-field appearance="outline" style="flex: 2 1 220px">
             <mat-label>Type de document</mat-label>
             <mat-select formControlName="typeDocument">
               <mat-option *ngFor="let d of typeDocOptions" [value]="d.value">
                 [N{{ d.niveau }}] {{ d.label }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="docForm.get('typeDocument')?.hasError('required')">Requis</mat-error>
+            <mat-error *ngIf="docForm.get('typeDocument')?.hasError('required')"
+              >Requis</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Date d'expiration du document</mat-label>
-            <input matInput type="date" formControlName="dateExpirationDoc">
+            <input matInput type="date" formControlName="dateExpirationDoc" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Type MIME</mat-label>
-            <input matInput formControlName="mimeType" placeholder="image/jpeg, application/pdf…">
+            <input
+              matInput
+              formControlName="mimeType"
+              placeholder="image/jpeg, application/pdf…"
+            />
           </mat-form-field>
         </div>
 
         <div class="upload-zone">
           <mat-icon>cloud_upload</mat-icon>
           <p>Sélectionner le fichier</p>
-          <input type="file" (change)="onFileChange($event)" accept="image/*,application/pdf"
-                 style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+          <input
+            type="file"
+            (change)="onFileChange($event)"
+            accept="image/*,application/pdf"
+            style="position: absolute; inset: 0; opacity: 0; cursor: pointer"
+          />
           <small *ngIf="docForm.get('nomFichier')?.value" class="file-name">
-            {{ docForm.get('nomFichier')?.value }}
+            {{ docForm.get("nomFichier")?.value }}
           </small>
         </div>
         <!-- Hidden field for nom fichier validation -->
-        <input matInput formControlName="nomFichier" style="display:none">
-        <input matInput formControlName="contenuBase64" style="display:none">
+        <input matInput formControlName="nomFichier" style="display: none" />
+        <input matInput formControlName="contenuBase64" style="display: none" />
 
         <div class="form-actions">
-          <button mat-button type="button" (click)="showDocForm = false">Annuler</button>
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="docForm.invalid || savingDoc">
+          <button mat-button type="button" (click)="showDocForm = false">
+            Annuler
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="docForm.invalid || savingDoc"
+          >
             <mat-spinner diameter="16" *ngIf="savingDoc"></mat-spinner>
             Soumettre
           </button>
@@ -95,10 +136,16 @@
   <mat-card class="form-card" *ngIf="showRisqueForm">
     <mat-card-header>
       <mat-card-title>Évaluation du risque LBC/FT</mat-card-title>
-      <mat-card-subtitle>Règlement COBAC R-2005/01 · Loi N°2003/008</mat-card-subtitle>
+      <mat-card-subtitle
+        >Règlement COBAC R-2005/01 · Loi N°2003/008</mat-card-subtitle
+      >
     </mat-card-header>
     <mat-card-content>
-      <form [formGroup]="risqueForm" (ngSubmit)="evaluerRisque()" class="inline-form">
+      <form
+        [formGroup]="risqueForm"
+        (ngSubmit)="evaluerRisque()"
+        class="inline-form"
+      >
         <div class="checks-row">
           <mat-slide-toggle formControlName="estPep" color="warn">
             Personne Politiquement Exposée (PPE)
@@ -114,25 +161,41 @@
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Score de risque manuel (0–100)</mat-label>
-            <input matInput type="number" formControlName="scoreManuel" min="0" max="100">
+            <input
+              matInput
+              type="number"
+              formControlName="scoreManuel"
+              min="0"
+              max="100"
+            />
             <mat-hint>Laissez vide pour le calcul automatique</mat-hint>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="flex:2 1 300px">
+          <mat-form-field appearance="outline" style="flex: 2 1 300px">
             <mat-label>Motif de risque élevé</mat-label>
-            <input matInput formControlName="motifRisqueEleve"
-                   placeholder="Activité sensible, transactions transfrontalières…">
+            <input
+              matInput
+              formControlName="motifRisqueEleve"
+              placeholder="Activité sensible, transactions transfrontalières…"
+            />
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline" style="width:100%">
+        <mat-form-field appearance="outline" style="width: 100%">
           <mat-label>Observations</mat-label>
           <textarea matInput formControlName="observations" rows="2"></textarea>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-button type="button" (click)="showRisqueForm = false">Annuler</button>
-          <button mat-raised-button color="accent" type="submit" [disabled]="savingRisque">
+          <button mat-button type="button" (click)="showRisqueForm = false">
+            Annuler
+          </button>
+          <button
+            mat-raised-button
+            color="accent"
+            type="submit"
+            [disabled]="savingRisque"
+          >
             <mat-spinner diameter="16" *ngIf="savingRisque"></mat-spinner>
             Enregistrer l'évaluation
           </button>
@@ -145,45 +208,79 @@
   <mat-card class="form-card" *ngIf="showVerifForm">
     <mat-card-header>
       <mat-card-title>Décision de vérification</mat-card-title>
-      <mat-card-subtitle>La décision sera journalisée dans l'audit trail.</mat-card-subtitle>
+      <mat-card-subtitle
+        >La décision sera journalisée dans l'audit trail.</mat-card-subtitle
+      >
     </mat-card-header>
     <mat-card-content>
-      <form [formGroup]="verifForm" (ngSubmit)="soumettreDossier()" class="inline-form">
+      <form
+        [formGroup]="verifForm"
+        (ngSubmit)="soumettreDossier()"
+        class="inline-form"
+      >
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Résultat</mat-label>
             <mat-select formControlName="resultat">
               <mat-option value="APPROUVE">Approuver le KYC</mat-option>
-              <mat-option value="COMPLEMENT_REQUIS">Demander un complément</mat-option>
+              <mat-option value="COMPLEMENT_REQUIS"
+                >Demander un complément</mat-option
+              >
               <mat-option value="REJETE">Rejeter le dossier</mat-option>
             </mat-select>
-            <mat-error *ngIf="verifForm.get('resultat')?.hasError('required')">Requis</mat-error>
+            <mat-error *ngIf="verifForm.get('resultat')?.hasError('required')"
+              >Requis</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline" *ngIf="isApprouve">
             <mat-label>Niveau approuvé</mat-label>
             <mat-select formControlName="niveauApprouve">
-              <mat-option *ngFor="let n of niveauOptions" [value]="n">{{ getNiveauLabel(n) }}</mat-option>
+              <mat-option *ngFor="let n of niveauOptions" [value]="n">{{
+                getNiveauLabel(n)
+              }}</mat-option>
             </mat-select>
-            <mat-hint>Par défaut : niveau demandé ({{ getNiveauLabel(dossier.niveauDemande) }})</mat-hint>
+            <mat-hint
+              >Par défaut : niveau demandé ({{
+                getNiveauLabel(dossier.niveauDemande)
+              }})</mat-hint
+            >
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline" style="width:100%" *ngIf="isRejete">
+        <mat-form-field
+          appearance="outline"
+          style="width: 100%"
+          *ngIf="isRejete"
+        >
           <mat-label>Motif de rejet (obligatoire)</mat-label>
-          <textarea matInput formControlName="motifRejet" rows="2"
-                    placeholder="Documents non conformes, informations erronées…"></textarea>
+          <textarea
+            matInput
+            formControlName="motifRejet"
+            rows="2"
+            placeholder="Documents non conformes, informations erronées…"
+          ></textarea>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" style="width:100%">
+        <mat-form-field appearance="outline" style="width: 100%">
           <mat-label>Commentaire (facultatif)</mat-label>
           <textarea matInput formControlName="commentaire" rows="2"></textarea>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-button type="button" (click)="showVerifForm = false">Annuler</button>
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="verifForm.invalid || savingVerif || (isRejete && !verifForm.get('motifRejet')?.value)">
+          <button mat-button type="button" (click)="showVerifForm = false">
+            Annuler
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="
+              verifForm.invalid ||
+              savingVerif ||
+              (isRejete && !verifForm.get('motifRejet')?.value)
+            "
+          >
             <mat-spinner diameter="16" *ngIf="savingVerif"></mat-spinner>
             Confirmer la décision
           </button>
@@ -194,18 +291,23 @@
 
   <!-- ── Grille d'informations ───────────────────────────────────────────────── -->
   <div class="detail-grid">
-
     <!-- Identité -->
     <mat-card>
-      <mat-card-header><mat-card-title>Identité</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title>Identité</mat-card-title></mat-card-header
+      >
       <mat-card-content>
         <dl class="info-list">
-          <dt>Nom complet</dt>       <dd>{{ dossier.nomClient }} {{ dossier.prenomClient }}</dd>
+          <dt>Nom complet</dt>
+          <dd>{{ dossier.nomClient }} {{ dossier.prenomClient }}</dd>
           <dt *ngIf="dossier.dateNaissance">Date naissance</dt>
-          <dd *ngIf="dossier.dateNaissance">{{ dossier.dateNaissance | date:'dd/MM/yyyy' }}</dd>
+          <dd *ngIf="dossier.dateNaissance">
+            {{ dossier.dateNaissance | date: "dd/MM/yyyy" }}
+          </dd>
           <dt *ngIf="dossier.lieuNaissance">Lieu naissance</dt>
           <dd *ngIf="dossier.lieuNaissance">{{ dossier.lieuNaissance }}</dd>
-          <dt>Nationalité</dt>       <dd>{{ dossier.nationalite }}</dd>
+          <dt>Nationalité</dt>
+          <dd>{{ dossier.nationalite }}</dd>
           <dt *ngIf="dossier.telephone">Téléphone</dt>
           <dd *ngIf="dossier.telephone">{{ dossier.telephone }}</dd>
           <dt *ngIf="dossier.email">Email</dt>
@@ -218,7 +320,11 @@
 
     <!-- Activité -->
     <mat-card>
-      <mat-card-header><mat-card-title>Activité &amp; Revenus</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title
+          >Activité &amp; Revenus</mat-card-title
+        ></mat-card-header
+      >
       <mat-card-content>
         <dl class="info-list">
           <dt *ngIf="dossier.profession">Profession</dt>
@@ -227,55 +333,103 @@
           <dd *ngIf="dossier.employeur">{{ dossier.employeur }}</dd>
           <dt *ngIf="dossier.revenuMensuelEstim">Revenu mensuel</dt>
           <dd *ngIf="dossier.revenuMensuelEstim">
-            {{ dossier.revenuMensuelEstim | number:'1.0-0' }} FCFA
+            {{ dossier.revenuMensuelEstim | number: "1.0-0" }} FCFA
           </dd>
           <dt *ngIf="dossier.numeroPiece">N° pièce d'identité</dt>
-          <dd *ngIf="dossier.numeroPiece" class="mono">{{ dossier.numeroPiece }}</dd>
+          <dd *ngIf="dossier.numeroPiece" class="mono">
+            {{ dossier.numeroPiece }}
+          </dd>
           <dt *ngIf="dossier.dateExpirationPiece">Expir. pièce</dt>
-          <dd *ngIf="dossier.dateExpirationPiece">{{ dossier.dateExpirationPiece | date:'dd/MM/yyyy' }}</dd>
+          <dd *ngIf="dossier.dateExpirationPiece">
+            {{ dossier.dateExpirationPiece | date: "dd/MM/yyyy" }}
+          </dd>
         </dl>
       </mat-card-content>
     </mat-card>
 
     <!-- Score de risque -->
     <mat-card>
-      <mat-card-header><mat-card-title>Score de risque LBC/FT</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title
+          >Score de risque LBC/FT</mat-card-title
+        ></mat-card-header
+      >
       <mat-card-content>
         <div class="risque-gauge">
           <svg viewBox="0 0 120 70" class="gauge-svg">
-            <path d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="var(--color-border)" stroke-width="10" stroke-linecap="round"/>
-            <path d="M10,60 A50,50 0 0,1 110,60" fill="none"
-                  [attr.stroke]="dossier.niveauRisque === 'FAIBLE' ? '#16a34a' : dossier.niveauRisque === 'MOYEN' ? '#ca8a04' : dossier.niveauRisque === 'ELEVE' ? '#ea580c' : '#dc2626'"
-                  stroke-width="10" stroke-linecap="round"
-                  [attr.stroke-dasharray]="(dossier.scoreRisque / 100 * 157) + ' 157'"/>
+            <path
+              d="M10,60 A50,50 0 0,1 110,60"
+              fill="none"
+              stroke="var(--color-border)"
+              stroke-width="10"
+              stroke-linecap="round"
+            />
+            <path
+              d="M10,60 A50,50 0 0,1 110,60"
+              fill="none"
+              [attr.stroke]="
+                dossier.niveauRisque === 'FAIBLE'
+                  ? '#16a34a'
+                  : dossier.niveauRisque === 'MOYEN'
+                    ? '#ca8a04'
+                    : dossier.niveauRisque === 'ELEVE'
+                      ? '#ea580c'
+                      : '#dc2626'
+              "
+              stroke-width="10"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="
+                (dossier.scoreRisque / 100) * 157 + ' 157'
+              "
+            />
           </svg>
           <div class="gauge-score">
-            <span class="gauge-num" [ngClass]="getRisqueClass(dossier.niveauRisque)">{{ dossier.scoreRisque }}</span>
+            <span
+              class="gauge-num"
+              [ngClass]="getRisqueClass(dossier.niveauRisque)"
+              >{{ dossier.scoreRisque }}</span
+            >
             <span class="gauge-max">/100</span>
           </div>
-          <div class="gauge-label" [ngClass]="getRisqueClass(dossier.niveauRisque)">
+          <div
+            class="gauge-label"
+            [ngClass]="getRisqueClass(dossier.niveauRisque)"
+          >
             {{ dossier.niveauRisque | titlecase }}
           </div>
         </div>
         <dl class="info-list">
           <dt>PPE</dt>
-          <dd [style.color]="dossier.estPep ? 'var(--color-warn)' : 'var(--color-success)'">
-            {{ dossier.estPep ? 'Oui — diligence renforcée' : 'Non' }}
+          <dd
+            [style.color]="
+              dossier.estPep ? 'var(--color-warn)' : 'var(--color-success)'
+            "
+          >
+            {{ dossier.estPep ? "Oui — diligence renforcée" : "Non" }}
           </dd>
           <dt>Sanctions</dt>
-          <dd [style.color]="dossier.verifSanctions ? 'var(--color-success)' : '#9ca3af'">
-            {{ dossier.verifSanctions ? 'Vérifiées' : 'Non vérifiées' }}
+          <dd
+            [style.color]="
+              dossier.verifSanctions ? 'var(--color-success)' : '#9ca3af'
+            "
+          >
+            {{ dossier.verifSanctions ? "Vérifiées" : "Non vérifiées" }}
           </dd>
           <dt>Listes noires</dt>
-          <dd [style.color]="dossier.verifListesNoires ? 'var(--color-success)' : '#9ca3af'">
-            {{ dossier.verifListesNoires ? 'Vérifiées' : 'Non vérifiées' }}
+          <dd
+            [style.color]="
+              dossier.verifListesNoires ? 'var(--color-success)' : '#9ca3af'
+            "
+          >
+            {{ dossier.verifListesNoires ? "Vérifiées" : "Non vérifiées" }}
           </dd>
           <dt *ngIf="dossier.dateExpirationKyc">Expiration KYC</dt>
-          <dd *ngIf="dossier.dateExpirationKyc">{{ dossier.dateExpirationKyc | date:'dd/MM/yyyy' }}</dd>
+          <dd *ngIf="dossier.dateExpirationKyc">
+            {{ dossier.dateExpirationKyc | date: "dd/MM/yyyy" }}
+          </dd>
         </dl>
       </mat-card-content>
     </mat-card>
-
   </div>
 
   <!-- ── Documents ───────────────────────────────────────────────────────────── -->
@@ -295,34 +449,64 @@
       </div>
 
       <div class="docs-grid" *ngIf="!loadingDocs && documents.length > 0">
-        <div *ngFor="let doc of documents" class="doc-card"
-             [class.doc-valide]="doc.valide === true"
-             [class.doc-rejete]="doc.valide === false">
+        <div
+          *ngFor="let doc of documents"
+          class="doc-card"
+          [class.doc-valide]="doc.valide === true"
+          [class.doc-rejete]="doc.valide === false"
+        >
           <div class="doc-icon">
             <mat-icon>{{ getDocIcon(doc.typeDocument) }}</mat-icon>
           </div>
           <div class="doc-body">
             <p class="doc-type">{{ getDocLabel(doc.typeDocument) }}</p>
             <p class="doc-nom">{{ doc.nomFichier }}</p>
-            <p class="doc-date">Soumis le {{ doc.createdAt | date:'dd/MM/yyyy' }}</p>
-            <p class="doc-expir" *ngIf="doc.dateExpirationDoc">
-              Expire le {{ doc.dateExpirationDoc | date:'dd/MM/yyyy' }}
+            <p class="doc-date">
+              Soumis le {{ doc.createdAt | date: "dd/MM/yyyy" }}
             </p>
-            <p class="doc-rejet" *ngIf="doc.motifRejet">Rejet : {{ doc.motifRejet }}</p>
-            <p class="doc-verifie" *ngIf="doc.verifiePar">Par {{ doc.verifiePar }}</p>
+            <p class="doc-expir" *ngIf="doc.dateExpirationDoc">
+              Expire le {{ doc.dateExpirationDoc | date: "dd/MM/yyyy" }}
+            </p>
+            <p class="doc-rejet" *ngIf="doc.motifRejet">
+              Rejet : {{ doc.motifRejet }}
+            </p>
+            <p class="doc-verifie" *ngIf="doc.verifiePar">
+              Par {{ doc.verifiePar }}
+            </p>
           </div>
           <div class="doc-status">
-            <mat-icon *ngIf="doc.valide === true" style="color:var(--color-success)">check_circle</mat-icon>
-            <mat-icon *ngIf="doc.valide === false" style="color:var(--color-warn)">cancel</mat-icon>
-            <mat-icon *ngIf="doc.valide === null" style="color:#9ca3af">pending</mat-icon>
+            <mat-icon
+              *ngIf="doc.valide === true"
+              style="color: var(--color-success)"
+              >check_circle</mat-icon
+            >
+            <mat-icon
+              *ngIf="doc.valide === false"
+              style="color: var(--color-warn)"
+              >cancel</mat-icon
+            >
+            <mat-icon *ngIf="doc.valide === null" style="color: #9ca3af"
+              >pending</mat-icon
+            >
           </div>
-          <div class="doc-actions" *ngIf="doc.valide === null || doc.valide === undefined">
-            <button mat-icon-button color="primary" (click)="validerDoc(doc, true)"
-                    matTooltip="Accepter le document">
+          <div
+            class="doc-actions"
+            *ngIf="doc.valide === null || doc.valide === undefined"
+          >
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="validerDoc(doc, true)"
+              matTooltip="Accepter le document"
+            >
               <mat-icon>thumb_up</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="validerDoc(doc, false)"
-                    matTooltip="Rejeter le document">
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="validerDoc(doc, false)"
+              matTooltip="Rejeter le document"
+            >
               <mat-icon>thumb_down</mat-icon>
             </button>
           </div>
@@ -342,7 +526,10 @@
     <mat-card-content>
       <mat-spinner diameter="28" *ngIf="loadingVerifs"></mat-spinner>
 
-      <div class="empty-state" *ngIf="!loadingVerifs && verifications.length === 0">
+      <div
+        class="empty-state"
+        *ngIf="!loadingVerifs && verifications.length === 0"
+      >
         <mat-icon>fact_check</mat-icon>
         <p>Aucune vérification enregistrée</p>
       </div>
@@ -350,30 +537,46 @@
       <div class="timeline" *ngIf="!loadingVerifs && verifications.length > 0">
         <div *ngFor="let v of verifications" class="timeline-item">
           <div class="timeline-icon">
-            <mat-icon>{{ v.resultat === 'APPROUVE' ? 'verified' : v.resultat === 'REJETE' ? 'cancel' : 'pending_actions' }}</mat-icon>
+            <mat-icon>{{
+              v.resultat === "APPROUVE"
+                ? "verified"
+                : v.resultat === "REJETE"
+                  ? "cancel"
+                  : "pending_actions"
+            }}</mat-icon>
           </div>
           <div class="timeline-body">
             <div class="timeline-top">
               <span class="res-badge" [ngClass]="getResultatClass(v.resultat)">
                 {{ getResultatLabel(v.resultat) }}
               </span>
-              <span class="timeline-date">{{ v.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="timeline-date">{{
+                v.createdAt | date: "dd/MM/yyyy HH:mm"
+              }}</span>
               <span class="timeline-verif" *ngIf="v.verificateurUsername">
                 par {{ v.verificateurUsername }}
               </span>
             </div>
             <p class="timeline-transition">
-              {{ getStatutLabel(v.ancienStatut) }} → {{ getStatutLabel(v.nouveauStatut) }}
-              <span *ngIf="v.ancienNiveau !== v.nouveauNiveau" class="niveau-change">
-                · {{ getNiveauLabel(v.ancienNiveau) }} → {{ getNiveauLabel(v.nouveauNiveau) }}
+              {{ getStatutLabel(v.ancienStatut) }} →
+              {{ getStatutLabel(v.nouveauStatut) }}
+              <span
+                *ngIf="v.ancienNiveau !== v.nouveauNiveau"
+                class="niveau-change"
+              >
+                · {{ getNiveauLabel(v.ancienNiveau) }} →
+                {{ getNiveauLabel(v.nouveauNiveau) }}
               </span>
             </p>
-            <p class="timeline-desc" *ngIf="v.commentaire">{{ v.commentaire }}</p>
-            <p class="timeline-rejet" *ngIf="v.motifRejet">Motif : {{ v.motifRejet }}</p>
+            <p class="timeline-desc" *ngIf="v.commentaire">
+              {{ v.commentaire }}
+            </p>
+            <p class="timeline-rejet" *ngIf="v.motifRejet">
+              Motif : {{ v.motifRejet }}
+            </p>
           </div>
         </div>
       </div>
     </mat-card-content>
   </mat-card>
-
 </ng-container>

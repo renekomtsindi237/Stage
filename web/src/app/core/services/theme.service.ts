@@ -1,18 +1,17 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
 
-export type Theme = 'light' | 'dark';
+export type Theme = "light" | "dark";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class ThemeService {
-
-  private readonly STORAGE_KEY = 'imf_theme';
+  private readonly STORAGE_KEY = "imf_theme";
   private readonly _theme$ = new BehaviorSubject<Theme>(this.loadTheme());
 
   readonly theme$ = this._theme$.asObservable();
 
   get isDark(): boolean {
-    return this._theme$.value === 'dark';
+    return this._theme$.value === "dark";
   }
 
   get current(): Theme {
@@ -24,7 +23,7 @@ export class ThemeService {
   }
 
   toggle(): void {
-    const next: Theme = this._theme$.value === 'light' ? 'dark' : 'light';
+    const next: Theme = this._theme$.value === "light" ? "dark" : "light";
     this.setTheme(next);
   }
 
@@ -39,21 +38,26 @@ export class ThemeService {
    * 'auto' résout en dark ou light selon la préférence système.
    * Persisté en localStorage pour un affichage immédiat au prochain rechargement.
    */
-  applyFromPreference(pref: 'light' | 'dark' | 'auto'): void {
-    const resolved: Theme = pref === 'auto'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : pref;
+  applyFromPreference(pref: "light" | "dark" | "auto"): void {
+    const resolved: Theme =
+      pref === "auto"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        : pref;
     this.setTheme(resolved);
   }
 
   private loadTheme(): Theme {
     const stored = localStorage.getItem(this.STORAGE_KEY) as Theme | null;
-    if (stored === 'dark' || stored === 'light') return stored;
+    if (stored === "dark" || stored === "light") return stored;
     // Préférence système
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   }
 
   private applyTheme(theme: Theme): void {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
   }
 }

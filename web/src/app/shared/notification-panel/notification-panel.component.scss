@@ -41,7 +41,7 @@
 }
 
 .notif-header-icon {
-  color: var(--brand-gold, #C8923A);
+  color: var(--brand-gold, #c8923a);
   font-size: 26px;
   width: 26px;
   height: 26px;
@@ -65,7 +65,7 @@
 }
 
 .btn-read-all {
-  color: var(--brand-gold, #C8923A);
+  color: var(--brand-gold, #c8923a);
 }
 
 .btn-close {
@@ -97,7 +97,7 @@
   transition: background 0.15s;
 
   &:hover {
-    background: var(--color-hover, rgba(0,0,0,0.04));
+    background: var(--color-hover, rgba(0, 0, 0, 0.04));
   }
 
   &.notif-unread {
@@ -166,7 +166,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--brand-gold, #C8923A);
+  background: var(--brand-gold, #c8923a);
   margin-top: 6px;
 }
 

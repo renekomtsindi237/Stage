@@ -1,9 +1,15 @@
 <div class="page-header">
   <div>
     <h1>Recouvrement des créances</h1>
-    <p class="page-subtitle">Workflow OHADA/COBAC — Phases de collecte et suivi des dossiers</p>
+    <p class="page-subtitle">
+      Workflow OHADA/COBAC — Phases de collecte et suivi des dossiers
+    </p>
   </div>
-  <button mat-raised-button color="primary" (click)="showOuvrirForm = !showOuvrirForm">
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="showOuvrirForm = !showOuvrirForm"
+  >
     <mat-icon>add</mat-icon>
     Ouvrir un dossier
   </button>
@@ -13,32 +19,59 @@
 <mat-card class="form-card" *ngIf="showOuvrirForm" [@slideIn]>
   <mat-card-header>
     <mat-card-title>Nouveau dossier de recouvrement</mat-card-title>
-    <mat-card-subtitle>La catégorie COBAC et le taux de provisionnement sont calculés automatiquement.</mat-card-subtitle>
+    <mat-card-subtitle
+      >La catégorie COBAC et le taux de provisionnement sont calculés
+      automatiquement.</mat-card-subtitle
+    >
   </mat-card-header>
   <mat-card-content>
-    <form [formGroup]="ouvrirForm" (ngSubmit)="ouvrirDossier()" class="ouvrir-form">
+    <form
+      [formGroup]="ouvrirForm"
+      (ngSubmit)="ouvrirDossier()"
+      class="ouvrir-form"
+    >
       <div class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>Référence prêt</mat-label>
-          <input matInput formControlName="idPret" placeholder="EX: PRE-2024-001">
-          <mat-error *ngIf="ouvrirForm.get('idPret')?.hasError('required')">Requis</mat-error>
+          <input
+            matInput
+            formControlName="idPret"
+            placeholder="EX: PRE-2024-001"
+          />
+          <mat-error *ngIf="ouvrirForm.get('idPret')?.hasError('required')"
+            >Requis</mat-error
+          >
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Montant impayé (FCFA)</mat-label>
-          <input matInput type="number" formControlName="montantImpaye" min="1">
-          <mat-error *ngIf="ouvrirForm.get('montantImpaye')?.hasError('required')">Requis</mat-error>
+          <input
+            matInput
+            type="number"
+            formControlName="montantImpaye"
+            min="1"
+          />
+          <mat-error
+            *ngIf="ouvrirForm.get('montantImpaye')?.hasError('required')"
+            >Requis</mat-error
+          >
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Jours de retard</mat-label>
-          <input matInput type="number" formControlName="joursRetard" min="1">
-          <mat-error *ngIf="ouvrirForm.get('joursRetard')?.hasError('required')">Requis</mat-error>
+          <input matInput type="number" formControlName="joursRetard" min="1" />
+          <mat-error *ngIf="ouvrirForm.get('joursRetard')?.hasError('required')"
+            >Requis</mat-error
+          >
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Date 1ère échéance impayée</mat-label>
-          <input matInput type="date" formControlName="datePremiereEcheanceImpayee">
+          <input
+            matInput
+            type="date"
+            formControlName="datePremiereEcheanceImpayee"
+          />
         </mat-form-field>
       </div>
 
@@ -47,27 +80,47 @@
           <mat-label>Type de garantie</mat-label>
           <mat-select formControlName="typeGarantie">
             <mat-option value="">— Aucune —</mat-option>
-            <mat-option *ngFor="let g of garantieOptions" [value]="g">{{ getGarantieLabel(g) }}</mat-option>
+            <mat-option *ngFor="let g of garantieOptions" [value]="g">{{
+              getGarantieLabel(g)
+            }}</mat-option>
           </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Nom du cautionnaire</mat-label>
-          <input matInput formControlName="nomCaution" placeholder="Nom complet">
+          <input
+            matInput
+            formControlName="nomCaution"
+            placeholder="Nom complet"
+          />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Téléphone cautionnaire</mat-label>
-          <input matInput formControlName="telephoneCaution" placeholder="6XX XXX XXX">
+          <input
+            matInput
+            formControlName="telephoneCaution"
+            placeholder="6XX XXX XXX"
+          />
           <mat-hint>MTN/Orange Cameroun</mat-hint>
         </mat-form-field>
       </div>
 
       <div class="form-actions">
-        <button mat-button type="button" (click)="showOuvrirForm = false">Annuler</button>
-        <button mat-raised-button color="primary" type="submit"
-                [disabled]="ouvrirForm.invalid || saving">
-          <mat-spinner diameter="16" *ngIf="saving" style="display:inline-block;"></mat-spinner>
+        <button mat-button type="button" (click)="showOuvrirForm = false">
+          Annuler
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="ouvrirForm.invalid || saving"
+        >
+          <mat-spinner
+            diameter="16"
+            *ngIf="saving"
+            style="display: inline-block"
+          ></mat-spinner>
           Ouvrir le dossier
         </button>
       </div>
@@ -77,24 +130,28 @@
 
 <!-- Filtres -->
 <div class="filters-bar">
-  <mat-form-field appearance="outline" style="min-width:190px;">
+  <mat-form-field appearance="outline" style="min-width: 190px">
     <mat-label>Phase</mat-label>
     <mat-select [(ngModel)]="phaseFiltre" (selectionChange)="onFiltreChange()">
-      <mat-option *ngFor="let p of phaseOptions" [value]="p.value">{{ p.label }}</mat-option>
+      <mat-option *ngFor="let p of phaseOptions" [value]="p.value">{{
+        p.label
+      }}</mat-option>
     </mat-select>
   </mat-form-field>
 
-  <mat-form-field appearance="outline" style="min-width:180px;">
+  <mat-form-field appearance="outline" style="min-width: 180px">
     <mat-label>Statut dossier</mat-label>
     <mat-select [(ngModel)]="closFiltre" (selectionChange)="onFiltreChange()">
-      <mat-option *ngFor="let c of closOptions" [value]="c.value">{{ c.label }}</mat-option>
+      <mat-option *ngFor="let c of closOptions" [value]="c.value">{{
+        c.label
+      }}</mat-option>
     </mat-select>
   </mat-form-field>
 </div>
 
 <!-- Erreur -->
 <mat-card class="error-card" *ngIf="error">
-  <mat-card-content style="display:flex;align-items:center;gap:8px;">
+  <mat-card-content style="display: flex; align-items: center; gap: 8px">
     <mat-icon color="warn">error_outline</mat-icon>
     Impossible de charger les dossiers de recouvrement.
   </mat-card-content>
@@ -102,23 +159,31 @@
 
 <!-- Skeleton -->
 <ng-container *ngIf="loading && dossiers.length === 0">
-  <mat-card style="padding:16px;">
+  <mat-card style="padding: 16px">
     <app-skeleton type="table" [count]="8"></app-skeleton>
   </mat-card>
 </ng-container>
 
 <!-- Tableau -->
 <mat-card *ngIf="!loading || dossiers.length > 0">
-  <mat-progress-bar mode="indeterminate" *ngIf="loading && dossiers.length > 0"></mat-progress-bar>
+  <mat-progress-bar
+    mode="indeterminate"
+    *ngIf="loading && dossiers.length > 0"
+  ></mat-progress-bar>
 
   <table mat-table [dataSource]="dossiers" class="full-width">
-
     <ng-container matColumnDef="idPret">
       <th mat-header-cell *matHeaderCellDef>Réf. prêt</th>
       <td mat-cell *matCellDef="let d">
         <span class="ref-pret">{{ d.idPret }}</span>
-        <span *ngIf="d.nomCaution" class="caution-chip" matTooltip="Cautionnaire : {{ d.nomCaution }}">
-          <mat-icon style="font-size:12px;height:12px;width:12px;">shield</mat-icon>
+        <span
+          *ngIf="d.nomCaution"
+          class="caution-chip"
+          matTooltip="Cautionnaire : {{ d.nomCaution }}"
+        >
+          <mat-icon style="font-size: 12px; height: 12px; width: 12px"
+            >shield</mat-icon
+          >
           Caution
         </span>
       </td>
@@ -127,11 +192,18 @@
     <ng-container matColumnDef="montantImpaye">
       <th mat-header-cell *matHeaderCellDef>Montant impayé</th>
       <td mat-cell *matCellDef="let d">
-        <strong>{{ d.montantImpaye | number:'1.0-0' }} FCFA</strong>
-        <br>
-        <small class="provision-hint" [matTooltip]="'Provision COBAC : ' + (d.montantProvision | number:'1.0-0') + ' FCFA'">
-          Prov. {{ d.tauxProvision | number:'1.0-0' }}%
-          = {{ d.montantProvision | number:'1.0-0' }} FCFA
+        <strong>{{ d.montantImpaye | number: "1.0-0" }} FCFA</strong>
+        <br />
+        <small
+          class="provision-hint"
+          [matTooltip]="
+            'Provision COBAC : ' +
+            (d.montantProvision | number: '1.0-0') +
+            ' FCFA'
+          "
+        >
+          Prov. {{ d.tauxProvision | number: "1.0-0" }}% =
+          {{ d.montantProvision | number: "1.0-0" }} FCFA
         </small>
       </td>
     </ng-container>
@@ -139,10 +211,18 @@
     <ng-container matColumnDef="joursRetard">
       <th mat-header-cell *matHeaderCellDef>Retard</th>
       <td mat-cell *matCellDef="let d">
-        <span class="jours-retard"
-              [style.color]="d.joursRetard >= 180 ? 'var(--color-warn)' :
-                             (d.joursRetard >= 90  ? '#f97316' :
-                             (d.joursRetard >= 30  ? 'var(--color-accent)' : 'var(--color-success)'))">
+        <span
+          class="jours-retard"
+          [style.color]="
+            d.joursRetard >= 180
+              ? 'var(--color-warn)'
+              : d.joursRetard >= 90
+                ? '#f97316'
+                : d.joursRetard >= 30
+                  ? 'var(--color-accent)'
+                  : 'var(--color-success)'
+          "
+        >
           {{ d.joursRetard }} j
         </span>
       </td>
@@ -169,7 +249,7 @@
     <ng-container matColumnDef="frais">
       <th mat-header-cell *matHeaderCellDef>Frais engagés</th>
       <td mat-cell *matCellDef="let d">
-        {{ d.fraisRecouvrement | number:'1.0-0' }} FCFA
+        {{ d.fraisRecouvrement | number: "1.0-0" }} FCFA
       </td>
     </ng-container>
 
@@ -177,7 +257,7 @@
       <th mat-header-cell *matHeaderCellDef>Statut</th>
       <td mat-cell *matCellDef="let d">
         <span class="badge-statut" [ngClass]="d.clos ? 'solde' : 'actif'">
-          {{ d.clos ? 'Clos' : 'Ouvert' }}
+          {{ d.clos ? "Clos" : "Ouvert" }}
         </span>
       </td>
     </ng-container>
@@ -185,16 +265,22 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let d">
-        <button mat-icon-button [routerLink]="['/admin/recouvrement', d.id]"
-                matTooltip="Voir le dossier">
+        <button
+          mat-icon-button
+          [routerLink]="['/admin/recouvrement', d.id]"
+          matTooltip="Voir le dossier"
+        >
           <mat-icon>folder_open</mat-icon>
         </button>
       </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-        [class.row-clos]="row.clos"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      [class.row-clos]="row.clos"
+    ></tr>
 
     <tr class="mat-row" *matNoDataRow>
       <td [attr.colspan]="displayedColumns.length">
@@ -211,6 +297,7 @@
     [pageSize]="pageSize"
     [pageSizeOptions]="[10, 20, 50]"
     (page)="onPageChange($event)"
-    showFirstLastButtons>
+    showFirstLastButtons
+  >
   </mat-paginator>
 </mat-card>

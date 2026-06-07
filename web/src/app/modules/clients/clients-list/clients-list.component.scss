@@ -1,9 +1,9 @@
-@import '../../blucash-list-styles.scss';
+@import "../../blucash-list-styles.scss";
 
 // ── Host component background ────────────────────────────────────────────────
 :host {
   display: block;
-  background: #FAFBFC;  // Fond clair Blucash
+  background: #fafbfc; // Fond clair Blucash
   min-height: 100%;
 }
 

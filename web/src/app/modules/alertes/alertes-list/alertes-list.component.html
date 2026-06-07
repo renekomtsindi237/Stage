@@ -1,9 +1,10 @@
 <div class="blucash-page-container">
-
   <!-- En-tête de page -->
   <div class="blucash-page-header">
     <h1 class="page-title">Alertes Impayés</h1>
-    <p class="page-subtitle">Suivez et gérez les retards de paiement en temps réel</p>
+    <p class="page-subtitle">
+      Suivez et gérez les retards de paiement en temps réel
+    </p>
   </div>
 
   <!-- Cartes de statistiques -->
@@ -54,7 +55,10 @@
     <div class="filter-group">
       <label>Statut :</label>
       <mat-form-field appearance="outline">
-        <mat-select [(ngModel)]="statutFiltre" (selectionChange)="onFiltreChange()">
+        <mat-select
+          [(ngModel)]="statutFiltre"
+          (selectionChange)="onFiltreChange()"
+        >
           <mat-option *ngFor="let opt of statutOptions" [value]="opt.value">
             {{ opt.label }}
           </mat-option>
@@ -76,10 +80,12 @@
 
   <!-- Table des alertes -->
   <div class="blucash-table-container" *ngIf="!loading || alertes.length > 0">
-    <mat-progress-bar mode="indeterminate" *ngIf="loading && alertes.length > 0"></mat-progress-bar>
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="loading && alertes.length > 0"
+    ></mat-progress-bar>
 
     <table mat-table [dataSource]="alertes">
-
       <ng-container matColumnDef="idPret">
         <th mat-header-cell *matHeaderCellDef>Prêt</th>
         <td mat-cell *matCellDef="let a">
@@ -92,12 +98,14 @@
       <ng-container matColumnDef="joursRetard">
         <th mat-header-cell *matHeaderCellDef>Retard</th>
         <td mat-cell *matCellDef="let a">
-          <span class="blucash-badge" 
-                [ngClass]="{
-                  'badge-info': a.joursRetard < 30,
-                  'badge-warning': a.joursRetard >= 30 && a.joursRetard < 90,
-                  'badge-danger': a.joursRetard >= 90
-                }">
+          <span
+            class="blucash-badge"
+            [ngClass]="{
+              'badge-info': a.joursRetard < 30,
+              'badge-warning': a.joursRetard >= 30 && a.joursRetard < 90,
+              'badge-danger': a.joursRetard >= 90,
+            }"
+          >
             <span class="badge-dot"></span>
             {{ a.joursRetard }} jours
           </span>
@@ -107,19 +115,23 @@
       <ng-container matColumnDef="montantEnRetard">
         <th mat-header-cell *matHeaderCellDef>Montant en retard</th>
         <td mat-cell *matCellDef="let a">
-          <span class="cell-amount">{{ a.montantEnRetard | number:'1.0-0' }} FCFA</span>
+          <span class="cell-amount"
+            >{{ a.montantEnRetard | number: "1.0-0" }} FCFA</span
+          >
         </td>
       </ng-container>
 
       <ng-container matColumnDef="statutAlerte">
         <th mat-header-cell *matHeaderCellDef>Statut</th>
         <td mat-cell *matCellDef="let a">
-          <span class="blucash-badge" 
-                [ngClass]="{
-                  'badge-warning': a.statutAlerte === 'ACTIVE',
-                  'badge-danger': a.statutAlerte === 'ESCALADEE',
-                  'badge-gray': a.statutAlerte === 'CLOTUREE'
-                }">
+          <span
+            class="blucash-badge"
+            [ngClass]="{
+              'badge-warning': a.statutAlerte === 'ACTIVE',
+              'badge-danger': a.statutAlerte === 'ESCALADEE',
+              'badge-gray': a.statutAlerte === 'CLOTUREE',
+            }"
+          >
             {{ getStatutLabel(a.statutAlerte) }}
           </span>
         </td>
@@ -130,7 +142,7 @@
         <td mat-cell *matCellDef="let a">
           <div class="cell-with-icon">
             <mat-icon>event</mat-icon>
-            <span>{{ a.dateGeneration | date:'dd/MM/yyyy' }}</span>
+            <span>{{ a.dateGeneration | date: "dd/MM/yyyy" }}</span>
           </div>
         </td>
       </ng-container>
@@ -138,14 +150,18 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let a">
-          <button mat-icon-button [routerLink]="['/alertes', a.id]" matTooltip="Voir le détail">
+          <button
+            mat-icon-button
+            [routerLink]="['/alertes', a.id]"
+            matTooltip="Voir le détail"
+          >
             <mat-icon>visibility</mat-icon>
           </button>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
       <tr class="mat-row" *matNoDataRow>
         <td [attr.colspan]="displayedColumns.length">
@@ -163,8 +179,8 @@
       [pageSize]="pageSize"
       [pageSizeOptions]="[10, 20, 50]"
       (page)="onPageChange($event)"
-      showFirstLastButtons>
+      showFirstLastButtons
+    >
     </mat-paginator>
   </div>
-
 </div>

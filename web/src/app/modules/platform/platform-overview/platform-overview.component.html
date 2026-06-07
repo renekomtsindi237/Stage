@@ -1,5 +1,9 @@
 <!-- ── Erreur session ── -->
-<div class="session-error" *ngIf="errorCode === 403 || errorCode === 401" @fadeInUp>
+<div
+  class="session-error"
+  *ngIf="errorCode === 403 || errorCode === 401"
+  @fadeInUp
+>
   <div class="err-icon"><mat-icon>lock_person</mat-icon></div>
   <div class="err-body">
     <strong>Session expirée</strong>
@@ -11,7 +15,6 @@
 </div>
 
 <ng-container *ngIf="errorCode === 0">
-
   <!-- ── En-tête ── -->
   <div class="page-header" @reveal>
     <div>
@@ -19,11 +22,21 @@
         <mat-icon>verified</mat-icon>
         Super Administrateur
       </div>
-      <h1>{{ greeting }}, <span class="highlight">{{ auth.getUsername() }}</span></h1>
-      <p class="header-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }} · Tableau de bord plateforme</p>
+      <h1>
+        {{ greeting }}, <span class="highlight">{{ auth.getUsername() }}</span>
+      </h1>
+      <p class="header-date">
+        {{ today | date: "EEEE d MMMM yyyy" : "" : "fr" }} · Tableau de bord
+        plateforme
+      </p>
     </div>
     <div class="header-actions">
-      <button mat-stroked-button class="btn-outline" (click)="load()" [disabled]="loading">
+      <button
+        mat-stroked-button
+        class="btn-outline"
+        (click)="load()"
+        [disabled]="loading"
+      >
         <mat-icon [class.spinning]="loading">refresh</mat-icon>
         Actualiser
       </button>
@@ -36,10 +49,9 @@
 
   <!-- ── KPI Cards ── -->
   <div class="kpi-row" @staggerIn>
-
     <!-- Skeleton -->
     <ng-container *ngIf="loading">
-      <div class="kpi-card sk-card" *ngFor="let i of [1,2,3,4]">
+      <div class="kpi-card sk-card" *ngFor="let i of [1, 2, 3, 4]">
         <div class="sk-icon"></div>
         <div class="sk-lines">
           <div class="sk-line sk-lg"></div>
@@ -101,15 +113,15 @@
           <mat-icon>trending_up</mat-icon>
           +{{ stats.newImfsThisMonth }}
         </div>
-        <div class="kpi-badge neutral" *ngIf="stats.newImfsThisMonth === 0">Ce mois</div>
+        <div class="kpi-badge neutral" *ngIf="stats.newImfsThisMonth === 0">
+          Ce mois
+        </div>
       </div>
     </ng-container>
-
   </div>
 
   <!-- ── Graphique barres + Donut ── -->
   <div class="charts-row" *ngIf="!loading" @fadeInUp>
-
     <!-- Graphique en barres : IMF par mois -->
     <div class="chart-card chart-card--wide">
       <div class="chart-card-header">
@@ -126,7 +138,8 @@
         <imf-platform-bar-chart
           [labels]="barLabels"
           [activeData]="barActive"
-          [inactiveData]="barInactive">
+          [inactiveData]="barInactive"
+        >
         </imf-platform-bar-chart>
       </div>
     </div>
@@ -142,7 +155,8 @@
       <div class="chart-body donut-body">
         <imf-platform-donut-chart
           [active]="stats?.activeImfs || 0"
-          [inactive]="stats?.inactiveImfs || 0">
+          [inactive]="stats?.inactiveImfs || 0"
+        >
         </imf-platform-donut-chart>
         <div class="donut-legend">
           <div class="donut-legend-item">
@@ -163,12 +177,10 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- ── IMF récentes + Pays ── -->
   <div class="bottom-row" *ngIf="!loading" @fadeInUp>
-
     <!-- IMF récentes -->
     <div class="panel">
       <div class="panel-header">
@@ -192,9 +204,17 @@
       </div>
 
       <div class="imf-list" *ngIf="recentImfs.length > 0">
-        <div class="imf-row" *ngFor="let imf of recentImfs; trackBy: trackByImf" (click)="goToImf()">
+        <div
+          class="imf-row"
+          *ngFor="let imf of recentImfs; trackBy: trackByImf"
+          (click)="goToImf()"
+        >
           <div class="imf-logo-wrap" [class.off]="!imf.actif">
-            <img [src]="getImfLogo(imf.code)" [alt]="imf.nom" class="imf-logo-img">
+            <img
+              [src]="getImfLogo(imf.code)"
+              [alt]="imf.nom"
+              class="imf-logo-img"
+            />
           </div>
           <div class="imf-info">
             <span class="imf-name">{{ imf.nom }}</span>
@@ -205,9 +225,13 @@
             </span>
           </div>
           <div class="imf-right">
-            <span class="status-pill" [class.active]="imf.actif" [class.inactive]="!imf.actif">
+            <span
+              class="status-pill"
+              [class.active]="imf.actif"
+              [class.inactive]="!imf.actif"
+            >
               <span class="pill-dot"></span>
-              {{ imf.actif ? 'Active' : 'Inactive' }}
+              {{ imf.actif ? "Active" : "Inactive" }}
             </span>
             <span class="imf-date">{{ formatDate(imf.createdAt) }}</span>
           </div>
@@ -217,7 +241,6 @@
 
     <!-- Répartition par pays + Actions rapides -->
     <div class="side-col">
-
       <!-- Pays -->
       <div class="panel" *ngIf="paysStatsList.length > 0">
         <div class="panel-header">
@@ -232,7 +255,10 @@
           </div>
         </div>
         <div class="pays-list">
-          <div class="pays-row" *ngFor="let p of paysStatsList; let i = index; trackBy: trackByPays">
+          <div
+            class="pays-row"
+            *ngFor="let p of paysStatsList; let i = index; trackBy: trackByPays"
+          >
             <span class="pays-rank">{{ i + 1 }}</span>
             <span class="pays-name">{{ p.pays }}</span>
             <div class="pays-bar-wrap">
@@ -264,7 +290,11 @@
             </div>
             <mat-icon class="qa-arrow">chevron_right</mat-icon>
           </a>
-          <a class="qa-item" [routerLink]="['/platform/imf']" [queryParams]="{action:'create'}">
+          <a
+            class="qa-item"
+            [routerLink]="['/platform/imf']"
+            [queryParams]="{ action: 'create' }"
+          >
             <div class="qa-icon green"><mat-icon>add_business</mat-icon></div>
             <div class="qa-body">
               <span class="qa-title">Nouvelle IMF</span>
@@ -289,9 +319,12 @@
             <span class="health-val green">{{ activationRate }}%</span>
           </div>
           <div class="health-bar-bg">
-            <div class="health-bar-fill blue" [style.width.%]="activationRate"></div>
+            <div
+              class="health-bar-fill blue"
+              [style.width.%]="activationRate"
+            ></div>
           </div>
-          <div class="health-row" style="margin-top:10px">
+          <div class="health-row" style="margin-top: 10px">
             <span class="health-label">Couverture DSI</span>
             <span class="health-val teal">{{ dsiRate }}%</span>
           </div>
@@ -300,9 +333,6 @@
           </div>
         </div>
       </div>
-
     </div>
-
   </div>
-
 </ng-container>

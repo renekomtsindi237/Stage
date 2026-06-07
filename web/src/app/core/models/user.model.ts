@@ -1,11 +1,11 @@
-import { Role } from './auth.model';
+import { Role } from "./auth.model";
 
 /** Préférences personnalisables par chaque utilisateur. */
 export interface UserPreferences {
   /** Thème visuel : light | dark | auto (suit le système). */
-  prefTheme: 'light' | 'dark' | 'auto';
+  prefTheme: "light" | "dark" | "auto";
   /** Langue de l'interface : fr | en. */
-  prefLangue: 'fr' | 'en';
+  prefLangue: "fr" | "en";
   /** Maître-switch : désactiver toutes les notifications. */
   notificationsActives: boolean;
   /** Recevoir les alertes d'impayés. */
@@ -37,8 +37,8 @@ export interface UserResponse {
   lastLogin?: string;
   createdAt: string;
   // Préférences
-  prefLangue?: 'fr' | 'en';
-  prefTheme?: 'light' | 'dark' | 'auto';
+  prefLangue?: "fr" | "en";
+  prefTheme?: "light" | "dark" | "auto";
   notificationsActives?: boolean;
   notifAlertes?: boolean;
   notifCollectes?: boolean;

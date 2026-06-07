@@ -1,6 +1,5 @@
 <div class="login-root">
   <div class="login-shell">
-
     <!-- ── Retour accueil ── -->
     <a routerLink="/" class="btn-back" title="Retour a l'accueil">
       <mat-icon>arrow_back</mat-icon>
@@ -8,17 +7,23 @@
     </a>
 
     <div class="login-card">
-
       <!-- ══ PANNEAU GAUCHE — Media ══ -->
       <aside class="media-panel">
         <div class="media-overlay"></div>
         <div class="media-brand">
-          <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="media-logo">
+          <img
+            src="assets/MicroRecouv.png"
+            alt="MicroRecouv"
+            class="media-logo"
+          />
           <span class="media-title">MicroRecouv</span>
         </div>
 
         <div class="media-quote">
-          <p class="quote-text">"Une plateforme claire, fiable et rapide pour suivre nos portefeuilles."</p>
+          <p class="quote-text">
+            "Une plateforme claire, fiable et rapide pour suivre nos
+            portefeuilles."
+          </p>
           <span class="quote-author">Equipe Operations IMF</span>
         </div>
       </aside>
@@ -26,17 +31,24 @@
       <!-- ══ PANNEAU DROIT — Formulaire ══ -->
       <main class="form-panel">
         <div class="form-card">
-
           <div class="form-header">
             <h2 class="form-title">Bienvenue sur MicroRecouv</h2>
             <p class="form-sub">Connectez-vous avec vos identifiants IMF.</p>
           </div>
 
-          <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="login-form">
-
+          <form
+            [formGroup]="form"
+            (ngSubmit)="onSubmit()"
+            novalidate
+            class="login-form"
+          >
             <div class="field-group">
               <label class="field-label" for="username">Identifiant</label>
-              <div class="field-wrap" [class.field-focused]="usernameFocused" [class.field-error]="username.invalid && username.touched">
+              <div
+                class="field-wrap"
+                [class.field-focused]="usernameFocused"
+                [class.field-error]="username.invalid && username.touched"
+              >
                 <mat-icon class="field-icon">person_outline</mat-icon>
                 <input
                   id="username"
@@ -46,15 +58,28 @@
                   placeholder="Votre identifiant"
                   autocomplete="username"
                   (focus)="usernameFocused = true"
-                  (blur)="usernameFocused = false">
+                  (blur)="usernameFocused = false"
+                />
               </div>
-              <span class="field-error-msg" *ngIf="username.hasError('required') && username.touched">L'identifiant est requis</span>
-              <span class="field-error-msg" *ngIf="username.hasError('minlength') && username.touched">3 caracteres minimum</span>
+              <span
+                class="field-error-msg"
+                *ngIf="username.hasError('required') && username.touched"
+                >L'identifiant est requis</span
+              >
+              <span
+                class="field-error-msg"
+                *ngIf="username.hasError('minlength') && username.touched"
+                >3 caracteres minimum</span
+              >
             </div>
 
             <div class="field-group">
               <label class="field-label" for="password">Mot de passe</label>
-              <div class="field-wrap" [class.field-focused]="passwordFocused" [class.field-error]="password.invalid && password.touched">
+              <div
+                class="field-wrap"
+                [class.field-focused]="passwordFocused"
+                [class.field-error]="password.invalid && password.touched"
+              >
                 <mat-icon class="field-icon">lock_outline</mat-icon>
                 <input
                   id="password"
@@ -64,40 +89,57 @@
                   placeholder="Votre mot de passe"
                   autocomplete="current-password"
                   (focus)="passwordFocused = true"
-                  (blur)="passwordFocused = false">
-                <button type="button" class="field-eye" (click)="hidePassword = !hidePassword" tabindex="-1">
-                  <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  (blur)="passwordFocused = false"
+                />
+                <button
+                  type="button"
+                  class="field-eye"
+                  (click)="hidePassword = !hidePassword"
+                  tabindex="-1"
+                >
+                  <mat-icon>{{
+                    hidePassword ? "visibility_off" : "visibility"
+                  }}</mat-icon>
                 </button>
               </div>
-              <span class="field-error-msg" *ngIf="password.hasError('required') && password.touched">Le mot de passe est requis</span>
+              <span
+                class="field-error-msg"
+                *ngIf="password.hasError('required') && password.touched"
+                >Le mot de passe est requis</span
+              >
             </div>
 
             <div class="form-row">
               <label class="remember-me">
-                <input type="checkbox" checked>
+                <input type="checkbox" checked />
                 <span>Se souvenir de moi</span>
               </label>
               <a class="form-link" href="#">Mot de passe oublie ?</a>
             </div>
 
-            <button type="submit" class="btn-submit" [class.loading]="loading" [disabled]="form.invalid || loading">
+            <button
+              type="submit"
+              class="btn-submit"
+              [class.loading]="loading"
+              [disabled]="form.invalid || loading"
+            >
               <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
               <span *ngIf="!loading">
                 <mat-icon>login</mat-icon>
                 Se connecter
               </span>
             </button>
-
           </form>
 
           <div class="form-footer">
             <mat-icon>info_outline</mat-icon>
-            <span>Vos identifiants vous ont ete fournis par votre administrateur IMF</span>
+            <span
+              >Vos identifiants vous ont ete fournis par votre administrateur
+              IMF</span
+            >
           </div>
-
         </div>
       </main>
-
     </div>
   </div>
 </div>

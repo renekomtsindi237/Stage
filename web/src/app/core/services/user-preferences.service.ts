@@ -1,20 +1,20 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, Observable, filter, switchMap } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-import { AuthService } from './auth.service';
-import { ProfileService } from './profile.service';
-import { ThemeService } from './theme.service';
-import { UserPreferences, UserResponse } from '../models/user.model';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, EMPTY, Observable, filter, switchMap } from "rxjs";
+import { catchError, tap } from "rxjs/operators";
+import { AuthService } from "./auth.service";
+import { ProfileService } from "./profile.service";
+import { ThemeService } from "./theme.service";
+import { UserPreferences, UserResponse } from "../models/user.model";
 
 const DEFAULTS: UserPreferences = {
-  prefTheme:            'auto',
-  prefLangue:           'fr',
+  prefTheme: "auto",
+  prefLangue: "fr",
   notificationsActives: true,
-  notifAlertes:         true,
-  notifCollectes:       false,
-  notifSync:            false,
-  notifPipeline:        false,
-  elementsParPage:      20,
+  notifAlertes: true,
+  notifCollectes: false,
+  notifSync: false,
+  notifPipeline: false,
+  elementsParPage: 20,
 };
 
 /**
@@ -34,11 +34,11 @@ const DEFAULTS: UserPreferences = {
  * Usage synchrone (ex. page size dans un service) :
  *   const size = this.userPrefs.snapshot.elementsParPage;
  */
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class UserPreferencesService {
-
   private readonly prefs$ = new BehaviorSubject<UserPreferences>(DEFAULTS);
-  readonly preferences$: Observable<UserPreferences> = this.prefs$.asObservable();
+  readonly preferences$: Observable<UserPreferences> =
+    this.prefs$.asObservable();
 
   constructor(
     private authService: AuthService,
@@ -49,29 +49,31 @@ export class UserPreferencesService {
     // catchError à l'intérieur du switchMap pour que l'observable externe reste vivant
     // même en cas d'échec réseau ou d'expiration de session, afin de recharger les préférences
     // après une reconnexion sans avoir à recréer le service.
-    this.authService.isLoggedIn$.pipe(
-      filter(loggedIn => loggedIn),
-      switchMap(() => this.profileService.getProfile().pipe(
-        catchError(() => EMPTY)
-      )),
-    ).subscribe({
-      next: profile => {
-        const prefs = this.fromProfile(profile);
-        this.prefs$.next(prefs);
-        this.themeService.applyFromPreference(prefs.prefTheme);
-      },
-    });
+    this.authService.isLoggedIn$
+      .pipe(
+        filter((loggedIn) => loggedIn),
+        switchMap(() =>
+          this.profileService.getProfile().pipe(catchError(() => EMPTY)),
+        ),
+      )
+      .subscribe({
+        next: (profile) => {
+          const prefs = this.fromProfile(profile);
+          this.prefs$.next(prefs);
+          this.themeService.applyFromPreference(prefs.prefTheme);
+        },
+      });
 
     // Remettre à zéro à la déconnexion (thème suit la préférence système)
-    this.authService.isLoggedIn$.pipe(
-      filter(loggedIn => !loggedIn),
-    ).subscribe({
-      next: () => {
-        this.prefs$.next(DEFAULTS);
-        this.themeService.applyFromPreference(DEFAULTS.prefTheme);
-      },
-      error: () => {}
-    });
+    this.authService.isLoggedIn$
+      .pipe(filter((loggedIn) => !loggedIn))
+      .subscribe({
+        next: () => {
+          this.prefs$.next(DEFAULTS);
+          this.themeService.applyFromPreference(DEFAULTS.prefTheme);
+        },
+        error: () => {},
+      });
   }
 
   /** Valeur instantanée sans abonnement (usage synchrone dans les services). */
@@ -85,7 +87,7 @@ export class UserPreferencesService {
    */
   patch(partial: Partial<UserPreferences>): Observable<UserResponse> {
     return this.profileService.updatePreferences(partial).pipe(
-      tap(updated => {
+      tap((updated) => {
         const prefs = this.fromProfile(updated);
         this.prefs$.next(prefs);
         this.themeService.applyFromPreference(prefs.prefTheme);
@@ -95,14 +97,15 @@ export class UserPreferencesService {
 
   private fromProfile(profile: UserResponse): UserPreferences {
     return {
-      prefTheme:            profile.prefTheme            ?? DEFAULTS.prefTheme,
-      prefLangue:           profile.prefLangue           ?? DEFAULTS.prefLangue,
-      notificationsActives: profile.notificationsActives ?? DEFAULTS.notificationsActives,
-      notifAlertes:         profile.notifAlertes         ?? DEFAULTS.notifAlertes,
-      notifCollectes:       profile.notifCollectes       ?? DEFAULTS.notifCollectes,
-      notifSync:            profile.notifSync             ?? DEFAULTS.notifSync,
-      notifPipeline:        profile.notifPipeline        ?? DEFAULTS.notifPipeline,
-      elementsParPage:      profile.elementsParPage       ?? DEFAULTS.elementsParPage,
+      prefTheme: profile.prefTheme ?? DEFAULTS.prefTheme,
+      prefLangue: profile.prefLangue ?? DEFAULTS.prefLangue,
+      notificationsActives:
+        profile.notificationsActives ?? DEFAULTS.notificationsActives,
+      notifAlertes: profile.notifAlertes ?? DEFAULTS.notifAlertes,
+      notifCollectes: profile.notifCollectes ?? DEFAULTS.notifCollectes,
+      notifSync: profile.notifSync ?? DEFAULTS.notifSync,
+      notifPipeline: profile.notifPipeline ?? DEFAULTS.notifPipeline,
+      elementsParPage: profile.elementsParPage ?? DEFAULTS.elementsParPage,
     };
   }
 }

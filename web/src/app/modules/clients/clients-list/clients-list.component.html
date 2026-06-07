@@ -1,5 +1,4 @@
 <div class="blucash-page-container">
-
   <!-- En-tête de page -->
   <div class="blucash-page-header">
     <h1 class="page-title">Clients</h1>
@@ -34,7 +33,7 @@
           <mat-icon>search</mat-icon>
         </div>
       </div>
-      <div class="stat-value">{{ isSearchMode ? clients.length : '—' }}</div>
+      <div class="stat-value">{{ isSearchMode ? clients.length : "—" }}</div>
       <div class="stat-label">Résultats</div>
     </div>
 
@@ -51,14 +50,22 @@
 
   <!-- Barre de recherche -->
   <div class="blucash-filters-bar">
-    <div class="search-field" style="flex: 1;">
+    <div class="search-field" style="flex: 1">
       <mat-form-field appearance="outline">
         <mat-label>Rechercher un client</mat-label>
         <mat-icon matPrefix>search</mat-icon>
-        <input matInput [(ngModel)]="searchQuery" (input)="onSearch()"
-               placeholder="Nom, ID, téléphone...">
-        <button mat-icon-button matSuffix *ngIf="searchQuery"
-                (click)="searchQuery=''; isSearchMode=false; loadClients()">
+        <input
+          matInput
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()"
+          placeholder="Nom, ID, téléphone..."
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          *ngIf="searchQuery"
+          (click)="searchQuery = ''; isSearchMode = false; loadClients()"
+        >
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
@@ -78,21 +85,23 @@
 
   <!-- Table des clients -->
   <div class="blucash-table-container" *ngIf="!loading || clients.length > 0">
-    <mat-progress-bar mode="indeterminate" *ngIf="loading && clients.length > 0"></mat-progress-bar>
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="loading && clients.length > 0"
+    ></mat-progress-bar>
 
     <table mat-table [dataSource]="clients">
-      
       <ng-container matColumnDef="idClient">
         <th mat-header-cell *matHeaderCellDef>Identifiant</th>
         <td mat-cell *matCellDef="let c">
-          <span style="font-weight: 600; color: #1F2937;">{{ c.idClient }}</span>
+          <span style="font-weight: 600; color: #1f2937">{{ c.idClient }}</span>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="nomClient">
         <th mat-header-cell *matHeaderCellDef>Nom</th>
         <td mat-cell *matCellDef="let c">
-          <span style="font-weight: 500;">{{ c.nomClient }}</span>
+          <span style="font-weight: 500">{{ c.nomClient }}</span>
         </td>
       </ng-container>
 
@@ -103,7 +112,7 @@
             <mat-icon>phone</mat-icon>
             <span>{{ c.telephoneClient }}</span>
           </div>
-          <span style="color: #9CA3AF;" *ngIf="!c.telephoneClient">—</span>
+          <span style="color: #9ca3af" *ngIf="!c.telephoneClient">—</span>
         </td>
       </ng-container>
 
@@ -120,16 +129,19 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let c">
-          <button mat-icon-button [routerLink]="['/clients', c.idClient]" 
-                  matTooltip="Voir le détail">
+          <button
+            mat-icon-button
+            [routerLink]="['/clients', c.idClient]"
+            matTooltip="Voir le détail"
+          >
             <mat-icon>visibility</mat-icon>
           </button>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
       <tr class="mat-row" *matNoDataRow>
         <td [attr.colspan]="displayedColumns.length">
           <div class="blucash-empty-state">
@@ -141,13 +153,14 @@
       </tr>
     </table>
 
-    <mat-paginator *ngIf="!isSearchMode"
-                   [length]="total" 
-                   [pageSize]="pageSize" 
-                   [pageSizeOptions]="[10,20,50]"
-                   (page)="onPageChange($event)" 
-                   showFirstLastButtons>
+    <mat-paginator
+      *ngIf="!isSearchMode"
+      [length]="total"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+    >
     </mat-paginator>
   </div>
-
 </div>

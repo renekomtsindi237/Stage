@@ -1,13 +1,12 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Subject, Observable } from 'rxjs';
-import { AuthService } from './auth.service';
-import { UserPreferencesService } from './user-preferences.service';
-import { SseEvent } from '../models/api-response.model';
+import { Injectable, OnDestroy } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Subject, Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+import { UserPreferencesService } from "./user-preferences.service";
+import { SseEvent } from "../models/api-response.model";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class SseService implements OnDestroy {
-
   private eventSource: EventSource | null = null;
   private events$ = new Subject<SseEvent>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -28,9 +27,12 @@ export class SseService implements OnDestroy {
     if (!this.authService.isLoggedIn()) return this.events$.asObservable();
 
     // Maître-switch : si l'utilisateur a désactivé toutes ses notifications, ne pas ouvrir le flux
-    if (!this.userPrefs.snapshot.notificationsActives) return this.events$.asObservable();
+    if (!this.userPrefs.snapshot.notificationsActives)
+      return this.events$.asObservable();
 
-    this.eventSource = new EventSource('/api/sse/stream', { withCredentials: true });
+    this.eventSource = new EventSource("/api/sse/stream", {
+      withCredentials: true,
+    });
 
     this.eventSource.onmessage = (e) => {
       this.reconnectAttempts = 0; // connexion saine
@@ -40,8 +42,15 @@ export class SseService implements OnDestroy {
       } catch {}
     };
 
-    ['HEARTBEAT', 'ALERTE_CREATED', 'ALERTE_UPDATED', 'COLLECTE_CONFIRMED',
-     'PIPELINE_STATUS', 'KPI_UPDATED', 'SYNC_COMPLETED'].forEach(type => {
+    [
+      "HEARTBEAT",
+      "ALERTE_CREATED",
+      "ALERTE_UPDATED",
+      "COLLECTE_CONFIRMED",
+      "PIPELINE_STATUS",
+      "KPI_UPDATED",
+      "SYNC_COMPLETED",
+    ].forEach((type) => {
       this.eventSource?.addEventListener(type, (e: Event) => {
         this.reconnectAttempts = 0; // connexion saine
         try {
@@ -61,7 +70,7 @@ export class SseService implements OnDestroy {
         // Cette requête passe par le JWT interceptor : si le token est expiré,
         // l'interceptor tentera un refresh (401) ou propagera l'erreur (logout).
         this.reconnectAttempts = 0;
-        this.http.get('/api/users/me', { withCredentials: true }).subscribe({
+        this.http.get("/api/users/me", { withCredentials: true }).subscribe({
           next: () => {
             // Session toujours valide — relancer SSE après un délai
             if (this.authService.isLoggedIn()) {
@@ -70,7 +79,7 @@ export class SseService implements OnDestroy {
           },
           error: () => {
             // Session invalide — le JWT interceptor a déclenché logout(), ne pas relancer
-          }
+          },
         });
         return;
       }
@@ -104,12 +113,17 @@ export class SseService implements OnDestroy {
   private isAllowed(type: string): boolean {
     const prefs = this.userPrefs.snapshot;
     switch (type) {
-      case 'ALERTE_CREATED':
-      case 'ALERTE_UPDATED':    return prefs.notifAlertes;
-      case 'COLLECTE_CONFIRMED': return prefs.notifCollectes;
-      case 'SYNC_COMPLETED':     return prefs.notifSync;
-      case 'PIPELINE_STATUS':    return prefs.notifPipeline;
-      default:                   return true; // HEARTBEAT, KPI_UPDATED
+      case "ALERTE_CREATED":
+      case "ALERTE_UPDATED":
+        return prefs.notifAlertes;
+      case "COLLECTE_CONFIRMED":
+        return prefs.notifCollectes;
+      case "SYNC_COMPLETED":
+        return prefs.notifSync;
+      case "PIPELINE_STATUS":
+        return prefs.notifPipeline;
+      default:
+        return true; // HEARTBEAT, KPI_UPDATED
     }
   }
 }

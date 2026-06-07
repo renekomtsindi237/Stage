@@ -1,6 +1,11 @@
 <!-- En-tête -->
 <div class="create-header">
-  <button mat-icon-button routerLink="/admin" class="btn-back" matTooltip="Retour">
+  <button
+    mat-icon-button
+    routerLink="/admin"
+    class="btn-back"
+    matTooltip="Retour"
+  >
     <mat-icon>arrow_back</mat-icon>
   </button>
   <div class="header-content">
@@ -10,13 +15,15 @@
 </div>
 
 <div class="create-layout">
-
   <!-- ── Formulaire ── -->
   <div class="form-panel glass">
-
     <!-- Stepper (3 étapes) -->
     <div class="stepper-progress">
-      <div class="step" [class.active]="currentStep === 0" [class.completed]="currentStep > 0">
+      <div
+        class="step"
+        [class.active]="currentStep === 0"
+        [class.completed]="currentStep > 0"
+      >
         <div class="step-circle">
           <mat-icon *ngIf="currentStep > 0">check</mat-icon>
           <span *ngIf="currentStep <= 0">1</span>
@@ -24,7 +31,11 @@
         <span class="step-label">Identité &amp; Mot de passe</span>
       </div>
       <div class="step-line" [class.completed]="currentStep > 0"></div>
-      <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+      <div
+        class="step"
+        [class.active]="currentStep === 1"
+        [class.completed]="currentStep > 1"
+      >
         <div class="step-circle">
           <mat-icon *ngIf="currentStep > 1">check</mat-icon>
           <span *ngIf="currentStep <= 1">2</span>
@@ -32,7 +43,11 @@
         <span class="step-label">Rôle</span>
       </div>
       <div class="step-line" [class.completed]="currentStep > 1"></div>
-      <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+      <div
+        class="step"
+        [class.active]="currentStep === 2"
+        [class.completed]="currentStep > 2"
+      >
         <div class="step-circle">
           <mat-icon *ngIf="currentStep > 2">check</mat-icon>
           <span *ngIf="currentStep <= 2">3</span>
@@ -46,8 +61,12 @@
       <span>{{ error }}</span>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="modern-form">
-
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      novalidate
+      class="modern-form"
+    >
       <!-- Step 0: Identifiant + Mot de passe + Email -->
       <div class="form-step" *ngIf="currentStep === 0">
         <div class="step-header">
@@ -60,52 +79,102 @@
 
         <mat-form-field appearance="outline" class="modern-field">
           <mat-label>Identifiant</mat-label>
-          <input matInput formControlName="username" autocomplete="off"
-                 placeholder="Ex: j.kamga" autofocus>
+          <input
+            matInput
+            formControlName="username"
+            autocomplete="off"
+            placeholder="Ex: j.kamga"
+            autofocus
+          />
           <mat-icon matPrefix>fingerprint</mat-icon>
           <mat-hint>Minimum 3 caractères, sans espace</mat-hint>
-          <mat-error *ngIf="form.get('username')?.hasError('required')">Champ obligatoire</mat-error>
-          <mat-error *ngIf="form.get('username')?.hasError('minlength')">Minimum 3 caractères</mat-error>
+          <mat-error *ngIf="form.get('username')?.hasError('required')"
+            >Champ obligatoire</mat-error
+          >
+          <mat-error *ngIf="form.get('username')?.hasError('minlength')"
+            >Minimum 3 caractères</mat-error
+          >
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="modern-field">
           <mat-label>Mot de passe</mat-label>
-          <input matInput formControlName="password"
-                 [type]="hidePassword ? 'password' : 'text'"
-                 autocomplete="new-password">
+          <input
+            matInput
+            formControlName="password"
+            [type]="hidePassword ? 'password' : 'text'"
+            autocomplete="new-password"
+          />
           <mat-icon matPrefix>lock</mat-icon>
-          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
-                  [attr.aria-label]="hidePassword ? 'Afficher le mot de passe' : 'Masquer le mot de passe'">
-            <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="hidePassword = !hidePassword"
+            [attr.aria-label]="
+              hidePassword
+                ? 'Afficher le mot de passe'
+                : 'Masquer le mot de passe'
+            "
+          >
+            <mat-icon>{{
+              hidePassword ? "visibility" : "visibility_off"
+            }}</mat-icon>
           </button>
           <mat-hint>Minimum 8 caractères</mat-hint>
-          <mat-error *ngIf="form.get('password')?.hasError('required')">Champ obligatoire</mat-error>
-          <mat-error *ngIf="form.get('password')?.hasError('minlength')">Minimum 8 caractères</mat-error>
+          <mat-error *ngIf="form.get('password')?.hasError('required')"
+            >Champ obligatoire</mat-error
+          >
+          <mat-error *ngIf="form.get('password')?.hasError('minlength')"
+            >Minimum 8 caractères</mat-error
+          >
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="modern-field">
           <mat-label>Confirmer le mot de passe</mat-label>
-          <input matInput formControlName="confirmPassword"
-                 [type]="hideConfirm ? 'password' : 'text'"
-                 autocomplete="new-password">
+          <input
+            matInput
+            formControlName="confirmPassword"
+            [type]="hideConfirm ? 'password' : 'text'"
+            autocomplete="new-password"
+          />
           <mat-icon matPrefix>lock_reset</mat-icon>
-          <button mat-icon-button matSuffix type="button" (click)="hideConfirm = !hideConfirm"
-                  [attr.aria-label]="hideConfirm ? 'Afficher' : 'Masquer'">
-            <mat-icon>{{ hideConfirm ? 'visibility' : 'visibility_off' }}</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="hideConfirm = !hideConfirm"
+            [attr.aria-label]="hideConfirm ? 'Afficher' : 'Masquer'"
+          >
+            <mat-icon>{{
+              hideConfirm ? "visibility" : "visibility_off"
+            }}</mat-icon>
           </button>
-          <mat-error *ngIf="form.get('confirmPassword')?.hasError('required')">Champ obligatoire</mat-error>
-          <mat-error *ngIf="form.hasError('mismatch') && form.get('confirmPassword')?.touched">
+          <mat-error *ngIf="form.get('confirmPassword')?.hasError('required')"
+            >Champ obligatoire</mat-error
+          >
+          <mat-error
+            *ngIf="
+              form.hasError('mismatch') && form.get('confirmPassword')?.touched
+            "
+          >
             Les mots de passe ne correspondent pas
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="modern-field">
           <mat-label>Adresse email (optionnel)</mat-label>
-          <input matInput formControlName="email" type="email" autocomplete="off"
-                 placeholder="Ex: j.kamga@imf.cm">
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            autocomplete="off"
+            placeholder="Ex: j.kamga@imf.cm"
+          />
           <mat-icon matPrefix>email</mat-icon>
           <mat-hint>Pour les notifications futures (facultatif)</mat-hint>
-          <mat-error *ngIf="form.get('email')?.hasError('email')">Email invalide</mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('email')"
+            >Email invalide</mat-error
+          >
         </mat-form-field>
       </div>
 
@@ -120,19 +189,29 @@
         </div>
 
         <div class="role-cards">
-          <div class="role-card" *ngFor="let r of roles"
-               [class.selected]="form.get('role')?.value === r.value"
-               (click)="form.patchValue({role: r.value})">
+          <div
+            class="role-card"
+            *ngFor="let r of roles"
+            [class.selected]="form.get('role')?.value === r.value"
+            (click)="form.patchValue({ role: r.value })"
+          >
             <div class="role-card-header">
               <mat-icon>{{ r.icon }}</mat-icon>
               <span class="role-card-title">{{ r.label }}</span>
-              <mat-icon class="check-icon" *ngIf="form.get('role')?.value === r.value">check_circle</mat-icon>
+              <mat-icon
+                class="check-icon"
+                *ngIf="form.get('role')?.value === r.value"
+                >check_circle</mat-icon
+              >
             </div>
             <p class="role-card-desc">{{ r.description }}</p>
           </div>
         </div>
 
-        <div class="form-error" *ngIf="form.get('role')?.invalid && form.get('role')?.touched">
+        <div
+          class="form-error"
+          *ngIf="form.get('role')?.invalid && form.get('role')?.touched"
+        >
           <mat-icon>error_outline</mat-icon>
           <span>Veuillez sélectionner un rôle</span>
         </div>
@@ -150,22 +229,36 @@
 
         <mat-form-field appearance="outline" class="modern-field">
           <mat-label>Agence</mat-label>
-          <input matInput formControlName="zoneId"
-                 placeholder="Rechercher ou saisir une agence…"
-                 [matAutocomplete]="agenceAuto"
-                 autofocus>
+          <input
+            matInput
+            formControlName="zoneId"
+            placeholder="Rechercher ou saisir une agence…"
+            [matAutocomplete]="agenceAuto"
+            autofocus
+          />
           <mat-icon matPrefix>place</mat-icon>
-          <mat-hint *ngIf="agences.length > 0">{{ agences.length }} agence(s) disponible(s)</mat-hint>
-          <mat-hint *ngIf="agences.length === 0">Aucune agence chargée — saisie libre</mat-hint>
-          <button mat-icon-button matSuffix type="button"
-                  *ngIf="form.get('zoneId')?.value"
-                  (click)="form.patchValue({zoneId: ''})">
+          <mat-hint *ngIf="agences.length > 0"
+            >{{ agences.length }} agence(s) disponible(s)</mat-hint
+          >
+          <mat-hint *ngIf="agences.length === 0"
+            >Aucune agence chargée — saisie libre</mat-hint
+          >
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            *ngIf="form.get('zoneId')?.value"
+            (click)="form.patchValue({ zoneId: '' })"
+          >
             <mat-icon>close</mat-icon>
           </button>
         </mat-form-field>
 
         <mat-autocomplete #agenceAuto="matAutocomplete">
-          <mat-option *ngFor="let agence of filteredAgences$ | async" [value]="agence">
+          <mat-option
+            *ngFor="let agence of filteredAgences$ | async"
+            [value]="agence"
+          >
             <mat-icon>store</mat-icon> {{ agence }}
           </mat-option>
         </mat-autocomplete>
@@ -179,12 +272,22 @@
               <span class="gps-optional">optionnel</span>
             </div>
             <div class="gps-actions">
-              <button type="button" class="btn-gps" (click)="requestGps()" [disabled]="gpsLoading">
+              <button
+                type="button"
+                class="btn-gps"
+                (click)="requestGps()"
+                [disabled]="gpsLoading"
+              >
                 <mat-spinner *ngIf="gpsLoading" diameter="16"></mat-spinner>
                 <mat-icon *ngIf="!gpsLoading">gps_fixed</mat-icon>
-                {{ gpsLoading ? 'Localisation…' : 'Obtenir ma position' }}
+                {{ gpsLoading ? "Localisation…" : "Obtenir ma position" }}
               </button>
-              <button type="button" class="btn-gps-clear" *ngIf="latitude != null" (click)="clearGps()">
+              <button
+                type="button"
+                class="btn-gps-clear"
+                *ngIf="latitude != null"
+                (click)="clearGps()"
+              >
                 <mat-icon>clear</mat-icon>
               </button>
             </div>
@@ -208,20 +311,24 @@
 
           <!-- Carte OpenStreetMap (iframe, aucune lib requise) -->
           <div class="map-container" *ngIf="safeMapSrc">
-            <iframe [src]="safeMapSrc"
-                    class="osm-iframe"
-                    frameborder="0"
-                    scrolling="no"
-                    allowfullscreen>
+            <iframe
+              [src]="safeMapSrc"
+              class="osm-iframe"
+              frameborder="0"
+              scrolling="no"
+              allowfullscreen
+            >
             </iframe>
             <div class="map-caption">
               <mat-icon>location_pin</mat-icon>
-              Position enregistrée — vous pouvez ajuster manuellement les coordonnées
+              Position enregistrée — vous pouvez ajuster manuellement les
+              coordonnées
             </div>
           </div>
 
           <p class="gps-hint" *ngIf="latitude == null">
-            La position GPS permet de localiser l'utilisateur sur la carte des agents terrain.
+            La position GPS permet de localiser l'utilisateur sur la carte des
+            agents terrain.
           </p>
         </div>
 
@@ -234,19 +341,27 @@
           <div class="summary-items">
             <div class="summary-item">
               <span class="summary-label">Identifiant</span>
-              <span class="summary-value">{{ form.get('username')?.value || '-' }}</span>
+              <span class="summary-value">{{
+                form.get("username")?.value || "-"
+              }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Email</span>
-              <span class="summary-value">{{ form.get('email')?.value || '-' }}</span>
+              <span class="summary-value">{{
+                form.get("email")?.value || "-"
+              }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Rôle</span>
-              <span class="summary-value">{{ selectedRoleData()?.label || '-' }}</span>
+              <span class="summary-value">{{
+                selectedRoleData()?.label || "-"
+              }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Agence</span>
-              <span class="summary-value">{{ form.get('zoneId')?.value || 'Non spécifiée' }}</span>
+              <span class="summary-value">{{
+                form.get("zoneId")?.value || "Non spécifiée"
+              }}</span>
             </div>
             <div class="summary-item" *ngIf="latitude != null">
               <span class="summary-label">GPS</span>
@@ -258,42 +373,61 @@
 
       <!-- Actions -->
       <div class="form-actions modern">
-        <button mat-flat-button type="button" (click)="prevStep()" *ngIf="currentStep > 0" class="btn-back-step">
+        <button
+          mat-flat-button
+          type="button"
+          (click)="prevStep()"
+          *ngIf="currentStep > 0"
+          class="btn-back-step"
+        >
           <mat-icon>arrow_back</mat-icon>
           Retour
         </button>
-        <button mat-flat-button type="button" routerLink="/admin" *ngIf="currentStep === 0" class="btn-cancel">
+        <button
+          mat-flat-button
+          type="button"
+          routerLink="/admin"
+          *ngIf="currentStep === 0"
+          class="btn-cancel"
+        >
           <mat-icon>close</mat-icon>
           Annuler
         </button>
         <div class="spacer"></div>
-        <button mat-flat-button type="button" (click)="nextStep()"
-                *ngIf="currentStep < 2" class="btn-next"
-                [disabled]="!canProceed">
+        <button
+          mat-flat-button
+          type="button"
+          (click)="nextStep()"
+          *ngIf="currentStep < 2"
+          class="btn-next"
+          [disabled]="!canProceed"
+        >
           Suivant
           <mat-icon>arrow_forward</mat-icon>
         </button>
-        <button mat-flat-button type="submit" class="btn-submit"
-                *ngIf="currentStep === 2"
-                [disabled]="!step0Valid || form.get('role')?.invalid || loading">
+        <button
+          mat-flat-button
+          type="submit"
+          class="btn-submit"
+          *ngIf="currentStep === 2"
+          [disabled]="!step0Valid || form.get('role')?.invalid || loading"
+        >
           <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
           <mat-icon *ngIf="!loading">person_add</mat-icon>
           <span *ngIf="!loading">Créer le compte</span>
         </button>
       </div>
-
     </form>
   </div>
 
   <!-- ── Panneau info ── -->
   <div class="info-panel">
-
     <div class="info-card glass">
       <div class="info-card-icon"><mat-icon>security</mat-icon></div>
       <h4>Périmètre DSI</h4>
       <p>
-        En tant qu'Administrateur IMF, vous pouvez créer des comptes pour les rôles
-        opérationnels de votre institution. La création de comptes DSI ou
+        En tant qu'Administrateur IMF, vous pouvez créer des comptes pour les
+        rôles opérationnels de votre institution. La création de comptes DSI ou
         Super Administrateur est réservée à l'administration centrale.
       </p>
     </div>
@@ -303,8 +437,8 @@
       <h4>Transmission des identifiants</h4>
       <p>
         Vous définissez le mot de passe initial du compte. Communiquez-le
-        directement à l'utilisateur concerné. Il devra le modifier à sa
-        première connexion.
+        directement à l'utilisateur concerné. Il devra le modifier à sa première
+        connexion.
       </p>
     </div>
 
@@ -320,7 +454,5 @@
         </div>
       </div>
     </div>
-
   </div>
-
 </div>

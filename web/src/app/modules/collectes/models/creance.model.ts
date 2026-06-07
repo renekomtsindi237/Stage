@@ -23,11 +23,23 @@ export interface Creance {
   updatedAt: string;
 }
 
-export type CategoriePar = 'COURANT' | 'PAR30' | 'PAR60' | 'PAR90' | 'PAR180' | 'PERTE';
-export type ClasseRisqueCobac = 'A' | 'B' | 'C' | 'D' | 'E';
+export type CategoriePar =
+  | "COURANT"
+  | "PAR30"
+  | "PAR60"
+  | "PAR90"
+  | "PAR180"
+  | "PERTE";
+export type ClasseRisqueCobac = "A" | "B" | "C" | "D" | "E";
 export type StatutCreance =
-  | 'ACTIVE' | 'RECOUVREMENT_AMIABLE' | 'MISE_EN_DEMEURE'
-  | 'CONTENTIEUX' | 'REECHELONNEE' | 'SOLDEE' | 'IRRECOVERABLE' | 'RADIEE';
+  | "ACTIVE"
+  | "RECOUVREMENT_AMIABLE"
+  | "MISE_EN_DEMEURE"
+  | "CONTENTIEUX"
+  | "REECHELONNEE"
+  | "SOLDEE"
+  | "IRRECOVERABLE"
+  | "RADIEE";
 
 export interface ScoreMcrs {
   scoreCrs: number;
@@ -42,10 +54,14 @@ export interface ScoreMcrs {
   topShapValue: number;
 }
 
-export type ClasseRisqueMl = 'FAIBLE' | 'MODERE' | 'ELEVE' | 'CRITIQUE';
+export type ClasseRisqueMl = "FAIBLE" | "MODERE" | "ELEVE" | "CRITIQUE";
 export type ActionRecommandee =
-  | 'AUCUNE' | 'RELANCE_PREVENTIVE' | 'VISITE_TERRAIN'
-  | 'RESTRUCTURATION' | 'MISE_EN_DEMEURE' | 'ESCALADE_JURIDIQUE';
+  | "AUCUNE"
+  | "RELANCE_PREVENTIVE"
+  | "VISITE_TERRAIN"
+  | "RESTRUCTURATION"
+  | "MISE_EN_DEMEURE"
+  | "ESCALADE_JURIDIQUE";
 
 export interface KpiRecouvrement {
   imfId: number;
