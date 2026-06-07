@@ -1,5 +1,6 @@
 package cm.imf.pipeline.controller;
 
+import cm.imf.pipeline.dto.response.SseEventDto;
 import cm.imf.pipeline.service.IAuditTrailService;
 import cm.imf.pipeline.service.INotificationService;
 import cm.imf.pipeline.sse.SseEmitterRegistry;
@@ -47,7 +48,7 @@ class ViolationDonneesControllerTest {
         when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class)))
                 .thenReturn(42L);
         doNothing().when(notificationService).sendPushToRole(any(), anyString(), anyString());
-        doNothing().when(sseRegistry).broadcast(anyString(), any());
+        doNothing().when(sseRegistry).broadcast(any(SseEventDto.class));
 
         String body = """
                 {"typeViolation":"ACCES_NON_AUTORISE",

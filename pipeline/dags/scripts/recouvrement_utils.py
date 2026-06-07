@@ -207,7 +207,12 @@ def calculer_par_et_provisions(
 
     Retourne les indicateurs calculés.
     """
-    seuils_cobac = seuils_cobac or {"par30": 30, "par60": 60, "par90": 90, "par180": 180}
+    seuils_cobac = seuils_cobac or {
+        "par30": 30,
+        "par60": 60,
+        "par90": 90,
+        "par180": 180,
+    }
 
     sql_par = """
         WITH base AS (

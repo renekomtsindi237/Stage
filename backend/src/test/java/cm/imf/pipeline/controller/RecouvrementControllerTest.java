@@ -217,12 +217,21 @@ class RecouvrementControllerTest {
     @DisplayName("POST …/actions → 201 pour action VISITE_TERRAIN avec montant récupéré")
     void ajouterAction_visite_retourne_201() throws Exception {
         ActionRecouvrementResponse action = new ActionRecouvrementResponse(
-                UUID.randomUUID(), DOSSIER_UID,
+                UUID.randomUUID().toString(),
+                DOSSIER_UID.toString(),
                 TypeActionRecouvrement.VISITE_TERRAIN,
+                OffsetDateTime.now(),
+                "rr_test",
                 ResultatActionRecouvrement.PAIEMENT_EFFECTUE,
-                "Client rencontré à domicile",
+                null,
                 new BigDecimal("50000"),
-                OffsetDateTime.now(), "rr_test");
+                null,
+                null,
+                null,
+                null,
+                BigDecimal.ZERO,
+                "Client rencontré à domicile",
+                OffsetDateTime.now());
 
         when(recouvrementService.ajouterAction(eq(DOSSIER_UID), any(), any()))
                 .thenReturn(action);
