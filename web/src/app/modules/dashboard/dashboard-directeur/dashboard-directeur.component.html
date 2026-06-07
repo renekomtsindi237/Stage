@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="dashboard-header">
     <div>
-      <h1 class="page-title">{{ "dashboard.title" | translate }}</h1>
+      <h1 class="page-title">Tableau de Bord</h1>
       <p class="page-subtitle">
         {{ today | date: "EEEE d MMMM yyyy" : "" : "fr" }}
       </p>
@@ -86,7 +86,9 @@
           <mat-card-title>Évolution collectes — 30 jours</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <imf-collecte-chart [data]="collecteChartData"></imf-collecte-chart>
+          <imf-collecte-chart
+            [collecteStats]="collecteStats"
+          ></imf-collecte-chart>
         </mat-card-content>
       </mat-card>
 
@@ -96,7 +98,7 @@
           <mat-card-title>PAR par agence (COBAC)</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <imf-par-chart [data]="parChartData"></imf-par-chart>
+          <imf-par-chart [parStats]="parStats"></imf-par-chart>
         </mat-card-content>
       </mat-card>
     </div>

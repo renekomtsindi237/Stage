@@ -8,6 +8,7 @@ pour informer les agents, responsables et directeurs des événements métier.
 from __future__ import annotations
 
 import logging
+import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -21,7 +22,6 @@ from pipeline.src.database import readonly_session
 logger = logging.getLogger(__name__)
 
 # Variables d'environnement (lues depuis settings ou env)
-import os
 
 FCM_SERVER_KEY = os.getenv("FCM_SERVER_KEY", "")
 FCM_URL = "https://fcm.googleapis.com/fcm/send"

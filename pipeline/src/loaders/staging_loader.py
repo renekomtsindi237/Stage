@@ -42,7 +42,6 @@ def update_statuts_retard(prets_en_retard: list[dict[str, Any]]) -> int:
     if not check_table_exists(schema, table):
         raise SchemaNotFoundError(schema, table)
 
-    par30 = settings.pipeline.par30_threshold_days
     par90 = settings.pipeline.par90_threshold_days
 
     updated = 0

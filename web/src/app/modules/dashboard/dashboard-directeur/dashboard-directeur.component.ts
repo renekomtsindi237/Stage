@@ -188,7 +188,7 @@ export class DashboardDirecteurComponent implements OnInit, OnDestroy {
     this.sseSub?.unsubscribe();
   }
 
-  private charger(): void {
+  charger(): void {
     this.loading = true;
     const d30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       .toISOString()

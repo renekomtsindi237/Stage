@@ -12,8 +12,8 @@ Référence réglementaire : Règlement COBAC EMF/2002/01
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from datetime import date, timedelta
+from dataclasses import dataclass
+from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
 

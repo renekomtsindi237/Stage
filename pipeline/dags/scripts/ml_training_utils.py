@@ -11,7 +11,6 @@ Entraînement complet du modèle MCRS :
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import time
@@ -27,8 +26,6 @@ from pipeline.src.ml.mcrs_model import (
     ALL_FEATURES,
     MCRSModel,
     McrsParams,
-    _calculer_metriques,
-    _walk_forward_splits,
 )
 
 logger = logging.getLogger(__name__)
@@ -602,15 +599,9 @@ def sauvegarder_artefacts_modele(dossier: str = "/ml/models/mcrs", **ctx) -> dic
 def enregistrer_run_mlflow(**ctx) -> int:
     """Insère les métriques d'entraînement dans ml.model_runs."""
     ti = ctx.get("ti")
-    challenger_result = {}
-    shap_result = {}
     if ti:
-        challenger_result = (
-            ti.xcom_pull(task_ids="entrainer_xgboost", key="challenger_metrics") or {}
-        )
-        shap_result = (
-            ti.xcom_pull(task_ids="evaluer_interpretabilite", key="shap_global") or {}
-        )
+        ti.xcom_pull(task_ids="entrainer_xgboost", key="challenger_metrics")
+        ti.xcom_pull(task_ids="evaluer_interpretabilite", key="shap_global")
 
     challenger = MCRSModel.charger(CHALLENGER_DIR)
     is_champion = CHAMPION_DIR.exists() and (

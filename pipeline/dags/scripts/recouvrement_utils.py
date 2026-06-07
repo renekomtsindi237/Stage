@@ -17,7 +17,7 @@ from __future__ import annotations
 import csv
 import logging
 import os
-from datetime import date, datetime, timedelta
+from datetime import date
 from pathlib import Path
 from typing import Iterator
 
@@ -207,7 +207,7 @@ def calculer_par_et_provisions(
 
     Retourne les indicateurs calculés.
     """
-    seuils = seuils_cobac or {"par30": 30, "par60": 60, "par90": 90, "par180": 180}
+    seuils_cobac = seuils_cobac or {"par30": 30, "par60": 60, "par90": 90, "par180": 180}
 
     sql_par = """
         WITH base AS (

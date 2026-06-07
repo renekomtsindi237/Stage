@@ -16,7 +16,7 @@ from exceptions import (
     NetworkError,
     SchemaNotFoundError,
 )
-from jobs.alertes_job import AlertesJobResult, run_alertes_job
+from jobs.alertes_job import run_alertes_job
 
 
 class TestRunAlertesJob:

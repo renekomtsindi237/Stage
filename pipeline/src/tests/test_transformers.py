@@ -7,17 +7,12 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 
-import pytest
-
-from exceptions import DataValidationError, TransformationError
 from transformers.collecte_transformer import (
-    FactCollecte,
     transform_collectes,
 )
 from transformers.par_transformer import (
     PAR30_DAYS,
     PAR90_DAYS,
-    FactRemboursement,
     compute_par_summary,
     transform_prets_to_fact,
 )

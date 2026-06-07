@@ -23,7 +23,6 @@ from exceptions import (
     DatabaseConnectionError,
     DatabaseQueryError,
     SchemaNotFoundError,
-    TransactionError,
 )
 
 logger = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ import { SseEvent } from "../models/api-response.model";
 @Injectable({ providedIn: "root" })
 export class SseService implements OnDestroy {
   private eventSource: EventSource | null = null;
-  private events$ = new Subject<SseEvent>();
+  readonly events$ = new Subject<SseEvent>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Nombre de tentatives de reconnexion consécutives sans message reçu.

@@ -20,12 +20,11 @@ Conception
 from __future__ import annotations
 
 import logging
-from datetime import date, timedelta
+from datetime import date
 
 import pandas as pd
 
 from pipeline.src.database import readonly_session
-from pipeline.src.ml.mcrs_model import COBAC_ENCODE
 
 logger = logging.getLogger(__name__)
 

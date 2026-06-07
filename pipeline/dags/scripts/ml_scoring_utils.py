@@ -17,7 +17,6 @@ import os
 import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from pipeline.src.database import db_session, readonly_session
@@ -76,7 +75,6 @@ def scorer_clients_batch(
     dict avec 'total_clients', 'total_imfs', 'duration_ms'
     """
     from pipeline.src.ml.feature_engineering import reconstruire_imf_ids_actifs
-    from pipeline.src.ml.mcrs_model import McrsParams
 
     t0 = time.perf_counter()
 

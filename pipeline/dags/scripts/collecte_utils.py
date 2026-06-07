@@ -12,8 +12,6 @@ Appelé par dag_collecte_epargne (toutes les 2h) pour :
 from __future__ import annotations
 
 import logging
-import math
-from datetime import datetime, timezone
 
 from pipeline.src.database import db_session, readonly_session
 

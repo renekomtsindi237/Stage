@@ -25,7 +25,6 @@ import os
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from pathlib import Path as _Path
 from typing import Any
 
 import numpy as np
@@ -36,7 +35,6 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 from sklearn.metrics import (
     brier_score_loss,
-    confusion_matrix,
     f1_score,
     precision_score,
     recall_score,

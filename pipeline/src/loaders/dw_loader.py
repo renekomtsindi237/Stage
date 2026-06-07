@@ -12,7 +12,7 @@ from typing import Any
 
 from config import settings
 from database import check_schema_exists, db_session
-from exceptions import BatchInsertError, LoadingError, SchemaNotFoundError
+from exceptions import BatchInsertError, SchemaNotFoundError
 from transformers.collecte_transformer import FactCollecte
 from transformers.par_transformer import FactRemboursement
 

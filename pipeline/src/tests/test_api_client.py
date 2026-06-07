@@ -7,7 +7,6 @@ sans connexion réseau réelle.
 
 from __future__ import annotations
 
-import json
 from decimal import Decimal
 
 import pytest

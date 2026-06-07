@@ -2,8 +2,6 @@
 test_exceptions.py — Tests de la hiérarchie d'exceptions du pipeline.
 """
 
-import pytest
-
 from exceptions import (
     AuthenticationError,
     BackendAPIError,
@@ -11,7 +9,6 @@ from exceptions import (
     ColumnMissingError,
     ConfigurationError,
     DatabaseConnectionError,
-    DatabaseQueryError,
     DataValidationError,
     DuplicateAlertError,
     EmptyDatasetError,
@@ -22,7 +19,6 @@ from exceptions import (
     PipelineException,
     RetryExhaustedError,
     SchemaNotFoundError,
-    TransactionError,
     TransformationError,
 )
 

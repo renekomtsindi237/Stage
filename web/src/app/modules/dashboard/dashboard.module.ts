@@ -10,19 +10,25 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatBadgeModule } from "@angular/material/badge";
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatTableModule } from "@angular/material/table";
 
 import { DashboardComponent } from "./dashboard.component";
+import { DashboardDirecteurComponent } from "./dashboard-directeur/dashboard-directeur.component";
 import { ParChartComponent } from "./widgets/par-chart/par-chart.component";
 import { CollecteChartComponent } from "./widgets/collecte-chart/collecte-chart.component";
 import { PieChartComponent } from "./widgets/pie-chart/pie-chart.component";
 import { DoughnutChartComponent } from "./widgets/doughnut-chart/doughnut-chart.component";
 import { StackedBarChartComponent } from "./widgets/stacked-bar-chart/stacked-bar-chart.component";
 
-const routes: Routes = [{ path: "", component: DashboardComponent }];
+const routes: Routes = [
+  { path: "", component: DashboardComponent },
+  { path: "directeur", component: DashboardDirecteurComponent },
+];
 
 @NgModule({
   declarations: [
     DashboardComponent,
+    DashboardDirecteurComponent,
     ParChartComponent,
     CollecteChartComponent,
     PieChartComponent,
@@ -40,6 +46,7 @@ const routes: Routes = [{ path: "", component: DashboardComponent }];
     MatIconModule,
     MatBadgeModule,
     MatCheckboxModule,
+    MatTableModule,
   ],
 })
 export class DashboardModule {}

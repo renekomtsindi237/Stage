@@ -10,7 +10,7 @@ Produit les enregistrements à insérer dans dw.fact_remboursements.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from typing import Any

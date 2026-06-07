@@ -9,7 +9,6 @@ dont le score MCRS dépasse les seuils configurés.
 from __future__ import annotations
 
 import logging
-from datetime import date
 
 from pipeline.src.database import db_session, readonly_session
 
@@ -209,7 +208,7 @@ def _alertes_baisse_collecte(seuil_pct: float) -> int:
                     {
                         "client_id_externe": row["client_id_externe"],
                         "imf_code": row["imf_code"],
-                        "message": f"Baisse collecte persistante — tendance négative sur 4 semaines",
+                        "message": "Baisse collecte persistante — tendance négative sur 4 semaines",
                     },
                 )
                 n += 1
