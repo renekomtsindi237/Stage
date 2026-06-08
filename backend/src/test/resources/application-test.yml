@@ -29,6 +29,9 @@ jwt:
 internal:
   api-key: test_internal_api_key
 
+firebase:
+  enabled: false
+
 imf:
   pipeline:
     firebase-enabled: false

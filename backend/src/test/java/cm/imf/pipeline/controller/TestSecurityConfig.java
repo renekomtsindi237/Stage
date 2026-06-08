@@ -7,17 +7,24 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 /**
  * Configuration de sécurité simplifiée pour les tests @WebMvcTest.
- * Désactive CSRF, conserve les règles de base mais ne charge pas Firebase/Redis/JPA.
+ * - Pas de JwtAuthenticationFilter dans la chaîne (le mock ne ferait rien)
+ * - @WithMockUser / TestHelper.asXxx() injectent l'authentification via SecurityContext
+ * - @EnableMethodSecurity active @PreAuthorize
+ * - /ping et /health sont publics (ConnectivityController)
+ * - Cache-Control Spring Security désactivé pour laisser le controller définir le sien
  */
 @TestConfiguration
+@EnableMethodSecurity
 public class TestSecurityConfig {
 
     @MockBean JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -31,12 +38,12 @@ public class TestSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Auth public : les controllers utilisent maintenant /auth/** (sans /api/)
-                        // car le préfixe /api/v1/ est ajouté par WebMvcConfig (non chargé en slice test)
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/ping", "/health").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(eh -> eh
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .headers(h -> h.cacheControl(c -> c.disable()))
                 .build();
     }
 }
