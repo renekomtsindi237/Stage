@@ -1,5 +1,6 @@
 package cm.imf.pipeline.scheduler;
 
+import cm.imf.pipeline.repository.OtpCodeRepository;
 import cm.imf.pipeline.repository.RefreshTokenRepository;
 import cm.imf.pipeline.service.INotificationService;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.*;
 class ScheduledTasksTest {
 
     @Mock RefreshTokenRepository refreshTokenRepository;
+    @Mock OtpCodeRepository      otpCodeRepository;
     @Mock CacheManager cacheManager;
     @Mock JdbcTemplate jdbc;
     @Mock INotificationService notificationService;

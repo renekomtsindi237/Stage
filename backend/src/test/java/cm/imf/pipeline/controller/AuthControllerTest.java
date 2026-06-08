@@ -39,7 +39,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("jkamga", "password123"))))
+                                new LoginRequest("jkamga@test.cm", "password123"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("access_token"))
                 .andExpect(jsonPath("$.role").value("ANALYSTE"))
@@ -54,7 +54,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("jkamga", "wrongpass"))))
+                                new LoginRequest("jkamga@test.cm", "wrongpass"))))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -63,7 +63,7 @@ class AuthControllerTest {
     void login_champs_vides_retourne_400() throws Exception {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"\",\"password\":\"\"}"))
+                        .content("{\"email\":\"\",\"password\":\"\"}"))
                 .andExpect(status().isBadRequest());
     }
 

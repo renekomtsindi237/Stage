@@ -5,6 +5,7 @@ import cm.imf.pipeline.dto.response.AuthResponse;
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.Role;
 import cm.imf.pipeline.repository.UserRepository;
+import cm.imf.pipeline.security.JwtTokenProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
@@ -27,9 +28,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Tests d'intégration complets — démarrage du contexte Spring Boot complet
- * avec une base PostgreSQL réelle via TestContainers.
- * Couvre le flux bout-en-bout : login → JWT → endpoints protégés.
+ * Tests d'intégration complets — contexte Spring Boot complet avec PostgreSQL via Testcontainers.
+ *
+ * Flux d'authentification :
+ *   - SUPER_ADMIN : POST /auth/login (email + password)
+ *   - Autres rôles : OTP (non testé ici — dépend d'un serveur SMTP)
+ *   Les tokens ANALYSTE/DSI sont générés directement via JwtTokenProvider
+ *   pour tester les contrôles d'accès sans déclencher le flux OTP.
  */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -50,100 +55,116 @@ class ImfIntegrationTest {
         registry.add("spring.datasource.url",      postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        // Pas de Redis en test
-        registry.add("spring.cache.type", () -> "simple");
-        registry.add("spring.data.redis.host", () -> "localhost");
-        registry.add("spring.data.redis.port", () -> "6399");
+        registry.add("spring.cache.type",          () -> "simple");
+        registry.add("spring.data.redis.host",     () -> "localhost");
+        registry.add("spring.data.redis.port",     () -> "6399");
     }
 
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
-    @Autowired UserRepository userRepository;
-    @Autowired PasswordEncoder passwordEncoder;
+    @Autowired MockMvc          mockMvc;
+    @Autowired ObjectMapper     objectMapper;
+    @Autowired UserRepository   userRepository;
+    @Autowired PasswordEncoder  passwordEncoder;
+    @Autowired JwtTokenProvider jwtTokenProvider;
 
-    private static String accessToken;
-    private static String dsiAccessToken;
+    // Tokens partagés entre les tests (static car JUnit5 crée une instance par méthode)
+    private static String accessToken;     // token ANALYSTE
+    private static String dsiAccessToken;  // token DSI
+
+    // Entités sauvegardées — conservées pour générer les tokens directement
+    private static User analysteUser;
+    private static User dsiUser;
 
     @Test
     @Order(1)
     @DisplayName("Base de données — tables créées par Flyway (utilisateurs, alertes_impayes...)")
     void flyway_cree_les_tables() {
-        // Si on arrive ici, Flyway a exécuté V1 sans erreur
         assertThat(userRepository.count()).isGreaterThanOrEqualTo(0);
     }
 
     @Test
     @Order(2)
-    @DisplayName("Repository — créer un utilisateur ANALYSTE pour les tests de login")
+    @DisplayName("Repository — créer un utilisateur ANALYSTE et le SUPER_ADMIN de test")
     void creerUtilisateur_analyste() {
-        User user = User.builder()
+        analysteUser = userRepository.save(User.builder()
                 .username("jkamga")
+                .email("jkamga@test.cm")
                 .passwordHash(passwordEncoder.encode("TestPass!2024"))
                 .role(Role.ANALYSTE)
                 .actif(true)
-                .build();
-        userRepository.save(user);
+                .build());
         assertThat(userRepository.findByUsername("jkamga")).isPresent();
+
+        // SUPER_ADMIN pour les tests /auth/login (seul rôle accepté sur cet endpoint)
+        userRepository.save(User.builder()
+                .username("super_admin")
+                .email("super_admin@test.cm")
+                .passwordHash(passwordEncoder.encode("SuperPass!2024"))
+                .role(Role.SUPER_ADMIN)
+                .actif(true)
+                .build());
     }
 
     @Test
     @Order(3)
     @DisplayName("Repository — créer un utilisateur DSI pour les tests admin")
     void creerUtilisateur_dsi() {
-        User user = User.builder()
+        dsiUser = userRepository.save(User.builder()
                 .username("admin_dsi")
+                .email("admin_dsi@test.cm")
                 .passwordHash(passwordEncoder.encode("DsiPass!2024"))
                 .role(Role.DSI)
                 .actif(true)
-                .build();
-        userRepository.save(user);
+                .build());
         assertThat(userRepository.findByUsername("admin_dsi")).isPresent();
     }
 
     @Test
     @Order(4)
-    @DisplayName("POST /api/auth/login — connexion ANALYSTE → accessToken reçu")
+    @DisplayName("POST /api/auth/login — ANALYSTE → 403 (doit utiliser OTP) ; token généré directement")
     void login_analyste_retourne_token() throws Exception {
-        MvcResult result = mockMvc.perform(post("/auth/login")
+        // /auth/login est réservé au SUPER_ADMIN
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("jkamga", "TestPass!2024"))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                .andExpect(jsonPath("$.role").value("ANALYSTE"))
-                .andReturn();
+                                new LoginRequest("jkamga@test.cm", "TestPass!2024"))))
+                .andExpect(status().isForbidden());
 
-        AuthResponse auth = objectMapper.readValue(
-                result.getResponse().getContentAsString(), AuthResponse.class);
-        accessToken = auth.accessToken();
+        // Token ANALYSTE généré directement pour les tests suivants (pas de flux OTP en CI)
+        assertThat(analysteUser).isNotNull();
+        accessToken = jwtTokenProvider.generateAccessToken(analysteUser);
         assertThat(accessToken).isNotBlank();
     }
 
     @Test
     @Order(5)
-    @DisplayName("POST /api/auth/login — connexion DSI → accessToken DSI reçu")
+    @DisplayName("POST /api/auth/login — SUPER_ADMIN → 200 avec tokens ; token DSI généré directement")
     void login_dsi_retourne_token() throws Exception {
+        // Vérifie que le SUPER_ADMIN peut se connecter via /auth/login
         MvcResult result = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("admin_dsi", "DsiPass!2024"))))
+                                new LoginRequest("super_admin@test.cm", "SuperPass!2024"))))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.role").value("SUPER_ADMIN"))
                 .andReturn();
 
         AuthResponse auth = objectMapper.readValue(
                 result.getResponse().getContentAsString(), AuthResponse.class);
-        dsiAccessToken = auth.accessToken();
+        assertThat(auth.accessToken()).isNotBlank();
+
+        // Token DSI généré directement
+        assertThat(dsiUser).isNotNull();
+        dsiAccessToken = jwtTokenProvider.generateAccessToken(dsiUser);
         assertThat(dsiAccessToken).isNotBlank();
     }
 
     @Test
     @Order(6)
-    @DisplayName("GET /api/kpi/dashboard-summary — ANALYSTE authentifié → 200")
+    @DisplayName("GET /api/kpi/dashboard-summary — ANALYSTE authentifié → pas 401/403")
     void dashboardSummary_analyste_authentifie() throws Exception {
-        Assumptions.assumeTrue(accessToken != null, "Token d'accès requis — test 4 doit passer en premier");
+        Assumptions.assumeTrue(accessToken != null, "Token ANALYSTE requis — test 4 doit passer en premier");
 
-        // En intégration, le DW n'existe pas → la requête SQL peut échouer (500).
-        // On vérifie seulement que la sécurité laisse passer (pas 401/403).
         mockMvc.perform(get("/kpi/dashboard-summary")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(result -> {
@@ -177,20 +198,19 @@ class ImfIntegrationTest {
 
     @Test
     @Order(9)
-    @DisplayName("POST /api/auth/login — mauvais mot de passe → 401 message générique")
+    @DisplayName("POST /api/auth/login — mauvais mot de passe SUPER_ADMIN → 401 message générique")
     void login_mauvais_mdp_401() throws Exception {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("jkamga", "WrongPassword!"))))
+                                new LoginRequest("super_admin@test.cm", "WrongPassword!"))))
                 .andExpect(status().isUnauthorized())
-                // Pas d'indice sur ce qui est faux
                 .andExpect(jsonPath("$.message").value("Identifiants invalides"));
     }
 
     @Test
     @Order(10)
-    @DisplayName("GET /api/users/me — retourne le profil de l'utilisateur connecté")
+    @DisplayName("GET /api/users/me — retourne le profil de l'utilisateur connecté (ANALYSTE)")
     void getUserMe_retourne_profil() throws Exception {
         Assumptions.assumeTrue(accessToken != null);
 
@@ -203,21 +223,19 @@ class ImfIntegrationTest {
 
     @Test
     @Order(11)
-    @DisplayName("POST /api/auth/logout — invalide le token → plus utilisable")
+    @DisplayName("POST /api/auth/logout — invalide le refreshToken SUPER_ADMIN")
     void logout_puis_acces_refuse() throws Exception {
-        Assumptions.assumeTrue(accessToken != null);
-
-        // 1. Récupère refreshToken en se reconnectant
+        // Login SUPER_ADMIN pour obtenir un vrai refreshToken stocké en base
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("jkamga", "TestPass!2024"))))
+                                new LoginRequest("super_admin@test.cm", "SuperPass!2024"))))
                 .andExpect(status().isOk())
                 .andReturn();
         AuthResponse auth = objectMapper.readValue(
                 loginResult.getResponse().getContentAsString(), AuthResponse.class);
 
-        // 2. Logout
+        // Logout — invalide le refreshToken
         mockMvc.perform(post("/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + auth.refreshToken() + "\"}"))

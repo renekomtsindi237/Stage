@@ -6,10 +6,12 @@ import cm.imf.pipeline.dto.response.AuthResponse;
 import cm.imf.pipeline.entity.RefreshToken;
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.Role;
+import cm.imf.pipeline.repository.OtpCodeRepository;
 import cm.imf.pipeline.repository.RefreshTokenRepository;
 import cm.imf.pipeline.repository.UserRepository;
 import cm.imf.pipeline.security.JwtTokenProvider;
 import cm.imf.pipeline.service.AuthService;
+import cm.imf.pipeline.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
@@ -30,10 +33,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Mock AuthenticationManager authenticationManager;
-    @Mock JwtTokenProvider jwtTokenProvider;
-    @Mock UserRepository userRepository;
+    @Mock AuthenticationManager  authenticationManager;
+    @Mock JwtTokenProvider       jwtTokenProvider;
+    @Mock UserRepository         userRepository;
     @Mock RefreshTokenRepository refreshTokenRepository;
+    @Mock OtpCodeRepository      otpCodeRepository;
+    @Mock EmailService           emailService;
+    @Mock PasswordEncoder        passwordEncoder;
 
     @InjectMocks AuthService authService;
 
@@ -44,14 +50,16 @@ class AuthServiceTest {
         testUser = User.builder()
                 .id(1L)
                 .username("jkamga")
+                .email("jkamga@test.cm")
                 .passwordHash("$2a$12$hash")
-                .role(Role.ANALYSTE)
+                .role(Role.SUPER_ADMIN)
                 .actif(true)
                 .build();
     }
 
     @Test
     void login_retourne_authResponse_valide() {
+        when(userRepository.findByEmail("jkamga@test.cm")).thenReturn(Optional.of(testUser));
         when(authenticationManager.authenticate(any()))
                 .thenReturn(new UsernamePasswordAuthenticationToken(testUser, null,
                         testUser.getAuthorities()));
@@ -60,13 +68,28 @@ class AuthServiceTest {
         when(jwtTokenProvider.getRefreshTokenExpiryMs()).thenReturn(604800000L);
         when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        AuthResponse response = authService.login(new LoginRequest("jkamga", "password"));
+        AuthResponse response = authService.login(new LoginRequest("jkamga@test.cm", "password"));
 
         assertThat(response.accessToken()).isEqualTo("access_token_xxx");
-        assertThat(response.role()).isEqualTo("ANALYSTE");
+        assertThat(response.role()).isEqualTo("SUPER_ADMIN");
         assertThat(response.username()).isEqualTo("jkamga");
         verify(refreshTokenRepository).deleteByUser(testUser);
         verify(refreshTokenRepository).save(any(RefreshToken.class));
+    }
+
+    @Test
+    void login_role_non_super_admin_retourne_403() {
+        User analyste = User.builder()
+                .username("analyste")
+                .email("analyste@test.cm")
+                .role(Role.ANALYSTE)
+                .actif(true)
+                .build();
+        when(userRepository.findByEmail("analyste@test.cm")).thenReturn(Optional.of(analyste));
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("analyste@test.cm", "pass")))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("OTP");
     }
 
     @Test

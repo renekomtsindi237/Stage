@@ -57,23 +57,29 @@ class ValidationConstraintsTest {
     class LoginRequestValidation {
 
         @Test
-        @DisplayName("Valide quand username et password non vides")
+        @DisplayName("Valide quand email et password non vides")
         void valide() {
-            assertNoViolations(new LoginRequest("jkamga", "Pass123!"));
+            assertNoViolations(new LoginRequest("jkamga@test.cm", "Pass123!"));
         }
 
         @ParameterizedTest
         @NullAndEmptySource
-        @DisplayName("Username null ou vide → violation")
-        void username_invalide(String username) {
-            assertHasViolations(new LoginRequest(username, "Pass123!"));
+        @DisplayName("Email null ou vide → violation")
+        void email_invalide(String email) {
+            assertHasViolations(new LoginRequest(email, "Pass123!"));
+        }
+
+        @Test
+        @DisplayName("Email format invalide → violation @Email")
+        void email_format_invalide() {
+            assertHasViolations(new LoginRequest("pas-un-email", "Pass123!"));
         }
 
         @ParameterizedTest
         @NullAndEmptySource
         @DisplayName("Password null ou vide → violation")
         void password_invalide(String password) {
-            assertHasViolations(new LoginRequest("jkamga", password));
+            assertHasViolations(new LoginRequest("jkamga@test.cm", password));
         }
     }
 
