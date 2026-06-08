@@ -2,6 +2,7 @@ package cm.imf.pipeline.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -17,6 +18,7 @@ import java.util.Map;
  * de lecture et d'insertion — jamais de save() sur une entité existante.
  */
 @Entity
+@Immutable
 @Table(name = "audit_trail", schema = "app")
 @Getter
 @NoArgsConstructor

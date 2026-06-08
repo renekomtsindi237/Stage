@@ -80,7 +80,7 @@ public class KpiService implements IKpiService {
     }
 
     @Cacheable(value = "kpi-dashboard",
-               key = "T(cm.imf.pipeline.security.TenantContext).currentImfId()")
+               key = "T(cm.imf.pipeline.security.TenantContext).currentImfId() ?: 'global'")
     public Map<String, Object> getDashboardSummary() {
         LocalDate fin   = LocalDate.now();
         LocalDate debut = fin.minusDays(30);
