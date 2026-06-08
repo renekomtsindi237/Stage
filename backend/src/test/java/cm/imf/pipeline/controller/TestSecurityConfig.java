@@ -6,6 +6,7 @@ import cm.imf.pipeline.security.UserDetailsServiceImpl;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +23,7 @@ public class TestSecurityConfig {
     @MockBean JwtAuthenticationFilter jwtAuthenticationFilter;
     @MockBean JwtTokenProvider jwtTokenProvider;
     @MockBean UserDetailsServiceImpl userDetailsService;
+    @MockBean StringRedisTemplate stringRedisTemplate;
 
     @Bean
     public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {

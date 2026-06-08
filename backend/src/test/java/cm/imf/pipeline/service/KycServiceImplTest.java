@@ -215,7 +215,7 @@ class KycServiceImplTest {
             KycDossierResponse result = kycService.evaluerRisque(uid, req, dsiUser);
 
             assertThat(result.estPep()).isTrue();
-            verify(dossierRepo).save(any());
+            verify(dossierRepo, times(2)).save(any());
         }
 
         @Test

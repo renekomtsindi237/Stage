@@ -39,24 +39,27 @@ public class LoginRateLimitInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) throws IOException {
+        try {
+            String ip  = resolveClientIp(request);
+            String key = KEY_PREFIX + ip;
 
-        String ip  = resolveClientIp(request);
-        String key = KEY_PREFIX + ip;
+            Long attempts = redisTemplate.opsForValue().increment(key);
+            if (attempts != null && attempts == 1L) {
+                redisTemplate.expire(key, windowSeconds, TimeUnit.SECONDS);
+            }
 
-        Long attempts = redisTemplate.opsForValue().increment(key);
-        if (attempts != null && attempts == 1L) {
-            redisTemplate.expire(key, windowSeconds, TimeUnit.SECONDS);
-        }
-
-        if (attempts != null && attempts > maxAttempts) {
-            log.warn("Rate limit dépassé — ip={} tentatives={} max={}", ip, attempts, maxAttempts);
-            response.setStatus(429);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write(
-                "{\"code\":\"TOO_MANY_REQUESTS\"," +
-                "\"message\":\"Trop de tentatives. Réessayez dans " + windowSeconds + " secondes.\"}"
-            );
-            return false;
+            if (attempts != null && attempts > maxAttempts) {
+                log.warn("Rate limit dépassé — ip={} tentatives={} max={}", ip, attempts, maxAttempts);
+                response.setStatus(429);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write(
+                    "{\"code\":\"TOO_MANY_REQUESTS\"," +
+                    "\"message\":\"Trop de tentatives. Réessayez dans " + windowSeconds + " secondes.\"}"
+                );
+                return false;
+            }
+        } catch (Exception e) {
+            log.warn("Rate limiter indisponible (Redis), requête autorisée : {}", e.getMessage());
         }
 
         return true;

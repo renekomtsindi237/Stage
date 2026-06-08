@@ -127,7 +127,7 @@ class CollecteServiceTest {
                 .id(1L).idCollecteMobile("X").agent(agent)
                 .statut(StatutCollecte.CONFIRMEE).createdAt(OffsetDateTime.now()).build();
 
-        when(collecteRepository.findByAgentId(eq(1L), any(Pageable.class)))
+        when(collecteRepository.findByImfIdAndAgentId(isNull(), eq(1L), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(c)));
 
         PageResponse<CollecteResponse> page = collecteService.getMesCollectes(agent, 0, 10);

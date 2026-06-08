@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -78,7 +79,6 @@ class AuthServiceTest {
 
         when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(stored));
         when(jwtTokenProvider.generateAccessToken(testUser)).thenReturn("new_access_token");
-        when(jwtTokenProvider.getRefreshTokenExpiryMs()).thenReturn(604800000L);
 
         AuthResponse response = authService.refresh(new RefreshRequest("valid_refresh_token"));
 
@@ -97,7 +97,7 @@ class AuthServiceTest {
         when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(expired));
 
         assertThatThrownBy(() -> authService.refresh(new RefreshRequest("expired_token")))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("expiré");
     }
 

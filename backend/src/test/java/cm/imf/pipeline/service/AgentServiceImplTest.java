@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -26,6 +27,9 @@ class AgentServiceImplTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
+
+    @Mock
+    private StringRedisTemplate redis;
 
     @InjectMocks
     private AgentServiceImpl agentService;
@@ -45,7 +49,7 @@ class AgentServiceImplTest {
     @Test
     @DisplayName("listByAgence — retourne les agents de l'agence demandée")
     void listByAgence_retourne_agents() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq("ANC01")))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
                 .thenReturn(List.of(AGENT_A, AGENT_B));
 
         List<AgentResponse> result = agentService.listByAgence("ANC01");
@@ -58,7 +62,7 @@ class AgentServiceImplTest {
     @Test
     @DisplayName("listByAgence — liste vide si aucun agent dans l'agence")
     void listByAgence_vide() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), anyString()))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
                 .thenReturn(List.of());
 
         List<AgentResponse> result = agentService.listByAgence("INCONNUE");
@@ -78,20 +82,20 @@ class AgentServiceImplTest {
     @Test
     @DisplayName("getById — lève ResourceNotFoundException si agent inexistant")
     void getById_leve_exception_si_inconnu() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq("INCONNU")))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(9999L)))
                 .thenReturn(List.of());
 
-        assertThatThrownBy(() -> agentService.getById("INCONNU"))
+        assertThatThrownBy(() -> agentService.getById("9999"))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     @DisplayName("getById — retourne l'agent si trouvé")
     void getById_retourne_agent() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq("AG001")))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(1L)))
                 .thenReturn(List.of(AGENT_A));
 
-        AgentResponse result = agentService.getById("AG001");
+        AgentResponse result = agentService.getById("1");
 
         assertThat(result.uid()).isEqualTo("AG001");
         assertThat(result.nomComplet()).isEqualTo("Amadou Diallo");

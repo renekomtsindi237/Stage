@@ -84,7 +84,6 @@ class RecouvrementServiceImplTest {
         @DisplayName("→ crée un dossier phase RELANCE_AMIABLE pour prêt inexistant")
         void ouvrir_nouveau_retourne_dossier() {
             when(dossierRepo.existsDossierActif(1L, "PRE-NEW")).thenReturn(false);
-            when(userRepo.findByUid(any())).thenReturn(Optional.of(rrUser));
             when(dossierRepo.save(any())).thenAnswer(inv -> {
                 RecouvrementDossier d = inv.getArgument(0);
                 d.setId(1L);
@@ -149,7 +148,6 @@ class RecouvrementServiceImplTest {
 
             RecouvrementDossier d = buildDossier(joursRetard, new BigDecimal("200000"));
             when(dossierRepo.existsDossierActif(anyLong(), anyString())).thenReturn(false);
-            when(userRepo.findByUid(any())).thenReturn(Optional.of(rrUser));
             when(dossierRepo.save(any())).thenAnswer(inv -> {
                 RecouvrementDossier saved = inv.getArgument(0);
                 // @PrePersist calcule la catégorie — on simule ici
@@ -273,6 +271,6 @@ class RecouvrementServiceImplTest {
         recouvrementService.listDossiers(1L, RecouvrementPhase.CONTENTIEUX, false, 0, 20);
 
         verify(dossierRepo).findByImfIdAndPhaseAndClos(
-                1L, RecouvrementPhase.CONTENTIEUX, false, any());
+                eq(1L), eq(RecouvrementPhase.CONTENTIEUX), eq(false), any());
     }
 }

@@ -53,7 +53,7 @@ public record PageResponse<T>(
 
     /** Construit depuis une liste brute avec total connu (service non-Page). */
     public static <T> PageResponse<T> of(List<T> content, int page, int size, long totalElements) {
-        int totalPages = (size <= 0) ? 1 : (int) Math.ceil((double) totalElements / size);
+        int totalPages = (size <= 0) ? 1 : Math.max(1, (int) Math.ceil((double) totalElements / size));
         return new PageResponse<>(
                 content,
                 page,

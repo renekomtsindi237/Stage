@@ -198,7 +198,7 @@ class CollecteSyncServiceTest {
 
         assertThat(result.resultats().get(0).code()).isEqualTo(SyncItemResult.CODE_CONFLIT);
         assertThat(result.resultats().get(0).messageUtilisateur())
-                .contains("positif");
+                .contains("zéro");
     }
 
     // ── Statut partiel ────────────────────────────────────────────────────────
