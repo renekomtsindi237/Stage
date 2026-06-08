@@ -78,6 +78,40 @@ public class JwtTokenProvider {
         return false;
     }
 
+    // ── Password reset token (15 min, claim type=PASSWORD_RESET) ─────────────
+
+    private static final String RESET_TOKEN_TYPE = "PASSWORD_RESET";
+    private static final long   RESET_TOKEN_EXPIRY_MS = 15 * 60 * 1000L;
+
+    public String generatePasswordResetToken(String username) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(username)
+                .claim("type", RESET_TOKEN_TYPE)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + RESET_TOKEN_EXPIRY_MS))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public long getResetTokenExpirySeconds() {
+        return RESET_TOKEN_EXPIRY_MS / 1000;
+    }
+
+    public String validatePasswordResetToken(String token) {
+        try {
+            Claims claims = parseClaims(token);
+            if (!RESET_TOKEN_TYPE.equals(claims.get("type", String.class))) {
+                throw new IllegalArgumentException("Token de type incorrect");
+            }
+            return claims.getSubject();
+        } catch (ExpiredJwtException e) {
+            throw new IllegalArgumentException("Token de réinitialisation expiré");
+        } catch (JwtException e) {
+            throw new IllegalArgumentException("Token de réinitialisation invalide");
+        }
+    }
+
     private Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)

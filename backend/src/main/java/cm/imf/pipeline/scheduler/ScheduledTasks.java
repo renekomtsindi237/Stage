@@ -1,6 +1,7 @@
 package cm.imf.pipeline.scheduler;
 
 import cm.imf.pipeline.enums.Role;
+import cm.imf.pipeline.repository.OtpCodeRepository;
 import cm.imf.pipeline.repository.RefreshTokenRepository;
 import cm.imf.pipeline.service.INotificationService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ import java.util.Map;
 public class ScheduledTasks {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final OtpCodeRepository      otpCodeRepository;
     private final CacheManager           cacheManager;
     private final JdbcTemplate           jdbc;
     private final INotificationService   notificationService;
@@ -56,6 +58,7 @@ public class ScheduledTasks {
         if (deleted > 0) {
             log.info("Nettoyage refresh tokens : {} token(s) expiré(s) supprimé(s)", deleted);
         }
+        otpCodeRepository.deleteExpired(OffsetDateTime.now());
     }
 
     @Scheduled(cron = "${imf.pipeline.scheduler.cache-evict-cron:0 0 2 * * *}")

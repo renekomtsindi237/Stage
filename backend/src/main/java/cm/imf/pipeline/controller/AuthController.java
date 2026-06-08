@@ -2,7 +2,11 @@ package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.request.RefreshRequest;
+import cm.imf.pipeline.dto.request.ResetPasswordWithTokenRequest;
+import cm.imf.pipeline.dto.request.VerifyOtpRequest;
 import cm.imf.pipeline.dto.response.AuthResponse;
+import cm.imf.pipeline.dto.response.OtpInitResponse;
+import cm.imf.pipeline.dto.response.OtpVerifyResponse;
 import cm.imf.pipeline.entity.AuditTrail;
 import cm.imf.pipeline.security.Auditable;
 import cm.imf.pipeline.service.IAuthService;
@@ -12,6 +16,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +30,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentification", description = "Login, refresh et déconnexion JWT")
+@Tag(name = "Authentification", description = "Login SUPER_ADMIN (classique) + OTP pour tous les autres rôles")
 public class AuthController {
 
     private static final String ACCESS_COOKIE  = "imf_access";
@@ -35,9 +41,9 @@ public class AuthController {
     @Value("${app.security.cookie-secure:true}")
     private boolean cookieSecure;
 
-    // ── Endpoints ────────────────────────────────────────────────────────────
+    // ── SUPER_ADMIN — login classique (username + password) ──────────────────
 
-    @Operation(summary = "Connexion — retourne accessToken + refreshToken (body pour mobile, cookies pour web)")
+    @Operation(summary = "Login SUPER_ADMIN uniquement — username + password → tokens. Retourne 403 pour les autres rôles.")
     @PostMapping("/login")
     @Auditable(
         action             = AuditTrail.ACTION_CONNEXION,
@@ -54,7 +60,53 @@ public class AuthController {
         return ResponseEntity.ok(auth);
     }
 
-    @Operation(summary = "Rafraîchir l'accessToken — lit le refresh depuis le cookie (web) ou le body (mobile)")
+    // ── OTP — Étape 1 : demander un code par email ────────────────────────────
+
+    @Operation(summary = "Envoie un code OTP à 6 chiffres par email (connexion + activation). Retourne toujours 200.")
+    @PostMapping("/request-otp")
+    public ResponseEntity<OtpInitResponse> requestOtp(
+            @RequestParam @NotBlank @Email String email) {
+
+        return ResponseEntity.ok(authService.requestOtp(email));
+    }
+
+    // ── OTP — Étape 2 : vérifier le code ─────────────────────────────────────
+
+    @Operation(summary = """
+            Vérifie le code OTP (valable 10 min, max 3 tentatives).
+            Réponse status=AUTHENTICATED → cookies + tokens (compte actif).
+            Réponse status=MUST_SET_PASSWORD → resetToken JWT 15 min (première connexion).
+            """)
+    @PostMapping("/verify-otp")
+    public ResponseEntity<OtpVerifyResponse> verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request,
+            HttpServletResponse response) {
+
+        OtpVerifyResponse result = authService.verifyOtp(request);
+
+        if (OtpVerifyResponse.AUTHENTICATED.equals(result.status())) {
+            setAuthCookies(response, result.accessToken(), result.refreshToken(), result.expiresIn());
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
+    // ── OTP — Étape 3 : définir le mot de passe fort (activation) ────────────
+
+    @Operation(summary = "Définit le mot de passe fort après vérification OTP (première connexion). Retourne les tokens.")
+    @PostMapping("/set-password")
+    public ResponseEntity<AuthResponse> setPassword(
+            @Valid @RequestBody ResetPasswordWithTokenRequest request,
+            HttpServletResponse response) {
+
+        AuthResponse auth = authService.setPasswordWithToken(request);
+        setAuthCookies(response, auth.accessToken(), auth.refreshToken(), auth.expiresIn());
+        return ResponseEntity.ok(auth);
+    }
+
+    // ── Refresh ───────────────────────────────────────────────────────────────
+
+    @Operation(summary = "Rafraîchir l'accessToken — cookie (web) ou body (mobile)")
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(
             @RequestBody(required = false) RefreshRequest bodyRequest,
@@ -71,6 +123,8 @@ public class AuthController {
         setAuthCookies(httpRes, auth.accessToken(), auth.refreshToken(), auth.expiresIn());
         return ResponseEntity.ok(auth);
     }
+
+    // ── Logout ────────────────────────────────────────────────────────────────
 
     @Operation(summary = "Déconnexion — invalide le refreshToken et efface les cookies")
     @PostMapping("/logout")
@@ -99,23 +153,13 @@ public class AuthController {
                                  String refreshToken,
                                  long   accessExpiresInMs) {
 
-        // Access token : durée de vie = durée du token JWT (15 min par défaut)
         ResponseCookie access = ResponseCookie.from(ACCESS_COOKIE, accessToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Strict")
-                .path("/api")
-                .maxAge(accessExpiresInMs / 1000)
-                .build();
+                .httpOnly(true).secure(cookieSecure).sameSite("Strict")
+                .path("/api").maxAge(accessExpiresInMs / 1000).build();
 
-        // Refresh token : scopé uniquement sur /api/auth/refresh pour minimiser l'exposition
         ResponseCookie refresh = ResponseCookie.from(REFRESH_COOKIE, refreshToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Strict")
-                .path("/api/auth/")
-                .maxAge(7L * 24 * 3600)  // 7 jours
-                .build();
+                .httpOnly(true).secure(cookieSecure).sameSite("Strict")
+                .path("/api/auth/").maxAge(7L * 24 * 3600).build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, access.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
@@ -135,7 +179,6 @@ public class AuthController {
     }
 
     private String extractRefreshToken(HttpServletRequest request, RefreshRequest body) {
-        // Priorité 1 : cookie httpOnly (clients web Angular)
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
@@ -145,7 +188,6 @@ public class AuthController {
                 }
             }
         }
-        // Priorité 2 : body JSON (clients mobiles Flutter / API externe)
         return (body != null) ? body.refreshToken() : null;
     }
 }

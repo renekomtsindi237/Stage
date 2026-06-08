@@ -24,6 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = {"imf"})
     Optional<User> findByUsername(String username);
 
+    Optional<User> findByEmail(String email);
+
     boolean existsByUsername(String username);
 
     // ── Requêtes scoped par IMF ───────────────────────────────────────────────
