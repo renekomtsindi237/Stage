@@ -107,6 +107,10 @@ services:
       REDIS_PORT:                    6380
       SUPABASE_URL:                  https://ceiqkvvacjsakycsgcfz.supabase.co
       SUPABASE_ANON_KEY:             ${SUPABASE_ANON_KEY}
+      SMTP_HOST:                     ${SMTP_HOST:-}
+      SMTP_PORT:                     ${SMTP_PORT:-587}
+      SMTP_USER:                     ${SMTP_USER:-}
+      SMTP_PASSWORD:                 ${SMTP_PASSWORD:-}
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:

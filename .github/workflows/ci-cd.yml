@@ -454,12 +454,15 @@ jobs:
           JWT_SECRET:             ${{ secrets.STAGING_JWT_SECRET }}
           AIRFLOW_FERNET_KEY:     ${{ secrets.STAGING_AIRFLOW_FERNET_KEY }}
           AIRFLOW_ADMIN_PASSWORD: ${{ secrets.STAGING_AIRFLOW_ADMIN_PASSWORD }}
+          SMTP_HOST:              ${{ secrets.STAGING_SMTP_HOST }}
+          SMTP_USER:              ${{ secrets.STAGING_SMTP_USER }}
+          SMTP_PASSWORD:          ${{ secrets.STAGING_SMTP_PASSWORD }}
         with:
           host:     ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key:      ${{ secrets.STAGING_SSH_KEY }}
           port:     ${{ secrets.STAGING_PORT }}
-          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD,SMTP_HOST,SMTP_USER,SMTP_PASSWORD
           command_timeout: 30m
           script: |
             set -euo pipefail
@@ -500,6 +503,10 @@ jobs:
             AIRFLOW_ADMIN_USER=admin
             AIRFLOW_ADMIN_PASSWORD=${AIRFLOW_ADMIN_PASSWORD}
             AIRFLOW_ADMIN_EMAIL=renekomtsindi7@gmail.com
+
+            SMTP_HOST=${SMTP_HOST}
+            SMTP_USER=${SMTP_USER}
+            SMTP_PASSWORD=${SMTP_PASSWORD}
             ENVEOF
             chmod 600 "$ENVFILE"
             echo "==> .env.staging écrit"
