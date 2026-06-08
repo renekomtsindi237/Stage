@@ -63,7 +63,7 @@ public class ViolationDonneesController {
         Long imfId = TenantContext.currentImfId();
 
         // Persister la violation — récupérer l'uid généré par la BD
-        String violationUid = jdbc.queryForObject("""
+        Object violationUidRaw = jdbc.queryForObject("""
                 INSERT INTO app.violations_donnees
                     (imf_id, declarant_id, declarant_username, date_decouverte,
                      type_violation, description, categories_donnees,
@@ -72,23 +72,26 @@ public class ViolationDonneesController {
                 VALUES (?, ?, ?, ?,  ?, ?, ?,  ?, ?, ?,  ?, ?, ?)
                 RETURNING uid::text
                 """,
-                String.class,
+                Object.class,
                 imfId, moi.getId(), moi.getUsername(), req.dateDecouverte(),
-                req.typeViolation(), req.description(), req.categoriesDonnees(),
+                req.typeViolation(), req.description(), String.join(",", req.categoriesDonnees()),
                 req.nbPersonnesEstimees(), req.entitesConcernees(), req.severite(),
                 req.mesuresImmediates(),
                 req.notifAutoriteRequise(), req.notifPersonnesRequise());
+        String violationUid = String.valueOf(violationUidRaw);
 
         // Calculer le délai restant avant la limite légale des 72h
         long heuresDepuisDecouverte = java.time.Duration.between(
                 req.dateDecouverte(), OffsetDateTime.now()).toHours();
         long heuresRestantes = 72 - heuresDepuisDecouverte;
 
+        String severite = req.severite() != null ? req.severite() : "MODERE";
+
         String alerte = heuresRestantes > 0
                 ? String.format("⚠️ Violation %s déclarée — %dh restantes pour notifier l'autorité",
-                        req.severite(), heuresRestantes)
+                        severite, heuresRestantes)
                 : String.format("🚨 DÉLAI LÉGAL DÉPASSÉ — Violation %s déclarée %dh après découverte",
-                        req.severite(), -heuresRestantes);
+                        severite, -heuresRestantes);
 
         // Notification SSE immédiate vers tous les DSI connectés
         SseEventDto event = new SseEventDto(
@@ -98,7 +101,7 @@ public class ViolationDonneesController {
                 Map.of(
                         "violationUid",   violationUid,
                         "typeViolation",  req.typeViolation(),
-                        "severite",       req.severite(),
+                        "severite",       severite,
                         "heuresRestantes", heuresRestantes,
                         "categoriesDonnees", req.categoriesDonnees()
                 ),
@@ -106,7 +109,7 @@ public class ViolationDonneesController {
         sseRegistry.broadcastToRole("DSI", event);
 
         // Push FCM + email aux DSI
-        String titre = "Violation données " + req.severite() + " — " + req.typeViolation();
+        String titre = "Violation données " + severite + " — " + req.typeViolation();
         notificationService.sendPushToRole(Role.DSI, titre, alerte);
         // Email avec détails complets pour le DSI responsable
         if (moi.getEmail() != null) {

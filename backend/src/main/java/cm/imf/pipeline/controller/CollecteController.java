@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ public class CollecteController {
 
     @Operation(summary = "Enregistrer une collecte terrain (rôle AGENT)")
     @PostMapping
+    @PreAuthorize("hasRole('AGENT')")
     public ResponseEntity<CollecteResponse> enregistrer(
             @Valid @RequestBody CollecteRequest request,
             @AuthenticationPrincipal User agent) {
@@ -40,6 +42,7 @@ public class CollecteController {
 
     @Operation(summary = "Mes collectes — liste paginée pour l'agent connecté")
     @GetMapping("/mes-collectes")
+    @PreAuthorize("hasRole('AGENT')")
     public ResponseEntity<PageResponse<CollecteResponse>> getMesCollectes(
             @AuthenticationPrincipal User agent,
             @RequestParam(defaultValue = "0") int page,

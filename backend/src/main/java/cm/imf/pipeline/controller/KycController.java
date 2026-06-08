@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class KycController {
 
     @Operation(summary = "Initier un dossier KYC pour un client")
     @PostMapping("/dossiers")
+    @PreAuthorize("hasAnyRole('DSI','SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<KycDossierResponse>> initierDossier(
             @Valid @RequestBody InitierKycRequest request,
             @AuthenticationPrincipal User user) {
@@ -50,6 +52,7 @@ public class KycController {
 
     @Operation(summary = "Liste paginée des dossiers (filtres : statut, niveau, risque)")
     @GetMapping("/dossiers")
+    @PreAuthorize("hasAnyRole('DSI','SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<KycDossierResponse>>> listDossiers(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) StatutKyc statut,
@@ -70,6 +73,7 @@ public class KycController {
 
     @Operation(summary = "Évaluer / mettre à jour le score de risque LBC/FT (PPE, sanctions, listes noires)")
     @PutMapping("/dossiers/{uid}/risque")
+    @PreAuthorize("hasAnyRole('DSI','SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<KycDossierResponse>> evaluerRisque(
             @PathVariable UUID uid,
             @Valid @RequestBody EvaluerRisqueKycRequest request,
@@ -79,7 +83,18 @@ public class KycController {
 
     @Operation(summary = "Décision de vérification : APPROUVE / REJETE / COMPLEMENT_REQUIS")
     @PutMapping("/dossiers/{uid}/verifier")
+    @PreAuthorize("hasAnyRole('DSI','SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<KycDossierResponse>> verifier(
+            @PathVariable UUID uid,
+            @Valid @RequestBody VerifierKycRequest request,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ApiResponse.ok("Vérification enregistrée.", kycService.verifier(uid, request, user)));
+    }
+
+    @Operation(summary = "Alias rétrocompatible de /verifier")
+    @PutMapping("/dossiers/{uid}/verification")
+    @PreAuthorize("hasAnyRole('DSI','SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<KycDossierResponse>> verifierCompat(
             @PathVariable UUID uid,
             @Valid @RequestBody VerifierKycRequest request,
             @AuthenticationPrincipal User user) {

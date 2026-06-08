@@ -5,6 +5,7 @@ import cm.imf.pipeline.enums.CanalPaiement;
 import cm.imf.pipeline.enums.ResultatActionRecouvrement;
 import cm.imf.pipeline.enums.StatutVerifMomo;
 import cm.imf.pipeline.enums.TypeActionRecouvrement;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,6 +33,11 @@ public record ActionRecouvrementResponse(
         String observation,
         OffsetDateTime createdAt
 ) {
+        @JsonProperty("montantRecupere")
+        public BigDecimal montantRecupere() {
+                return promesseMontant;
+        }
+
     public static ActionRecouvrementResponse from(ActionRecouvrement a) {
         return new ActionRecouvrementResponse(
                 a.getUid() != null ? a.getUid().toString() : null,

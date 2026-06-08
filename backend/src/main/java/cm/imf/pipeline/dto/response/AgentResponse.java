@@ -1,5 +1,7 @@
 package cm.imf.pipeline.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -35,4 +37,14 @@ public record AgentResponse(
         boolean enDeplacement,
 
         OffsetDateTime dernierePositionAt
-) {}
+) {
+        @JsonProperty("idAgent")
+        public String idAgent() {
+                return uid;
+        }
+
+        @JsonProperty("nomAgent")
+        public String nomAgent() {
+                return nomComplet;
+        }
+}

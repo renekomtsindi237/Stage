@@ -1,5 +1,6 @@
 package cm.imf.pipeline.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.domain.Page;
 
@@ -38,6 +39,11 @@ public record PageResponse<T>(
     boolean last
 
 ) {
+    @JsonProperty("total")
+    public long total() {
+        return totalElements;
+    }
+
     /** Construit depuis un Spring Data {@link Page} avec transformation. */
     public static <E, D> PageResponse<D> from(Page<E> page, Function<E, D> mapper) {
         return new PageResponse<>(

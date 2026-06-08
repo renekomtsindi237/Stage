@@ -150,6 +150,10 @@ public class RgpdController {
                 ? demandeRepository.findByImfIdAndStatutOrderByDateSoumissionDesc(imfId, statut, pageable)
                 : demandeRepository.findByImfIdOrderByDateSoumissionDesc(imfId, pageable);
 
+                if (springPage == null) {
+                        springPage = Page.empty(pageable);
+                }
+
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(springPage, this::toResponse)));
     }
 

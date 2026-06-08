@@ -11,7 +11,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -72,6 +75,26 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex, Locale locale) {
         String message = msg("error.param.invalid", locale, ex.getName(), String.valueOf(ex.getValue()));
         return ResponseEntity.badRequest().body(ApiResponse.error(message));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingRequestParameter(
+            MissingServletRequestParameterException ex, Locale locale) {
+        String message = msg("error.param.invalid", locale, ex.getParameterName(), "null");
+        return ResponseEntity.badRequest().body(ApiResponse.error(message));
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingRequestHeader(
+            MissingRequestHeaderException ex, Locale locale) {
+        String message = msg("error.param.invalid", locale, ex.getHeaderName(), "null");
+        return ResponseEntity.badRequest().body(ApiResponse.error(message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnreadableMessage(
+            HttpMessageNotReadableException ex, Locale locale) {
+        return ResponseEntity.badRequest().body(ApiResponse.error(msg("error.validation", locale)));
     }
 
     // === Ressource introuvable ================================================

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,7 +52,9 @@ public class PretController {
     @Operation(summary = "Prêts de l'agent connecté (app mobile)")
     @GetMapping("/mes-prets")
     public ResponseEntity<ApiResponse<List<PretResponse>>> getMesPrets(
-            @AuthenticationPrincipal User agent) {
-        return ResponseEntity.ok(ApiResponse.ok(pretService.getPretsAgent(agent.getUsername())));
+            @AuthenticationPrincipal User agent,
+            Authentication authentication) {
+        String username = agent != null ? agent.getUsername() : authentication.getName();
+        return ResponseEntity.ok(ApiResponse.ok(pretService.getPretsAgent(username)));
     }
 }

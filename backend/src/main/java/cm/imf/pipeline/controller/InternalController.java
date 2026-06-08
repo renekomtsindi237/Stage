@@ -68,9 +68,11 @@ public class InternalController {
         notificationService.notifierAlerteImpaye(saved.getId());
 
         log.info("Alerte créée via pipeline — prêt: {}, jours: {}", idPret, joursRetard);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("uid", saved.getUid() != null ? saved.getUid().toString() : null,
-                             "id_pret", idPret, "statut", "ACTIVE"));
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("uid", saved.getUid() != null ? saved.getUid().toString() : null);
+        body.put("id_pret", idPret);
+        body.put("statut", "ACTIVE");
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @Operation(summary = "Pousser un événement SSE depuis le pipeline Python vers les clients connectés",

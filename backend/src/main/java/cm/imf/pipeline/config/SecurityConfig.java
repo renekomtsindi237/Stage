@@ -73,53 +73,53 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publics : ping/health pour mobile, auth, docs Swagger
-                        .requestMatchers("/api/v1/ping", "/api/v1/health").permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/uploads/**").permitAll()
+                        .requestMatchers("/ping", "/health", "/api/v1/ping", "/api/v1/health").permitAll()
+                        .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/uploads/**", "/api/v1/uploads/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         // Endpoint interne pipeline Python — protégé par clé API dans le header
                         .requestMatchers("/internal/**").permitAll()
                         // Géolocalisation agents terrain
-                        .requestMatchers(HttpMethod.PUT,    "/api/v1/agents/me/position").hasRole("AGENT")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/agents/me/position").hasRole("AGENT")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/agents/positions")
+                        .requestMatchers(HttpMethod.PUT,    "/agents/me/position", "/api/v1/agents/me/position").hasRole("AGENT")
+                        .requestMatchers(HttpMethod.DELETE, "/agents/me/position", "/api/v1/agents/me/position").hasRole("AGENT")
+                        .requestMatchers(HttpMethod.GET, "/agents/positions", "/api/v1/agents/positions")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "ANALYSTE", "SUPER_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/agents/*/positions/historique")
+                        .requestMatchers(HttpMethod.GET, "/agents/*/positions/historique", "/api/v1/agents/*/positions/historique")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN")
                         // Collectes terrain : rôle AGENT uniquement
-                        .requestMatchers(HttpMethod.POST, "/api/v1/collectes").hasRole("AGENT")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/collectes/mes-collectes").hasRole("AGENT")
-                        .requestMatchers("/api/v1/sync/**").hasRole("AGENT")
+                        .requestMatchers(HttpMethod.POST, "/collectes", "/api/v1/collectes").hasRole("AGENT")
+                        .requestMatchers(HttpMethod.GET, "/collectes/mes-collectes", "/api/v1/collectes/mes-collectes").hasRole("AGENT")
+                        .requestMatchers("/sync/**", "/api/v1/sync/**").hasRole("AGENT")
                         // SSE : tout utilisateur connecté peut s'abonner aux événements
-                        .requestMatchers("/api/v1/sse/**").authenticated()
+                        .requestMatchers("/sse/**", "/api/v1/sse/**").authenticated()
                         // Changement de statut d'alerte : responsable recouvrement ou DSI
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/alertes/**")
+                        .requestMatchers(HttpMethod.PUT, "/alertes/**", "/api/v1/alertes/**")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI")
                         // Gestion de la plateforme : SUPER_ADMIN uniquement
-                        .requestMatchers("/api/v1/platform/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/platform/**", "/api/v1/platform/**").hasRole("SUPER_ADMIN")
                         // Droits RGPD personnels : tout utilisateur connecté (art. 37-43)
-                        .requestMatchers("/api/v1/mes-donnees/**").authenticated()
+                        .requestMatchers("/mes-donnees/**", "/api/v1/mes-donnees/**").authenticated()
                         // Administration RGPD, audit et violations : DSI ou SUPER_ADMIN
-                        .requestMatchers("/api/v1/admin/rgpd/**").hasAnyRole("DSI", "SUPER_ADMIN")
-                        .requestMatchers("/api/v1/admin/audit/**").hasAnyRole("DSI", "SUPER_ADMIN")
-                        .requestMatchers("/api/v1/admin/violations/**").hasAnyRole("DSI", "SUPER_ADMIN")
+                        .requestMatchers("/admin/rgpd/**", "/api/v1/admin/rgpd/**").hasAnyRole("DSI", "SUPER_ADMIN")
+                        .requestMatchers("/admin/audit/**", "/api/v1/admin/audit/**").hasAnyRole("DSI", "SUPER_ADMIN")
+                        .requestMatchers("/admin/violations/**", "/api/v1/admin/violations/**").hasAnyRole("DSI", "SUPER_ADMIN")
                         // Étiquettes dossiers
-                        .requestMatchers(HttpMethod.GET, "/api/v1/dossiers/*/etiquettes")
+                        .requestMatchers(HttpMethod.GET, "/dossiers/*/etiquettes", "/api/v1/dossiers/*/etiquettes")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN", "ANALYSTE")
-                        .requestMatchers(HttpMethod.POST,   "/api/v1/dossiers/*/etiquettes")
+                        .requestMatchers(HttpMethod.POST,   "/dossiers/*/etiquettes", "/api/v1/dossiers/*/etiquettes")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI", "SUPER_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/dossiers/*/etiquettes/*")
+                        .requestMatchers(HttpMethod.DELETE, "/dossiers/*/etiquettes/*", "/api/v1/dossiers/*/etiquettes/*")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI", "SUPER_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/dossiers/etiquettes/*")
+                        .requestMatchers(HttpMethod.GET, "/dossiers/etiquettes/*", "/api/v1/dossiers/etiquettes/*")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN")
                         // Administration des comptes : DSI ou SUPER_ADMIN
-                        .requestMatchers("/api/v1/admin/**").hasAnyRole("DSI", "SUPER_ADMIN")
+                        .requestMatchers("/admin/**", "/api/v1/admin/**").hasAnyRole("DSI", "SUPER_ADMIN")
                         // Lecture des échéances en retard : RR ou DSI
-                        .requestMatchers(HttpMethod.GET, "/api/v1/echeances/en-retard")
+                        .requestMatchers(HttpMethod.GET, "/echeances/en-retard", "/api/v1/echeances/en-retard")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI")
                         // Mise à jour d'une échéance : agent, RR ou DSI
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/echeances/**")
+                        .requestMatchers(HttpMethod.PUT, "/echeances/**", "/api/v1/echeances/**")
                                 .hasAnyRole("AGENT", "RESPONSABLE_RECOUVREMENT", "DSI")
                         // Tout le reste nécessite une authentification
                         .anyRequest().authenticated()
