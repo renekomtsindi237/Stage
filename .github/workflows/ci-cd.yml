@@ -463,8 +463,11 @@ jobs:
               git fetch origin main
               git reset --hard origin/main
             else
-              echo "==> Clone initial"
-              git clone "$REPO_URL" "$APP_DIR"
+              echo "==> Clone initial (répertoire préexistant préservé)"
+              # bootstrap a pu créer /opt/imf-pipeline/{backups,logs} avant le clone
+              git clone "$REPO_URL" /tmp/imf-clone
+              cp -a /tmp/imf-clone/. "$APP_DIR/"
+              rm -rf /tmp/imf-clone
               cd "$APP_DIR"
             fi
             chmod +x "$APP_DIR/deploy/init-db.sh"
@@ -660,7 +663,10 @@ jobs:
               git remote set-url origin "$REPO_URL"
               git fetch origin main && git reset --hard origin/main
             else
-              git clone "$REPO_URL" "$APP_DIR"; cd "$APP_DIR"
+              git clone "$REPO_URL" /tmp/imf-clone
+              cp -a /tmp/imf-clone/. "$APP_DIR/"
+              rm -rf /tmp/imf-clone
+              cd "$APP_DIR"
             fi
             chmod +x "$APP_DIR/deploy/init-db.sh"
 
