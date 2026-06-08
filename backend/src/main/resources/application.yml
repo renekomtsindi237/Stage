@@ -73,6 +73,9 @@ springdoc:
 
 # Cache KPI
 imf:
+  app:
+    name: ${APP_NAME:IMF Pipeline}
+    url: ${APP_URL:http://localhost:4200}
   cache:
     kpi-ttl-seconds: 3600     # 1h
   pipeline:

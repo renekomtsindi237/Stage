@@ -105,6 +105,8 @@ services:
       CORS_ALLOWED_ORIGINS:          "http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:9091"
       REDIS_HOST:                    127.0.0.1
       REDIS_PORT:                    6380
+      APP_URL:                       "http://${VPS_IP:-84.247.128.40}:9091"
+      APP_NAME:                      "IMF Pipeline"
       SUPABASE_URL:                  https://ceiqkvvacjsakycsgcfz.supabase.co
       SUPABASE_ANON_KEY:             ${SUPABASE_ANON_KEY}
       SMTP_HOST:                     ${SMTP_HOST:-}
@@ -114,7 +116,7 @@ services:
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "--max-time", "8", "http://localhost:9200/actuator/health"]
+      test: ["CMD-SHELL", "wget -qO- --timeout=8 http://localhost:9200/actuator/health | grep -q UP || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 120s
@@ -133,7 +135,7 @@ services:
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "--max-time", "8", "http://localhost:8090/model/health"]
+      test: ["CMD-SHELL", "wget -qO- --timeout=8 http://localhost:8090/model/health || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 90s
@@ -162,7 +164,7 @@ services:
       - airflow_logs:/opt/airflow/logs
     command: airflow webserver
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "--max-time", "10", "http://localhost:9202/health"]
+      test: ["CMD-SHELL", "wget -qO- --timeout=10 http://localhost:9202/health || exit 1"]
       interval: 30s
       timeout: 15s
       start_period: 120s
