@@ -44,7 +44,7 @@ public class ClientActiviteProduit {
     private BigDecimal revenuMensuelProduit;
 
     @Column(name = "mois_activite", columnDefinition = "integer[]")
-    private String moisActivite;
+    private Integer[] moisActivite;
 
     @Column(columnDefinition = "TEXT")
     private String observation;
