@@ -32,6 +32,7 @@ public record SseEventDto(
     public static final String TYPE_SYNC_COMPLETED          = "SYNC_COMPLETED";
     public static final String TYPE_HEARTBEAT               = "HEARTBEAT";
     public static final String TYPE_AGENT_POSITION_UPDATED  = "AGENT_POSITION_UPDATED";
+    public static final String TYPE_SCORING_UPDATE          = "SCORING_UPDATE";
 
     // ── Factory methods ───────────────────────────────────────────────────────
 
@@ -67,6 +68,22 @@ public record SseEventDto(
                 "Sync de " + agentUsername + " terminée : " + sync.stats().succes() +
                 "/" + sync.stats().total() + " collecte(s)",
                 sync.stats(), OffsetDateTime.now());
+    }
+
+    /**
+     * Mise à jour des scores MCRS après synchronisation mobile.
+     * Envoyé à l'agent qui vient de syncer ET aux RESPONSABLE_RECOUVREMENT.
+     *
+     * @param agentUsername  username de l'agent qui a déclenché la sync
+     * @param nbClients      nombre de clients scorés
+     * @param scoresResume   liste réduite [{clientId, scoreMcrs, classeRisque}]
+     */
+    public static SseEventDto scoringUpdate(
+            String agentUsername, int nbClients, Object scoresResume) {
+        String msg = nbClients == 0
+                ? "Aucun client à scorer après la sync de " + agentUsername
+                : nbClients + " client(s) rescorés en temps réel après sync de " + agentUsername;
+        return new SseEventDto(TYPE_SCORING_UPDATE, null, msg, scoresResume, OffsetDateTime.now());
     }
 
     /**

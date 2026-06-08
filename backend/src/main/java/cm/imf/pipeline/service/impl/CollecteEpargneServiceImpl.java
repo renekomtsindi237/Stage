@@ -9,12 +9,14 @@ import cm.imf.pipeline.entity.Agence;
 import cm.imf.pipeline.entity.CollecteEpargne;
 import cm.imf.pipeline.entity.CycleCollecte;
 import cm.imf.pipeline.entity.User;
+import cm.imf.pipeline.event.SyncCompletedEvent;
 import cm.imf.pipeline.exception.ResourceNotFoundException;
 import cm.imf.pipeline.repository.AgenceRepository;
 import cm.imf.pipeline.repository.CollecteEpargneRepository;
 import cm.imf.pipeline.repository.CycleCollecteRepository;
 import cm.imf.pipeline.security.TenantContext;
 import cm.imf.pipeline.service.ICollecteEpargneService;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -39,10 +41,11 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class CollecteEpargneServiceImpl implements ICollecteEpargneService {
 
-    private final CollecteEpargneRepository collecteRepo;
-    private final AgenceRepository          agenceRepo;
-    private final CycleCollecteRepository   cycleRepo;
-    private final JdbcTemplate              jdbc;
+    private final CollecteEpargneRepository  collecteRepo;
+    private final AgenceRepository           agenceRepo;
+    private final CycleCollecteRepository    cycleRepo;
+    private final JdbcTemplate               jdbc;
+    private final ApplicationEventPublisher  eventPublisher;
 
     // ── soumettre ─────────────────────────────────────────────────────────────
 
@@ -117,6 +120,22 @@ public class CollecteEpargneServiceImpl implements ICollecteEpargneService {
 
         log.info("Sync batch épargne — total: {}, acceptées: {}, doublons: {}, rejetées: {}",
                 totalRecu, acceptees, doublons, rejetees);
+
+        // ── Déclencher le scoring temps réel pour les clients nouvellement insérés ──
+        if (!uuidsAcceptes.isEmpty()) {
+            User   agent  = TenantContext.currentUser();
+            Long   imfId  = TenantContext.currentImfId();
+            // Collecte les clientIdExterne des collectes acceptées
+            List<String> clientIds = request.collectes().stream()
+                    .filter(req -> uuidsAcceptes.contains(req.uuidMobile()))
+                    .map(CollecteEpargneRequest::clientIdExterne)
+                    .filter(id -> id != null && !id.isBlank())
+                    .distinct()
+                    .toList();
+            eventPublisher.publishEvent(
+                    new SyncCompletedEvent(this, null, agent.getUsername(), clientIds, imfId));
+        }
+
         return new SyncCollectesResponse(totalRecu, acceptees, doublons, rejetees,
                 uuidsAcceptes, uuidsDoublons, details);
     }

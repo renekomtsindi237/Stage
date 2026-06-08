@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/constants/app_theme.dart';
 import 'core/providers/auth_provider.dart';
@@ -13,10 +14,18 @@ import 'core/services/pret_service.dart';
 import 'core/services/alerte_service.dart';
 import 'core/services/client_service.dart';
 import 'core/services/connectivity_service.dart';
+import 'core/services/sync_service.dart';
+import 'core/services/sse_service.dart';
+import 'core/providers/sync_provider.dart';
 import 'router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://ceiqkvvacjsakycsgcfz.supabase.co',
+    publishableKey: 'sb_publishable_GifXP3zMMqUwrF2mSgL5IA_4sgS1i21',
+  );
 
   // Orientation portrait uniquement
   await SystemChrome.setPreferredOrientations([
@@ -45,6 +54,15 @@ void main() async {
         Provider<AlerteService>(create: (_) => AlerteService(apiService)),
         Provider<ClientService>(create: (_) => ClientService(apiService)),
         Provider<ConnectivityService>(create: (_) => ConnectivityService()),
+        Provider<SyncService>(create: (_) => SyncService(apiService)),
+        Provider<SseService>(create: (_) => SseService(storageService)),
+        ChangeNotifierProvider(
+          create: (ctx) => SyncProvider(
+            ctx.read<SyncService>(),
+            ctx.read<SseService>(),
+            ctx.read<ConnectivityService>(),
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
       ],

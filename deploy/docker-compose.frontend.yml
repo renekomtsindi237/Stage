@@ -1,0 +1,38 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# IMF Pipeline — Stack Frontend Web (Staging)
+#
+# Entry point Web : http://VPS_IP:9091
+#
+# Ce fichier est déployé indépendamment du backend.
+# L'API backend (Spring Boot) est supposée déjà active sur http://VPS_IP:9200
+# (ou via la gateway nginx-api sur port 9090).
+#
+# Le nginx interne du conteneur proxie /api/ directement vers 127.0.0.1:9200
+# (network_mode: host → même namespace réseau que le backend).
+#
+# Image injectée via .env.staging : GHCR_BASE
+# ══════════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── Frontend Angular (nginx sur port 9091) ───────────────────────────────────
+  frontend:
+    image: ${GHCR_BASE}/imf-frontend:staging
+    container_name: imf-frontend
+    restart: unless-stopped
+    network_mode: host
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=50M
+      - /var/run:size=5M
+      - /tmp:size=10M
+    volumes:
+      - ./nginx/nginx-frontend-staging.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9091/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

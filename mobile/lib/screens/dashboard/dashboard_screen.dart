@@ -7,6 +7,7 @@ import '../../core/models/alerte.dart';
 import '../../core/models/kpi_summary.dart';
 import '../../core/models/pret.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/sync_provider.dart';
 import '../../core/services/alerte_service.dart';
 import '../../core/services/kpi_service.dart';
 import '../../core/services/pret_service.dart';
@@ -137,6 +138,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // Header card
                     _buildHeaderCard(user?.fullName ?? user?.username ?? 'Utilisateur',
                         user?.displayRole ?? user?.role ?? ''),
+                    const SizedBox(height: 12),
+                    // Carte synchronisation + scoring temps réel
+                    _buildSyncCard(),
                     const SizedBox(height: 20),
                     // KPI Cards grid
                     _buildKpiSection(),
@@ -504,6 +508,123 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildSyncCard() {
+    final sync = context.watch<SyncProvider>();
+
+    // Couleur et icône selon l'état du scoring
+    Color stateColor;
+    IconData stateIcon;
+    String stateLabel;
+    switch (sync.scoringState) {
+      case ScoringState.pending:
+        stateColor = AppColors.warning;
+        stateIcon  = Icons.autorenew_rounded;
+        stateLabel = 'Analyse MCRS en cours…';
+      case ScoringState.done:
+        stateColor = AppColors.success;
+        stateIcon  = Icons.check_circle_outline_rounded;
+        stateLabel = 'Scores mis à jour (${sync.latestScores.length} client(s))';
+      case ScoringState.unavailable:
+        stateColor = AppColors.textSecondary;
+        stateIcon  = Icons.cloud_off_rounded;
+        stateLabel = 'Scoring non disponible';
+      case ScoringState.idle:
+        stateColor = AppColors.teal;
+        stateIcon  = Icons.sync_rounded;
+        stateLabel = sync.pendingCount > 0
+            ? '${sync.pendingCount} collecte(s) en attente'
+            : sync.lastResult != null
+                ? 'Dernière sync : ${sync.lastResult!.resume}'
+                : 'Synchronisation à jour';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.darkSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.darkBorder),
+      ),
+      child: Row(
+        children: [
+          // Icône d'état (animée si pending)
+          sync.scoringState == ScoringState.pending
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(stateColor),
+                  ),
+                )
+              : Icon(stateIcon, color: stateColor, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  stateLabel,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: stateColor,
+                  ),
+                ),
+                if (sync.syncError != null)
+                  Text(
+                    sync.syncError!,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 11,
+                      color: AppColors.error,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Bouton sync manuelle
+          GestureDetector(
+            onTap: sync.syncing ? null : () => sync.syncNow(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: sync.syncing
+                    ? AppColors.darkBorder
+                    : AppColors.teal.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: sync.syncing
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.sync_rounded,
+                            size: 14, color: AppColors.teal),
+                        const SizedBox(width: 4),
+                        Text(
+                          sync.pendingCount > 0 ? 'Syncer' : 'Actualiser',
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.teal,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

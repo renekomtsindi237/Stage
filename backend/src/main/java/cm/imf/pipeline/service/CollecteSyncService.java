@@ -11,6 +11,7 @@ import cm.imf.pipeline.event.SyncCompletedEvent;
 import cm.imf.pipeline.i18n.SyncMessages;
 import cm.imf.pipeline.repository.CollecteRepository;
 import cm.imf.pipeline.repository.SyncLogRepository;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -97,9 +98,19 @@ public class CollecteSyncService implements ICollecteSyncService {
 
         SyncResponse response = SyncResponse.of(request.syncId(), resultats, messageResume);
 
-        // ── Publication de l'événement SSE ────────────────────────────────────
+        // ── Collecte des clientIds nouvellement insérés (pour scoring temps réel) ──
+        List<String> clientIds = new ArrayList<>();
+        for (int i = 0; i < request.items().size(); i++) {
+            if (SyncItemResult.CODE_SUCCESS.equals(resultats.get(i).code())) {
+                String cid = request.items().get(i).clientId();
+                if (cid != null && !cid.isBlank()) clientIds.add(cid);
+            }
+        }
+
+        // ── Publication de l'événement SSE + scoring ──────────────────────────
+        Long imfId = agent.getImf() != null ? agent.getImf().getId() : null;
         eventPublisher.publishEvent(
-                new SyncCompletedEvent(this, response, agent.getUsername()));
+                new SyncCompletedEvent(this, response, agent.getUsername(), clientIds, imfId));
 
         log.info("Sync terminée — syncId: {}, statut: {}, succes: {}/{}, conflits: {}",
                 request.syncId(), statutGlobal, stats.succes(), stats.total(), stats.conflits());

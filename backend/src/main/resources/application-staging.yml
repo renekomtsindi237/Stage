@@ -1,18 +1,26 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:staging-db}:${POSTGRES_PORT:5432}/${POSTGRES_DB:imf_staging}?sslmode=${POSTGRES_SSL_MODE:require}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    # Supabase PostgreSQL — transaction pooler (PgBouncer)
+    # prepareThreshold=0 désactive les prepared statements serveur (incompatibles avec le pooler)
+    url: jdbc:postgresql://aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
+    username: ${SUPABASE_DB_USER:postgres.ceiqkvvacjsakycsgcfz}
+    password: ${SUPABASE_DB_PASSWORD}
     hikari:
+      maximum-pool-size: 8
+      minimum-idle: 2
+      connection-timeout: 30000
       data-source-properties:
+        prepareThreshold: 0
         ssl: true
         sslmode: require
+
   jpa:
     show-sql: false
+
   data:
     redis:
-      host: ${REDIS_HOST:redis}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6380}
       password: ${REDIS_PASSWORD:}
 
   mail:
@@ -34,7 +42,7 @@ logging:
 imf:
   pipeline:
     firebase-enabled: ${FIREBASE_ENABLED:false}
-    internal-api-key: ${INTERNAL_API_KEY}
+    internal-api-key: ${INTERNAL_API_KEY:changeme}
     dw-schema: ${DW_SCHEMA:dw}
     staging-schema: ${STAGING_SCHEMA:staging}
     scheduler:

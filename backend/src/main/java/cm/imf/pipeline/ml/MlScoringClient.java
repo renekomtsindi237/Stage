@@ -42,6 +42,29 @@ public class MlScoringClient {
     }
 
     /**
+     * Envoie un client unique au service MCRS pour un scoring temps réel.
+     * Utilisé après chaque synchronisation mobile pour mettre à jour le score
+     * sans attendre le batch Airflow quotidien.
+     *
+     * Les features manquantes (null dans le DTO) sont imputées avec les médianes
+     * sectorielles par FastAPI (FEATURE_DEFAULTS dans mcrs_model.py).
+     */
+    public Optional<ScoringResultDto> scoreSingle(FeatureInputDto input) {
+        try {
+            ScoringResultDto result = mlRestClient.post()
+                    .uri("/score/single")
+                    .body(input)
+                    .retrieve()
+                    .body(ScoringResultDto.class);
+            return Optional.ofNullable(result);
+        } catch (RestClientException e) {
+            log.warn("ML API /score/single indisponible pour client {} : {}",
+                    input.clientIdExterne(), e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Vérifie que le service ML est opérationnel et que le modèle est chargé.
      * Retourne Optional.empty() si le service ne répond pas (503 ou timeout).
      */

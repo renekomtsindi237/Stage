@@ -3,7 +3,7 @@ name: CI/CD — IMF Pipeline
 # ──────────────────────────────────────────────────────────────────────────────
 # Stratégie :
 #   push dev/staging/main  → CI complet (qualité + tests)
-#   push main/staging      → CI + Build 4 images Docker + Bootstrap VPS + Deploy Staging
+#   push main/staging      → CI + Build 4 images Docker + Bootstrap VPS + Deploy
 #   workflow_dispatch      → CI + deploy staging OU production selon inputs
 #   pull_request           → CI uniquement (pas de deploy)
 #
@@ -14,23 +14,28 @@ name: CI/CD — IMF Pipeline
 #   imf-frontend  → web/Dockerfile           (Angular 17 / nginx)
 #
 # Fichiers de déploiement (versionnés dans le repo) :
-#   deploy/docker-compose.staging.yml
-#   deploy/nginx/nginx-imf.conf
-#   deploy/nginx/frontend-staging.conf
-#   deploy/init-db.sh
+#   deploy/docker-compose.backend-pipeline.yml  ← backend + pipeline + nginx-api
+#   deploy/docker-compose.frontend.yml           ← frontend Angular
+#   deploy/nginx/nginx-api-staging.conf          ← port 9090 (API gateway)
+#   deploy/nginx/nginx-frontend-staging.conf     ← port 9091 (Angular SPA)
 #
 # Secrets GitHub requis :
 #   STAGING_HOST, STAGING_USER, STAGING_SSH_KEY, STAGING_PORT
-#   STAGING_DB_PASSWORD        — mot de passe PostgreSQL staging
-#   STAGING_JWT_SECRET         — secret JWT Spring Boot + Airflow webserver
-#   STAGING_AIRFLOW_FERNET_KEY — clé Fernet Airflow (base64url 32 octets)
+#   STAGING_SUPABASE_DB_PASSWORD   — mot de passe Supabase PostgreSQL
+#   STAGING_SUPABASE_ANON_KEY      — clé anon Supabase (publishable)
+#   STAGING_AIRFLOW_DB_PASSWORD    — mot de passe PostgreSQL local Airflow
+#   STAGING_JWT_SECRET             — secret JWT Spring Boot + Airflow
+#   STAGING_AIRFLOW_FERNET_KEY     — clé Fernet Airflow (base64url 32 octets)
 #   STAGING_AIRFLOW_ADMIN_PASSWORD — mot de passe UI Airflow
 #   PROD_HOST, PROD_USER, PROD_SSH_KEY
-#   PROD_DB_PASSWORD, PROD_JWT_SECRET, PROD_AIRFLOW_FERNET_KEY, PROD_AIRFLOW_ADMIN_PASSWORD
+#   PROD_SUPABASE_DB_PASSWORD, PROD_SUPABASE_ANON_KEY, PROD_AIRFLOW_DB_PASSWORD
+#   PROD_JWT_SECRET, PROD_AIRFLOW_FERNET_KEY, PROD_AIRFLOW_ADMIN_PASSWORD
 #
 # Variables GitHub requises :
-#   STAGING_URL     ex : http://84.247.128.40:9090
-#   PRODUCTION_URL  ex : https://imf.votredomaine.com
+#   STAGING_URL      ex : http://84.247.128.40:9090  (API gateway)
+#   STAGING_WEB_URL  ex : http://84.247.128.40:9091  (Frontend web)
+#   PRODUCTION_URL      ex : https://api.imf.votredomaine.com
+#   PRODUCTION_WEB_URL  ex : https://app.imf.votredomaine.com
 # ──────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -326,7 +331,7 @@ jobs:
 
   # ════════════════════════════════════════════════════════════════════════════
   # JOB 8 — Bootstrap VPS Staging
-  # Installe Docker + Compose + IPv6 + répertoires, puis initialise Airflow DB
+  # Installe Docker + Compose + IPv6 + répertoires
   # ════════════════════════════════════════════════════════════════════════════
   bootstrap-staging:
     name: "Bootstrap VPS Staging"
@@ -340,7 +345,9 @@ jobs:
         run: |
           echo "::add-mask::${{ secrets.STAGING_HOST }}"
           echo "::add-mask::${{ secrets.STAGING_SSH_KEY }}"
-          echo "::add-mask::${{ secrets.STAGING_DB_PASSWORD }}"
+          echo "::add-mask::${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}"
+          echo "::add-mask::${{ secrets.STAGING_SUPABASE_ANON_KEY }}"
+          echo "::add-mask::${{ secrets.STAGING_AIRFLOW_DB_PASSWORD }}"
           echo "::add-mask::${{ secrets.STAGING_JWT_SECRET }}"
           echo "::add-mask::${{ secrets.STAGING_AIRFLOW_FERNET_KEY }}"
           echo "::add-mask::${{ secrets.STAGING_AIRFLOW_ADMIN_PASSWORD }}"
@@ -376,7 +383,7 @@ jobs:
               echo "==> Compose OK : $(docker compose version)"
             fi
 
-            # ── IPv6 + ip6tables (REJECT Fastly → force IPv4 pour pulls GHCR) ─
+            # ── IPv6 + ip6tables (force IPv4 pour pulls GHCR) ───────────────
             DAEMON_JSON="/etc/docker/daemon.json"
             IP6_RESTART=false
             if [ ! -f "$DAEMON_JSON" ]; then
@@ -399,10 +406,10 @@ jobs:
             echo "==> Répertoires OK"
 
   # ════════════════════════════════════════════════════════════════════════════
-  # JOB 9 — Deploy Staging
+  # JOB 9 — Deploy Backend + Pipeline → Staging  (port 9090)
   # ════════════════════════════════════════════════════════════════════════════
-  deploy-staging:
-    name: "Deploy → Staging"
+  deploy-backend-staging:
+    name: "Deploy Backend + Pipeline → Staging (:9090)"
     needs: bootstrap-staging
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
@@ -419,7 +426,9 @@ jobs:
         run: |
           echo "::add-mask::${{ secrets.STAGING_HOST }}"
           echo "::add-mask::${{ secrets.STAGING_SSH_KEY }}"
-          echo "::add-mask::${{ secrets.STAGING_DB_PASSWORD }}"
+          echo "::add-mask::${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}"
+          echo "::add-mask::${{ secrets.STAGING_SUPABASE_ANON_KEY }}"
+          echo "::add-mask::${{ secrets.STAGING_AIRFLOW_DB_PASSWORD }}"
           echo "::add-mask::${{ secrets.STAGING_JWT_SECRET }}"
           echo "::add-mask::${{ secrets.STAGING_AIRFLOW_FERNET_KEY }}"
           echo "::add-mask::${{ secrets.STAGING_AIRFLOW_ADMIN_PASSWORD }}"
@@ -430,30 +439,32 @@ jobs:
       - name: Lowercase GHCR base
         run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Deploy IMF Pipeline (staging)
+      - name: Deploy backend + pipeline (staging)
         id: deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
-          GHCR_USERNAME:            ${{ github.actor }}
-          GHCR_READ_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
-          GHCR_BASE:                ${{ env.GHCR_BASE }}
-          SHA:                      ${{ env.SHA_SHORT }}
-          DB_PASSWORD:              ${{ secrets.STAGING_DB_PASSWORD }}
-          JWT_SECRET:               ${{ secrets.STAGING_JWT_SECRET }}
-          AIRFLOW_FERNET_KEY:       ${{ secrets.STAGING_AIRFLOW_FERNET_KEY }}
-          AIRFLOW_ADMIN_PASSWORD:   ${{ secrets.STAGING_AIRFLOW_ADMIN_PASSWORD }}
+          GHCR_USERNAME:          ${{ github.actor }}
+          GHCR_READ_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          GHCR_BASE:              ${{ env.GHCR_BASE }}
+          SHA:                    ${{ env.SHA_SHORT }}
+          SUPABASE_DB_PASSWORD:   ${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}
+          SUPABASE_ANON_KEY:      ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          AIRFLOW_DB_PASSWORD:    ${{ secrets.STAGING_AIRFLOW_DB_PASSWORD }}
+          JWT_SECRET:             ${{ secrets.STAGING_JWT_SECRET }}
+          AIRFLOW_FERNET_KEY:     ${{ secrets.STAGING_AIRFLOW_FERNET_KEY }}
+          AIRFLOW_ADMIN_PASSWORD: ${{ secrets.STAGING_AIRFLOW_ADMIN_PASSWORD }}
         with:
           host:     ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key:      ${{ secrets.STAGING_SSH_KEY }}
           port:     ${{ secrets.STAGING_PORT }}
-          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD
           command_timeout: 30m
           script: |
             set -euo pipefail
             APP_DIR="/opt/imf-pipeline"
             ENVFILE="$APP_DIR/.env.staging"
-            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.staging.yml"
+            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.backend-pipeline.yml"
             DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
 
             # ── Clone ou mise à jour du dépôt ─────────────────────────────
@@ -466,25 +477,22 @@ jobs:
               git fetch origin main
               git reset --hard origin/main
             else
-              echo "==> Clone initial (répertoire préexistant préservé)"
-              # bootstrap a pu créer /opt/imf-pipeline/{backups,logs} avant le clone
+              echo "==> Clone initial"
               git clone "$REPO_URL" /tmp/imf-clone
               cp -a /tmp/imf-clone/. "$APP_DIR/"
               rm -rf /tmp/imf-clone
               cd "$APP_DIR"
             fi
-            chmod +x "$APP_DIR/deploy/init-db.sh"
 
-            # ── Écriture .env.staging (secrets injectés par GitHub Actions) ─
+            # ── Écriture .env.staging ─────────────────────────────────────
             cat > "$ENVFILE" << ENVEOF
             # Généré automatiquement par GitHub Actions — NE PAS MODIFIER MANUELLEMENT
             GHCR_BASE=${GHCR_BASE}
             VPS_IP=${{ secrets.STAGING_HOST }}
 
-            DB_USER=imf_user
-            DB_PASSWORD=${DB_PASSWORD}
-            DB_NAME=imf_db
-            DB_AIRFLOW=airflow_db
+            SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
+            SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+            AIRFLOW_DB_PASSWORD=${AIRFLOW_DB_PASSWORD}
 
             JWT_SECRET=${JWT_SECRET}
             AIRFLOW_FERNET_KEY=${AIRFLOW_FERNET_KEY}
@@ -502,8 +510,8 @@ jobs:
             ip6tables -I OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
               -j REJECT --reject-with tcp-reset 2>/dev/null || true
 
-            # ── Pull des images (avec retry x5) ──────────────────────────
-            for service in backend ml-api airflow-webserver airflow-scheduler frontend; do
+            # ── Pull images backend + pipeline (retry x5) ─────────────────
+            for service in backend ml-api airflow-webserver airflow-scheduler; do
               PULL_OK=0
               for attempt in 1 2 3 4 5; do
                 if $DC pull $service 2>&1; then PULL_OK=1; break; fi
@@ -521,40 +529,41 @@ jobs:
               -j REJECT --reject-with tcp-reset 2>/dev/null || true
 
             # ── Sauvegarde images pour rollback ──────────────────────────
-            for service in backend ml-api airflow-webserver frontend; do
+            for service in backend ml-api airflow-webserver; do
               CT=$(docker ps -q --filter "name=imf-${service}" 2>/dev/null | head -1)
               [ -n "$CT" ] && docker inspect --format='{{.Config.Image}}' "$CT" 2>/dev/null \
                 > "$APP_DIR/.rollback_${service}_staging" || true
             done
 
-            # ── Arrêt propre ──────────────────────────────────────────────
+            # ── Arrêt propre de la stack backend ─────────────────────────
             $DC down --remove-orphans 2>/dev/null || true
 
-            # ── Démarrage PostgreSQL + Redis d'abord ─────────────────────
-            $DC up -d db redis
-            echo "==> Attente DB healthy..."
+            # ── Démarrage Airflow DB + Redis ──────────────────────────────
+            $DC up -d airflow-db redis
+            echo "==> Attente Airflow DB healthy..."
             for i in $(seq 1 30); do
-              STATUS=$(docker inspect imf-db --format '{{.State.Health.Status}}' 2>/dev/null || echo "missing")
+              STATUS=$(docker inspect imf-airflow-db --format '{{.State.Health.Status}}' 2>/dev/null || echo "missing")
               [ "$STATUS" = "healthy" ] && break
-              echo "  DB status: $STATUS ($i/30)"
+              echo "  Airflow DB status: $STATUS ($i/30)"
               sleep 3
             done
 
-            # ── Init Airflow (premier déploiement uniquement) ─────────────
-            FLAG="$APP_DIR/.airflow_initialized"
+            # ── Init Airflow (base dédiée airflow-db, une seule fois) ─────
+            FLAG="$APP_DIR/.airflow_v2_initialized"
             if [ ! -f "$FLAG" ]; then
-              echo "==> Init Airflow DB (premier déploiement)..."
+              rm -f "$APP_DIR/.airflow_initialized"
+              echo "==> Init Airflow DB (airflow-db dédié)..."
               $DC --profile init run --rm airflow-init && touch "$FLAG"
               echo "==> Airflow init OK"
             else
               echo "==> Airflow déjà initialisé — skip"
             fi
 
-            # ── Démarrage de la stack complète ───────────────────────────
+            # ── Démarrage stack backend complète ─────────────────────────
             if ! $DC up -d --wait --wait-timeout 300 2>&1; then
               echo ""
               echo "==> ERREUR — état des conteneurs :"
-              for ct in imf-backend imf-ml-api imf-airflow-webserver imf-airflow-scheduler imf-frontend imf-nginx; do
+              for ct in imf-airflow-db imf-redis imf-backend imf-ml-api imf-airflow-webserver imf-airflow-scheduler imf-nginx-api; do
                 echo "  $ct: $(docker inspect $ct \
                   --format 'status={{.State.Status}} exit={{.State.ExitCode}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}n/a{{end}}' \
                   2>/dev/null || echo 'not found')"
@@ -564,23 +573,23 @@ jobs:
               $DC logs ml-api  --tail 30 2>&1 || true
               exit 1
             fi
-            echo "==> Deploy Staging OK : sha=${SHA}"
+            echo "==> Deploy Backend Staging OK : sha=${SHA}"
 
-      - name: Health check public
+      - name: Health check API (port 9090)
         run: |
           for i in 1 2 3 4 5; do
             sleep 20
             if curl -fsS "${{ vars.STAGING_URL }}/health" 2>/dev/null; then
               echo ""
-              echo "==> Health check OK (${{ vars.STAGING_URL }})"
+              echo "==> Health check API OK (${{ vars.STAGING_URL }})"
               exit 0
             fi
             echo "Tentative $i/5 échouée..."
           done
-          echo "Health check final échoué"
+          echo "Health check API final échoué"
           exit 1
 
-      - name: Rollback automatique
+      - name: Rollback automatique backend
         if: failure() && steps.deploy.outcome == 'success'
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -591,12 +600,12 @@ jobs:
           script: |
             set -euo pipefail
             APP_DIR="/opt/imf-pipeline"
-            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.staging.yml"
+            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.backend-pipeline.yml"
 
-            echo "==> ROLLBACK Staging déclenché"
+            echo "==> ROLLBACK Backend Staging déclenché"
             $DC down --remove-orphans 2>/dev/null || true
 
-            for service in backend ml-api airflow-webserver frontend; do
+            for service in backend ml-api airflow-webserver; do
               ROLLBACK=$(cat "$APP_DIR/.rollback_${service}_staging" 2>/dev/null || echo "")
               if [ -n "$ROLLBACK" ]; then
                 echo "==> Rollback $service → $ROLLBACK"
@@ -605,14 +614,163 @@ jobs:
             done
 
             $DC up -d --wait --wait-timeout 120
-            echo "==> Rollback Staging OK"
+            echo "==> Rollback Backend Staging OK"
 
   # ════════════════════════════════════════════════════════════════════════════
-  # JOB 10 — Deploy Production  (manuel uniquement, confirmation 'DEPLOY')
+  # JOB 10 — Deploy Frontend → Staging  (port 9091)
   # ════════════════════════════════════════════════════════════════════════════
-  deploy-production:
-    name: "Deploy → Production"
-    needs: [build-backend, build-ml-api, build-airflow, build-frontend]
+  deploy-frontend-staging:
+    name: "Deploy Frontend Web → Staging (:9091)"
+    needs: bootstrap-staging
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
+      || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env != 'production')
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_WEB_URL }}
+    outputs:
+      deployed: ${{ steps.deploy.outcome }}
+
+    steps:
+      - name: Mask secrets
+        run: |
+          echo "::add-mask::${{ secrets.STAGING_HOST }}"
+          echo "::add-mask::${{ secrets.STAGING_SSH_KEY }}"
+
+      - name: Short SHA
+        run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
+
+      - name: Lowercase GHCR base
+        run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Deploy frontend web (staging)
+        id: deploy
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_USERNAME:   ${{ github.actor }}
+          GHCR_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_BASE:       ${{ env.GHCR_BASE }}
+          SHA:             ${{ env.SHA_SHORT }}
+        with:
+          host:     ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key:      ${{ secrets.STAGING_SSH_KEY }}
+          port:     ${{ secrets.STAGING_PORT }}
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/imf-pipeline"
+            ENVFILE="$APP_DIR/.env.staging"
+            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.frontend.yml"
+            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
+
+            # ── Mise à jour du dépôt (config nginx frontend) ─────────────
+            REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
+            if [ -d "$APP_DIR/.git" ]; then
+              cd "$APP_DIR"
+              chown -R root:root .git
+              git remote set-url origin "$REPO_URL"
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone "$REPO_URL" /tmp/imf-clone
+              cp -a /tmp/imf-clone/. "$APP_DIR/"
+              rm -rf /tmp/imf-clone
+              cd "$APP_DIR"
+            fi
+
+            # ── Mise à jour de GHCR_BASE dans .env.staging ────────────────
+            if [ -f "$ENVFILE" ]; then
+              sed -i "s|^GHCR_BASE=.*|GHCR_BASE=${GHCR_BASE}|" "$ENVFILE"
+            else
+              echo "GHCR_BASE=${GHCR_BASE}" > "$ENVFILE"
+              chmod 600 "$ENVFILE"
+            fi
+
+            # ── Login GHCR ────────────────────────────────────────────────
+            printf '%s' "${GHCR_READ_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
+
+            # ── Force IPv4 pour les pulls Docker ─────────────────────────
+            ip6tables -I OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
+              -j REJECT --reject-with tcp-reset 2>/dev/null || true
+
+            # ── Pull image frontend (retry x5) ────────────────────────────
+            PULL_OK=0
+            for attempt in 1 2 3 4 5; do
+              if $DC pull frontend 2>&1; then PULL_OK=1; break; fi
+              echo "==> frontend — pull failed (${attempt}/5), retry dans $((attempt * 5))s..."
+              sleep $((attempt * 5))
+            done
+            if [ "$PULL_OK" -ne 1 ]; then
+              echo "==> ERROR: impossible de puller frontend après 5 tentatives"
+              exit 1
+            fi
+
+            # ── Restaurer IPv6 ────────────────────────────────────────────
+            ip6tables -D OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
+              -j REJECT --reject-with tcp-reset 2>/dev/null || true
+
+            # ── Sauvegarde image pour rollback ────────────────────────────
+            CT=$(docker ps -q --filter "name=imf-frontend" 2>/dev/null | head -1)
+            [ -n "$CT" ] && docker inspect --format='{{.Config.Image}}' "$CT" 2>/dev/null \
+              > "$APP_DIR/.rollback_frontend_staging" || true
+
+            # ── Arrêt et redémarrage du frontend ─────────────────────────
+            $DC down --remove-orphans 2>/dev/null || true
+
+            if ! $DC up -d --wait --wait-timeout 120 2>&1; then
+              echo ""
+              echo "==> ERREUR — état du conteneur frontend :"
+              docker inspect imf-frontend \
+                --format 'status={{.State.Status}} exit={{.State.ExitCode}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}n/a{{end}}' \
+                2>/dev/null || echo "not found"
+              $DC logs frontend --tail 40 2>&1 || true
+              exit 1
+            fi
+            echo "==> Deploy Frontend Staging OK : sha=${SHA}"
+
+      - name: Health check Web (port 9091)
+        run: |
+          for i in 1 2 3 4 5; do
+            sleep 15
+            if curl -fsS "${{ vars.STAGING_WEB_URL }}/health" 2>/dev/null; then
+              echo ""
+              echo "==> Health check Web OK (${{ vars.STAGING_WEB_URL }})"
+              exit 0
+            fi
+            echo "Tentative $i/5 échouée..."
+          done
+          echo "Health check Web final échoué"
+          exit 1
+
+      - name: Rollback automatique frontend
+        if: failure() && steps.deploy.outcome == 'success'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key:      ${{ secrets.STAGING_SSH_KEY }}
+          port:     ${{ secrets.STAGING_PORT }}
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/imf-pipeline"
+            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.frontend.yml"
+
+            echo "==> ROLLBACK Frontend Staging déclenché"
+            $DC down --remove-orphans 2>/dev/null || true
+            ROLLBACK=$(cat "$APP_DIR/.rollback_frontend_staging" 2>/dev/null || echo "")
+            [ -n "$ROLLBACK" ] && docker pull "$ROLLBACK"
+            $DC up -d --wait --wait-timeout 60
+            echo "==> Rollback Frontend Staging OK"
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # JOB 11 — Deploy Backend + Pipeline → Production  (manuel uniquement)
+  # ════════════════════════════════════════════════════════════════════════════
+  deploy-backend-production:
+    name: "Deploy Backend + Pipeline → Production"
+    needs: [build-backend, build-ml-api, build-airflow]
     if: |
       github.event_name == 'workflow_dispatch'
       && github.event.inputs.deploy_env == 'production'
@@ -627,7 +785,9 @@ jobs:
         run: |
           echo "::add-mask::${{ secrets.PROD_HOST }}"
           echo "::add-mask::${{ secrets.PROD_SSH_KEY }}"
-          echo "::add-mask::${{ secrets.PROD_DB_PASSWORD }}"
+          echo "::add-mask::${{ secrets.PROD_SUPABASE_DB_PASSWORD }}"
+          echo "::add-mask::${{ secrets.PROD_SUPABASE_ANON_KEY }}"
+          echo "::add-mask::${{ secrets.PROD_AIRFLOW_DB_PASSWORD }}"
           echo "::add-mask::${{ secrets.PROD_JWT_SECRET }}"
           echo "::add-mask::${{ secrets.PROD_AIRFLOW_FERNET_KEY }}"
           echo "::add-mask::${{ secrets.PROD_AIRFLOW_ADMIN_PASSWORD }}"
@@ -638,7 +798,7 @@ jobs:
       - name: Lowercase GHCR base
         run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Deploy IMF Pipeline (production)
+      - name: Deploy backend + pipeline (production)
         id: deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -646,7 +806,9 @@ jobs:
           GHCR_READ_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
           GHCR_BASE:              ${{ env.GHCR_BASE }}
           SHA:                    ${{ env.SHA_SHORT }}
-          DB_PASSWORD:            ${{ secrets.PROD_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD:   ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
+          SUPABASE_ANON_KEY:      ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          AIRFLOW_DB_PASSWORD:    ${{ secrets.PROD_AIRFLOW_DB_PASSWORD }}
           JWT_SECRET:             ${{ secrets.PROD_JWT_SECRET }}
           AIRFLOW_FERNET_KEY:     ${{ secrets.PROD_AIRFLOW_FERNET_KEY }}
           AIRFLOW_ADMIN_PASSWORD: ${{ secrets.PROD_AIRFLOW_ADMIN_PASSWORD }}
@@ -654,13 +816,13 @@ jobs:
           host:     ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key:      ${{ secrets.PROD_SSH_KEY }}
-          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD
-          command_timeout: 20m
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD
+          command_timeout: 30m
           script: |
             set -euo pipefail
             APP_DIR="/opt/imf-pipeline"
             ENVFILE="$APP_DIR/.env.production"
-            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.staging.yml"
+            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.backend-pipeline.yml"
             DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
 
             REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
@@ -674,15 +836,16 @@ jobs:
               rm -rf /tmp/imf-clone
               cd "$APP_DIR"
             fi
-            chmod +x "$APP_DIR/deploy/init-db.sh"
 
             cat > "$ENVFILE" << ENVEOF
+            # Généré automatiquement par GitHub Actions — NE PAS MODIFIER MANUELLEMENT
             GHCR_BASE=${GHCR_BASE}
             VPS_IP=${{ secrets.PROD_HOST }}
-            DB_USER=imf_user
-            DB_PASSWORD=${DB_PASSWORD}
-            DB_NAME=imf_db
-            DB_AIRFLOW=airflow_db
+
+            SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
+            SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+            AIRFLOW_DB_PASSWORD=${AIRFLOW_DB_PASSWORD}
+
             JWT_SECRET=${JWT_SECRET}
             AIRFLOW_FERNET_KEY=${AIRFLOW_FERNET_KEY}
             AIRFLOW_ADMIN_USER=admin
@@ -696,7 +859,7 @@ jobs:
             ip6tables -I OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
               -j REJECT --reject-with tcp-reset 2>/dev/null || true
 
-            for service in backend ml-api airflow-webserver airflow-scheduler frontend; do
+            for service in backend ml-api airflow-webserver airflow-scheduler; do
               PULL_OK=0
               for attempt in 1 2 3 4 5; do
                 if $DC pull $service; then PULL_OK=1; break; fi
@@ -708,42 +871,44 @@ jobs:
             ip6tables -D OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
               -j REJECT --reject-with tcp-reset 2>/dev/null || true
 
-            for service in backend ml-api airflow-webserver frontend; do
+            for service in backend ml-api airflow-webserver; do
               CT=$(docker ps -q --filter "name=imf-${service}" 2>/dev/null | head -1)
               [ -n "$CT" ] && docker inspect --format='{{.Config.Image}}' "$CT" 2>/dev/null \
                 > "$APP_DIR/.rollback_${service}_prod" || true
             done
 
             $DC down --remove-orphans 2>/dev/null || true
-            $DC up -d db redis
+
+            $DC up -d airflow-db redis
             for i in $(seq 1 30); do
-              STATUS=$(docker inspect imf-db --format '{{.State.Health.Status}}' 2>/dev/null || echo "missing")
+              STATUS=$(docker inspect imf-airflow-db --format '{{.State.Health.Status}}' 2>/dev/null || echo "missing")
               [ "$STATUS" = "healthy" ] && break
               sleep 3
             done
 
-            FLAG="$APP_DIR/.airflow_initialized"
+            FLAG="$APP_DIR/.airflow_v2_initialized"
             if [ ! -f "$FLAG" ]; then
+              rm -f "$APP_DIR/.airflow_initialized"
               $DC --profile init run --rm airflow-init && touch "$FLAG"
             fi
 
             $DC up -d --wait --wait-timeout 300
-            echo "==> Deploy Production OK : sha=${SHA}"
+            echo "==> Deploy Backend Production OK : sha=${SHA}"
 
-      - name: Health check production
+      - name: Health check production API
         run: |
           for i in 1 2 3 4 5; do
             sleep 20
             if curl -fsS "${{ vars.PRODUCTION_URL }}/health" 2>/dev/null; then
-              echo "==> Production OK"
+              echo "==> Production API OK"
               exit 0
             fi
             echo "Tentative $i/5 échouée"
           done
-          echo "Health check production échoué"
+          echo "Health check production API échoué"
           exit 1
 
-      - name: Rollback production
+      - name: Rollback production backend
         if: failure() && steps.deploy.outcome == 'success'
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -752,17 +917,136 @@ jobs:
           key:      ${{ secrets.PROD_SSH_KEY }}
           script: |
             APP_DIR="/opt/imf-pipeline"
-            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.staging.yml"
+            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.backend-pipeline.yml"
             $DC down --remove-orphans 2>/dev/null || true
-            for service in backend ml-api airflow-webserver frontend; do
+            for service in backend ml-api airflow-webserver; do
               ROLLBACK=$(cat "$APP_DIR/.rollback_${service}_prod" 2>/dev/null || echo "")
               [ -n "$ROLLBACK" ] && docker pull "$ROLLBACK"
             done
             $DC up -d --wait --wait-timeout 120
-            echo "==> Rollback Production OK"
+            echo "==> Rollback Backend Production OK"
 
   # ════════════════════════════════════════════════════════════════════════════
-  # JOB 11 — Résumé Pipeline  (toujours affiché)
+  # JOB 12 — Deploy Frontend → Production  (manuel uniquement)
+  # ════════════════════════════════════════════════════════════════════════════
+  deploy-frontend-production:
+    name: "Deploy Frontend Web → Production"
+    needs: [build-frontend]
+    if: |
+      github.event_name == 'workflow_dispatch'
+      && github.event.inputs.deploy_env == 'production'
+      && github.event.inputs.confirm_prod == 'DEPLOY'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_WEB_URL }}
+
+    steps:
+      - name: Mask secrets
+        run: |
+          echo "::add-mask::${{ secrets.PROD_HOST }}"
+          echo "::add-mask::${{ secrets.PROD_SSH_KEY }}"
+
+      - name: Short SHA
+        run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
+
+      - name: Lowercase GHCR base
+        run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Deploy frontend web (production)
+        id: deploy
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_USERNAME:   ${{ github.actor }}
+          GHCR_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_BASE:       ${{ env.GHCR_BASE }}
+          SHA:             ${{ env.SHA_SHORT }}
+        with:
+          host:     ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key:      ${{ secrets.PROD_SSH_KEY }}
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            APP_DIR="/opt/imf-pipeline"
+            ENVFILE="$APP_DIR/.env.production"
+            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.frontend.yml"
+            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
+
+            REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
+            if [ -d "$APP_DIR/.git" ]; then
+              cd "$APP_DIR"; chown -R root:root .git
+              git remote set-url origin "$REPO_URL"
+              git fetch origin main && git reset --hard origin/main
+            else
+              git clone "$REPO_URL" /tmp/imf-clone
+              cp -a /tmp/imf-clone/. "$APP_DIR/"
+              rm -rf /tmp/imf-clone
+              cd "$APP_DIR"
+            fi
+
+            if [ -f "$ENVFILE" ]; then
+              sed -i "s|^GHCR_BASE=.*|GHCR_BASE=${GHCR_BASE}|" "$ENVFILE"
+            else
+              echo "GHCR_BASE=${GHCR_BASE}" > "$ENVFILE"
+              chmod 600 "$ENVFILE"
+            fi
+
+            printf '%s' "${GHCR_READ_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
+
+            ip6tables -I OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
+              -j REJECT --reject-with tcp-reset 2>/dev/null || true
+
+            PULL_OK=0
+            for attempt in 1 2 3 4 5; do
+              if $DC pull frontend; then PULL_OK=1; break; fi
+              sleep $((attempt * 5))
+            done
+            [ "$PULL_OK" -ne 1 ] && echo "ERROR: pull frontend" && exit 1
+
+            ip6tables -D OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 \
+              -j REJECT --reject-with tcp-reset 2>/dev/null || true
+
+            CT=$(docker ps -q --filter "name=imf-frontend" 2>/dev/null | head -1)
+            [ -n "$CT" ] && docker inspect --format='{{.Config.Image}}' "$CT" 2>/dev/null \
+              > "$APP_DIR/.rollback_frontend_prod" || true
+
+            $DC down --remove-orphans 2>/dev/null || true
+            $DC up -d --wait --wait-timeout 120
+            echo "==> Deploy Frontend Production OK : sha=${SHA}"
+
+      - name: Health check production Web
+        run: |
+          for i in 1 2 3 4 5; do
+            sleep 15
+            if curl -fsS "${{ vars.PRODUCTION_WEB_URL }}/health" 2>/dev/null; then
+              echo "==> Production Web OK"
+              exit 0
+            fi
+            echo "Tentative $i/5 échouée"
+          done
+          echo "Health check production Web échoué"
+          exit 1
+
+      - name: Rollback production frontend
+        if: failure() && steps.deploy.outcome == 'success'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key:      ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            APP_DIR="/opt/imf-pipeline"
+            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.frontend.yml"
+            $DC down --remove-orphans 2>/dev/null || true
+            ROLLBACK=$(cat "$APP_DIR/.rollback_frontend_prod" 2>/dev/null || echo "")
+            [ -n "$ROLLBACK" ] && docker pull "$ROLLBACK"
+            $DC up -d --wait --wait-timeout 60
+            echo "==> Rollback Frontend Production OK"
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # JOB 13 — Résumé Pipeline  (toujours affiché)
   # ════════════════════════════════════════════════════════════════════════════
   summary:
     name: "Résumé Pipeline"
@@ -774,8 +1058,10 @@ jobs:
       - build-ml-api
       - build-airflow
       - build-frontend
-      - deploy-staging
-      - deploy-production
+      - deploy-backend-staging
+      - deploy-frontend-staging
+      - deploy-backend-production
+      - deploy-frontend-production
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -783,12 +1069,12 @@ jobs:
         run: |
           echo "## CI/CD — IMF Pipeline" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Service | CI | Build/Push | Deploy Staging | Deploy Prod |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|----|-----------|--------------|-----------| " >> $GITHUB_STEP_SUMMARY
-          echo "| Backend (Spring Boot / Java 17) | ${{ needs.backend-ci.result }} | ${{ needs.build-backend.result }} | ${{ needs.deploy-staging.result }} | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| ML API (FastAPI / port 8090)    | ${{ needs.pipeline-ci.result }} | ${{ needs.build-ml-api.result }}  | ${{ needs.deploy-staging.result }} | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Airflow + DAGs (port 9202)      | ${{ needs.pipeline-ci.result }} | ${{ needs.build-airflow.result }} | ${{ needs.deploy-staging.result }} | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend Angular (port 8091)    | ${{ needs.frontend-ci.result }} | ${{ needs.build-frontend.result }}| ${{ needs.deploy-staging.result }} | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | CI | Build/Push | Deploy Backend :9090 | Deploy Frontend :9091 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----|-----------|--------------------|---------------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend (Spring Boot)  | ${{ needs.backend-ci.result }}  | ${{ needs.build-backend.result }}  | ${{ needs.deploy-backend-staging.result }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| ML API (FastAPI)       | ${{ needs.pipeline-ci.result }} | ${{ needs.build-ml-api.result }}  | ${{ needs.deploy-backend-staging.result }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| Airflow + DAGs         | ${{ needs.pipeline-ci.result }} | ${{ needs.build-airflow.result }} | ${{ needs.deploy-backend-staging.result }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Angular       | ${{ needs.frontend-ci.result }} | ${{ needs.build-frontend.result }}| — | ${{ needs.deploy-frontend-staging.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Branche | SHA |" >> $GITHUB_STEP_SUMMARY
           echo "|---------|-----|" >> $GITHUB_STEP_SUMMARY
