@@ -427,13 +427,16 @@ jobs:
       - name: Short SHA
         run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
 
+      - name: Lowercase GHCR base
+        run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Deploy IMF Pipeline (staging)
         id: deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
           GHCR_USERNAME:            ${{ github.actor }}
           GHCR_READ_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
-          GHCR_BASE:                ${{ env.REGISTRY }}/${{ github.repository }}
+          GHCR_BASE:                ${{ env.GHCR_BASE }}
           SHA:                      ${{ env.SHA_SHORT }}
           DB_PASSWORD:              ${{ secrets.STAGING_DB_PASSWORD }}
           JWT_SECRET:               ${{ secrets.STAGING_JWT_SECRET }}
@@ -632,13 +635,16 @@ jobs:
       - name: Short SHA
         run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
 
+      - name: Lowercase GHCR base
+        run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Deploy IMF Pipeline (production)
         id: deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
           GHCR_USERNAME:          ${{ github.actor }}
           GHCR_READ_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
-          GHCR_BASE:              ${{ env.REGISTRY }}/${{ github.repository }}
+          GHCR_BASE:              ${{ env.GHCR_BASE }}
           SHA:                    ${{ env.SHA_SHORT }}
           DB_PASSWORD:            ${{ secrets.PROD_DB_PASSWORD }}
           JWT_SECRET:             ${{ secrets.PROD_JWT_SECRET }}
