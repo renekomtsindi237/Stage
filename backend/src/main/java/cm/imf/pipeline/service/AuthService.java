@@ -53,15 +53,19 @@ public class AuthService implements IAuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
-
-        User user = (User) auth.getPrincipal();
+        // Résoudre l'email → username avant d'appeler l'AuthenticationManager
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "Identifiants invalides"));
 
         if (user.getRole() != Role.SUPER_ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Ce compte utilise l'authentification par OTP. Utilisez /auth/request-otp.");
         }
+
+        // AuthenticationManager utilise le username interne pour valider le mot de passe via BCrypt
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), request.password()));
 
         userRepository.updateLastLogin(user.getId(), OffsetDateTime.now());
         return issueTokens(user);

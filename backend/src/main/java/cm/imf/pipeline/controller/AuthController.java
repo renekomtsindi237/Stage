@@ -48,7 +48,7 @@ public class AuthController {
     @Auditable(
         action             = AuditTrail.ACTION_CONNEXION,
         entiteType         = AuditTrail.ENTITE_AUTH,
-        entiteIdExpression = "#request.username",
+        entiteIdExpression = "#request.email",
         captureResult      = true
     )
     public ResponseEntity<AuthResponse> login(
