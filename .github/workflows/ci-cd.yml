@@ -323,6 +323,7 @@ jobs:
         with:
           context: ./web
           file: ./web/Dockerfile
+          target: production
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -621,7 +622,7 @@ jobs:
   # ════════════════════════════════════════════════════════════════════════════
   deploy-frontend-staging:
     name: "Deploy Frontend Web → Staging (:9091)"
-    needs: bootstrap-staging
+    needs: [bootstrap-staging, deploy-backend-staging]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env != 'production')
@@ -670,6 +671,7 @@ jobs:
             REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
             if [ -d "$APP_DIR/.git" ]; then
               cd "$APP_DIR"
+              rm -f .git/index.lock 2>/dev/null || true
               chown -R root:root .git
               git remote set-url origin "$REPO_URL"
               git fetch origin main
