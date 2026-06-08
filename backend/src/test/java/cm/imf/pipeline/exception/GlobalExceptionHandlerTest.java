@@ -33,7 +33,7 @@ class GlobalExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        when(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
+        lenient().when(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                 .thenReturn("invalide");
         handler = new GlobalExceptionHandler(messageSource);
     }

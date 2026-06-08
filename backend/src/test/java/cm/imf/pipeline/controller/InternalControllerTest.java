@@ -2,6 +2,7 @@ package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.repository.AlerteRepository;
 import cm.imf.pipeline.service.INotificationService;
+import cm.imf.pipeline.sse.SseEmitterRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,7 @@ class InternalControllerTest {
 
     @MockBean AlerteRepository        alerteRepository;
     @MockBean INotificationService    notificationService;
+    @MockBean SseEmitterRegistry      sseRegistry;
 
     // ── POST /internal/alertes ────────────────────────────────────────────────
 

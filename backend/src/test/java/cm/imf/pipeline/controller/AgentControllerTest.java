@@ -1,7 +1,10 @@
 package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.AgentResponse;
+import cm.imf.pipeline.repository.AgenceRepository;
+import cm.imf.pipeline.repository.UserRepository;
 import cm.imf.pipeline.service.IAgentService;
+import cm.imf.pipeline.service.IPositionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,9 @@ class AgentControllerTest {
 
     @Autowired MockMvc mockMvc;
     @MockBean IAgentService agentService;
+    @MockBean IPositionService positionService;
+    @MockBean UserRepository userRepository;
+    @MockBean AgenceRepository agenceRepository;
 
     private static final AgentResponse AGENT = new AgentResponse(
             "AG001", null, "Amadou Diallo", "ANC01", "Agence Nord",

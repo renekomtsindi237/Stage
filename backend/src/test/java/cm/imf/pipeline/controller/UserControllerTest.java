@@ -3,6 +3,7 @@ package cm.imf.pipeline.controller;
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.Role;
 import cm.imf.pipeline.service.IUserService;
+import cm.imf.pipeline.service.OnlineTrackingService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ class UserControllerTest {
 
     @Autowired MockMvc mockMvc;
     @MockBean IUserService userService;
+    @MockBean OnlineTrackingService onlineTracking;
 
     private User buildUser() {
         return User.builder()
