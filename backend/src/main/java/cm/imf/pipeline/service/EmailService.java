@@ -3,6 +3,8 @@ package cm.imf.pipeline.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -17,15 +19,16 @@ import java.time.format.DateTimeFormatter;
  * Tous les envois sont asynchrones (@Async) pour ne pas bloquer les requêtes HTTP.
  * Les erreurs d'envoi sont loggées sans être propagées (best-effort).
  *
- * Templates HTML responsive avec design professionnel IMF.
- * Langues : français (langue principale de la plateforme).
+ * Le logo MicroRecouv est intégré en CID inline (MIME multipart/related) —
+ * rendu fiable dans tous les clients mail sans dépendance externe.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final JavaMailSender  mailSender;
+    private final ResourceLoader  resourceLoader;
 
     @Value("${spring.mail.username:noreply@imf.cm}")
     private String fromAddress;
@@ -35,6 +38,9 @@ public class EmailService {
 
     @Value("${imf.app.name:IMF Pipeline}")
     private String appName;
+
+    private static final String LOGO_CID      = "microrecouv-logo";
+    private static final String LOGO_CLASSPATH = "classpath:email/logo.png";
 
     // ══════════════════════════════════════════════════════════════════════════
     // AUTHENTIFICATION
@@ -283,14 +289,29 @@ public class EmailService {
     // INFRASTRUCTURE — envoi + layout HTML
     // ══════════════════════════════════════════════════════════════════════════
 
+    /**
+     * Envoie un email HTML en mode multipart/related.
+     * Le logo MicroRecouv est embarqué en tant qu'image inline (CID)
+     * pour un rendu fiable dans tous les clients mail.
+     */
     private void send(String to, String subject, String html) {
         try {
             var message = mailSender.createMimeMessage();
-            var helper  = new MimeMessageHelper(message, false, "UTF-8");
+            // multipart=true obligatoire pour les images inline CID
+            var helper  = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(fromAddress, appName);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(html, true);
+
+            // Attachment inline CID — logo MicroRecouv embarqué dans l'email
+            Resource logo = resourceLoader.getResource(LOGO_CLASSPATH);
+            if (logo.exists()) {
+                helper.addInline(LOGO_CID, logo, "image/png");
+            } else {
+                log.warn("Logo email introuvable : {}", LOGO_CLASSPATH);
+            }
+
             mailSender.send(message);
             log.info("Email envoyé → {} | {}", to, subject);
         } catch (Exception e) {
@@ -300,6 +321,10 @@ public class EmailService {
 
     // ── Composants HTML ───────────────────────────────────────────────────────
 
+    /**
+     * Layout principal de tous les emails.
+     * L'en-tête affiche le logo MicroRecouv via src="cid:microrecouv-logo".
+     */
     private String layout(String content, String previewText) {
         return """
                 <!DOCTYPE html>
@@ -310,7 +335,7 @@ public class EmailService {
                   <title>%s</title>
                 </head>
                 <body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif">
-                  <!-- Preview text -->
+                  <!-- Preview text (masqué, affiché dans la liste de messages) -->
                   <div style="display:none;max-height:0;overflow:hidden;color:#f0f2f5">%s</div>
 
                   <table width="100%%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:32px 0">
@@ -318,13 +343,17 @@ public class EmailService {
                       <table width="600" cellpadding="0" cellspacing="0"
                              style="max-width:600px;width:100%%">
 
-                        <!-- En-tête marque -->
+                        <!-- En-tête — logo MicroRecouv embarqué (CID inline) -->
                         <tr>
-                          <td style="background:#1565C0;border-radius:8px 8px 0 0;padding:24px 32px;text-align:center">
-                            <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:0.5px">
-                              %s
-                            </h1>
-                            <p style="margin:4px 0 0;color:rgba(255,255,255,0.75);font-size:12px">
+                          <td style="background:#1565C0;border-radius:8px 8px 0 0;
+                                     padding:20px 32px 16px;text-align:center">
+                            <img src="cid:%s"
+                                 alt="%s"
+                                 style="display:block;margin:0 auto;
+                                        max-height:72px;max-width:240px;
+                                        width:auto;height:auto" />
+                            <p style="margin:10px 0 0;color:rgba(255,255,255,0.75);
+                                      font-size:12px;letter-spacing:0.3px">
                               Plateforme de gestion IMF — Cameroun
                             </p>
                           </td>
@@ -332,7 +361,8 @@ public class EmailService {
 
                         <!-- Corps -->
                         <tr>
-                          <td style="background:#ffffff;padding:32px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0">
+                          <td style="background:#ffffff;padding:32px;
+                                     border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0">
                             %s
                           </td>
                         </tr>
@@ -355,13 +385,14 @@ public class EmailService {
                 </body>
                 </html>
                 """.formatted(
-                        escapeHtml(previewText),
-                        escapeHtml(previewText),
-                        escapeHtml(appName),
-                        content,
-                        escapeHtml(appName),
-                        java.time.Year.now().getValue(),
-                        escapeHtml(appName)
+                        escapeHtml(previewText),          // <title>
+                        escapeHtml(previewText),          // preview text masqué
+                        LOGO_CID,                         // cid:microrecouv-logo
+                        escapeHtml(appName),              // alt du logo
+                        content,                          // corps du message
+                        escapeHtml(appName),              // footer "généré par"
+                        java.time.Year.now().getValue(),  // année ©
+                        escapeHtml(appName)               // footer copyright
                 );
     }
 
