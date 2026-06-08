@@ -142,11 +142,15 @@ class ImfIntegrationTest {
     void dashboardSummary_analyste_authentifie() throws Exception {
         Assumptions.assumeTrue(accessToken != null, "Token d'accès requis — test 4 doit passer en premier");
 
-        // En intégration, le DW n'existe pas → la requête SQL échoue ou retourne vide.
-        // On vérifie seulement que la sécurité laisse passer (200 ou 500 mais pas 401/403).
+        // En intégration, le DW n'existe pas → la requête SQL peut échouer (500).
+        // On vérifie seulement que la sécurité laisse passer (pas 401/403).
         mockMvc.perform(get("/kpi/dashboard-summary")
                         .header("Authorization", "Bearer " + accessToken))
-                .andExpect(status().is2xxSuccessful());
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    assertThat(status).isNotEqualTo(401);
+                    assertThat(status).isNotEqualTo(403);
+                });
     }
 
     @Test
