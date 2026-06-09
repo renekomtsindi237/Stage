@@ -584,6 +584,15 @@ jobs:
             fi
             echo "==> Deploy Backend Staging OK : sha=${SHA}"
 
+            # ── Déclenchement automatique du pipeline de collecte ─────────────
+            # Le webserver est healthy à ce stade ($DC up -d --wait l'a attendu).
+            echo "==> Déclenchement automatique du pipeline d'initialisation..."
+            docker exec imf-airflow-webserver \
+              airflow dags trigger dag_pipeline_init \
+                --run-id "ci_${SHA:-$(date +%s)}" 2>&1 | tail -5 \
+              || echo "==> Warning: trigger Airflow non-bloquant (DAG déjà en cours ?)"
+            echo "==> Pipeline init déclenché — suivi : http://$(hostname -I | awk '{print $1}'):9202"
+
       - name: Health check API (port 9090)
         run: |
           for i in 1 2 3 4 5; do
@@ -746,9 +755,9 @@ jobs:
         run: |
           for i in 1 2 3 4 5; do
             sleep 15
-            if curl -fsS "${{ vars.STAGING_WEB_URL }}/health" 2>/dev/null; then
+            if curl -fsS "http://84.247.128.40:9091/health" 2>/dev/null; then
               echo ""
-              echo "==> Health check Web OK (${{ vars.STAGING_WEB_URL }})"
+              echo "==> Health check Web OK (http://84.247.128.40:9091)"
               exit 0
             fi
             echo "Tentative $i/5 échouée..."
