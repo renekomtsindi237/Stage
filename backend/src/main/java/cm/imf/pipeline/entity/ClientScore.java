@@ -32,16 +32,16 @@ public class ClientScore {
     @Column(name = "imf_id", nullable = false)
     private Long imfId;
 
-    @Column(name = "score_mcrs", nullable = false)
+    @Column(name = "score_mcrs", nullable = false, columnDefinition = "NUMERIC(5,4)")
     private Double scoreMcrs;
 
-    @Column(name = "score_crs", nullable = false)
+    @Column(name = "score_crs", nullable = false, columnDefinition = "NUMERIC(5,4)")
     private Double scoreCrs;
 
-    @Column(name = "score_rps", nullable = false)
+    @Column(name = "score_rps", nullable = false, columnDefinition = "NUMERIC(5,4)")
     private Double scoreRps;
 
-    @Column(name = "score_csi", nullable = false)
+    @Column(name = "score_csi", nullable = false, columnDefinition = "NUMERIC(5,4)")
     private Double scoreCsi;
 
     @Column(name = "niveau_risque", nullable = false, length = 20)
