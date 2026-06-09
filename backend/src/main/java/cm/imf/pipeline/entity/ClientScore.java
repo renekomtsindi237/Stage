@@ -50,7 +50,7 @@ public class ClientScore {
     @Column(name = "cobac_classe", nullable = false, length = 5)
     private String cobacClasse;
 
-    @Column(name = "cobac_provision_taux", nullable = false)
+    @Column(name = "cobac_provision_taux", nullable = false, columnDefinition = "NUMERIC(5,4)")
     private Double cobacProvisionTaux;
 
     @ElementCollection
