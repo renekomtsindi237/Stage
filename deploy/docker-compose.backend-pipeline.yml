@@ -191,7 +191,7 @@ services:
       - airflow_logs:/opt/airflow/logs
     command: airflow scheduler
     healthcheck:
-      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --allow-multiple 2>/dev/null | grep -q running || exit 1"]
+      test: ["CMD-SHELL", "pgrep -f 'airflow scheduler' > /dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 60s
