@@ -41,12 +41,11 @@ public class ProduitGenerique extends BaseEntity {
     @Builder.Default
     private boolean saisonnalite = true;
 
-    // Stocké comme entier[] PostgreSQL — géré via JDBC natif pour simplifier
     @Column(name = "mois_saison_haute", columnDefinition = "integer[]")
-    private String moisSaisonHaute;
+    private Integer[] moisSaisonHaute;
 
     @Column(name = "zones_production", columnDefinition = "varchar[]")
-    private String zonesProduction;
+    private String[] zonesProduction;
 
     @Column(columnDefinition = "TEXT")
     private String description;
