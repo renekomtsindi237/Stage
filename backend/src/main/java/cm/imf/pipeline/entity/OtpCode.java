@@ -31,7 +31,7 @@ public class OtpCode {
     private OffsetDateTime expiresAt;
 
     @Column(name = "attempts_used", nullable = false)
-    private int attemptsUsed;
+    private short attemptsUsed;
 
     @Column(name = "used", nullable = false)
     private boolean used;

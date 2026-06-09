@@ -162,7 +162,7 @@ public class AuthService implements IAuthService {
         }
 
         if (!otp.getCodeHash().equals(hash(request.code()))) {
-            otp.setAttemptsUsed(otp.getAttemptsUsed() + 1);
+            otp.setAttemptsUsed((short) (otp.getAttemptsUsed() + 1));
             if (otp.getAttemptsUsed() >= 3) {
                 otp.setUsed(true);
                 log.warn("OTP épuisé (3 tentatives) pour : {}", user.getUsername());

@@ -60,10 +60,10 @@ public class ScoringResultConsumer {
                 : List.of();
 
         ClientScore score = clientScoreRepository
-                .findByClientIdExterneAndImfId(r.getClientIdExterne().toString(), r.getImfId())
+                .findByClientIdExterneAndImfId(r.getClientIdExterne().toString(), (long) r.getImfId())
                 .orElseGet(() -> ClientScore.builder()
                         .clientIdExterne(r.getClientIdExterne().toString())
-                        .imfId(r.getImfId())
+                        .imfId((long) r.getImfId())
                         .build());
 
         score.setScoreMcrs(r.getScoreMcrs());

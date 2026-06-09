@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ClientScoreRepository extends JpaRepository<ClientScore, Long> {
 
-    Optional<ClientScore> findByClientIdExterneAndImfId(String clientIdExterne, Integer imfId);
+    Optional<ClientScore> findByClientIdExterneAndImfId(String clientIdExterne, Long imfId);
 }

@@ -24,7 +24,7 @@ public class CollecteEpargne extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "uuid_mobile", nullable = false, unique = true)
+    @Column(name = "uuid_mobile", nullable = false, unique = true, columnDefinition = "uuid")
     private UUID uuidMobile;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

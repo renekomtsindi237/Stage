@@ -30,7 +30,7 @@ public class ClientScore {
     private String clientIdExterne;
 
     @Column(name = "imf_id", nullable = false)
-    private Integer imfId;
+    private Long imfId;
 
     @Column(name = "score_mcrs", nullable = false)
     private Double scoreMcrs;
