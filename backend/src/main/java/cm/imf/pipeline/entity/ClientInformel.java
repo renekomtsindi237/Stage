@@ -54,7 +54,7 @@ public class ClientInformel extends BaseEntity {
     @Column(name = "date_naissance")
     private LocalDate dateNaissance;
 
-    @Column(name = "sexe", length = 1)
+    @Column(name = "sexe", columnDefinition = "CHAR(1)")
     private String sexe;
 
     @Column(name = "secteur_principal", nullable = false, length = 30)
