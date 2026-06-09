@@ -435,7 +435,8 @@ jobs:
           echo "::add-mask::${{ secrets.STAGING_AIRFLOW_ADMIN_PASSWORD }}"
 
       - name: Short SHA
-        run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
+        id: short_sha
+        run: echo "sha=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_OUTPUT
 
       - name: Lowercase GHCR base
         run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -447,7 +448,7 @@ jobs:
           GHCR_USERNAME:          ${{ github.actor }}
           GHCR_READ_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
           GHCR_BASE:              ${{ env.GHCR_BASE }}
-          SHA:                    ${{ env.SHA_SHORT }}
+          SHA:                    ${{ steps.short_sha.outputs.sha }}
           SUPABASE_DB_PASSWORD:   ${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}
           SUPABASE_ANON_KEY:      ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
           AIRFLOW_DB_PASSWORD:    ${{ secrets.STAGING_AIRFLOW_DB_PASSWORD }}
@@ -636,7 +637,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
-      url: ${{ vars.STAGING_WEB_URL }}
+      url: http://84.247.128.40:9091
     outputs:
       deployed: ${{ steps.deploy.outcome }}
 
@@ -647,7 +648,8 @@ jobs:
           echo "::add-mask::${{ secrets.STAGING_SSH_KEY }}"
 
       - name: Short SHA
-        run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
+        id: short_sha
+        run: echo "sha=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_OUTPUT
 
       - name: Lowercase GHCR base
         run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -659,7 +661,7 @@ jobs:
           GHCR_USERNAME:   ${{ github.actor }}
           GHCR_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_BASE:       ${{ env.GHCR_BASE }}
-          SHA:             ${{ env.SHA_SHORT }}
+          SHA:             ${{ steps.short_sha.outputs.sha }}
         with:
           host:     ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
@@ -786,8 +788,7 @@ jobs:
       && github.event.inputs.confirm_prod == 'DEPLOY'
     runs-on: ubuntu-latest
     environment:
-      name: production
-      url: ${{ vars.PRODUCTION_URL }}
+      name: ${{ github.event.inputs.deploy_env }}
 
     steps:
       - name: Mask secrets
@@ -802,7 +803,8 @@ jobs:
           echo "::add-mask::${{ secrets.PROD_AIRFLOW_ADMIN_PASSWORD }}"
 
       - name: Short SHA
-        run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
+        id: short_sha
+        run: echo "sha=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_OUTPUT
 
       - name: Lowercase GHCR base
         run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -814,7 +816,7 @@ jobs:
           GHCR_USERNAME:          ${{ github.actor }}
           GHCR_READ_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
           GHCR_BASE:              ${{ env.GHCR_BASE }}
-          SHA:                    ${{ env.SHA_SHORT }}
+          SHA:                    ${{ steps.short_sha.outputs.sha }}
           SUPABASE_DB_PASSWORD:   ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
           SUPABASE_ANON_KEY:      ${{ secrets.PROD_SUPABASE_ANON_KEY }}
           AIRFLOW_DB_PASSWORD:    ${{ secrets.PROD_AIRFLOW_DB_PASSWORD }}
@@ -947,8 +949,7 @@ jobs:
       && github.event.inputs.confirm_prod == 'DEPLOY'
     runs-on: ubuntu-latest
     environment:
-      name: production
-      url: ${{ vars.PRODUCTION_WEB_URL }}
+      name: ${{ github.event.inputs.deploy_env }}
 
     steps:
       - name: Mask secrets
@@ -957,7 +958,8 @@ jobs:
           echo "::add-mask::${{ secrets.PROD_SSH_KEY }}"
 
       - name: Short SHA
-        run: echo "SHA_SHORT=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_ENV
+        id: short_sha
+        run: echo "sha=$(printf '%.7s' '${{ github.sha }}')" >> $GITHUB_OUTPUT
 
       - name: Lowercase GHCR base
         run: echo "GHCR_BASE=$(echo '${{ env.REGISTRY }}/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -969,7 +971,7 @@ jobs:
           GHCR_USERNAME:   ${{ github.actor }}
           GHCR_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_BASE:       ${{ env.GHCR_BASE }}
-          SHA:             ${{ env.SHA_SHORT }}
+          SHA:             ${{ steps.short_sha.outputs.sha }}
         with:
           host:     ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
