@@ -545,6 +545,10 @@ jobs:
             done
 
             # ── Arrêt propre de la stack backend ─────────────────────────
+            # Suppression explicite par nom pour gérer les transitions de project-name
+            for ct in imf-backend imf-nginx-api imf-redis imf-ml-api imf-airflow-db imf-airflow-webserver imf-airflow-scheduler; do
+              docker stop $ct 2>/dev/null && docker rm $ct 2>/dev/null || true
+            done
             $DC down --remove-orphans 2>/dev/null || true
 
             # ── Démarrage Airflow DB + Redis ──────────────────────────────
@@ -770,6 +774,8 @@ jobs:
               > "$APP_DIR/.rollback_frontend_staging" || true
 
             # ── Arrêt et redémarrage du frontend ─────────────────────────
+            # Suppression explicite par nom pour gérer les transitions de project-name
+            docker stop imf-frontend 2>/dev/null && docker rm imf-frontend 2>/dev/null || true
             $DC down --remove-orphans 2>/dev/null || true
 
             if ! $DC up -d --wait --wait-timeout 120 2>&1; then
