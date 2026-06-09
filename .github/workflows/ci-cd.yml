@@ -585,13 +585,29 @@ jobs:
             echo "==> Deploy Backend Staging OK : sha=${SHA}"
 
             # ── Déclenchement automatique du pipeline de collecte ─────────────
-            # Le webserver est healthy à ce stade ($DC up -d --wait l'a attendu).
-            echo "==> Déclenchement automatique du pipeline d'initialisation..."
-            docker exec imf-airflow-webserver \
-              airflow dags trigger dag_pipeline_init \
-                --run-id "ci_${SHA:-$(date +%s)}" 2>&1 | tail -5 \
-              || echo "==> Warning: trigger Airflow non-bloquant (DAG déjà en cours ?)"
-            echo "==> Pipeline init déclenché — suivi : http://$(hostname -I | awk '{print $1}'):9202"
+            # Le scheduler Airflow met ~30-90s à découvrir les nouveaux DAGs.
+            # On attend jusqu'à 3 min que dag_pipeline_init soit dans la DagModel.
+            echo "==> Attente découverte de dag_pipeline_init par le scheduler Airflow..."
+            DAG_FOUND=0
+            for i in $(seq 1 18); do
+              if docker exec imf-airflow-webserver \
+                   airflow dags list 2>/dev/null | grep -q "dag_pipeline_init"; then
+                DAG_FOUND=1
+                break
+              fi
+              echo "  Scan DAGs en cours ($i/18), attente 10s..."
+              sleep 10
+            done
+            if [ "$DAG_FOUND" = "1" ]; then
+              echo "==> Déclenchement automatique du pipeline d'initialisation..."
+              docker exec imf-airflow-webserver \
+                airflow dags trigger dag_pipeline_init \
+                  --run-id "ci_${SHA:-$(date +%s)}" 2>&1 | tail -5 \
+                || echo "==> Warning: trigger non-bloquant (DAG déjà en cours ?)"
+              echo "==> Pipeline init déclenché — suivi : http://$(hostname -I | awk '{print $1}'):9202"
+            else
+              echo "==> Warning: dag_pipeline_init non trouvé après 3 min — déclenchez manuellement depuis http://$(hostname -I | awk '{print $1}'):9202"
+            fi
 
       - name: Health check API (port 9090)
         run: |

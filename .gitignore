@@ -76,3 +76,6 @@ data/
 *.parquet
 *.arrow
 *.json.gz
+
+# ── Screens
+screens/

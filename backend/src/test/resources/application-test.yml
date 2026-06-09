@@ -36,8 +36,8 @@ imf:
   pipeline:
     firebase-enabled: false
     internal-api-key: test-internal-key
-    dw-schema: public        # Pas de schéma DW en test, les requêtes KPI échouent gracieusement
-    staging-schema: public
+    dw-schema: dw            # V32 crée dw.fact_collectes / dw.fact_remboursements en stub vide
+    staging-schema: staging  # V32 crée staging.stg_prets en stub vide
 
 logging:
   level:
