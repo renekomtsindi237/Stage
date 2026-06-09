@@ -161,6 +161,8 @@ services:
       AIRFLOW__WEBSERVER__BASE_URL:        "http://${VPS_IP:-84.247.128.40}:9202"
       AIRFLOW__CORE__DAGS_FOLDER:          /opt/airflow/dags
       AIRFLOW__LOGGING__BASE_LOG_FOLDER:   /opt/airflow/logs
+      # Connexion vers la base applicative Supabase (utilisée par tous les DAGs via PostgresHook)
+      AIRFLOW_CONN_IMF_PIPELINE_DB:        "postgresql://postgres.ceiqkvvacjsakycsgcfz:${SUPABASE_DB_PASSWORD}@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require&options=-csearch_path%3Dapp"
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
       - airflow_logs:/opt/airflow/logs
@@ -187,6 +189,7 @@ services:
       AIRFLOW__CORE__FERNET_KEY:           ${AIRFLOW_FERNET_KEY}
       AIRFLOW__CORE__DAGS_FOLDER:          /opt/airflow/dags
       AIRFLOW__LOGGING__BASE_LOG_FOLDER:   /opt/airflow/logs
+      AIRFLOW_CONN_IMF_PIPELINE_DB:        "postgresql://postgres.ceiqkvvacjsakycsgcfz:${SUPABASE_DB_PASSWORD}@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require&options=-csearch_path%3Dapp"
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
       - airflow_logs:/opt/airflow/logs
