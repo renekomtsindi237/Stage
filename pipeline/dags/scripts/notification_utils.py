@@ -308,10 +308,10 @@ def _construire_html_resume(kpis: dict) -> str:
     runs = kpis.get("journal_runs") or []
 
     runs_html = "".join(
-        f"<tr><td>{r.get('dag_id','')}</td>"
-        f"<td>{r.get('statut','')}</td>"
-        f"<td>{r.get('lignes_valides',0)}</td>"
-        f"<td>{r.get('lignes_rejetees',0)}</td></tr>"
+        f"<tr><td>{r.get('dag_id', '')}</td>"
+        f"<td>{r.get('statut', '')}</td>"
+        f"<td>{r.get('lignes_valides', 0)}</td>"
+        f"<td>{r.get('lignes_rejetees', 0)}</td></tr>"
         for r in runs
     )
 

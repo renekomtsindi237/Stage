@@ -3,6 +3,8 @@ package cm.imf.pipeline.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,6 +56,7 @@ public class ClientInformel extends BaseEntity {
     @Column(name = "date_naissance")
     private LocalDate dateNaissance;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "sexe", columnDefinition = "CHAR(1)")
     private String sexe;
 
