@@ -4,7 +4,9 @@ import cm.imf.pipeline.security.LoginRateLimitInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -22,6 +24,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        // Ajoute /api/v1 devant tous les @RestController sans modifier les annotations existantes.
+        configurer.addPathPrefix("/api/v1", c -> c.isAnnotationPresent(RestController.class));
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

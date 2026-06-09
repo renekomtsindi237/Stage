@@ -79,7 +79,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs", "/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         // Endpoint interne pipeline Python — protégé par clé API dans le header
-                        .requestMatchers("/internal/**").permitAll()
+                        .requestMatchers("/internal/**", "/api/v1/internal/**").permitAll()
                         // Géolocalisation agents terrain
                         .requestMatchers(HttpMethod.PUT,    "/agents/me/position", "/api/v1/agents/me/position").hasRole("AGENT")
                         .requestMatchers(HttpMethod.DELETE, "/agents/me/position", "/api/v1/agents/me/position").hasRole("AGENT")

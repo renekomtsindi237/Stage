@@ -83,25 +83,25 @@ springdoc:
   group-configs:
     - group: auth
       display-name: "Authentification & OTP"
-      paths-to-match: /api/v1/auth/**, /api/v1/otp/**
+      paths-to-match: /api/v1/auth/**
     - group: clients
       display-name: "Clients & KYC"
       paths-to-match: /api/v1/clients/**, /api/v1/kyc/**
     - group: collectes
-      display-name: "Collectes & Épargne"
-      paths-to-match: /api/v1/collectes/**, /api/v1/epargne/**
+      display-name: "Collectes & Crédit"
+      paths-to-match: /api/v1/collectes/**, /api/v1/collectes-epargne/**, /api/v1/prets/**
     - group: recouvrement
       display-name: "Recouvrement & Créances"
-      paths-to-match: /api/v1/recouvrement/**, /api/v1/creances/**, /api/v1/violations/**
+      paths-to-match: /api/v1/recouvrement/**, /api/v1/creances/**, /api/v1/admin/violations/**, /api/v1/echeances/**, /api/v1/dossiers/**
     - group: scoring
       display-name: "Scoring ML (MCRS)"
-      paths-to-match: /api/v1/scores/**
+      paths-to-match: /api/v1/ml/**
     - group: admin
       display-name: "Administration & Reporting"
-      paths-to-match: /api/v1/admin/**, /api/v1/reporting/**, /api/v1/audit/**, /api/v1/platform/**
+      paths-to-match: /api/v1/admin/**, /api/v1/reporting/**, /api/v1/platform/**, /api/v1/users/**, /api/v1/agents/**, /api/v1/kpi/**, /api/v1/lang/**, /api/v1/alertes/**, /api/v1/notifications/**, /api/v1/sync/**, /api/v1/sse/**
     - group: rgpd
       display-name: "Conformité RGPD"
-      paths-to-match: /api/v1/rgpd/**
+      paths-to-match: /api/v1/mes-donnees/**, /api/v1/admin/rgpd/**
 
 # Cache KPI
 imf:
