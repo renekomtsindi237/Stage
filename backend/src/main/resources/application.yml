@@ -63,16 +63,50 @@ firebase:
 internal:
   api-key: ${SPRING_API_KEY:changeme_internal_api_key}
 
-# OpenAPI
+# OpenAPI / Swagger
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
-    operationsSorter: method
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    filter: true
+    disable-swagger-default-url: true
+    default-models-expand-depth: 1
+    persist-authorization: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  show-actuator: false
+  group-configs:
+    - group: auth
+      display-name: "Authentification & OTP"
+      paths-to-match: /api/v1/auth/**, /api/v1/otp/**
+    - group: clients
+      display-name: "Clients & KYC"
+      paths-to-match: /api/v1/clients/**, /api/v1/kyc/**
+    - group: collectes
+      display-name: "Collectes & Épargne"
+      paths-to-match: /api/v1/collectes/**, /api/v1/epargne/**
+    - group: recouvrement
+      display-name: "Recouvrement & Créances"
+      paths-to-match: /api/v1/recouvrement/**, /api/v1/creances/**, /api/v1/violations/**
+    - group: scoring
+      display-name: "Scoring ML (MCRS)"
+      paths-to-match: /api/v1/scores/**
+    - group: admin
+      display-name: "Administration & Reporting"
+      paths-to-match: /api/v1/admin/**, /api/v1/reporting/**, /api/v1/audit/**, /api/v1/platform/**
+    - group: rgpd
+      display-name: "Conformité RGPD"
+      paths-to-match: /api/v1/rgpd/**
 
 # Cache KPI
 imf:
+  swagger:
+    server-url: ${IMF_SWAGGER_SERVER_URL:http://localhost:9090}
   app:
     name: ${APP_NAME:IMF Pipeline}
     url: ${APP_URL:http://localhost:4200}

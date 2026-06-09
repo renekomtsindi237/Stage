@@ -114,6 +114,7 @@ services:
       SMTP_USER:                     ${SMTP_USER:-}
       SMTP_PASSWORD:                 ${SMTP_PASSWORD:-}
       FIREBASE_ENABLED:              "false"
+      IMF_SWAGGER_SERVER_URL:        "http://${VPS_IP:-84.247.128.40}:9090"
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:

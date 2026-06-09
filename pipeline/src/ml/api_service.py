@@ -143,8 +143,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MCRS Scoring API",
-    description="API de scoring Multi-Criteria Recovery Scoring pour institutions de microfinance",
+    description=(
+        "API de scoring **Multi-Criteria Recovery Scoring (MCRS)** "
+        "pour institutions de microfinance du Cameroun.\n\n"
+        "Fournit des scores en temps réel (`/score/single`) et en batch (`/score/batch`), "
+        "ainsi que des outils de monitoring de drift, de revue humaine et de pilotage "
+        "des seuils opérationnels par région.\n\n"
+        "**Conformité** : Loi n° 2024/017 Cameroun (RGPD), Règlement COBAC 01/02 CEMAC."
+    ),
     version="2.0.0",
+    docs_url="/model/docs",
+    openapi_url="/model/openapi.json",
+    redoc_url="/model/redoc",
     lifespan=lifespan,
 )
 
