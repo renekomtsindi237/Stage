@@ -1,4 +1,4 @@
-﻿package cm.imf.pipeline.controller;
+package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.SseEventDto;
 import cm.imf.pipeline.service.IAuditTrailService;

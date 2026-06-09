@@ -1,4 +1,4 @@
-﻿package cm.imf.pipeline.controller;
+package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.CollecteRequest;
 import cm.imf.pipeline.dto.request.SyncRequest;

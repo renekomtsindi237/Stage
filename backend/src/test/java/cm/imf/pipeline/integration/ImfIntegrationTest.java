@@ -1,4 +1,4 @@
-﻿package cm.imf.pipeline.integration;
+package cm.imf.pipeline.integration;
 
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.response.AuthResponse;

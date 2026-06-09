@@ -1,4 +1,4 @@
-﻿package cm.imf.pipeline.controller;
+package cm.imf.pipeline.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
