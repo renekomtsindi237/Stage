@@ -134,7 +134,7 @@ public class AuthService implements IAuthService {
                 .user(user)
                 .codeHash(hash(code))
                 .expiresAt(OffsetDateTime.now().plusMinutes(10))
-                .attemptsUsed(0)
+                .attemptsUsed((short) 0)
                 .used(false)
                 .build());
 
