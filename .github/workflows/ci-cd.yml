@@ -470,7 +470,7 @@ jobs:
             APP_DIR="/opt/imf-pipeline"
             ENVFILE="$APP_DIR/.env.staging"
             COMPOSE_FILE="$APP_DIR/deploy/docker-compose.backend-pipeline.yml"
-            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
+            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE --project-name imf-backend"
 
             # ── Clone ou mise à jour du dépôt ─────────────────────────────
             REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
@@ -558,7 +558,7 @@ jobs:
             done
 
             # ── Init Airflow (base dédiée airflow-db, une seule fois) ─────
-            FLAG="$APP_DIR/.airflow_v2_initialized"
+            FLAG="$APP_DIR/.airflow_imf_backend_initialized"
             if [ ! -f "$FLAG" ]; then
               rm -f "$APP_DIR/.airflow_initialized"
               echo "==> Init Airflow DB (airflow-db dédié)..."
@@ -650,7 +650,7 @@ jobs:
           script: |
             set -euo pipefail
             APP_DIR="/opt/imf-pipeline"
-            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.backend-pipeline.yml"
+            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.backend-pipeline.yml --project-name imf-backend"
 
             echo "==> ROLLBACK Backend Staging déclenché"
             $DC down --remove-orphans 2>/dev/null || true
@@ -715,7 +715,7 @@ jobs:
             APP_DIR="/opt/imf-pipeline"
             ENVFILE="$APP_DIR/.env.staging"
             COMPOSE_FILE="$APP_DIR/deploy/docker-compose.frontend.yml"
-            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
+            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE --project-name imf-frontend"
 
             # ── Mise à jour du dépôt (config nginx frontend) ─────────────
             REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
@@ -808,7 +808,7 @@ jobs:
           script: |
             set -euo pipefail
             APP_DIR="/opt/imf-pipeline"
-            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.frontend.yml"
+            DC="docker compose --env-file $APP_DIR/.env.staging -f $APP_DIR/deploy/docker-compose.frontend.yml --project-name imf-frontend"
 
             echo "==> ROLLBACK Frontend Staging déclenché"
             $DC down --remove-orphans 2>/dev/null || true
@@ -875,7 +875,7 @@ jobs:
             APP_DIR="/opt/imf-pipeline"
             ENVFILE="$APP_DIR/.env.production"
             COMPOSE_FILE="$APP_DIR/deploy/docker-compose.backend-pipeline.yml"
-            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
+            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE --project-name imf-backend"
 
             REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
             if [ -d "$APP_DIR/.git" ]; then
@@ -938,7 +938,7 @@ jobs:
               sleep 3
             done
 
-            FLAG="$APP_DIR/.airflow_v2_initialized"
+            FLAG="$APP_DIR/.airflow_imf_backend_initialized"
             if [ ! -f "$FLAG" ]; then
               rm -f "$APP_DIR/.airflow_initialized"
               $DC --profile init run --rm airflow-init && touch "$FLAG"
@@ -969,7 +969,7 @@ jobs:
           key:      ${{ secrets.PROD_SSH_KEY }}
           script: |
             APP_DIR="/opt/imf-pipeline"
-            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.backend-pipeline.yml"
+            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.backend-pipeline.yml --project-name imf-backend"
             $DC down --remove-orphans 2>/dev/null || true
             for service in backend ml-api airflow-webserver; do
               ROLLBACK=$(cat "$APP_DIR/.rollback_${service}_prod" 2>/dev/null || echo "")
@@ -1024,7 +1024,7 @@ jobs:
             APP_DIR="/opt/imf-pipeline"
             ENVFILE="$APP_DIR/.env.production"
             COMPOSE_FILE="$APP_DIR/deploy/docker-compose.frontend.yml"
-            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE"
+            DC="docker compose --env-file $ENVFILE -f $COMPOSE_FILE --project-name imf-frontend"
 
             REPO_URL="https://x-access-token:${GHCR_READ_TOKEN}@github.com/${{ github.repository }}.git"
             if [ -d "$APP_DIR/.git" ]; then
@@ -1090,7 +1090,7 @@ jobs:
           key:      ${{ secrets.PROD_SSH_KEY }}
           script: |
             APP_DIR="/opt/imf-pipeline"
-            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.frontend.yml"
+            DC="docker compose --env-file $APP_DIR/.env.production -f $APP_DIR/deploy/docker-compose.frontend.yml --project-name imf-frontend"
             $DC down --remove-orphans 2>/dev/null || true
             ROLLBACK=$(cat "$APP_DIR/.rollback_frontend_prod" 2>/dev/null || echo "")
             [ -n "$ROLLBACK" ] && docker pull "$ROLLBACK"
