@@ -76,7 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/ping", "/health", "/api/v1/ping", "/api/v1/health").permitAll()
                         .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
                         .requestMatchers("/uploads/**", "/api/v1/uploads/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs", "/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         // Endpoint interne pipeline Python — protégé par clé API dans le header
                         .requestMatchers("/internal/**").permitAll()
