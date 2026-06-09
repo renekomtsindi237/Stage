@@ -77,6 +77,7 @@ springdoc:
     disable-swagger-default-url: true
     default-models-expand-depth: 1
     persist-authorization: true
+    urls-primary-name: auth    # groupe pré-sélectionné au chargement
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   show-actuator: false

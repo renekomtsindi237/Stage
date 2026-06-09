@@ -623,6 +623,22 @@ jobs:
           echo "Health check API final échoué"
           exit 1
 
+      - name: Vérification Swagger spec (diagnostic)
+        continue-on-error: true
+        run: |
+          echo "==> Vérification du spec OpenAPI (groupe auth)..."
+          SPEC=$(curl -fsS "${{ vars.STAGING_URL }}/api-docs/auth" 2>/dev/null || echo "{}")
+          NB_PATHS=$(echo "$SPEC" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('paths',{})))" 2>/dev/null || echo "0")
+          echo "==> Nb opérations dans le groupe 'auth' : $NB_PATHS"
+          if [ "$NB_PATHS" = "0" ]; then
+            echo "==> ATTENTION : groupe auth vide — springdoc ne détecte pas le préfixe /api/v1 ?"
+            echo "==> Chemins générés (extrait) :"
+            curl -fsS "${{ vars.STAGING_URL }}/api-docs" 2>/dev/null \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); paths=list(d.get('paths',{}).keys())[:5]; print('\n'.join(paths))" 2>/dev/null || true
+          else
+            echo "==> Swagger OK — $NB_PATHS opérations dans 'auth'"
+          fi
+
       - name: Rollback automatique backend
         if: failure() && steps.deploy.outcome == 'success'
         uses: appleboy/ssh-action@v1.0.3
