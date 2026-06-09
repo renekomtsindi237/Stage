@@ -324,11 +324,20 @@ class ManualReviewConfig(BaseModel):
 
 @app.get("/model/health", tags=["Modèle"])
 def healthcheck():
-    """Vérifie que le modèle est chargé et opérationnel."""
+    """
+    Healthcheck Docker-compatible : retourne toujours HTTP 200.
+    - status=ok       : modèle chargé et prêt
+    - status=degraded : service UP mais aucun modèle en mémoire
+    Le scoring retournera une erreur métier si model_loaded=false.
+    """
     if _model is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Modèle non chargé",
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "status": "degraded",
+                "model_loaded": False,
+                "detail": "Aucun modèle champion trouvé — scoring indisponible",
+            },
         )
     return {
         "status": "ok",
