@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.SseEventDto;
 import cm.imf.pipeline.service.IAuditTrailService;
@@ -59,7 +59,7 @@ class ViolationDonneesControllerTest {
                  "mesuresPrisesImmediatement":"Blocage IP, revue logs"}
                 """;
 
-        mockMvc.perform(post("/admin/violations")
+        mockMvc.perform(post("/api/v1/admin/violations")
                         .with(TestHelper.asDsi())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -69,7 +69,7 @@ class ViolationDonneesControllerTest {
     @Test
     @DisplayName("POST /admin/violations → 403 pour AGENT")
     void declarer_agent_retourne_403() throws Exception {
-        mockMvc.perform(post("/admin/violations")
+        mockMvc.perform(post("/api/v1/admin/violations")
                         .with(TestHelper.asAgent())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"typeViolation\":\"ACCES_NON_AUTORISE\"}"))
@@ -79,7 +79,7 @@ class ViolationDonneesControllerTest {
     @Test
     @DisplayName("POST /admin/violations → 403 pour ANALYSTE")
     void declarer_analyste_retourne_403() throws Exception {
-        mockMvc.perform(post("/admin/violations")
+        mockMvc.perform(post("/api/v1/admin/violations")
                         .with(TestHelper.asAnalyste())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"typeViolation\":\"FUITE\"}"))
@@ -94,7 +94,7 @@ class ViolationDonneesControllerTest {
         when(jdbc.queryForList(anyString(), any(Object[].class)))
                 .thenReturn(List.of(Map.of("id", 1, "type_violation", "ACCES_NON_AUTORISE")));
 
-        mockMvc.perform(get("/admin/violations").with(TestHelper.asDsi()))
+        mockMvc.perform(get("/api/v1/admin/violations").with(TestHelper.asDsi()))
                 .andExpect(status().isOk());
     }
 
@@ -104,7 +104,7 @@ class ViolationDonneesControllerTest {
         when(jdbc.queryForList(anyString(), any(Object[].class)))
                 .thenReturn(List.of());
 
-        mockMvc.perform(get("/admin/violations").with(TestHelper.asSuperAdmin()))
+        mockMvc.perform(get("/api/v1/admin/violations").with(TestHelper.asSuperAdmin()))
                 .andExpect(status().isOk());
     }
 }

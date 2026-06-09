@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.CreateUserRequest;
 import cm.imf.pipeline.dto.response.UserResponse;
@@ -51,7 +51,7 @@ class AdminControllerTest {
         when(adminService.listUsers(0, 20))
                 .thenReturn(new PageImpl<>(List.of(sampleUser())).map(u -> u));
 
-        mockMvc.perform(get("/admin/users"))
+        mockMvc.perform(get("/api/v1/admin/users"))
                 .andExpect(status().isOk());
     }
 
@@ -59,7 +59,7 @@ class AdminControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("GET /api/admin/users — ANALYSTE → 403")
     void listUsers_analyste_403() throws Exception {
-        mockMvc.perform(get("/admin/users"))
+        mockMvc.perform(get("/api/v1/admin/users"))
                 .andExpect(status().isForbidden());
     }
 
@@ -67,7 +67,7 @@ class AdminControllerTest {
     @WithMockUser(roles = "DIRECTEUR")
     @DisplayName("GET /api/admin/users — DIRECTEUR → 403")
     void listUsers_directeur_403() throws Exception {
-        mockMvc.perform(get("/admin/users"))
+        mockMvc.perform(get("/api/v1/admin/users"))
                 .andExpect(status().isForbidden());
     }
 
@@ -77,7 +77,7 @@ class AdminControllerTest {
     void createUser_dsi_201() throws Exception {
         when(adminService.createUser(any())).thenReturn(sampleUser());
 
-        mockMvc.perform(post("/admin/users")
+        mockMvc.perform(post("/api/v1/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new CreateUserRequest("newuser", "SecurePass!1", null, Role.AGENT, "YD001", null, null, null))))
@@ -88,7 +88,7 @@ class AdminControllerTest {
     @WithMockUser(roles = "DSI")
     @DisplayName("POST /api/admin/users — payload invalide → 400")
     void createUser_payload_invalide_400() throws Exception {
-        mockMvc.perform(post("/admin/users")
+        mockMvc.perform(post("/api/v1/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"\",\"password\":\"ab\",\"role\":null}"))
                 .andExpect(status().isBadRequest());
@@ -105,7 +105,7 @@ class AdminControllerTest {
                 true, true, false, false, false, 20);
         when(adminService.deactivate(any(UUID.class))).thenReturn(deactivated);
 
-        mockMvc.perform(delete("/admin/users/{uid}", USER_UID))
+        mockMvc.perform(delete("/api/v1/admin/users/{uid}", USER_UID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.actif").value(false));
     }
@@ -116,7 +116,7 @@ class AdminControllerTest {
     void activate_dsi_200() throws Exception {
         when(adminService.activate(any(UUID.class))).thenReturn(sampleUser());
 
-        mockMvc.perform(patch("/admin/users/{uid}/activate", USER_UID))
+        mockMvc.perform(patch("/api/v1/admin/users/{uid}/activate", USER_UID))
                 .andExpect(status().isOk());
     }
 }

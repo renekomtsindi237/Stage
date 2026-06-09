@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.EvaluerRisqueKycRequest;
 import cm.imf.pipeline.dto.request.InitierKycRequest;
@@ -78,7 +78,7 @@ class KycControllerTest {
             when(kycService.initierDossier(any(), any()))
                     .thenReturn(dossierResponse(StatutKyc.EN_ATTENTE));
 
-            mockMvc.perform(post("/kyc/dossiers")
+            mockMvc.perform(post("/api/v1/kyc/dossiers")
                             .with(TestHelper.asDsi())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(initierRequest())))
@@ -94,7 +94,7 @@ class KycControllerTest {
                     .thenThrow(new ResponseStatusException(CONFLICT,
                             "Un dossier KYC existe déjà pour le client CLI-001"));
 
-            mockMvc.perform(post("/kyc/dossiers")
+            mockMvc.perform(post("/api/v1/kyc/dossiers")
                             .with(TestHelper.asDsi())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(initierRequest())))
@@ -108,7 +108,7 @@ class KycControllerTest {
                     {"clientId":"","nomClient":"Kouam",
                      "niveauDemande":"NIVEAU_1","estPep":false}
                     """;
-            mockMvc.perform(post("/kyc/dossiers")
+            mockMvc.perform(post("/api/v1/kyc/dossiers")
                             .with(TestHelper.asDsi())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalid))
@@ -118,7 +118,7 @@ class KycControllerTest {
         @Test
         @DisplayName("→ 401 si non authentifié")
         void initier_non_authentifie_retourne_401() throws Exception {
-            mockMvc.perform(post("/kyc/dossiers")
+            mockMvc.perform(post("/api/v1/kyc/dossiers")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(initierRequest())))
                     .andExpect(status().isUnauthorized());
@@ -139,7 +139,7 @@ class KycControllerTest {
             when(kycService.listDossiers(anyLong(), any(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(page);
 
-            mockMvc.perform(get("/kyc/dossiers")
+            mockMvc.perform(get("/api/v1/kyc/dossiers")
                             .with(TestHelper.asDsi())
                             .param("page", "0").param("size", "20"))
                     .andExpect(status().isOk())
@@ -157,7 +157,7 @@ class KycControllerTest {
             when(kycService.listDossiers(eq(1L), eq(StatutKyc.APPROUVE), isNull(), isNull(), eq(0), eq(20)))
                     .thenReturn(page);
 
-            mockMvc.perform(get("/kyc/dossiers")
+            mockMvc.perform(get("/api/v1/kyc/dossiers")
                             .with(TestHelper.asDsi())
                             .param("statut", "APPROUVE"))
                     .andExpect(status().isOk());
@@ -168,7 +168,7 @@ class KycControllerTest {
         @Test
         @DisplayName("→ 403 si ANALYSTE (pas de role approprié)")
         void list_analyste_retourne_403() throws Exception {
-            mockMvc.perform(get("/kyc/dossiers").with(TestHelper.asAnalyste()))
+            mockMvc.perform(get("/api/v1/kyc/dossiers").with(TestHelper.asAnalyste()))
                     .andExpect(status().isForbidden());
         }
     }
@@ -181,7 +181,7 @@ class KycControllerTest {
         when(kycService.getDossier(DOSSIER_UID))
                 .thenReturn(dossierResponse(StatutKyc.EN_COURS_VERIFICATION));
 
-        mockMvc.perform(get("/kyc/dossiers/{uid}", DOSSIER_UID)
+        mockMvc.perform(get("/api/v1/kyc/dossiers/{uid}", DOSSIER_UID)
                         .with(TestHelper.asDsi()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.uid").value(DOSSIER_UID.toString()));
@@ -194,7 +194,7 @@ class KycControllerTest {
                 .thenThrow(new ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Dossier introuvable"));
 
-        mockMvc.perform(get("/kyc/dossiers/{uid}", UUID.randomUUID())
+        mockMvc.perform(get("/api/v1/kyc/dossiers/{uid}", UUID.randomUUID())
                         .with(TestHelper.asDsi()))
                 .andExpect(status().isNotFound());
     }
@@ -219,7 +219,7 @@ class KycControllerTest {
                  "niveauRisqueManuel":"ELEVE"}
                 """;
 
-        mockMvc.perform(put("/kyc/dossiers/{uid}/risque", DOSSIER_UID)
+        mockMvc.perform(put("/api/v1/kyc/dossiers/{uid}/risque", DOSSIER_UID)
                         .with(TestHelper.asDsi())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -240,7 +240,7 @@ class KycControllerTest {
                 {"resultat":"APPROUVE","commentaire":"Documents conformes"}
                 """;
 
-        mockMvc.perform(put("/kyc/dossiers/{uid}/verification", DOSSIER_UID)
+        mockMvc.perform(put("/api/v1/kyc/dossiers/{uid}/verification", DOSSIER_UID)
                         .with(TestHelper.asDsi())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -258,7 +258,7 @@ class KycControllerTest {
                 {"resultat":"REJETE","motifRejet":"Pièce expirée"}
                 """;
 
-        mockMvc.perform(put("/kyc/dossiers/{uid}/verification", DOSSIER_UID)
+        mockMvc.perform(put("/api/v1/kyc/dossiers/{uid}/verification", DOSSIER_UID)
                         .with(TestHelper.asDsi())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))

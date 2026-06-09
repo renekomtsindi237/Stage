@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.service.IKpiService;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +33,7 @@ class KpiControllerTest {
         when(kpiService.getParStats(any(), any())).thenReturn(List.of(
                 Map.of("zone_id", "YD", "par30", 0.12, "par90", 0.05)));
 
-        mockMvc.perform(get("/kpi/par-stats")
+        mockMvc.perform(get("/api/v1/kpi/par-stats")
                         .param("dateDebut", "2024-01-01")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isOk())
@@ -49,7 +49,7 @@ class KpiControllerTest {
                 "montantTotal", 31250000,
                 "nbAlertesActives", 18));
 
-        mockMvc.perform(get("/kpi/dashboard-summary"))
+        mockMvc.perform(get("/api/v1/kpi/dashboard-summary"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCollectes").value(1250))
                 .andExpect(jsonPath("$.nbAlertesActives").value(18));
@@ -59,7 +59,7 @@ class KpiControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("GET /api/kpi/par-stats — dateDebut manquante → 400")
     void getParStats_date_manquante_400() throws Exception {
-        mockMvc.perform(get("/kpi/par-stats")
+        mockMvc.perform(get("/api/v1/kpi/par-stats")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isBadRequest());
     }
@@ -67,7 +67,7 @@ class KpiControllerTest {
     @Test
     @DisplayName("GET /api/kpi/dashboard-summary — non authentifié → 401")
     void getDashboardSummary_non_authentifie_401() throws Exception {
-        mockMvc.perform(get("/kpi/dashboard-summary"))
+        mockMvc.perform(get("/api/v1/kpi/dashboard-summary"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -77,7 +77,7 @@ class KpiControllerTest {
     void getParStats_agent_ok() throws Exception {
         when(kpiService.getParStats(any(), any())).thenReturn(List.of());
 
-        mockMvc.perform(get("/kpi/par-stats")
+        mockMvc.perform(get("/api/v1/kpi/par-stats")
                         .param("dateDebut", "2024-01-01")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isOk());

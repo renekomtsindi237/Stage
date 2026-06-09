@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.service.ExportService;
 import cm.imf.pipeline.service.PdfExportService;
@@ -34,7 +34,7 @@ class ReportingControllerTest {
         when(exportService.exportCollectesCSV(any(), any()))
                 .thenReturn("date_collecte;canal;agence\n2024-01-15;MTN;Agence Nord\n");
 
-        mockMvc.perform(get("/reporting/collectes/csv")
+        mockMvc.perform(get("/api/v1/reporting/collectes/csv")
                         .param("dateDebut", "2024-01-01")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isOk())
@@ -52,7 +52,7 @@ class ReportingControllerTest {
         when(exportService.exportPretsEnRetardCSV())
                 .thenReturn("id_pret;id_client;nom_client\nPRE001;CLI001;Jean Dupont\n");
 
-        mockMvc.perform(get("/reporting/prets-retard/csv"))
+        mockMvc.perform(get("/api/v1/reporting/prets-retard/csv"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("text/csv"));
     }
@@ -64,7 +64,7 @@ class ReportingControllerTest {
         byte[] fakePdf = "%PDF-1.4 fake content".getBytes();
         when(pdfExportService.exportCollectesPDF(any(), any())).thenReturn(fakePdf);
 
-        mockMvc.perform(get("/reporting/collectes/pdf")
+        mockMvc.perform(get("/api/v1/reporting/collectes/pdf")
                         .param("dateDebut", "2024-01-01")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isOk())
@@ -82,7 +82,7 @@ class ReportingControllerTest {
         byte[] fakePdf = "%PDF-1.4 kpi".getBytes();
         when(pdfExportService.exportKpiRapportPDF(any(), any())).thenReturn(fakePdf);
 
-        mockMvc.perform(get("/reporting/kpi/pdf")
+        mockMvc.perform(get("/api/v1/reporting/kpi/pdf")
                         .param("dateDebut", "2024-01-01")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isOk())
@@ -92,7 +92,7 @@ class ReportingControllerTest {
     @Test
     @DisplayName("GET /api/reporting/collectes/csv — non authentifié → 401")
     void exportCSV_non_authentifie_401() throws Exception {
-        mockMvc.perform(get("/reporting/collectes/csv")
+        mockMvc.perform(get("/api/v1/reporting/collectes/csv")
                         .param("dateDebut", "2024-01-01")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isUnauthorized());
@@ -102,7 +102,7 @@ class ReportingControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("GET /api/reporting/collectes/csv — dateDebut manquante → 400")
     void exportCSV_param_manquant_400() throws Exception {
-        mockMvc.perform(get("/reporting/collectes/csv")
+        mockMvc.perform(get("/api/v1/reporting/collectes/csv")
                         .param("dateFin", "2024-01-31"))
                 .andExpect(status().isBadRequest());
     }

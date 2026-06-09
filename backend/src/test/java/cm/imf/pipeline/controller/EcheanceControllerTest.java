@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.EcheanceResponse;
 import cm.imf.pipeline.dto.response.PageResponse;
@@ -52,7 +52,7 @@ class EcheanceControllerTest {
     void getByPret_200() throws Exception {
         when(echeanceService.getByPret("PRE-001")).thenReturn(List.of(buildResponse()));
 
-        mockMvc.perform(get("/echeances/pret/PRE-001"))
+        mockMvc.perform(get("/api/v1/echeances/pret/PRE-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].idPret").value("PRE-001"))
                 .andExpect(jsonPath("$.data[0].statut").value("EN_ATTENTE"));
@@ -64,7 +64,7 @@ class EcheanceControllerTest {
     void getById_200() throws Exception {
         when(echeanceService.getById(any(UUID.class))).thenReturn(buildResponse());
 
-        mockMvc.perform(get("/echeances/{uid}", ECH_UID))
+        mockMvc.perform(get("/api/v1/echeances/{uid}", ECH_UID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.idPret").value("PRE-001"));
     }
@@ -79,7 +79,7 @@ class EcheanceControllerTest {
                 {"statut":"PAYEE","montantPaye":50000,"datePaiement":"2026-04-03","observation":"OK"}
                 """;
 
-        mockMvc.perform(put("/echeances/{uid}", ECH_UID)
+        mockMvc.perform(put("/api/v1/echeances/{uid}", ECH_UID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk());
@@ -92,7 +92,7 @@ class EcheanceControllerTest {
         when(echeanceService.getEcheancesEnRetard(0, 20))
                 .thenReturn(PageResponse.of(List.of(), 0, 20, 0L));
 
-        mockMvc.perform(get("/echeances/en-retard"))
+        mockMvc.perform(get("/api/v1/echeances/en-retard"))
                 .andExpect(status().isOk());
     }
 }

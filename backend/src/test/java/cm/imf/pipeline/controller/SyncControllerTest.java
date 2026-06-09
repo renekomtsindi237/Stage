@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.CollecteRequest;
 import cm.imf.pipeline.dto.request.SyncRequest;
@@ -62,7 +62,7 @@ class SyncControllerTest {
         when(syncService.processSync(any(), any(), any()))
                 .thenReturn(successResponse(req.syncId()));
 
-        mockMvc.perform(post("/sync/collectes")
+        mockMvc.perform(post("/api/v1/sync/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -78,7 +78,7 @@ class SyncControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("POST /api/sync/collectes — ANALYSTE → 403 FORBIDDEN")
     void syncCollectes_analyste_403() throws Exception {
-        mockMvc.perform(post("/sync/collectes")
+        mockMvc.perform(post("/api/v1/sync/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isForbidden());
@@ -92,7 +92,7 @@ class SyncControllerTest {
                 UUID.randomUUID().toString(), "DEVICE-001",
                 OffsetDateTime.now(), List.of());
 
-        mockMvc.perform(post("/sync/collectes")
+        mockMvc.perform(post("/api/v1/sync/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emptyReq)))
                 .andExpect(status().isBadRequest());
@@ -102,7 +102,7 @@ class SyncControllerTest {
     @WithMockUser(roles = "AGENT")
     @DisplayName("POST /api/sync/collectes — syncId manquant → 400")
     void syncCollectes_syncid_manquant_400() throws Exception {
-        mockMvc.perform(post("/sync/collectes")
+        mockMvc.perform(post("/api/v1/sync/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"deviceId\":\"D1\",\"clientSyncTimestamp\":\"2024-01-01T10:00:00Z\"," +
                                 "\"items\":[{\"idCollecteMobile\":\"M1\",\"clientId\":\"C1\"," +
@@ -125,7 +125,7 @@ class SyncControllerTest {
 
         when(syncService.processSync(any(), any(), any())).thenReturn(partial);
 
-        mockMvc.perform(post("/sync/collectes")
+        mockMvc.perform(post("/api/v1/sync/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -145,7 +145,7 @@ class SyncControllerTest {
                 "Toutes les collectes sont synchronisées.");
         when(syncService.getSyncStatus("DEVICE-001")).thenReturn(status);
 
-        mockMvc.perform(get("/sync/status/DEVICE-001"))
+        mockMvc.perform(get("/api/v1/sync/status/DEVICE-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.deviceId").value("DEVICE-001"))
                 .andExpect(jsonPath("$.data.nbSyncTotal").value(5))
@@ -156,7 +156,7 @@ class SyncControllerTest {
     @Test
     @DisplayName("POST /api/sync/collectes — non authentifié → 401")
     void syncCollectes_non_authentifie_401() throws Exception {
-        mockMvc.perform(post("/sync/collectes")
+        mockMvc.perform(post("/api/v1/sync/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isUnauthorized());

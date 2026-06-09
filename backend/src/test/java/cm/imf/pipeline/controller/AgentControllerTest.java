@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.AgentResponse;
 import cm.imf.pipeline.repository.AgenceRepository;
@@ -45,7 +45,7 @@ class AgentControllerTest {
         when(agentService.listAll(0, 20)).thenReturn(List.of(AGENT));
         when(agentService.count()).thenReturn(1L);
 
-        mockMvc.perform(get("/agents").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/agents").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.total").value(1))
                 .andExpect(jsonPath("$.data.content[0].idAgent").value("AG001"));
@@ -57,7 +57,7 @@ class AgentControllerTest {
     void listByAgence_retourne_agents() throws Exception {
         when(agentService.listByAgence("ANC01")).thenReturn(List.of(AGENT));
 
-        mockMvc.perform(get("/agents/agence/ANC01"))
+        mockMvc.perform(get("/api/v1/agents/agence/ANC01"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].nomAgent").value("Amadou Diallo"));
     }
@@ -68,7 +68,7 @@ class AgentControllerTest {
     void getById_retourne_agent() throws Exception {
         when(agentService.getById("AG001")).thenReturn(AGENT);
 
-        mockMvc.perform(get("/agents/AG001"))
+        mockMvc.perform(get("/api/v1/agents/AG001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.idAgent").value("AG001"))
                 .andExpect(jsonPath("$.data.nomAgence").value("Agence Nord"));
@@ -80,7 +80,7 @@ class AgentControllerTest {
     void search_retourne_resultats() throws Exception {
         when(agentService.search("Amadou", 10)).thenReturn(List.of(AGENT));
 
-        mockMvc.perform(get("/agents/search").param("q", "Amadou").param("limit", "10"))
+        mockMvc.perform(get("/api/v1/agents/search").param("q", "Amadou").param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].idAgent").value("AG001"));
     }

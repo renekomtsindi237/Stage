@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.ClientResponse;
 import cm.imf.pipeline.service.IClientService;
@@ -34,7 +34,7 @@ class ClientControllerTest {
     void search_200() throws Exception {
         when(clientService.search("Marie", 10)).thenReturn(List.of(CLIENT));
 
-        mockMvc.perform(get("/clients/search").param("q", "Marie").param("limit", "10"))
+        mockMvc.perform(get("/api/v1/clients/search").param("q", "Marie").param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].idClient").value("CLI-001"))
                 .andExpect(jsonPath("$.data[0].nomClient").value("Marie Nkomo"));
@@ -47,7 +47,7 @@ class ClientControllerTest {
         when(clientService.list(0, 20)).thenReturn(List.of(CLIENT));
         when(clientService.count()).thenReturn(1L);
 
-        mockMvc.perform(get("/clients"))
+        mockMvc.perform(get("/api/v1/clients"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.total").value(1))
                 .andExpect(jsonPath("$.data.content[0].nomClient").value("Marie Nkomo"));
@@ -59,7 +59,7 @@ class ClientControllerTest {
     void getById_200() throws Exception {
         when(clientService.getById("CLI-001")).thenReturn(CLIENT);
 
-        mockMvc.perform(get("/clients/CLI-001"))
+        mockMvc.perform(get("/api/v1/clients/CLI-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.idClient").value("CLI-001"))
                 .andExpect(jsonPath("$.data.telephoneClient").value("+237612345678"));

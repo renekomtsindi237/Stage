@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.PretResponse;
 import cm.imf.pipeline.service.IPretService;
@@ -44,7 +44,7 @@ class PretControllerTest {
         when(pretService.listPrets(null, 0, 20)).thenReturn(List.of(buildPret()));
         when(pretService.countPrets(null)).thenReturn(1L);
 
-        mockMvc.perform(get("/prets"))
+        mockMvc.perform(get("/api/v1/prets"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.total").value(1))
                 .andExpect(jsonPath("$.data.content[0].idPret").value("PRE-001"));
@@ -56,7 +56,7 @@ class PretControllerTest {
     void getById_200() throws Exception {
         when(pretService.getById("PRE-001")).thenReturn(buildPret());
 
-        mockMvc.perform(get("/prets/PRE-001"))
+        mockMvc.perform(get("/api/v1/prets/PRE-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.idPret").value("PRE-001"))
                 .andExpect(jsonPath("$.data.joursRetard").value(45));
@@ -68,7 +68,7 @@ class PretControllerTest {
     void getPretsClient_200() throws Exception {
         when(pretService.getPretsClient("CLI-001")).thenReturn(List.of(buildPret()));
 
-        mockMvc.perform(get("/prets/client/CLI-001"))
+        mockMvc.perform(get("/api/v1/prets/client/CLI-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].idPret").value("PRE-001"));
     }
@@ -79,7 +79,7 @@ class PretControllerTest {
     void getMesPrets_200() throws Exception {
         when(pretService.getPretsAgent("agent01")).thenReturn(List.of(buildPret()));
 
-        mockMvc.perform(get("/prets/mes-prets"))
+        mockMvc.perform(get("/api/v1/prets/mes-prets"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].idPret").value("PRE-001"));
     }

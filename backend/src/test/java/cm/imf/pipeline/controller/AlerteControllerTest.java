@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.AlerteUpdateRequest;
 import cm.imf.pipeline.dto.response.AlerteResponse;
@@ -47,7 +47,7 @@ class AlerteControllerTest {
         PageResponse<AlerteResponse> page = new PageResponse<>(List.of(sampleAlerte()), 0, 20, 1L, 1, true, true);
         when(alerteService.getAlertes(null, 0, 20)).thenReturn(page);
 
-        mockMvc.perform(get("/alertes"))
+        mockMvc.perform(get("/api/v1/alertes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content[0].idPret").value("PRE-001"));
@@ -60,7 +60,7 @@ class AlerteControllerTest {
         PageResponse<AlerteResponse> page = new PageResponse<>(List.of(sampleAlerte()), 0, 20, 1L, 1, true, true);
         when(alerteService.getAlertes(eq(StatutAlerte.ACTIVE), eq(0), eq(20))).thenReturn(page);
 
-        mockMvc.perform(get("/alertes").param("statut", "ACTIVE"))
+        mockMvc.perform(get("/api/v1/alertes").param("statut", "ACTIVE"))
                 .andExpect(status().isOk());
     }
 
@@ -70,7 +70,7 @@ class AlerteControllerTest {
     void getById_retourne_alerte() throws Exception {
         when(alerteService.getById(any(UUID.class))).thenReturn(sampleAlerte());
 
-        mockMvc.perform(get("/alertes/{uid}", UUID.randomUUID()))
+        mockMvc.perform(get("/api/v1/alertes/{uid}", UUID.randomUUID()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.joursRetard").value(35));
     }
@@ -83,7 +83,7 @@ class AlerteControllerTest {
                 new BigDecimal("150000"), StatutAlerte.CLOTUREE, false, false, OffsetDateTime.now());
         when(alerteService.updateStatut(any(UUID.class), any())).thenReturn(cloturee);
 
-        mockMvc.perform(put("/alertes/{uid}", UUID.randomUUID())
+        mockMvc.perform(put("/api/v1/alertes/{uid}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new AlerteUpdateRequest(StatutAlerte.CLOTUREE))))
@@ -95,7 +95,7 @@ class AlerteControllerTest {
     @WithMockUser(roles = "AGENT")
     @DisplayName("PUT /api/alertes/{id} — AGENT ne peut pas modifier une alerte → 403")
     void updateStatut_agent_refuse_403() throws Exception {
-        mockMvc.perform(put("/alertes/{uid}", UUID.randomUUID())
+        mockMvc.perform(put("/api/v1/alertes/{uid}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new AlerteUpdateRequest(StatutAlerte.CLOTUREE))))
@@ -105,7 +105,7 @@ class AlerteControllerTest {
     @Test
     @DisplayName("GET /api/alertes — non authentifié → 401")
     void getAlertes_non_authentifie_401() throws Exception {
-        mockMvc.perform(get("/alertes"))
+        mockMvc.perform(get("/api/v1/alertes"))
                 .andExpect(status().isUnauthorized());
     }
 }

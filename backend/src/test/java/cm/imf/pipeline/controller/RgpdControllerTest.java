@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.repository.ConsentementRepository;
@@ -52,7 +52,7 @@ class RgpdControllerTest {
                  "finaliteConcernee":"MARKETING"}
                 """;
 
-        mockMvc.perform(post("/mes-donnees/demande")
+        mockMvc.perform(post("/api/v1/mes-donnees/demande")
                         .with(org.springframework.security.test.web.servlet.request
                                 .SecurityMockMvcRequestPostProcessors.authentication(
                                 new org.springframework.security.authentication
@@ -68,7 +68,7 @@ class RgpdControllerTest {
     @Test
     @DisplayName("POST /mes-donnees/demande → 401 si non authentifié")
     void soumettreDemande_non_authentifie_retourne_401() throws Exception {
-        mockMvc.perform(post("/mes-donnees/demande")
+        mockMvc.perform(post("/api/v1/mes-donnees/demande")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"typeDroit\":\"ACCES\"}"))
                 .andExpect(status().isUnauthorized());
@@ -83,7 +83,7 @@ class RgpdControllerTest {
         when(demandeRepository.findByDemandeurIdOrderByDateSoumissionDesc(any(), any()))
                 .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of()));
 
-        mockMvc.perform(get("/mes-donnees/demandes")
+        mockMvc.perform(get("/api/v1/mes-donnees/demandes")
                         .with(org.springframework.security.test.web.servlet.request
                                 .SecurityMockMvcRequestPostProcessors.authentication(
                                 new org.springframework.security.authentication
@@ -100,14 +100,14 @@ class RgpdControllerTest {
         when(demandeRepository.findAll(any(org.springframework.data.domain.Pageable.class)))
                 .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of()));
 
-        mockMvc.perform(get("/admin/rgpd/demandes").with(TestHelper.asDsi()))
+        mockMvc.perform(get("/api/v1/admin/rgpd/demandes").with(TestHelper.asDsi()))
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("GET /admin/rgpd/demandes → 403 pour ANALYSTE")
     void listAllDemandes_analyste_retourne_403() throws Exception {
-        mockMvc.perform(get("/admin/rgpd/demandes").with(TestHelper.asAnalyste()))
+        mockMvc.perform(get("/api/v1/admin/rgpd/demandes").with(TestHelper.asAnalyste()))
                 .andExpect(status().isForbidden());
     }
 
@@ -117,7 +117,7 @@ class RgpdControllerTest {
         when(demandeRepository.findEnRetard(any(), any()))
                 .thenReturn(java.util.List.of());
 
-        mockMvc.perform(get("/admin/rgpd/demandes/en-retard").with(TestHelper.asDsi()))
+        mockMvc.perform(get("/api/v1/admin/rgpd/demandes/en-retard").with(TestHelper.asDsi()))
                 .andExpect(status().isOk());
     }
 }

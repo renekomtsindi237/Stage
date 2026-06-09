@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.CollecteRequest;
 import cm.imf.pipeline.dto.response.CollecteResponse;
@@ -56,7 +56,7 @@ class CollecteControllerTest {
     void enregistrer_collecte_agent_201() throws Exception {
         when(collecteService.enregistrer(any(), any())).thenReturn(confirmedResponse());
 
-        mockMvc.perform(post("/collectes")
+        mockMvc.perform(post("/api/v1/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isCreated())
@@ -73,7 +73,7 @@ class CollecteControllerTest {
                 "REF001", StatutCollecte.DOUBLON, OffsetDateTime.now());
         when(collecteService.enregistrer(any(), any())).thenReturn(doublon);
 
-        mockMvc.perform(post("/collectes")
+        mockMvc.perform(post("/api/v1/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isConflict());
@@ -83,7 +83,7 @@ class CollecteControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("POST /api/collectes — ANALYSTE n'a pas le droit → 403")
     void enregistrer_analyste_403() throws Exception {
-        mockMvc.perform(post("/collectes")
+        mockMvc.perform(post("/api/v1/collectes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
                 .andExpect(status().isForbidden());
@@ -97,7 +97,7 @@ class CollecteControllerTest {
                 List.of(confirmedResponse()), 0, 20, 1L, 1, true, true);
         when(collecteService.getMesCollectes(any(), eq(0), eq(20))).thenReturn(page);
 
-        mockMvc.perform(get("/collectes/mes-collectes"))
+        mockMvc.perform(get("/api/v1/collectes/mes-collectes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }
@@ -108,7 +108,7 @@ class CollecteControllerTest {
     void getById_analyste_ok() throws Exception {
         when(collecteService.getById(any(UUID.class))).thenReturn(confirmedResponse());
 
-        mockMvc.perform(get("/collectes/{uid}", UUID.randomUUID()))
+        mockMvc.perform(get("/api/v1/collectes/{uid}", UUID.randomUUID()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.idCollecteMobile").value("MOBILE-001"));
     }

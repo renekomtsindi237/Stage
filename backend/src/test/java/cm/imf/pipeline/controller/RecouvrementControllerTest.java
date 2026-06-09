@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.AjouterActionRequest;
 import cm.imf.pipeline.dto.request.EscaladerDossierRequest;
@@ -92,7 +92,7 @@ class RecouvrementControllerTest {
             when(recouvrementService.ouvrirDossier(any(), any()))
                     .thenReturn(dossierResponse(RecouvrementPhase.RELANCE_AMIABLE));
 
-            mockMvc.perform(post("/recouvrement/dossiers")
+            mockMvc.perform(post("/api/v1/recouvrement/dossiers")
                             .with(TestHelper.asRr())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(ouvrirRequest())))
@@ -109,7 +109,7 @@ class RecouvrementControllerTest {
                     .thenThrow(new ResponseStatusException(CONFLICT,
                             "Un dossier actif existe déjà pour PRE-2024-001"));
 
-            mockMvc.perform(post("/recouvrement/dossiers")
+            mockMvc.perform(post("/api/v1/recouvrement/dossiers")
                             .with(TestHelper.asRr())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(ouvrirRequest())))
@@ -122,7 +122,7 @@ class RecouvrementControllerTest {
             String invalid = """
                     {"idPret":"PRE-2024-001","nomClient":"Fomo","joursRetard":95}
                     """;
-            mockMvc.perform(post("/recouvrement/dossiers")
+            mockMvc.perform(post("/api/v1/recouvrement/dossiers")
                             .with(TestHelper.asRr())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalid))
@@ -132,7 +132,7 @@ class RecouvrementControllerTest {
         @Test
         @DisplayName("→ 403 si AGENT tente d'ouvrir un dossier")
         void ouvrir_agent_retourne_403() throws Exception {
-            mockMvc.perform(post("/recouvrement/dossiers")
+            mockMvc.perform(post("/api/v1/recouvrement/dossiers")
                             .with(TestHelper.asAgent())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mapper.writeValueAsString(ouvrirRequest())))
@@ -154,7 +154,7 @@ class RecouvrementControllerTest {
             when(recouvrementService.listDossiers(anyLong(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(page);
 
-            mockMvc.perform(get("/recouvrement/dossiers")
+            mockMvc.perform(get("/api/v1/recouvrement/dossiers")
                             .with(TestHelper.asRr())
                             .param("phase", "CONTENTIEUX"))
                     .andExpect(status().isOk())
@@ -168,7 +168,7 @@ class RecouvrementControllerTest {
             when(recouvrementService.listDossiers(anyLong(), isNull(), isNull(), anyInt(), anyInt()))
                     .thenReturn(PageResponse.of(List.of(), 0, 20, 0L));
 
-            mockMvc.perform(get("/recouvrement/dossiers").with(TestHelper.asRr()))
+            mockMvc.perform(get("/api/v1/recouvrement/dossiers").with(TestHelper.asRr()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalElements").value(0))
                     .andExpect(jsonPath("$.data.content").isEmpty());
@@ -183,7 +183,7 @@ class RecouvrementControllerTest {
         when(recouvrementService.getDossier(DOSSIER_UID))
                 .thenReturn(dossierResponse(RecouvrementPhase.MEDIATION_AMIABLE));
 
-        mockMvc.perform(get("/recouvrement/dossiers/{uid}", DOSSIER_UID)
+        mockMvc.perform(get("/api/v1/recouvrement/dossiers/{uid}", DOSSIER_UID)
                         .with(TestHelper.asRr()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.uid").value(DOSSIER_UID.toString()))
@@ -203,7 +203,7 @@ class RecouvrementControllerTest {
                  "motif":"Aucune réponse après 3 relances"}
                 """;
 
-        mockMvc.perform(put("/recouvrement/dossiers/{uid}/escalader", DOSSIER_UID)
+        mockMvc.perform(put("/api/v1/recouvrement/dossiers/{uid}/escalader", DOSSIER_UID)
                         .with(TestHelper.asRr())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -241,7 +241,7 @@ class RecouvrementControllerTest {
                  "observation":"Client rencontré","montantRecupere":50000}
                 """;
 
-        mockMvc.perform(post("/recouvrement/dossiers/{uid}/actions", DOSSIER_UID)
+        mockMvc.perform(post("/api/v1/recouvrement/dossiers/{uid}/actions", DOSSIER_UID)
                         .with(TestHelper.asRr())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -282,7 +282,7 @@ class RecouvrementControllerTest {
         when(recouvrementService.clore(eq(DOSSIER_UID), anyString(), any()))
                 .thenReturn(clos);
 
-        mockMvc.perform(put("/recouvrement/dossiers/{uid}/clore", DOSSIER_UID)
+        mockMvc.perform(put("/api/v1/recouvrement/dossiers/{uid}/clore", DOSSIER_UID)
                         .with(TestHelper.asRr())
                         .param("motif", "Remboursement intégral reçu"))
                 .andExpect(status().isOk())

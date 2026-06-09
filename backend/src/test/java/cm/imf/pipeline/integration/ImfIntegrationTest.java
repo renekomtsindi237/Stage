@@ -1,4 +1,4 @@
-package cm.imf.pipeline.integration;
+﻿package cm.imf.pipeline.integration;
 
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.response.AuthResponse;
@@ -123,7 +123,7 @@ class ImfIntegrationTest {
     @DisplayName("POST /api/auth/login — ANALYSTE → 403 (doit utiliser OTP) ; token généré directement")
     void login_analyste_retourne_token() throws Exception {
         // /auth/login est réservé au SUPER_ADMIN
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("jkamga@test.cm", "TestPass!2024"))))
@@ -140,7 +140,7 @@ class ImfIntegrationTest {
     @DisplayName("POST /api/auth/login — SUPER_ADMIN → 200 avec tokens ; token DSI généré directement")
     void login_dsi_retourne_token() throws Exception {
         // Vérifie que le SUPER_ADMIN peut se connecter via /auth/login
-        MvcResult result = mockMvc.perform(post("/auth/login")
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("super_admin@test.cm", "SuperPass!2024"))))
@@ -165,7 +165,7 @@ class ImfIntegrationTest {
     void dashboardSummary_analyste_authentifie() throws Exception {
         Assumptions.assumeTrue(accessToken != null, "Token ANALYSTE requis — test 4 doit passer en premier");
 
-        mockMvc.perform(get("/kpi/dashboard-summary")
+        mockMvc.perform(get("/api/v1/kpi/dashboard-summary")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
@@ -180,7 +180,7 @@ class ImfIntegrationTest {
     void adminUsers_analyste_403() throws Exception {
         Assumptions.assumeTrue(accessToken != null);
 
-        mockMvc.perform(get("/admin/users")
+        mockMvc.perform(get("/api/v1/admin/users")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isForbidden());
     }
@@ -191,7 +191,7 @@ class ImfIntegrationTest {
     void adminUsers_dsi_200() throws Exception {
         Assumptions.assumeTrue(dsiAccessToken != null);
 
-        mockMvc.perform(get("/admin/users")
+        mockMvc.perform(get("/api/v1/admin/users")
                         .header("Authorization", "Bearer " + dsiAccessToken))
                 .andExpect(status().isOk());
     }
@@ -200,7 +200,7 @@ class ImfIntegrationTest {
     @Order(9)
     @DisplayName("POST /api/auth/login — mauvais mot de passe SUPER_ADMIN → 401 message générique")
     void login_mauvais_mdp_401() throws Exception {
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("super_admin@test.cm", "WrongPassword!"))))
@@ -214,7 +214,7 @@ class ImfIntegrationTest {
     void getUserMe_retourne_profil() throws Exception {
         Assumptions.assumeTrue(accessToken != null);
 
-        mockMvc.perform(get("/users/me")
+        mockMvc.perform(get("/api/v1/users/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value("jkamga"))
@@ -226,7 +226,7 @@ class ImfIntegrationTest {
     @DisplayName("POST /api/auth/logout — invalide le refreshToken SUPER_ADMIN")
     void logout_puis_acces_refuse() throws Exception {
         // Login SUPER_ADMIN pour obtenir un vrai refreshToken stocké en base
-        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("super_admin@test.cm", "SuperPass!2024"))))
@@ -236,7 +236,7 @@ class ImfIntegrationTest {
                 loginResult.getResponse().getContentAsString(), AuthResponse.class);
 
         // Logout — invalide le refreshToken
-        mockMvc.perform(post("/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + auth.refreshToken() + "\"}"))
                 .andExpect(status().isNoContent());

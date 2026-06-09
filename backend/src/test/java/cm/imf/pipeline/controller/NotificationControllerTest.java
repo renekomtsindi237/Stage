@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.NotificationDto;
 import cm.imf.pipeline.service.INotifPersistService;
@@ -44,7 +44,7 @@ class NotificationControllerTest {
         when(notifService.getNotifications(anyLong(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(sampleNotif())));
 
-        mockMvc.perform(get("/notifications").with(TestHelper.asAnalyste()))
+        mockMvc.perform(get("/api/v1/notifications").with(TestHelper.asAnalyste()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content[0].type").value("ALERTE_IMPAYE"));
@@ -53,7 +53,7 @@ class NotificationControllerTest {
     @Test
     @DisplayName("GET /notifications → 401 si non authentifié")
     void list_non_authentifie_retourne_401() throws Exception {
-        mockMvc.perform(get("/notifications"))
+        mockMvc.perform(get("/api/v1/notifications"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -64,7 +64,7 @@ class NotificationControllerTest {
     void unreadCount_retourne_200() throws Exception {
         when(notifService.countUnread(anyLong(), anyString())).thenReturn(5L);
 
-        mockMvc.perform(get("/notifications/unread-count")
+        mockMvc.perform(get("/api/v1/notifications/unread-count")
                         .with(TestHelper.asAnalyste()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.count").value(5));
@@ -78,7 +78,7 @@ class NotificationControllerTest {
         UUID uid = UUID.randomUUID();
         doNothing().when(notifService).markAsRead(uid);
 
-        mockMvc.perform(put("/notifications/{uid}/read", uid)
+        mockMvc.perform(put("/api/v1/notifications/{uid}/read", uid)
                         .with(TestHelper.asAnalyste()))
                 .andExpect(status().isOk());
 
@@ -92,7 +92,7 @@ class NotificationControllerTest {
     void markAllRead_retourne_200() throws Exception {
         doNothing().when(notifService).markAllAsRead(anyLong(), anyString());
 
-        mockMvc.perform(put("/notifications/read-all")
+        mockMvc.perform(put("/api/v1/notifications/read-all")
                         .with(TestHelper.asAnalyste()))
                 .andExpect(status().isOk());
     }

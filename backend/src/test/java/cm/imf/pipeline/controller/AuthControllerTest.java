@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.request.RefreshRequest;
@@ -36,7 +36,7 @@ class AuthControllerTest {
                 "ANALYSTE", "jkamga", null, null, null, false, 900L);
         when(authService.login(any())).thenReturn(response);
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("jkamga@test.cm", "password123"))))
@@ -51,7 +51,7 @@ class AuthControllerTest {
     void login_invalide_retourne_401() throws Exception {
         when(authService.login(any())).thenThrow(new BadCredentialsException("Bad credentials"));
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("jkamga@test.cm", "wrongpass"))))
@@ -61,7 +61,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/auth/login — champs vides → 400 validation error")
     void login_champs_vides_retourne_400() throws Exception {
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"\",\"password\":\"\"}"))
                 .andExpect(status().isBadRequest());
@@ -74,7 +74,7 @@ class AuthControllerTest {
                 "ANALYSTE", "jkamga", null, null, null, false, 900L);
         when(authService.refresh(any())).thenReturn(response);
 
-        mockMvc.perform(post("/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new RefreshRequest("valid_refresh_token"))))
@@ -87,7 +87,7 @@ class AuthControllerTest {
     void logout_retourne_204() throws Exception {
         doNothing().when(authService).logout(any());
 
-        mockMvc.perform(post("/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new RefreshRequest("some_refresh_token"))))

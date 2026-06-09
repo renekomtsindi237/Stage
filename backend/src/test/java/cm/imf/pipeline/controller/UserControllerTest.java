@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.Role;
@@ -44,7 +44,7 @@ class UserControllerTest {
     void getMe_200() throws Exception {
         User user = buildUser();
 
-        mockMvc.perform(get("/users/me").with(user(user)))
+        mockMvc.perform(get("/api/v1/users/me").with(user(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value("agent01"))
                 .andExpect(jsonPath("$.data.role").value("AGENT"));
@@ -60,7 +60,7 @@ class UserControllerTest {
                 {"token":"token-firebase-xyz"}
                 """;
 
-        mockMvc.perform(post("/users/me/fcm-token")
+        mockMvc.perform(post("/api/v1/users/me/fcm-token")
                         .with(user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))

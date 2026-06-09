@@ -1,4 +1,4 @@
-package cm.imf.pipeline.controller;
+﻿package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.repository.AlerteRepository;
 import cm.imf.pipeline.service.INotificationService;
@@ -72,7 +72,7 @@ class InternalControllerTest {
                 "montant_en_retard", "250000.00"
         );
 
-        mockMvc.perform(post("/internal/alertes")
+        mockMvc.perform(post("/api/v1/internal/alertes")
                         .header("X-Internal-Api-Key", VALID_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -89,7 +89,7 @@ class InternalControllerTest {
                 "montant_en_retard", "250000.00"
         );
 
-        mockMvc.perform(post("/internal/alertes")
+        mockMvc.perform(post("/api/v1/internal/alertes")
                         .header("X-Internal-Api-Key", INVALID_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -115,7 +115,7 @@ class InternalControllerTest {
                 "montant_en_retard", "300000"
         );
 
-        mockMvc.perform(post("/internal/alertes")
+        mockMvc.perform(post("/api/v1/internal/alertes")
                         .header("X-Internal-Api-Key", VALID_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -132,7 +132,7 @@ class InternalControllerTest {
                 "montant_en_retard", "100000"
         );
 
-        mockMvc.perform(post("/internal/alertes")
+        mockMvc.perform(post("/api/v1/internal/alertes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isBadRequest());
@@ -147,7 +147,7 @@ class InternalControllerTest {
 
         Map<String, Object> payload = Map.of("user_id", 1, "fcm_token", "firebase-token-abc");
 
-        mockMvc.perform(post("/internal/fcm-token")
+        mockMvc.perform(post("/api/v1/internal/fcm-token")
                         .header("X-Internal-Api-Key", VALID_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -159,7 +159,7 @@ class InternalControllerTest {
     void registerFcm_cle_invalide_403() throws Exception {
         Map<String, Object> payload = Map.of("user_id", 1, "fcm_token", "token");
 
-        mockMvc.perform(post("/internal/fcm-token")
+        mockMvc.perform(post("/api/v1/internal/fcm-token")
                         .header("X-Internal-Api-Key", INVALID_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
