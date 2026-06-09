@@ -16,6 +16,7 @@ prolonger la fenêtre de déploiement.
 
 dag_ml_training s'exécute aussi automatiquement tous les dimanches à 02h00.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
