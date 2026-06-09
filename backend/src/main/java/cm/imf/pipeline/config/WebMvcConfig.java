@@ -27,8 +27,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        // Ajoute /api/v1 devant tous les @RestController sans modifier les annotations existantes.
-        configurer.addPathPrefix("/api/v1", c -> c.isAnnotationPresent(RestController.class));
+        // Ajoute /api/v1 uniquement sur nos propres controllers (cm.imf).
+        // Exclure les controllers tiers (ex: springdoc OpenApiWebMvcResource) pour éviter
+        // que /api-docs se retrouve déplacé à /api/v1/api-docs, cassant le Swagger UI.
+        configurer.addPathPrefix("/api/v1",
+                c -> c.isAnnotationPresent(RestController.class)
+                        && c.getPackageName().startsWith("cm.imf"));
     }
 
     @Override
