@@ -2,7 +2,6 @@ package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.request.RefreshRequest;
-import cm.imf.pipeline.dto.request.ResetPasswordWithTokenRequest;
 import cm.imf.pipeline.dto.request.VerifyOtpRequest;
 import cm.imf.pipeline.dto.response.AuthResponse;
 import cm.imf.pipeline.dto.response.OtpInitResponse;
@@ -74,8 +73,7 @@ public class AuthController {
 
     @Operation(summary = """
             Vérifie le code OTP (valable 10 min, max 3 tentatives).
-            Réponse status=AUTHENTICATED → cookies + tokens (compte actif).
-            Réponse status=MUST_SET_PASSWORD → resetToken JWT 15 min (première connexion).
+            Retourne toujours status=AUTHENTICATED + tokens (1ère connexion ou Nième — flux identique).
             """)
     @PostMapping("/verify-otp")
     public ResponseEntity<OtpVerifyResponse> verifyOtp(
@@ -83,25 +81,8 @@ public class AuthController {
             HttpServletResponse response) {
 
         OtpVerifyResponse result = authService.verifyOtp(request);
-
-        if (OtpVerifyResponse.AUTHENTICATED.equals(result.status())) {
-            setAuthCookies(response, result.accessToken(), result.refreshToken(), result.expiresIn());
-        }
-
+        setAuthCookies(response, result.accessToken(), result.refreshToken(), result.expiresIn());
         return ResponseEntity.ok(result);
-    }
-
-    // ── OTP — Étape 3 : définir le mot de passe fort (activation) ────────────
-
-    @Operation(summary = "Définit le mot de passe fort après vérification OTP (première connexion). Retourne les tokens.")
-    @PostMapping("/set-password")
-    public ResponseEntity<AuthResponse> setPassword(
-            @Valid @RequestBody ResetPasswordWithTokenRequest request,
-            HttpServletResponse response) {
-
-        AuthResponse auth = authService.setPasswordWithToken(request);
-        setAuthCookies(response, auth.accessToken(), auth.refreshToken(), auth.expiresIn());
-        return ResponseEntity.ok(auth);
     }
 
     // ── Refresh ───────────────────────────────────────────────────────────────

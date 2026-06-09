@@ -2,7 +2,6 @@ package cm.imf.pipeline.service;
 
 import cm.imf.pipeline.dto.request.LoginRequest;
 import cm.imf.pipeline.dto.request.RefreshRequest;
-import cm.imf.pipeline.dto.request.ResetPasswordWithTokenRequest;
 import cm.imf.pipeline.dto.request.VerifyOtpRequest;
 import cm.imf.pipeline.dto.response.AuthResponse;
 import cm.imf.pipeline.dto.response.OtpInitResponse;
@@ -175,44 +174,15 @@ public class AuthService implements IAuthService {
         otpCodeRepository.save(otp);
         log.info("OTP vérifié pour : {}", user.getUsername());
 
+        // Première connexion : activer le compte directement — pas de mot de passe requis
         if (user.isMustChangePassword()) {
-            // Premier login / activation → l'utilisateur doit définir son mot de passe
-            String resetToken = jwtTokenProvider.generatePasswordResetToken(user.getUsername());
-            return OtpVerifyResponse.mustSetPassword(resetToken, jwtTokenProvider.getResetTokenExpirySeconds());
+            user.setMustChangePassword(false);
+            userRepository.save(user);
+            log.info("Compte activé à la première connexion OTP : {}", user.getUsername());
         }
 
-        // Compte déjà activé → émettre les tokens directement
         userRepository.updateLastLogin(user.getId(), OffsetDateTime.now());
         return OtpVerifyResponse.authenticated(issueTokens(user));
-    }
-
-    // ── OTP — Étape 3 : définir le mot de passe (activation) ─────────────────
-
-    @Transactional
-    public AuthResponse setPasswordWithToken(ResetPasswordWithTokenRequest request) {
-        String username;
-        try {
-            username = jwtTokenProvider.validatePasswordResetToken(request.resetToken());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Utilisateur introuvable"));
-
-        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
-        user.setMustChangePassword(false);
-        userRepository.save(user);
-
-        // Invalider les sessions existantes et OTP résiduels
-        refreshTokenRepository.deleteByUser(user);
-        otpCodeRepository.deleteByUser(user);
-
-        userRepository.updateLastLogin(user.getId(), OffsetDateTime.now());
-        log.info("Mot de passe défini et compte activé pour : {}", username);
-
-        return issueTokens(user);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
