@@ -1,9 +1,5 @@
 <!-- ── Erreur session ── -->
-<div
-  class="session-error"
-  *ngIf="errorCode === 403 || errorCode === 401"
-  @fadeInUp
->
+<div class="session-error" *ngIf="errorCode === 403 || errorCode === 401" @fadeInUp>
   <div class="err-icon"><mat-icon>lock_person</mat-icon></div>
   <div class="err-body">
     <strong>Session expirée</strong>
@@ -15,43 +11,39 @@
 </div>
 
 <ng-container *ngIf="errorCode === 0">
+
   <!-- ── En-tête ── -->
   <div class="page-header" @reveal>
     <div>
-      <div class="platform-badge">
-        <mat-icon>verified</mat-icon>
-        Super Administrateur
-      </div>
-      <h1>
-        {{ greeting }}, <span class="highlight">{{ auth.getUsername() }}</span>
-      </h1>
-      <p class="header-date">
-        {{ today | date: "EEEE d MMMM yyyy" : "" : "fr" }} · Tableau de bord
-        plateforme
-      </p>
+      <h1>Dashboard Plateforme</h1>
+      <p class="header-sub">Vue d'ensemble de toutes les institutions de microfinance</p>
     </div>
     <div class="header-actions">
-      <button
-        mat-stroked-button
-        class="btn-outline"
-        (click)="load()"
-        [disabled]="loading"
-      >
+      <button mat-stroked-button class="btn-outline" (click)="load()" [disabled]="loading">
         <mat-icon [class.spinning]="loading">refresh</mat-icon>
         Actualiser
       </button>
       <button mat-flat-button class="btn-primary" (click)="goToCreateImf()">
         <mat-icon>add</mat-icon>
-        Nouvelle IMF
+        Créer une IMF
       </button>
     </div>
+  </div>
+
+  <!-- ── Alerte IMF inactives ── -->
+  <div class="par-alert" *ngIf="!loading && hasInactiveImfs" @fadeInUp>
+    <mat-icon>warning_amber</mat-icon>
+    <span>
+      <strong>{{ inactiveImfsCount }} IMF inactive(s)</strong> sur la plateforme — vérifiez leur statut et prenez les mesures nécessaires.
+    </span>
+    <button mat-button class="par-alert-btn" (click)="goToImf()">Voir les IMF <mat-icon>arrow_forward</mat-icon></button>
   </div>
 
   <!-- ── KPI Cards ── -->
   <div class="kpi-row" @staggerIn>
     <!-- Skeleton -->
     <ng-container *ngIf="loading">
-      <div class="kpi-card sk-card" *ngFor="let i of [1, 2, 3, 4]">
+      <div class="kpi-card sk-card" *ngFor="let i of [1,2,3,4]">
         <div class="sk-icon"></div>
         <div class="sk-lines">
           <div class="sk-line sk-lg"></div>
@@ -61,278 +53,140 @@
     </ng-container>
 
     <ng-container *ngIf="!loading && stats">
-      <!-- Total IMF -->
+      <!-- IMF Actives -->
       <div class="kpi-card">
-        <div class="kpi-icon blue">
-          <mat-icon>corporate_fare</mat-icon>
+        <div class="kpi-left">
+          <div class="kpi-icon kpi-icon--blue"><mat-icon>corporate_fare</mat-icon></div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-label">Total IMF</span>
-          <span class="kpi-value">{{ stats.totalImfs }}</span>
-        </div>
-        <div class="kpi-badge blue">Enregistrées</div>
-      </div>
-
-      <!-- IMF actives -->
-      <div class="kpi-card">
-        <div class="kpi-icon green">
-          <mat-icon>check_circle_outline</mat-icon>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-label">IMF actives</span>
-          <span class="kpi-value green">{{ stats.activeImfs }}</span>
-        </div>
-        <div class="kpi-badge green">
-          <mat-icon>trending_up</mat-icon>
-          {{ activationRate }}%
+          <span class="kpi-value">{{ stats.activeImfs }}<span class="kpi-total">/{{ stats.totalImfs }}</span></span>
+          <span class="kpi-label">IMF Actives</span>
         </div>
       </div>
 
       <!-- Utilisateurs -->
       <div class="kpi-card">
-        <div class="kpi-icon orange">
-          <mat-icon>group</mat-icon>
+        <div class="kpi-left">
+          <div class="kpi-icon kpi-icon--indigo"><mat-icon>group</mat-icon></div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-label">Utilisateurs</span>
           <span class="kpi-value">{{ stats.totalUsers }}</span>
+          <span class="kpi-label">Utilisateurs</span>
         </div>
-        <div class="kpi-badge orange">Tous rôles</div>
       </div>
 
-      <!-- Nouvelles ce mois -->
+      <!-- Volume 30j (placeholder) -->
       <div class="kpi-card">
-        <div class="kpi-icon teal">
-          <mat-icon>add_business</mat-icon>
+        <div class="kpi-left">
+          <div class="kpi-icon kpi-icon--green"><mat-icon>credit_card</mat-icon></div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-label">Nouvelles ce mois</span>
-          <span class="kpi-value teal">{{ stats.newImfsThisMonth }}</span>
+          <span class="kpi-value kpi-value--sm">— FCFA</span>
+          <span class="kpi-label">Volume (30j)</span>
         </div>
-        <div class="kpi-badge teal" *ngIf="stats.newImfsThisMonth > 0">
-          <mat-icon>trending_up</mat-icon>
-          +{{ stats.newImfsThisMonth }}
+      </div>
+
+      <!-- Alertes critiques -->
+      <div class="kpi-card" [class.kpi-card--danger]="inactiveImfsCount > 0">
+        <div class="kpi-left">
+          <div class="kpi-icon" [class.kpi-icon--red]="inactiveImfsCount > 0" [class.kpi-icon--gray]="inactiveImfsCount === 0">
+            <mat-icon>warning</mat-icon>
+          </div>
         </div>
-        <div class="kpi-badge neutral" *ngIf="stats.newImfsThisMonth === 0">
-          Ce mois
+        <div class="kpi-body">
+          <span class="kpi-value" [class.kpi-value--red]="inactiveImfsCount > 0">{{ inactiveImfsCount }}</span>
+          <span class="kpi-label">Alertes Critiques</span>
         </div>
       </div>
     </ng-container>
   </div>
 
-  <!-- ── Graphique barres + Donut ── -->
-  <div class="charts-row" *ngIf="!loading" @fadeInUp>
-    <!-- Graphique en barres : IMF par mois -->
-    <div class="chart-card chart-card--wide">
-      <div class="chart-card-header">
-        <div>
-          <h3>Enregistrements d'IMF</h3>
-          <p>Activité mensuelle sur les 12 derniers mois</p>
-        </div>
-        <div class="chart-legend">
-          <span class="legend-dot blue"></span><span>Actives</span>
-          <span class="legend-dot gray"></span><span>Inactives</span>
-        </div>
+  <!-- ── Table IMF ── -->
+  <div class="table-section" *ngIf="!loading" @fadeInUp>
+    <div class="table-header">
+      <div>
+        <h2>Institutions de Microfinance <span class="table-header-count">({{ allImfs.length }})</span></h2>
+        <p class="table-sub">Liste de tous les tenants enregistrés sur la plateforme</p>
       </div>
-      <div class="chart-body">
-        <imf-platform-bar-chart
-          [labels]="barLabels"
-          [activeData]="barActive"
-          [inactiveData]="barInactive"
-        >
-        </imf-platform-bar-chart>
-      </div>
+      <button mat-flat-button class="btn-primary" (click)="goToCreateImf()">
+        <mat-icon>add_business</mat-icon>
+        Créer une IMF
+      </button>
     </div>
 
-    <!-- Donut : répartition actives/inactives -->
-    <div class="chart-card">
-      <div class="chart-card-header">
-        <div>
-          <h3>Répartition IMF</h3>
-          <p>Actives vs inactives</p>
-        </div>
-      </div>
-      <div class="chart-body donut-body">
-        <imf-platform-donut-chart
-          [active]="stats?.activeImfs || 0"
-          [inactive]="stats?.inactiveImfs || 0"
-        >
-        </imf-platform-donut-chart>
-        <div class="donut-legend">
-          <div class="donut-legend-item">
-            <span class="legend-dot blue"></span>
-            <span class="legend-label">Actives</span>
-            <span class="legend-val">{{ stats?.activeImfs || 0 }}</span>
-          </div>
-          <div class="donut-legend-item">
-            <span class="legend-dot gray"></span>
-            <span class="legend-label">Inactives</span>
-            <span class="legend-val">{{ stats?.inactiveImfs || 0 }}</span>
-          </div>
-          <div class="donut-legend-item">
-            <span class="legend-dot teal"></span>
-            <span class="legend-label">Avec DSI</span>
-            <span class="legend-val">{{ dsiCount }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── IMF récentes + Pays ── -->
-  <div class="bottom-row" *ngIf="!loading" @fadeInUp>
-    <!-- IMF récentes -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title-group">
-          <div class="panel-icon-wrap">
-            <mat-icon>history</mat-icon>
-          </div>
-          <div>
-            <h3>IMF récemment ajoutées</h3>
-            <p>Les dernières institutions enregistrées</p>
-          </div>
-        </div>
-        <button class="btn-see-all" (click)="goToImf()">
-          Voir tout <mat-icon>chevron_right</mat-icon>
-        </button>
-      </div>
-
-      <div class="imf-empty" *ngIf="recentImfs.length === 0">
+    <div class="imf-table-wrap">
+      <div class="empty-state" *ngIf="allImfs.length === 0">
         <mat-icon>inbox</mat-icon>
-        <span>Aucune IMF enregistrée</span>
+        <p>Aucune institution enregistrée</p>
+        <button mat-flat-button class="btn-primary" (click)="goToCreateImf()">Ajouter une IMF</button>
       </div>
 
-      <div class="imf-list" *ngIf="recentImfs.length > 0">
-        <div
-          class="imf-row"
-          *ngFor="let imf of recentImfs; trackBy: trackByImf"
-          (click)="goToImf()"
-        >
-          <div class="imf-logo-wrap" [class.off]="!imf.actif">
-            <img
-              [src]="getImfLogo(imf.code)"
-              [alt]="imf.nom"
-              class="imf-logo-img"
-            />
-          </div>
-          <div class="imf-info">
-            <span class="imf-name">{{ imf.nom }}</span>
-            <span class="imf-meta">
-              <span class="imf-code">{{ imf.code }}</span>
-              <span class="sep">·</span>
-              {{ imf.pays }}
-            </span>
-          </div>
-          <div class="imf-right">
-            <span
-              class="status-pill"
-              [class.active]="imf.actif"
-              [class.inactive]="!imf.actif"
-            >
-              <span class="pill-dot"></span>
-              {{ imf.actif ? "Active" : "Inactive" }}
-            </span>
-            <span class="imf-date">{{ formatDate(imf.createdAt) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Répartition par pays + Actions rapides -->
-    <div class="side-col">
-      <!-- Pays -->
-      <div class="panel" *ngIf="paysStatsList.length > 0">
-        <div class="panel-header">
-          <div class="panel-title-group">
-            <div class="panel-icon-wrap">
-              <mat-icon>public</mat-icon>
-            </div>
-            <div>
-              <h3>Par pays</h3>
-              <p>Répartition géographique</p>
-            </div>
-          </div>
-        </div>
-        <div class="pays-list">
-          <div
-            class="pays-row"
-            *ngFor="let p of paysStatsList; let i = index; trackBy: trackByPays"
-          >
-            <span class="pays-rank">{{ i + 1 }}</span>
-            <span class="pays-name">{{ p.pays }}</span>
-            <div class="pays-bar-wrap">
-              <div class="pays-bar-fill" [style.width.%]="p.pct"></div>
-            </div>
-            <span class="pays-pct">{{ p.pct }}%</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions rapides -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title-group">
-            <div class="panel-icon-wrap">
-              <mat-icon>bolt</mat-icon>
-            </div>
-            <div>
-              <h3>Actions rapides</h3>
-            </div>
-          </div>
-        </div>
-        <div class="qa-list">
-          <a class="qa-item" [routerLink]="['/platform/imf']">
-            <div class="qa-icon blue"><mat-icon>corporate_fare</mat-icon></div>
-            <div class="qa-body">
-              <span class="qa-title">Gérer les IMF</span>
-              <span class="qa-sub">Activer, désactiver, configurer</span>
-            </div>
-            <mat-icon class="qa-arrow">chevron_right</mat-icon>
-          </a>
-          <a
-            class="qa-item"
-            [routerLink]="['/platform/imf']"
-            [queryParams]="{ action: 'create' }"
-          >
-            <div class="qa-icon green"><mat-icon>add_business</mat-icon></div>
-            <div class="qa-body">
-              <span class="qa-title">Nouvelle IMF</span>
-              <span class="qa-sub">Enregistrer une institution</span>
-            </div>
-            <mat-icon class="qa-arrow">chevron_right</mat-icon>
-          </a>
-          <a class="qa-item" [routerLink]="['/platform/imf']">
-            <div class="qa-icon orange"><mat-icon>person_add</mat-icon></div>
-            <div class="qa-body">
-              <span class="qa-title">Créer un DSI</span>
-              <span class="qa-sub">Attribuer un administrateur</span>
-            </div>
-            <mat-icon class="qa-arrow">chevron_right</mat-icon>
-          </a>
-        </div>
-
-        <!-- Barre de santé -->
-        <div class="health-block" *ngIf="stats">
-          <div class="health-row">
-            <span class="health-label">Taux d'activation</span>
-            <span class="health-val green">{{ activationRate }}%</span>
-          </div>
-          <div class="health-bar-bg">
-            <div
-              class="health-bar-fill blue"
-              [style.width.%]="activationRate"
-            ></div>
-          </div>
-          <div class="health-row" style="margin-top: 10px">
-            <span class="health-label">Couverture DSI</span>
-            <span class="health-val teal">{{ dsiRate }}%</span>
-          </div>
-          <div class="health-bar-bg">
-            <div class="health-bar-fill teal" [style.width.%]="dsiRate"></div>
-          </div>
-        </div>
-      </div>
+      <table class="imf-table" *ngIf="allImfs.length > 0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Dénomination</th>
+            <th>Pays</th>
+            <th class="th-num">Agences</th>
+            <th class="th-num">Utilisateurs</th>
+            <th>PAR 90</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let imf of allImfs; trackBy: trackByImf" class="imf-tr">
+            <td class="td-code">{{ imf.code }}</td>
+            <td class="td-nom">
+              <div class="imf-nom-cell">
+                <div class="imf-logo-sm">
+                  <img [src]="getImfLogo(imf.code)" [alt]="imf.nom" />
+                </div>
+                <span>{{ imf.nom }}</span>
+              </div>
+            </td>
+            <td class="td-pays">{{ imf.pays }}</td>
+            <td class="td-num">—</td>
+            <td class="td-num">—</td>
+            <td>
+              <span class="par-badge par-badge--green">0 %</span>
+            </td>
+            <td>
+              <span class="status-pill" [class.active]="imf.actif" [class.inactive]="!imf.actif">
+                <span class="pill-dot"></span>
+                {{ imf.actif ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="td-actions">
+              <button mat-icon-button class="act-btn"
+                      [routerLink]="['/platform/imf', imf.uid, 'supervision']"
+                      matTooltip="Superviser">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button class="act-btn act-btn--warn"
+                      matTooltip="{{ imf.actif ? 'Désactiver' : 'Activer' }}">
+                <mat-icon>{{ imf.actif ? 'block' : 'check_circle_outline' }}</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+
+  <!-- Skeleton table -->
+  <div class="table-section table-section--sk" *ngIf="loading">
+    <div class="sk-row-header"></div>
+    <div class="sk-row" *ngFor="let i of [1,2,3,4]">
+      <div class="sk-cell w8"></div>
+      <div class="sk-cell w25"></div>
+      <div class="sk-cell w12"></div>
+      <div class="sk-cell w8"></div>
+      <div class="sk-cell w8"></div>
+      <div class="sk-cell w8"></div>
+      <div class="sk-cell w10"></div>
+      <div class="sk-cell w8"></div>
+    </div>
+  </div>
+
 </ng-container>

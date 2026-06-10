@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -11,7 +11,7 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class AlerteService {
-  private readonly API = "/api/alertes";
+  private readonly API = "/api/v1/alertes";
 
   constructor(private http: HttpClient) {}
 
@@ -42,3 +42,4 @@ export class AlerteService {
       .pipe(map((r) => r.data));
   }
 }
+

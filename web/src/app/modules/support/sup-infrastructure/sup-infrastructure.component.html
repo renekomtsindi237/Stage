@@ -1,0 +1,99 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Infrastructure — Conteneurs & VPS</h1>
+      <p class="page-subtitle">Supervision Docker et métriques du serveur 84.247.128.40</p>
+    </div>
+    <button mat-icon-button (click)="charger()" matTooltip="Actualiser"><mat-icon>refresh</mat-icon></button>
+  </div>
+
+  <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+
+  <!-- VPS Card -->
+  <mat-card class="vps-card" *ngIf="vps">
+    <mat-card-header>
+      <div class="vps-icon" mat-card-avatar><mat-icon>cloud</mat-icon></div>
+      <mat-card-title>Serveur VPS — {{ vps.hostname }}</mat-card-title>
+      <mat-card-subtitle>{{ vps.os }} · IP publique: {{ vps.ipPublique }} · Uptime: {{ vps.uptime }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="vps-metrics">
+        <div class="metric">
+          <span class="mlbl">CPU</span>
+          <mat-progress-bar mode="determinate" [value]="vps.cpu" [color]="vps.cpu > 80 ? 'warn' : 'primary'"></mat-progress-bar>
+          <span class="mval" [class.alerte]="vps.cpu > 80">{{ vps.cpu }}%</span>
+        </div>
+        <div class="metric">
+          <span class="mlbl">RAM {{ vps.ram | number:'1.0-0' }} Mo / {{ vps.ramTotal | number:'1.0-0' }} Mo</span>
+          <mat-progress-bar mode="determinate" [value]="(vps.ram/vps.ramTotal)*100" [color]="(vps.ram/vps.ramTotal) > 0.85 ? 'warn' : 'primary'"></mat-progress-bar>
+          <span class="mval" [class.alerte]="(vps.ram/vps.ramTotal) > 0.85">{{ (vps.ram/vps.ramTotal*100) | number:'1.0-0' }}%</span>
+        </div>
+        <div class="metric">
+          <span class="mlbl">Disque {{ vps.disk | number:'1.0-0' }} Go / {{ vps.diskTotal | number:'1.0-0' }} Go</span>
+          <mat-progress-bar mode="determinate" [value]="(vps.disk/vps.diskTotal)*100" [color]="(vps.disk/vps.diskTotal) > 0.85 ? 'warn' : 'primary'"></mat-progress-bar>
+          <span class="mval">{{ (vps.disk/vps.diskTotal*100) | number:'1.0-0' }}%</span>
+        </div>
+        <div class="load-avg">
+          <span class="mlbl">Load average (1m / 5m / 15m)</span>
+          <span class="load-vals">
+            <strong *ngFor="let l of vps.loadAvg; let i = index" [class.alerte]="l > 2">{{ l }}</strong>
+          </span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Résumé containers -->
+  <div class="ct-summary">
+    <span class="ct-stat ok"><mat-icon>check_circle</mat-icon> {{ containersOk }} actifs</span>
+    <span class="ct-stat down" *ngIf="containersDown > 0"><mat-icon>error</mat-icon> {{ containersDown }} arrêtés</span>
+    <span class="ct-total">Total: {{ containers.length }} conteneurs</span>
+  </div>
+
+  <!-- Table containers -->
+  <table mat-table [dataSource]="containers" class="data-table">
+    <ng-container matColumnDef="nom">
+      <th mat-header-cell *matHeaderCellDef>Conteneur</th>
+      <td mat-cell *matCellDef="let c"><strong>{{ c.nom }}</strong><br><span class="ct-id text-muted">{{ c.id | slice:0:12 }}</span></td>
+    </ng-container>
+    <ng-container matColumnDef="image">
+      <th mat-header-cell *matHeaderCellDef>Image</th>
+      <td mat-cell *matCellDef="let c" class="mono">{{ c.image }}</td>
+    </ng-container>
+    <ng-container matColumnDef="statut">
+      <th mat-header-cell *matHeaderCellDef>Statut</th>
+      <td mat-cell *matCellDef="let c"><span class="badge" [ngClass]="getStatutClass(c.statut)">{{ c.statut }}</span></td>
+    </ng-container>
+    <ng-container matColumnDef="uptime">
+      <th mat-header-cell *matHeaderCellDef>Uptime</th>
+      <td mat-cell *matCellDef="let c">{{ c.uptime }}</td>
+    </ng-container>
+    <ng-container matColumnDef="cpu">
+      <th mat-header-cell *matHeaderCellDef>CPU</th>
+      <td mat-cell *matCellDef="let c"><span [ngClass]="getCpuClass(c.cpu)">{{ c.cpu }}%</span></td>
+    </ng-container>
+    <ng-container matColumnDef="mem">
+      <th mat-header-cell *matHeaderCellDef>Mémoire</th>
+      <td mat-cell *matCellDef="let c">
+        <span [ngClass]="getMemClass(c.memoire, c.memoireMax)">{{ c.memoire }}Mo</span> / {{ c.memoireMax }}Mo
+        <mat-progress-bar mode="determinate" [value]="memPct(c)" style="height:4px;margin-top:2px;" [color]="memPct(c) > 85 ? 'warn' : 'primary'"></mat-progress-bar>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="ports">
+      <th mat-header-cell *matHeaderCellDef>Ports</th>
+      <td mat-cell *matCellDef="let c">
+        <span class="port-chip" *ngFor="let p of c.ports">{{ p }}</span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="restarts">
+      <th mat-header-cell *matHeaderCellDef>Redémarrages</th>
+      <td mat-cell *matCellDef="let c" [class.alerte]="c.restarts > 3">{{ c.restarts }}</td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="cols"></tr>
+    <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+  </table>
+
+  <div *ngIf="!loading && containers.length === 0" class="empty-state">
+    <mat-icon>cloud_off</mat-icon><p>Aucun conteneur détecté</p>
+  </div>
+</div>

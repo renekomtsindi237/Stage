@@ -9,6 +9,7 @@ import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { JwtInterceptor } from "./core/interceptors/jwt.interceptor";
 import { ErrorInterceptor } from "./core/interceptors/error.interceptor";
+import { LoadingInterceptor } from "./core/interceptors/loading.interceptor";
 import { SharedModule } from "./shared/shared.module";
 
 import { MatSnackBarModule } from "@angular/material/snack-bar";
@@ -29,6 +30,7 @@ registerLocaleData(localeFr, "fr");
     { provide: LOCALE_ID, useValue: "fr" },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],
 })

@@ -1,0 +1,34 @@
+@import "../../../../styles/shared-page";
+
+.vps-card { margin-bottom:20px;
+  .vps-icon { background:#1e3a5f; display:flex; align-items:center; justify-content:center;
+    width:40px; height:40px; border-radius:10px; mat-icon{color:#fff;}
+  }
+}
+
+.vps-metrics { display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  .metric { display:flex; flex-direction:column; gap:4px;
+    .mlbl { font-size:0.78rem; color:#6b7280; }
+    .mval { font-size:0.85rem; font-weight:600; text-align:right; &.alerte{color:#dc2626;} }
+  }
+  .load-avg { grid-column:1/-1; display:flex; align-items:center; gap:12px;
+    .mlbl{font-size:0.78rem;color:#6b7280;}
+    .load-vals{display:flex;gap:16px;}
+    strong{font-size:1rem;&.alerte{color:#dc2626;}}
+  }
+}
+
+.ct-summary { display:flex; align-items:center; gap:16px; margin-bottom:12px;
+  .ct-stat { display:flex; align-items:center; gap:4px; font-size:0.85rem; font-weight:600;
+    mat-icon{font-size:16px;height:16px;width:16px;}
+    &.ok{color:#16a34a;mat-icon{color:#16a34a;}} &.down{color:#dc2626;mat-icon{color:#dc2626;}}
+  }
+  .ct-total{margin-left:auto;font-size:0.8rem;color:#9ca3af;}
+}
+
+.mono { font-family: 'Roboto Mono', monospace; font-size:0.75rem; }
+.text-muted { color:#9ca3af; }
+.ct-id { font-family:monospace; font-size:0.7rem; }
+.port-chip { background:#e0e7ff; color:#3730a3; border-radius:4px; padding:1px 6px; font-size:0.72rem; font-family:monospace; margin-right:4px; }
+.alerte { color:#dc2626 !important; font-weight:600; }
+.warn { color:#d97706; }

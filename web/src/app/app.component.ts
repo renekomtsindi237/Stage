@@ -19,6 +19,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /** Routes qui n'affichent pas le shell de navigation */
   private readonly SHELLLESS_ROUTES = ["/", "/login"];
+  private readonly SHELLLESS_PREFIXES = ["/error/"];
 
   constructor(
     public auth: AuthService,
@@ -33,7 +34,11 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((e) => {
         const nav = e as NavigationEnd;
         const url = nav.urlAfterRedirects;
-        this.isShellless = this.SHELLLESS_ROUTES.includes(url) || url === "/";
+        this.isShellless =
+          this.SHELLLESS_ROUTES.includes(url) ||
+          url === "/" ||
+          this.SHELLLESS_PREFIXES.some((p) => url.startsWith(p)) ||
+          this.isUnmatchedWildcard(url);
       });
 
     if (this.auth.isLoggedIn()) {
@@ -61,5 +66,22 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onSplashDone(): void {
     this.showSplash = false;
+  }
+
+  /** Détecte les URLs non matchées qui aboutissent sur la page d'erreur 404 */
+  private isUnmatchedWildcard(url: string): boolean {
+    const knownPrefixes = [
+      "/",
+      "/login",
+      "/platform",
+      "/dashboard",
+      "/admin",
+      "/analyste",
+      "/dsi",
+      "/support",
+      "/profile",
+      "/error",
+    ];
+    return !knownPrefixes.some((p) => url === p || url.startsWith(p + "/") || url.startsWith(p + "?"));
   }
 }

@@ -6,5 +6,6 @@ public enum Role {
     RESPONSABLE_RECOUVREMENT,
     ANALYSTE,
     DSI,                       // Administrateur d'une IMF
+    SUPPORT,                   // Monitoring technique plateforme (cross-IMF, infrastructure)
     AGENT
 }

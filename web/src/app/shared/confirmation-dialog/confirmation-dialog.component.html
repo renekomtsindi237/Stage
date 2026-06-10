@@ -1,46 +1,39 @@
 <div
-  class="confirmation-overlay"
+  class="cd-overlay"
   *ngIf="dialog.show"
   [@fadeIn]
   (click)="onOverlayClick()"
 >
   <div
-    class="confirmation-dialog"
-    [class.warning]="dialog.type === 'warning'"
-    [class.danger]="dialog.type === 'danger'"
-    [class.info]="dialog.type === 'info'"
+    class="cd-dialog"
+    [class.cd--warning]="dialog.type === 'warning'"
+    [class.cd--danger]="dialog.type === 'danger'"
+    [class.cd--info]="dialog.type === 'info'"
     [@slideIn]
     (click)="$event.stopPropagation()"
   >
-    <!-- Icône -->
-    <div class="dialog-icon-wrapper">
-      <div class="dialog-icon-circle">
-        <mat-icon *ngIf="dialog.type === 'warning'" class="dialog-icon"
-          >warning</mat-icon
-        >
-        <mat-icon *ngIf="dialog.type === 'danger'" class="dialog-icon"
-          >logout</mat-icon
-        >
-        <mat-icon *ngIf="dialog.type === 'info'" class="dialog-icon"
-          >info</mat-icon
-        >
+    <!-- Bande header colorée -->
+    <div class="cd-header">
+      <div class="cd-icon-wrap">
+        <mat-icon *ngIf="dialog.type === 'warning'" class="cd-icon">warning_amber</mat-icon>
+        <mat-icon *ngIf="dialog.type === 'danger'" class="cd-icon">logout</mat-icon>
+        <mat-icon *ngIf="dialog.type === 'info'" class="cd-icon">info</mat-icon>
       </div>
     </div>
 
-    <!-- Contenu -->
-    <h2 class="dialog-title">{{ dialog.title }}</h2>
-    <p class="dialog-message">{{ dialog.message }}</p>
+    <!-- Corps -->
+    <div class="cd-body">
+      <h2 class="cd-title">{{ dialog.title }}</h2>
+      <p class="cd-message">{{ dialog.message }}</p>
 
-    <!-- Actions -->
-    <div class="dialog-actions">
-      <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
-        <mat-icon>close</mat-icon>
-        <span>{{ dialog.cancelText }}</span>
-      </button>
-      <button mat-raised-button class="btn-confirm" (click)="onConfirm()">
-        <mat-icon>check</mat-icon>
-        <span>{{ dialog.confirmText }}</span>
-      </button>
+      <div class="cd-actions">
+        <button class="cd-btn cd-btn--cancel" type="button" (click)="onCancel()">
+          {{ dialog.cancelText }}
+        </button>
+        <button class="cd-btn cd-btn--confirm" type="button" (click)="onConfirm()">
+          {{ dialog.confirmText }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, NgZone } from "@angular/core";
 import {
   HttpInterceptor,
   HttpRequest,
@@ -8,9 +8,27 @@ import {
 } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError } from "rxjs/operators";
+import { Router } from "@angular/router";
+
+const NAVIGATION_ERRORS: Record<number, string> = {
+  403: "/error/403",
+  500: "/error/500",
+  502: "/error/500",
+  503: "/error/500",
+  504: "/error/500",
+};
+
+/** URLs pour lesquelles on ne redirige jamais vers une page d'erreur */
+const NO_REDIRECT_URLS = [
+  "/api/v1/auth/",
+  "/api/v1/sse",
+  "/api/users/me",
+];
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
+  constructor(private router: Router, private ngZone: NgZone) {}
+
   intercept(
     req: HttpRequest<unknown>,
     next: HttpHandler,
@@ -20,8 +38,7 @@ export class ErrorInterceptor implements HttpInterceptor {
         let message = "Une erreur inattendue est survenue.";
 
         if (err.status === 0) {
-          message =
-            "Impossible de contacter le serveur. Vérifiez votre connexion.";
+          message = "Impossible de contacter le serveur. Vérifiez votre connexion.";
         } else if (err.status === 403) {
           message = "Accès refusé. Vous n'avez pas les droits nécessaires.";
         } else if (err.status === 404) {
@@ -34,8 +51,15 @@ export class ErrorInterceptor implements HttpInterceptor {
           message = err.error.message;
         }
 
-        // Émission vers un service de notification global possible ici
         console.error(`[HTTP ${err.status}] ${req.url} — ${message}`);
+
+        // Navigation vers la page d'erreur pour les erreurs critiques
+        const errorRoute = NAVIGATION_ERRORS[err.status];
+        const isExcluded = NO_REDIRECT_URLS.some((u) => req.url.includes(u));
+
+        if (errorRoute && !isExcluded) {
+          this.ngZone.run(() => this.router.navigate([errorRoute]));
+        }
 
         return throwError(() => ({ ...err, userMessage: message }));
       }),

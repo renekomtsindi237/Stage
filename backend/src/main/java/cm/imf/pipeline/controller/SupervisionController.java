@@ -1,7 +1,12 @@
 package cm.imf.pipeline.controller;
 
+import cm.imf.pipeline.dto.request.DelegateUserRequest;
+import cm.imf.pipeline.dto.request.UpdateUserRequest;
 import cm.imf.pipeline.dto.response.*;
 import cm.imf.pipeline.entity.Imf;
+import cm.imf.pipeline.entity.User;
+import cm.imf.pipeline.enums.Role;
+import cm.imf.pipeline.exception.BusinessException;
 import cm.imf.pipeline.exception.ResourceNotFoundException;
 import cm.imf.pipeline.repository.AgenceRepository;
 import cm.imf.pipeline.repository.ImfRepository;
@@ -9,8 +14,10 @@ import cm.imf.pipeline.repository.JournalAuditRepository;
 import cm.imf.pipeline.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +46,7 @@ public class SupervisionController {
 
     // ── Utilisateurs d'une IMF ────────────────────────────────────────────────
 
-    @Operation(summary = "Lister les utilisateurs d'une IMF (lecture seule)")
+    @Operation(summary = "Lister les utilisateurs d'une IMF")
     @GetMapping("/imf/{imfUid}/users")
     public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsersByImf(
             @PathVariable UUID imfUid,
@@ -51,6 +58,98 @@ public class SupervisionController {
                 .findByImfId(imfId, PageRequest.of(page, size, Sort.by("username")))
                 .map(UserResponse::from);
         return ResponseEntity.ok(ApiResponse.ok(users));
+    }
+
+    @Operation(summary = "Modifier un utilisateur d'une IMF")
+    @Transactional
+    @PatchMapping("/imf/{imfUid}/users/{userUid}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+            @PathVariable UUID imfUid,
+            @PathVariable UUID userUid,
+            @Valid @RequestBody UpdateUserRequest request) {
+
+        Long imfId = resolveImfId(imfUid);
+        User user = resolveUser(userUid, imfId);
+
+        if (request.role() == Role.SUPER_ADMIN) {
+            throw new BusinessException("Le rôle SUPER_ADMIN ne peut pas être assigné à un utilisateur IMF.");
+        }
+        // Si le nouveau rôle est DSI, vérifier qu'il n'en existe pas déjà un autre
+        if (request.role() == Role.DSI && user.getRole() != Role.DSI) {
+            boolean dsiExists = userRepository.existsByImfIdAndRole(imfId, Role.DSI);
+            if (dsiExists) {
+                throw new BusinessException("Un DSI existe déjà pour cette IMF. Reléguer d'abord le DSI actuel.");
+            }
+        }
+
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setRole(request.role());
+        user.setZoneId(request.zoneId());
+        return ResponseEntity.ok(ApiResponse.ok("Utilisateur mis à jour", UserResponse.from(userRepository.save(user))));
+    }
+
+    @Operation(summary = "Supprimer un utilisateur d'une IMF")
+    @Transactional
+    @DeleteMapping("/imf/{imfUid}/users/{userUid}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable UUID imfUid,
+            @PathVariable UUID userUid) {
+
+        Long imfId = resolveImfId(imfUid);
+        User user = resolveUser(userUid, imfId);
+        userRepository.delete(user);
+        return ResponseEntity.ok(ApiResponse.ok("Utilisateur supprimé", null));
+    }
+
+    @Operation(summary = "Suspendre un utilisateur d'une IMF")
+    @Transactional
+    @PatchMapping("/imf/{imfUid}/users/{userUid}/suspend")
+    public ResponseEntity<ApiResponse<UserResponse>> suspendUser(
+            @PathVariable UUID imfUid,
+            @PathVariable UUID userUid) {
+
+        Long imfId = resolveImfId(imfUid);
+        User user = resolveUser(userUid, imfId);
+        user.setActif(false);
+        return ResponseEntity.ok(ApiResponse.ok("Utilisateur suspendu", UserResponse.from(userRepository.save(user))));
+    }
+
+    @Operation(summary = "Réactiver un utilisateur suspendu")
+    @Transactional
+    @PatchMapping("/imf/{imfUid}/users/{userUid}/reactivate")
+    public ResponseEntity<ApiResponse<UserResponse>> reactivateUser(
+            @PathVariable UUID imfUid,
+            @PathVariable UUID userUid) {
+
+        Long imfId = resolveImfId(imfUid);
+        User user = resolveUser(userUid, imfId);
+        user.setActif(true);
+        return ResponseEntity.ok(ApiResponse.ok("Utilisateur réactivé", UserResponse.from(userRepository.save(user))));
+    }
+
+    @Operation(summary = "Réleguer un utilisateur vers un autre de la même IMF")
+    @Transactional
+    @PostMapping("/imf/{imfUid}/users/{fromUserUid}/delegate")
+    public ResponseEntity<ApiResponse<UserResponse>> delegateUser(
+            @PathVariable UUID imfUid,
+            @PathVariable UUID fromUserUid,
+            @Valid @RequestBody DelegateUserRequest request) {
+
+        Long imfId = resolveImfId(imfUid);
+        User from = resolveUser(fromUserUid, imfId);
+        User to   = resolveUser(request.toUserUid(), imfId);
+
+        // Transfert de rôle : le destinataire prend le rôle de la source
+        to.setRole(from.getRole());
+        userRepository.save(to);
+
+        // Suspension de l'utilisateur source
+        from.setActif(false);
+        return ResponseEntity.ok(ApiResponse.ok(
+                "Relégation effectuée — " + from.getUsername() + " suspendu, " + to.getUsername() + " prend le rôle " + from.getRole(),
+                UserResponse.from(userRepository.save(from))
+        ));
     }
 
     // ── Agences d'une IMF ─────────────────────────────────────────────────────
@@ -112,11 +211,20 @@ public class SupervisionController {
 
     public record ImfSummaryResponse(String imfUid, long userCount, long agenceCount) {}
 
-    // ── Helper ────────────────────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Long resolveImfId(UUID imfUid) {
         Imf imf = imfRepository.findByUid(imfUid)
                 .orElseThrow(() -> new ResourceNotFoundException("IMF", imfUid));
         return imf.getId();
+    }
+
+    private User resolveUser(UUID userUid, Long imfId) {
+        User user = userRepository.findByUid(userUid)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", userUid));
+        if (!imfId.equals(user.getImf() != null ? user.getImf().getId() : null)) {
+            throw new BusinessException("Cet utilisateur n'appartient pas à l'IMF spécifiée.");
+        }
+        return user;
     }
 }

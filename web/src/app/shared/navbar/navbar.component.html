@@ -4,9 +4,15 @@
     <button mat-icon-button (click)="toggleSidenav.emit()" class="menu-toggle">
       <mat-icon>menu</mat-icon>
     </button>
-    <div class="search-bar">
+    <!-- Recherche (tous rôles sauf SUPER_ADMIN) -->
+    <div class="search-bar" *ngIf="!isSuperAdmin">
       <mat-icon>search</mat-icon>
       <input type="text" placeholder="Rechercher un dossier, un prêt..." />
+    </div>
+    <!-- Identité plateforme (SUPER_ADMIN uniquement) -->
+    <div class="navbar-platform-id" *ngIf="isSuperAdmin">
+      <span class="platform-name">Plateforme MicroRecouv</span>
+      <span class="platform-date">{{ today }}</span>
     </div>
   </div>
 
@@ -14,15 +20,23 @@
 
   <!-- Actions droite -->
   <div class="navbar-actions">
-    <!-- Compteur utilisateurs en ligne (masqué si endpoint indisponible) -->
+    <!-- Compteur en ligne (non SUPER_ADMIN) -->
     <div
       class="online-counter"
-      *ngIf="onlineCount$ | async as cnt"
+      *ngIf="!isSuperAdmin && (onlineCount$ | async) as cnt"
       matTooltip="Utilisateurs actuellement connectés"
     >
       <span class="online-dot"></span>
       <span class="online-count">{{ cnt }} en ligne</span>
     </div>
+
+    <!-- Bouton Support -->
+    <button class="nav-support-btn" (click)="openSupportDialog()" matTooltip="Contacter le support technique">
+      <mat-icon>support_agent</mat-icon>
+      <span>Support</span>
+    </button>
+
+    <div class="nav-divider"></div>
 
     <!-- Cloche notifications -->
     <button
@@ -45,10 +59,7 @@
 
     <!-- Profil utilisateur avec menu dropdown -->
     <div class="navbar-user" [matMenuTriggerFor]="profileMenu">
-      <div
-        class="user-avatar-wrap"
-        [class.user-avatar-wrap--super]="isSuperAdmin"
-      >
+      <div class="user-avatar-wrap" [class.user-avatar-wrap--super]="isSuperAdmin">
         <img
           [src]="auth.getUserAvatar() || 'assets/photo_profil.jpg'"
           [alt]="auth.getUsername()"
@@ -63,22 +74,30 @@
       <mat-icon class="user-caret">expand_more</mat-icon>
     </div>
 
-    <mat-menu #profileMenu="matMenu" class="profile-menu-panel">
-      <button mat-menu-item (click)="openProfileMenu()">
-        <mat-icon>account_circle</mat-icon>
-        <span>Changer la photo</span>
+    <mat-menu #profileMenu="matMenu" class="profile-menu-panel" xPosition="before">
+      <!-- En-tête du menu -->
+      <div class="pm-header" (click)="$event.stopPropagation()">
+        <div class="pm-avatar" [class.pm-avatar--super]="isSuperAdmin">
+          <img [src]="auth.getUserAvatar() || 'assets/photo_profil.jpg'" [alt]="auth.getUsername()" />
+        </div>
+        <div class="pm-info">
+          <span class="pm-name">{{ auth.getUsername() }}</span>
+          <span class="pm-role">{{ auth.getRole() }}</span>
+        </div>
+      </div>
+      <mat-divider class="pm-divider"></mat-divider>
+      <!-- Items -->
+      <button mat-menu-item class="pm-item" (click)="navigateToProfile()">
+        <mat-icon class="pm-icon">account_circle</mat-icon>
+        <span>Mon Profil</span>
       </button>
-      <button
-        mat-menu-item
-        (click)="openChangePassword()"
-        *ngIf="!isSuperAdmin"
-      >
-        <mat-icon>lock_reset</mat-icon>
+      <button mat-menu-item class="pm-item" (click)="openChangePassword()" *ngIf="!isSuperAdmin">
+        <mat-icon class="pm-icon">lock_reset</mat-icon>
         <span>Changer le mot de passe</span>
       </button>
-      <mat-divider></mat-divider>
-      <button mat-menu-item (click)="logout()" class="menu-logout">
-        <mat-icon>logout</mat-icon>
+      <mat-divider class="pm-divider"></mat-divider>
+      <button mat-menu-item class="pm-item pm-item--logout" (click)="logout()">
+        <mat-icon class="pm-icon">logout</mat-icon>
         <span>Se déconnecter</span>
       </button>
     </mat-menu>

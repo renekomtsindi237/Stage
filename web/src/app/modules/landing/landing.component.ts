@@ -22,8 +22,8 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   readonly trustBadges = [
-    { icon: "lock", label: "Donnees chiffrees" },
-    { icon: "notifications_active", label: "Alertes temps reel" },
+    { icon: "lock", label: "Données sécurisées" },
+    { icon: "notifications_active", label: "Alertes en temps réel" },
     { icon: "cloud_done", label: "Disponible 24/7" },
     { icon: "devices", label: "Web & mobile" },
   ];
@@ -32,38 +32,38 @@ export class LandingComponent implements OnInit, OnDestroy {
     {
       icon: "corporate_fare",
       value: "Multi-IMF",
-      label: "Architecture multi-tenant",
+      label: "Plusieurs institutions sur une même plateforme",
     },
     {
       icon: "warning_amber",
-      value: "Instantane",
-      label: "Detection des impayes",
+      value: "Instantané",
+      label: "Alertes dès qu'un prêt est en retard",
     },
     {
       icon: "bar_chart",
-      value: "KPI live",
-      label: "Tableaux de bord en temps reel",
+      value: "En direct",
+      label: "Tableaux de bord actualisés automatiquement",
     },
-    { icon: "sync", value: "Automatise", label: "Pipeline de donnees ETL" },
+    { icon: "sync", value: "Automatisé", label: "Import quotidien de vos données de prêts" },
   ];
 
   readonly steps = [
     {
       icon: "login",
       title: "Connexion sécurisée",
-      desc: "Accédez à la plateforme avec votre identifiant IMF. Chaque utilisateur dispose d'un rôle et d'un périmètre défini.",
+      desc: "Chaque agent, directeur ou administrateur accède à son espace avec ses propres droits. Rien de plus, rien de moins.",
       color: "#2563EB",
     },
     {
       icon: "sync_alt",
-      title: "Synchronisation des données",
-      desc: "Vos données de prêts et clients sont automatiquement importées et traitées par notre pipeline ETL.",
+      title: "Vos données toujours à jour",
+      desc: "Les prêts, les clients et les remboursements sont automatiquement importés chaque jour. Aucune saisie manuelle nécessaire.",
       color: "#0D9488",
     },
     {
       icon: "insights",
       title: "Pilotage et action",
-      desc: "Suivez vos KPI, gérez les alertes d'impayés et exportez vos rapports — tout depuis un seul tableau de bord.",
+      desc: "Consultez vos tableaux de bord, gérez les impayés et générez vos rapports — tout depuis une seule interface.",
       color: "#C8923A",
     },
   ];
@@ -75,38 +75,38 @@ export class LandingComponent implements OnInit, OnDestroy {
   readonly features = [
     {
       icon: "dashboard",
-      title: "Tableau de bord KPI",
-      desc: "Visualisez en temps réel le PAR, les collectes du mois et tous vos indicateurs de performance clés.",
+      title: "Tableau de bord",
+      desc: "Visualisez en temps réel les taux de remboursement, les collectes du mois et l'état de votre portefeuille.",
       color: "#2563EB",
     },
     {
       icon: "warning_amber",
-      title: "Alertes d'impayés",
-      desc: "Recevez des notifications push et e-mail dès qu'un prêt en retard est détecté dans votre portefeuille.",
+      title: "Alertes sur les impayés",
+      desc: "Recevez une notification par e-mail ou sur mobile dès qu'un prêt dépasse sa date d'échéance.",
       color: "#F59E0B",
     },
     {
       icon: "people",
-      title: "Gestion clients & prets",
-      desc: "Consultez l'historique complet de chaque client et suivez l'état de tous vos prêts en un clic.",
+      title: "Gestion des clients",
+      desc: "Consultez le profil complet de chaque client, son historique de remboursements et l'état de ses prêts.",
       color: "#0D9488",
     },
     {
       icon: "bar_chart",
-      title: "Reporting & exports",
-      desc: "Générez des rapports PDF et CSV détaillés — collectes, prêts en retard, rapport KPI — en quelques secondes.",
+      title: "Rapports & exports",
+      desc: "Générez des rapports PDF ou Excel en quelques secondes : collectes, prêts en retard, performance mensuelle.",
       color: "#8B5CF6",
     },
     {
       icon: "smartphone",
       title: "Application mobile",
-      desc: "Les agents terrain enregistrent leurs collectes hors ligne. La synchronisation se fait automatiquement à la reconnexion.",
+      desc: "Les agents terrain enregistrent les paiements même sans connexion internet. La sync se fait automatiquement.",
       color: "#EC4899",
     },
     {
       icon: "admin_panel_settings",
       title: "Gestion des accès",
-      desc: "Créez et gérez les comptes de votre IMF avec des rôles et périmètres précis : DSI, Directeur, Analyste, Agent.",
+      desc: "Chaque utilisateur a un rôle précis : Directeur, Analyste, Agent de terrain. Les droits sont cloisonnés par rôle.",
       color: "#10B981",
     },
   ];
@@ -114,26 +114,26 @@ export class LandingComponent implements OnInit, OnDestroy {
   readonly benefits = [
     {
       icon: "speed",
-      title: "Temps d'action reduit",
-      desc: "Priorisez les dossiers critiques grace aux scores de risque et aux relances automatises.",
+      title: "Agissez plus vite",
+      desc: "Les dossiers urgents remontent automatiquement en haut de votre liste, classés par niveau de risque.",
       color: "#8BD1FF",
     },
     {
       icon: "shield",
-      title: "Traçabilite complete",
-      desc: "Chaque action est historisee: alertes, interactions, paiements et decisions.",
+      title: "Tout est tracé",
+      desc: "Chaque action — alerte envoyée, paiement enregistré, décision prise — est conservée dans l'historique.",
       color: "#B2F5EA",
     },
     {
       icon: "auto_graph",
-      title: "KPI en temps reel",
-      desc: "Des indicateurs simples pour suivre le PAR, les retards et la performance globale.",
+      title: "Suivi en temps réel",
+      desc: "Des chiffres clairs pour piloter votre institution : taux de retard, encours, performance de recouvrement.",
       color: "#A5B4FC",
     },
     {
       icon: "groups",
-      title: "Collaboration fluide",
-      desc: "Commentaires, assignations et workflow partages pour accelerer les resolutions.",
+      title: "Travail en équipe",
+      desc: "Assignez des dossiers, laissez des commentaires et suivez l'avancement des relances avec votre équipe.",
       color: "#FDE68A",
     },
   ];
@@ -197,6 +197,14 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   goToLogin(): void {
     this.router.navigate(["/login"]);
+  }
+
+  goToImfLogin(): void {
+    this.router.navigate(["/login"]);
+  }
+
+  goToAdminLogin(): void {
+    this.router.navigate(["/login"], { queryParams: { mode: "admin" } });
   }
 
   scrollToTop(): void {

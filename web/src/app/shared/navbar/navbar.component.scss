@@ -263,6 +263,71 @@
   width: 18px !important;
 }
 
+// ── Identité plateforme SUPER_ADMIN ─────────────────────────────
+.navbar-platform-id {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  margin-left: 4px;
+
+  .platform-name {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.3px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  }
+
+  .platform-date {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+}
+
+// ── Bouton Support navbar ────────────────────────────────────────
+.nav-support-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: #fff;
+  }
+
+  &:hover {
+    background: #d97706;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    span { display: none; }
+    padding: 8px 10px;
+  }
+}
+
 // ── Menu notifications ───────────────────────────────────────────
 .notif-menu-panel {
   padding: 8px 0;

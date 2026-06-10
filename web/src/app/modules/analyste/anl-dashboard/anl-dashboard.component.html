@@ -1,0 +1,42 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">KPI Portefeuille &amp; PAR COBAC</h1>
+      <p class="page-subtitle">Indicateurs de performance — lecture seule</p>
+    </div>
+    <button mat-stroked-button color="primary">
+      <mat-icon>download</mat-icon> Exporter CSV
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+
+  <div *ngIf="!loading && summary" class="content-grid">
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-label">Encours total</span>
+        <span class="kpi-value">{{ summary.totalEncours?.toLocaleString('fr-FR') || '—' }} FCFA</span>
+      </div>
+      <div class="kpi-card" [ngClass]="summary.tauxPar30Pct < 5 ? 'kpi-ok' : 'kpi-warn'">
+        <span class="kpi-label">PAR 30</span>
+        <span class="kpi-value">{{ summary.tauxPar30Pct?.toFixed(2) }}%</span>
+        <span class="kpi-badge" [ngClass]="summary.tauxPar30Pct < 5 ? 'badge-ok' : 'badge-warn'">
+          {{ summary.tauxPar30Pct < 5 ? 'CONFORME' : 'ATTENTION' }}
+        </span>
+      </div>
+      <div class="kpi-card" [ngClass]="summary.tauxPar90Pct < 3 ? 'kpi-ok' : 'kpi-alert'">
+        <span class="kpi-label">PAR 90</span>
+        <span class="kpi-value">{{ summary.tauxPar90Pct?.toFixed(2) }}%</span>
+        <span class="kpi-badge" [ngClass]="summary.tauxPar90Pct < 3 ? 'badge-ok' : 'badge-alert'">
+          {{ summary.tauxPar90Pct < 3 ? 'CONFORME' : 'HORS NORME' }}
+        </span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Taux recouvrement 30j</span>
+        <span class="kpi-value">{{ summary.tauxRecouvrementPct?.toFixed(1) }}%</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<div
+  class="ob-banner"
+  [class.ob-banner--back]="justCameBack"
+  *ngIf="isOffline"
+  [@bannerSlide]
+  role="alert"
+  aria-live="assertive"
+>
+  <div class="ob-left">
+    <mat-icon class="ob-icon">{{ justCameBack ? 'wifi' : 'wifi_off' }}</mat-icon>
+    <span class="ob-text">
+      {{ justCameBack
+        ? 'Connexion rétablie — vous êtes à nouveau en ligne.'
+        : 'Vous êtes hors ligne. Vérifiez votre connexion internet.' }}
+    </span>
+  </div>
+
+  <button
+    *ngIf="!justCameBack"
+    class="ob-retry"
+    type="button"
+    (click)="retry()"
+  >
+    <mat-icon>refresh</mat-icon>
+    Réessayer
+  </button>
+</div>

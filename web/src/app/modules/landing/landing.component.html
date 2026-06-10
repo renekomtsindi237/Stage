@@ -38,8 +38,11 @@
       </nav>
 
       <div class="header-cta">
-        <button mat-flat-button class="btn-header-login" (click)="goToLogin()">
-          Connexion <mat-icon>arrow_forward</mat-icon>
+        <button mat-stroked-button class="btn-header-admin" (click)="goToAdminLogin()" matTooltip="Espace Administration">
+          <mat-icon>lock</mat-icon>
+        </button>
+        <button mat-flat-button class="btn-header-login" (click)="goToImfLogin()">
+          <mat-icon>apartment</mat-icon> Espace IMF
         </button>
       </div>
     </div>
@@ -67,31 +70,27 @@
     <div class="hero-card" @fadeInUp>
       <div class="hero-pill">
         <span class="pill-dot"></span>
-        Plateforme SaaS de microfinance
+        Solution pour les institutions de microfinance
       </div>
 
       <h1 class="hero-title">
-        One-click pour un
-        <span class="title-accent">Recouvrement</span> serein
+        Gérez vos prêts et
+        <span class="title-accent">recouvrements</span> simplement
       </h1>
 
       <p class="hero-sub">
-        Pilotez votre portefeuille de prets, automatisez vos alertes d'impayes
-        et analysez vos KPI en temps reel. Une seule interface, tout votre flux.
+        Suivez vos clients, recevez des alertes sur les impayés et consultez
+        vos tableaux de bord — le tout depuis une seule plateforme sécurisée.
       </p>
 
       <div class="hero-actions">
-        <button mat-flat-button class="btn-primary-hero" (click)="goToLogin()">
-          <mat-icon>rocket_launch</mat-icon>
-          Acceder a la plateforme
+        <button mat-flat-button class="btn-primary-hero" (click)="goToImfLogin()">
+          <mat-icon>apartment</mat-icon>
+          Connexion Espace IMF
         </button>
-        <button
-          mat-stroked-button
-          class="btn-ghost-hero"
-          (click)="scrollTo('section-how', $event)"
-        >
-          Decouvrir comment ca marche
-          <mat-icon>south</mat-icon>
+        <button mat-stroked-button class="btn-ghost-hero btn-ghost-admin" (click)="goToAdminLogin()">
+          <mat-icon>admin_panel_settings</mat-icon>
+          Administration
         </button>
       </div>
 

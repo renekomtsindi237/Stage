@@ -1,12 +1,12 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, tap, throwError } from "rxjs";
-import { catchError } from "rxjs/operators";
+import { catchError, map } from "rxjs/operators";
 import { Router } from "@angular/router";
-import { AuthResponse, LoginRequest, Role } from "../models/auth.model";
+import { AuthResponse, LoginRequest, OtpInitResponse, OtpVerifyResponse, Role } from "../models/auth.model";
 
-// Tokens (accessToken, refreshToken) stockés dans des cookies httpOnly côté serveur.
-// Seules les données non-sensibles restent en localStorage.
+// Tokens (accessToken, refreshToken) stockÃ©s dans des cookies httpOnly cÃ´tÃ© serveur.
+// Seules les donnÃ©es non-sensibles restent en localStorage.
 const SESSION_KEY = "imf_session"; // Flag de session (pas un token)
 const ROLE_KEY = "imf_role";
 const USERNAME_KEY = "imf_username";
@@ -14,11 +14,11 @@ const IMF_ID_KEY = "imf_id";
 const IMF_CODE_KEY = "imf_code";
 const IMF_NOM_KEY = "imf_nom";
 const AVATAR_KEY = "imf_user_avatar";
-const MUST_CHANGE_KEY = "imf_must_change"; // Indique si le mot de passe doit être changé
+const MUST_CHANGE_KEY = "imf_must_change"; // Indique si le mot de passe doit Ãªtre changÃ©
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
-  private readonly API = "/api/auth";
+  private readonly API = "/api/v1/auth";
   private loggedIn$ = new BehaviorSubject<boolean>(this.hasValidToken());
 
   constructor(
@@ -26,8 +26,8 @@ export class AuthService {
     private router: Router,
   ) {}
 
-  login(username: string, password: string): Observable<AuthResponse> {
-    const req: LoginRequest = { username, password };
+  login(email: string, password: string): Observable<AuthResponse> {
+    const req: LoginRequest = { email, password };
     return this.http
       .post<AuthResponse>(`${this.API}/login`, req, { withCredentials: true })
       .pipe(
@@ -36,8 +36,31 @@ export class AuthService {
       );
   }
 
+  requestOtp(email: string): Observable<OtpInitResponse> {
+    return this.http.post<OtpInitResponse>(`${this.API}/request-otp`, { email });
+  }
+
+  verifyOtp(email: string, code: string): Observable<AuthResponse> {
+    return this.http
+      .post<OtpVerifyResponse>(`${this.API}/verify-otp`, { email, code }, { withCredentials: true })
+      .pipe(
+        map((res) => ({
+          accessToken: res.accessToken,
+          refreshToken: res.refreshToken,
+          role: res.role as Role,
+          username: res.username,
+          imfUid: res.imfUid,
+          imfCode: res.imfCode,
+          imfNom: res.imfNom,
+          mustChangePassword: res.mustChangePassword ?? false,
+          expiresIn: res.expiresIn,
+        })),
+        tap((res) => this.storeTokens(res)),
+      );
+  }
+
   refresh(): Observable<AuthResponse> {
-    // Le refresh token est dans le cookie httpOnly imf_refresh — envoyé automatiquement
+    // Le refresh token est dans le cookie httpOnly imf_refresh â€” envoyÃ© automatiquement
     return this.http
       .post<AuthResponse>(`${this.API}/refresh`, null, {
         withCredentials: true,
@@ -55,11 +78,13 @@ export class AuthService {
   }
 
   navigateAfterLogin(role: Role): void {
-    if (role === "SUPER_ADMIN") {
-      this.router.navigate(["/platform"]);
-    } else {
-      this.router.navigate(["/dashboard"]);
-    }
+    const routes: Partial<Record<Role, string>> = {
+      SUPER_ADMIN: "/platform",
+      SUPPORT: "/support",
+      ANALYSTE: "/analyste/scoring",
+      DSI: "/dsi/rgpd",
+    };
+    this.router.navigate([routes[role] ?? "/dashboard"]);
   }
 
   isLoggedIn(): boolean {
@@ -99,7 +124,7 @@ export class AuthService {
     localStorage.setItem(AVATAR_KEY, avatarUrl);
   }
 
-  /** Retourne le logo d'une IMF par son code (stocké localement) */
+  /** Retourne le logo d'une IMF par son code (stockÃ© localement) */
   getImfLogo(imfCode: string): string | null {
     return localStorage.getItem(`imf_logo_${imfCode}`);
   }
@@ -140,13 +165,13 @@ export class AuthService {
   }
 
   private storeTokens(res: AuthResponse): void {
-    // Les tokens JWT sont dans les cookies httpOnly posés par le serveur.
-    // On stocke uniquement le flag de session et les métadonnées non-sensibles.
+    // Les tokens JWT sont dans les cookies httpOnly posÃ©s par le serveur.
+    // On stocke uniquement le flag de session et les mÃ©tadonnÃ©es non-sensibles.
     localStorage.setItem(SESSION_KEY, "1");
     localStorage.setItem(ROLE_KEY, res.role);
     localStorage.setItem(USERNAME_KEY, res.username);
-    if (res.imfId != null) {
-      localStorage.setItem(IMF_ID_KEY, String(res.imfId));
+    if (res.imfUid != null) {
+      localStorage.setItem(IMF_ID_KEY, res.imfUid);
     } else {
       localStorage.removeItem(IMF_ID_KEY);
     }
@@ -179,3 +204,4 @@ export class AuthService {
     localStorage.removeItem(MUST_CHANGE_KEY);
   }
 }
+

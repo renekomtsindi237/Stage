@@ -52,6 +52,14 @@
   margin-bottom: 8px;
   flex-shrink: 0;
 
+  &.fs-ring-login {
+    background: linear-gradient(135deg, #dbeafe, #ede9fe);
+    box-shadow:
+      0 0 0 12px rgba(37, 99, 235, 0.1),
+      0 0 0 24px rgba(37, 99, 235, 0.05);
+    animation: pulse-login 2.4s ease-in-out infinite;
+  }
+
   &.fs-ring-success {
     background: #e6f9f3; // Vert pâle
     box-shadow:
@@ -77,18 +85,52 @@
   }
 }
 
-// ── Icône principale (succès / erreur) ────────────────────────────
+// ── Icône principale (succès / erreur / login) ────────────────────
 .fs-icon-main {
   font-size: 58px !important;
   width: 58px !important;
   height: 58px !important;
 
+  .fs-ring-login & {
+    color: #2563eb;
+  }
   .fs-ring-success & {
     color: #00d084;
-  } // Vert Blucash
+  }
   .fs-ring-error & {
     color: #ff3b30;
-  } // Rouge Blucash
+  }
+}
+
+// ── Login badge (initiale utilisateur) ───────────────────────────
+.fs-login-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -8px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+}
+
+.fs-login-initial {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  letter-spacing: -0.5px;
+}
+
+// ── Nom d'utilisateur (login) ─────────────────────────────────────
+.fs-login-username {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: -8px 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  letter-spacing: -0.5px;
 }
 
 // ── Avatar logout ─────────────────────────────────────────────────
@@ -142,6 +184,10 @@
     font-size: 1.6rem;
   }
 
+  &.fs-title-login {
+    color: #2563eb;
+  }
+
   &.fs-title-success {
     color: #00d084; // Vert Blucash
   }
@@ -171,13 +217,13 @@
   }
 }
 
-// ── Ligne de redirection (succès) ─────────────────────────────────
+// ── Ligne de redirection (succès / login) ─────────────────────────
 .fs-redirect {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 4px;
-  color: #9ca3af; // Gris moyen
+  color: #9ca3af;
   font-size: 0.88rem;
   font-weight: 600;
   font-family:
@@ -185,7 +231,11 @@
     sans-serif;
 
   ::ng-deep .mat-mdc-progress-spinner circle {
-    stroke: #00d084 !important; // Vert Blucash
+    stroke: #00d084 !important;
+  }
+
+  &.fs-redirect--login ::ng-deep .mat-mdc-progress-spinner circle {
+    stroke: #2563eb !important;
   }
 }
 
@@ -243,6 +293,11 @@
   border-radius: 4px;
   animation: bar-shrink linear forwards;
 
+  &.fs-progress-login {
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    animation-duration: 2.5s;
+  }
+
   &.fs-progress-success {
     background: #00d084; // Vert Blucash
     animation-duration: 2s;
@@ -282,6 +337,20 @@
   }
   100% {
     transform: rotate(0deg);
+  }
+}
+
+@keyframes pulse-login {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(37, 99, 235, 0.1),
+      0 0 0 24px rgba(37, 99, 235, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 18px rgba(37, 99, 235, 0.15),
+      0 0 0 32px rgba(37, 99, 235, 0.08);
   }
 }
 

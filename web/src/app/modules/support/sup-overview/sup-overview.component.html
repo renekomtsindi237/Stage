@@ -1,0 +1,86 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Vue d'ensemble — Plateforme MicroRecouv</h1>
+      <p class="page-subtitle">Santé globale de l'infrastructure — mis à jour toutes les 20 secondes</p>
+    </div>
+    <div class="header-right">
+      <span class="text-muted" style="font-size:0.8rem">{{ derniereMaj | date:'HH:mm:ss' }}</span>
+      <button mat-icon-button (click)="charger()"><mat-icon>refresh</mat-icon></button>
+    </div>
+  </div>
+
+  <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+
+  <ng-container *ngIf="overview">
+    <!-- Bannière globale -->
+    <div class="global-banner" [ngClass]="'banner-' + getGlobalStatut()">
+      <mat-icon>{{ getGlobalStatut() === 'ok' ? 'check_circle' : getGlobalStatut() === 'warn' ? 'warning' : 'error' }}</mat-icon>
+      <div>
+        <strong>{{ getGlobalStatut() === 'ok' ? 'Plateforme opérationnelle' : getGlobalStatut() === 'warn' ? 'Attention requise' : 'Incidents critiques détectés' }}</strong>
+        <span> — {{ overview.nbImfs }} IMF actives sur la plateforme</span>
+      </div>
+    </div>
+
+    <!-- KPIs globaux -->
+    <div class="kpi-grid">
+      <mat-card class="kpi-card">
+        <mat-card-content>
+          <mat-icon>dns</mat-icon>
+          <div class="kpi-val">{{ overview.containersActifs }} / {{ overview.containersTotal }}</div>
+          <div class="kpi-lbl">Conteneurs actifs</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="kpi-card" [class.kpi-alert]="overview.alertesCritiques > 0">
+        <mat-card-content>
+          <mat-icon>notification_important</mat-icon>
+          <div class="kpi-val">{{ overview.alertesCritiques }}</div>
+          <div class="kpi-lbl">Alertes critiques</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="kpi-card">
+        <mat-card-content>
+          <mat-icon>memory</mat-icon>
+          <div class="kpi-val">{{ overview.cpuVps }}%</div>
+          <div class="kpi-lbl">CPU VPS</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="kpi-card">
+        <mat-card-content>
+          <mat-icon>storage</mat-icon>
+          <div class="kpi-val">{{ overview.disqueUtilise }}%</div>
+          <div class="kpi-lbl">Disque utilisé</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="kpi-card">
+        <mat-card-content>
+          <mat-icon>schedule</mat-icon>
+          <div class="kpi-val">{{ overview.dagsEchoues }}</div>
+          <div class="kpi-lbl">Traitements en échec</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="kpi-card">
+        <mat-card-content>
+          <mat-icon>groups</mat-icon>
+          <div class="kpi-val">{{ overview.utilisateursConnectes }}</div>
+          <div class="kpi-lbl">Utilisateurs connectés</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Carte couches -->
+    <mat-card class="layers-card">
+      <mat-card-header><mat-card-title>Architecture des couches</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="layer" *ngFor="let l of overview.couches">
+          <div class="layer-header">
+            <mat-icon>{{ l.icone }}</mat-icon>
+            <span class="layer-nom">{{ l.nom }}</span>
+            <span class="layer-statut" [ngClass]="'stat-' + l.statut">{{ l.statut }}</span>
+          </div>
+          <p class="layer-desc">{{ l.description }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

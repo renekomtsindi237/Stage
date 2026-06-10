@@ -5,7 +5,9 @@ import { FullscreenToastService } from "@core/services/fullscreen-toast.service"
 import { NotificationService } from "@core/services/notification.service";
 import { OnlineUsersService } from "@core/services/online-users.service";
 import { MatDialog } from "@angular/material/dialog";
+import { Router } from "@angular/router";
 import { ChangePasswordComponent } from "../change-password/change-password.component";
+import { ContactSupportDialogComponent } from "../contact-support/contact-support.component";
 import { Observable } from "rxjs";
 
 @Component({
@@ -21,6 +23,13 @@ export class NavbarComponent implements OnInit {
   unreadCount$!: Observable<number>;
   onlineCount$!: Observable<number>;
 
+  readonly today = (() => {
+    const s = new Date().toLocaleDateString("fr-FR", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  })();
+
   constructor(
     public auth: AuthService,
     private confirmDialog: ConfirmationDialogService,
@@ -28,6 +37,7 @@ export class NavbarComponent implements OnInit {
     public notifService: NotificationService,
     public onlineUsers: OnlineUsersService,
     private dialog: MatDialog,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -68,22 +78,16 @@ export class NavbarComponent implements OnInit {
     }
   }
 
-  openProfileMenu(): void {
-    // TODO: Ouvrir un menu ou modal pour changer la photo de profil
-    // Pour l'instant, on peut utiliser un input file
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = (event: any) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.auth.setUserAvatar(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
+  openSupportDialog(): void {
+    this.dialog.open(ContactSupportDialogComponent, {
+      width: "560px",
+      maxHeight: "90vh",
+      panelClass: "support-dialog-panel",
+      disableClose: false,
+    });
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(["/profile"]);
   }
 }

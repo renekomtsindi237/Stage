@@ -1,0 +1,15 @@
+@import "../../../../styles/shared-page";
+
+.stat-row { display:flex; align-items:center; gap:16px; margin-bottom:14px;
+  .dag-stat { display:flex; align-items:center; gap:4px; font-size:0.85rem;
+    mat-icon{font-size:16px;height:16px;width:16px;}
+    &.warn{color:#dc2626;mat-icon{color:#dc2626;}} &.running{color:#3b82f6;mat-icon{color:#3b82f6;}}
+  }
+}
+
+.dag-name { font-weight:500; font-size:0.85rem; }
+.dag-id { font-family:monospace; font-size:0.72rem; }
+.mono { font-family:'Roboto Mono',monospace; font-size:0.75rem; }
+.text-muted { color:#9ca3af; }
+.alerte { color:#dc2626 !important; font-weight:600; }
+.row-failed { background:#fff5f5; }

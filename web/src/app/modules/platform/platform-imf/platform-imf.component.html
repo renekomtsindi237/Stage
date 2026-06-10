@@ -143,7 +143,7 @@
             <button
               mat-stroked-button
               class="btn-consult"
-              [routerLink]="['/platform/imf', row.id, 'supervision']"
+              [routerLink]="['/platform/imf', row.uid, 'supervision']"
               matTooltip="Consulter les données de cette IMF"
             >
               <mat-icon>visibility</mat-icon>
@@ -306,6 +306,16 @@
             </div>
           </div>
 
+          <!-- Notice Caps Lock -->
+          <div class="wz-caps-notice">
+            <mat-icon>keyboard_capslock</mat-icon>
+            <span>
+              Activez le <strong>verrouillage majuscules</strong> (Caps Lock)
+              pour saisir le <strong>Code IMF</strong> — les autres champs
+              ne sont pas concernés.
+            </span>
+          </div>
+
           <div class="wz-row">
             <!-- Code IMF -->
             <div class="wz-field wz-field--short">
@@ -326,7 +336,7 @@
                   style="text-transform: uppercase"
                 />
               </div>
-              <span class="wz-hint">Maj + chiffres, 2-20 car.</span>
+              <span class="wz-hint">Caps Lock actif · A-Z, 0-9 · 2-20 car.</span>
               <span
                 class="wz-error"
                 *ngIf="
@@ -524,6 +534,50 @@
             </div>
           </div>
 
+          <!-- Logo de l'institution -->
+          <div class="wz-field">
+            <label class="wz-label">
+              Logo de l'institution
+              <span class="wz-opt">(optionnel)</span>
+            </label>
+            <div
+              class="wz-logo-upload"
+              [class.wz-logo-upload--filled]="wizardLogoPreview"
+              (click)="pickWizardLogo()"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="pickWizardLogo()"
+            >
+              <ng-container *ngIf="!wizardLogoPreview">
+                <div class="wz-logo-empty">
+                  <mat-icon>cloud_upload</mat-icon>
+                  <span>Cliquer pour importer un logo</span>
+                  <small>PNG, JPG, SVG · max 2 Mo</small>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="wizardLogoPreview">
+                <img
+                  [src]="wizardLogoPreview"
+                  class="wz-logo-img"
+                  alt="Aperçu du logo"
+                />
+                <div class="wz-logo-hover">
+                  <mat-icon>edit</mat-icon>
+                  <span>Modifier</span>
+                </div>
+              </ng-container>
+            </div>
+            <button
+              *ngIf="wizardLogoPreview"
+              type="button"
+              class="wz-logo-remove"
+              (click)="removeWizardLogo()"
+            >
+              <mat-icon>delete_outline</mat-icon>
+              Supprimer le logo
+            </button>
+          </div>
+
           <!-- Aperçu live -->
           <div
             class="wz-preview"
@@ -535,13 +589,6 @@
                 alt="Logo IMF"
                 class="wz-preview-avatar-img"
               />
-              <button
-                type="button"
-                class="wz-preview-avatar-btn"
-                (click)="pickWizardLogo()"
-              >
-                <mat-icon>photo_camera</mat-icon>
-              </button>
             </div>
             <div class="wz-preview-info">
               <span class="wz-preview-name">{{
@@ -1007,90 +1054,69 @@
           </span>
         </div>
 
-        <!-- Champ : Mot de passe -->
+        <!-- Champ : Email -->
         <div class="dsi-field-group">
           <label class="dsi-label">
-            <mat-icon>lock_outline</mat-icon>
-            Mot de passe temporaire
+            <mat-icon>mail_outline</mat-icon>
+            Email professionnel
           </label>
           <div
             class="dsi-field-wrap"
-            [class.dsi-focused]="passwordFocused"
-            [class.dsi-error]="
-              adminForm.get('password')?.invalid &&
-              adminForm.get('password')?.touched
+            [class.dsi-field-error]="
+              adminForm.get('email')?.invalid &&
+              adminForm.get('email')?.touched
             "
           >
-            <mat-icon class="dsi-field-icon">key</mat-icon>
+            <mat-icon class="dsi-field-icon">alternate_email</mat-icon>
             <input
               class="dsi-field-input"
-              formControlName="password"
-              [type]="hideAdminPassword ? 'password' : 'text'"
-              placeholder="Min. 8 caractères"
-              autocomplete="new-password"
-              (focus)="passwordFocused = true"
-              (blur)="passwordFocused = false"
+              formControlName="email"
+              type="email"
+              placeholder="dsi@institution.cm"
+              autocomplete="email"
             />
-            <button
-              type="button"
-              class="dsi-eye-btn"
-              (click)="hideAdminPassword = !hideAdminPassword"
-              tabindex="-1"
-            >
-              <mat-icon>{{
-                hideAdminPassword ? "visibility_off" : "visibility"
-              }}</mat-icon>
-            </button>
           </div>
-
-          <!-- Barre de force -->
-          <div
-            class="dsi-strength-track"
-            *ngIf="adminForm.get('password')?.value"
-          >
-            <div
-              class="dsi-strength-fill"
-              [style.width]="passwordStrength + '%'"
-              [ngClass]="passwordStrengthClass"
-            ></div>
-          </div>
-          <span
-            class="dsi-strength-lbl"
-            *ngIf="adminForm.get('password')?.value"
-            [ngClass]="passwordStrengthClass"
-          >
-            Mot de passe : {{ passwordStrengthLabel }}
-          </span>
-
           <span
             class="dsi-error-msg"
             *ngIf="
-              adminForm.get('password')?.hasError('required') &&
-              adminForm.get('password')?.touched
+              adminForm.get('email')?.hasError('required') &&
+              adminForm.get('email')?.touched
             "
+            >L'email est requis</span
           >
-            Le mot de passe est requis
-          </span>
           <span
             class="dsi-error-msg"
             *ngIf="
-              adminForm.get('password')?.hasError('minlength') &&
-              adminForm.get('password')?.touched
+              adminForm.get('email')?.hasError('email') &&
+              adminForm.get('email')?.touched
             "
+            >Adresse email invalide</span
           >
-            Minimum 8 caractères requis
-          </span>
+          <span class="dsi-hint">Requis pour recevoir les codes OTP de connexion</span>
+        </div>
+
+        <!-- Notice OTP -->
+        <div class="dsi-otp-notice">
+          <div class="dsi-otp-icon">
+            <mat-icon>mark_email_read</mat-icon>
+          </div>
+          <div class="dsi-otp-body">
+            <span class="dsi-otp-title">Connexion par code OTP</span>
+            <span class="dsi-otp-desc">
+              Le DSI recevra un code à 6 chiffres sur cet email à chaque connexion.
+              Aucun mot de passe n'est requis.
+            </span>
+          </div>
         </div>
 
         <!-- Note informative -->
         <div class="dsi-info-note">
           <mat-icon>info_outline</mat-icon>
-          <span
-            >Ce compte DSI aura accès complet à l'espace
-            <strong>{{ selectedImf?.nom }}</strong
-            >. Le DSI devra changer ce mot de passe à sa première
-            connexion.</span
-          >
+          <span>
+            Ce compte DSI aura accès complet à l'espace
+            <strong>{{ selectedImf?.nom }}</strong>.
+            Le compte est actif dès sa création.
+          </span>
         </div>
 
         <!-- Actions -->
@@ -1115,7 +1141,7 @@
               <mat-icon>{{
                 selectedImf?.hasDsi ? "save" : "person_add"
               }}</mat-icon>
-              {{ selectedImf?.hasDsi ? "Mettre à jour" : "Créer le compte" }}
+              {{ selectedImf?.hasDsi ? "Mettre à jour le DSI" : "Créer le compte DSI" }}
             </ng-container>
           </button>
         </div>

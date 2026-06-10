@@ -1,9 +1,9 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { ApiResponse } from "@core/models/api-response.model";
-import { UserResponse } from "@core/models/user.model";
+import type { UserResponse } from "@core/models/user.model";
 
 export interface PageResponse<T> {
   content: T[];
@@ -42,7 +42,7 @@ export interface ImfSummary {
 }
 
 export interface ImfRecord {
-  id: number;
+  uid: string;
   code: string;
   nom: string;
   pays: string;
@@ -56,12 +56,12 @@ export interface ImfRecord {
   numAgrement?: string;
   telephone?: string;
   email?: string;
-  // Paramètres crédit
+  // ParamÃ¨tres crÃ©dit
   tauxInteretAnnuel?: number;
   dureeMaxCreditMois?: number;
   tauxPenaliteRetard?: number;
   seuilRelanceJours?: number;
-  // Paramètres épargne
+  // ParamÃ¨tres Ã©pargne
   tauxEpargne?: number;
   soldeMinEpargne?: number;
   fraisTenueCompte?: number;
@@ -81,7 +81,7 @@ export interface PlatformStats {
 }
 
 export interface CreateImfPayload {
-  // Étape 1 — Identité
+  // Ã‰tape 1 â€” IdentitÃ©
   code: string;
   nom: string;
   denominationSociale: string;
@@ -91,11 +91,11 @@ export interface CreateImfPayload {
   numAgrement?: string;
   telephone?: string;
   email?: string;
-  // Étape 2 — Capital
+  // Ã‰tape 2 â€” Capital
   capitalSocial: number;
   segmentsClients?: string;
   typesGaranties?: string;
-  // Étape 3 — Paramètres métier
+  // Ã‰tape 3 â€” ParamÃ¨tres mÃ©tier
   tauxInteretAnnuel: number;
   dureeMaxCreditMois: number;
   tauxPenaliteRetard: number;
@@ -107,12 +107,35 @@ export interface CreateImfPayload {
 
 export interface CreateImfAdminPayload {
   username: string;
-  password: string;
+  email: string;
+}
+
+export interface UpdateUserPayload {
+  username: string;
+  email: string;
+  role: string;
+  zoneId?: string;
+}
+
+export interface DelegateUserPayload {
+  toUserUid: string;
+}
+
+export interface PlatformConfig {
+  accessTokenExpiryMinutes: number;
+  refreshTokenExpiryDays: number;
+  cookieSecure: boolean;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  firebaseEnabled: boolean;
+  dbPoolSize: number;
+  environment: string;
 }
 
 @Injectable({ providedIn: "root" })
 export class PlatformService {
-  private readonly API = "/api/platform";
+  private readonly API = "/api/v1/platform";
 
   constructor(private http: HttpClient) {}
 
@@ -134,45 +157,54 @@ export class PlatformService {
       .pipe(map((r) => r.data));
   }
 
-  deactivateImf(id: number): Observable<ImfRecord> {
+  deactivateImf(uid: string): Observable<ImfRecord> {
     return this.http
-      .patch<ApiResponse<ImfRecord>>(`${this.API}/imf/${id}/deactivate`, {})
+      .patch<ApiResponse<ImfRecord>>(`${this.API}/imf/${uid}/deactivate`, {})
       .pipe(map((r) => r.data));
   }
 
-  deleteImf(id: number): Observable<void> {
+  deleteImf(uid: string): Observable<void> {
     return this.http
-      .delete<ApiResponse<void>>(`${this.API}/imf/${id}`)
+      .delete<ApiResponse<void>>(`${this.API}/imf/${uid}`)
       .pipe(map(() => void 0));
   }
 
-  activateImf(id: number): Observable<ImfRecord> {
+  activateImf(uid: string): Observable<ImfRecord> {
     return this.http
-      .patch<ApiResponse<ImfRecord>>(`${this.API}/imf/${id}/activate`, {})
+      .patch<ApiResponse<ImfRecord>>(`${this.API}/imf/${uid}/activate`, {})
       .pipe(map((r) => r.data));
   }
 
   createImfAdmin(
-    imfId: number,
+    imfUid: string,
     payload: CreateImfAdminPayload,
   ): Observable<ImfRecord> {
     return this.http
-      .post<ApiResponse<ImfRecord>>(`${this.API}/imf/${imfId}/admin`, payload)
+      .post<ApiResponse<ImfRecord>>(`${this.API}/imf/${imfUid}/admin`, payload)
       .pipe(map((r) => r.data));
   }
 
-  // ── Supervision (SUPER_ADMIN) ──────────────────────────────────────────────
-
-  private readonly SUPERVISION = "/api/platform/supervision";
-
-  getImfSummary(imfId: number): Observable<ImfSummary> {
+  updateImfAdmin(
+    imfUid: string,
+    payload: CreateImfAdminPayload,
+  ): Observable<ImfRecord> {
     return this.http
-      .get<ApiResponse<ImfSummary>>(`${this.SUPERVISION}/imf/${imfId}/summary`)
+      .patch<ApiResponse<ImfRecord>>(`${this.API}/imf/${imfUid}/admin`, payload)
+      .pipe(map((r) => r.data));
+  }
+
+  // â”€â”€ Supervision (SUPER_ADMIN) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  private readonly SUPERVISION = "/api/v1/platform/supervision";
+
+  getImfSummary(imfUid: string): Observable<ImfSummary> {
+    return this.http
+      .get<ApiResponse<ImfSummary>>(`${this.SUPERVISION}/imf/${imfUid}/summary`)
       .pipe(map((r) => r.data));
   }
 
   getImfUsers(
-    imfId: number,
+    imfUid: string,
     page = 0,
     size = 20,
   ): Observable<PageResponse<UserResponse>> {
@@ -180,20 +212,20 @@ export class PlatformService {
     return this.http
       .get<
         ApiResponse<PageResponse<UserResponse>>
-      >(`${this.SUPERVISION}/imf/${imfId}/users`, { params })
+      >(`${this.SUPERVISION}/imf/${imfUid}/users`, { params })
       .pipe(map((r) => r.data));
   }
 
-  getImfAgences(imfId: number): Observable<AgenceSupervision[]> {
+  getImfAgences(imfUid: string): Observable<AgenceSupervision[]> {
     return this.http
       .get<
         ApiResponse<AgenceSupervision[]>
-      >(`${this.SUPERVISION}/imf/${imfId}/agences`)
+      >(`${this.SUPERVISION}/imf/${imfUid}/agences`)
       .pipe(map((r) => r.data));
   }
 
   getImfAudit(
-    imfId: number,
+    imfUid: string,
     page = 0,
     size = 50,
   ): Observable<PageResponse<AuditEntry>> {
@@ -201,7 +233,61 @@ export class PlatformService {
     return this.http
       .get<
         ApiResponse<PageResponse<AuditEntry>>
-      >(`${this.SUPERVISION}/imf/${imfId}/audit`, { params })
+      >(`${this.SUPERVISION}/imf/${imfUid}/audit`, { params })
+      .pipe(map((r) => r.data));
+  }
+
+  // ── Gestion utilisateurs (supervision write) ──────────────────────────────
+
+  updateImfUser(
+    imfUid: string,
+    userUid: string,
+    payload: UpdateUserPayload,
+  ): Observable<UserResponse> {
+    return this.http
+      .patch<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}`, payload)
+      .pipe(map((r) => r.data));
+  }
+
+  deleteImfUser(imfUid: string, userUid: string): Observable<void> {
+    return this.http
+      .delete<ApiResponse<void>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}`)
+      .pipe(map(() => void 0));
+  }
+
+  suspendImfUser(imfUid: string, userUid: string): Observable<UserResponse> {
+    return this.http
+      .patch<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}/suspend`, {})
+      .pipe(map((r) => r.data));
+  }
+
+  reactivateImfUser(imfUid: string, userUid: string): Observable<UserResponse> {
+    return this.http
+      .patch<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}/reactivate`, {})
+      .pipe(map((r) => r.data));
+  }
+
+  delegateImfUser(
+    imfUid: string,
+    fromUserUid: string,
+    payload: DelegateUserPayload,
+  ): Observable<UserResponse> {
+    return this.http
+      .post<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${fromUserUid}/delegate`, payload)
+      .pipe(map((r) => r.data));
+  }
+
+  getGlobalAudit(page = 0, size = 50): Observable<PageResponse<AuditEntry>> {
+    const params = new HttpParams().set("page", page).set("size", size);
+    return this.http
+      .get<ApiResponse<PageResponse<AuditEntry>>>(`${this.SUPERVISION}/audit`, { params })
+      .pipe(map((r) => r.data));
+  }
+
+  getConfig(): Observable<PlatformConfig> {
+    return this.http
+      .get<ApiResponse<PlatformConfig>>(`${this.API}/config`)
       .pipe(map((r) => r.data));
   }
 }
+

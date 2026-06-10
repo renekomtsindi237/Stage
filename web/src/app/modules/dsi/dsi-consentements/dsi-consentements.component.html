@@ -1,0 +1,91 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Registre des consentements</h1>
+      <p class="page-subtitle">Traçabilité de tous les consentements RGPD collectés</p>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <mat-card class="kpi-card kpi-ok">
+      <mat-card-content>
+        <mat-icon>thumb_up</mat-icon>
+        <div class="kpi-value">{{ accordes }}</div>
+        <div class="kpi-label">Consentements accordés</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="kpi-card kpi-warn">
+      <mat-card-content>
+        <mat-icon>thumb_down</mat-icon>
+        <div class="kpi-value">{{ revoques }}</div>
+        <div class="kpi-label">Consentements révoqués</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="kpi-card kpi-info">
+      <mat-card-content>
+        <mat-icon>groups</mat-icon>
+        <div class="kpi-value">{{ total }}</div>
+        <div class="kpi-label">Total enregistrés</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Filtre statut -->
+  <div class="toolbar-row">
+    <mat-button-toggle-group [(ngModel)]="filtreStatut">
+      <mat-button-toggle value="">Tous</mat-button-toggle>
+      <mat-button-toggle value="ACCORDE">Accordés</mat-button-toggle>
+      <mat-button-toggle value="REVOQUE">Révoqués</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+
+  <table mat-table [dataSource]="getFiltres()" class="data-table">
+    <ng-container matColumnDef="utilisateur">
+      <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+      <td mat-cell *matCellDef="let c">{{ c.utilisateur }}</td>
+    </ng-container>
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>Rôle</th>
+      <td mat-cell *matCellDef="let c"><span class="role-chip">{{ c.role }}</span></td>
+    </ng-container>
+    <ng-container matColumnDef="finalite">
+      <th mat-header-cell *matHeaderCellDef>Finalité du traitement</th>
+      <td mat-cell *matCellDef="let c">{{ getFinalite(c.finalite) }}</td>
+    </ng-container>
+    <ng-container matColumnDef="canal">
+      <th mat-header-cell *matHeaderCellDef>Canal</th>
+      <td mat-cell *matCellDef="let c">{{ c.canal }}</td>
+    </ng-container>
+    <ng-container matColumnDef="date">
+      <th mat-header-cell *matHeaderCellDef>Date</th>
+      <td mat-cell *matCellDef="let c">{{ c.dateConsentement | date:'dd/MM/yyyy HH:mm' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="statut">
+      <th mat-header-cell *matHeaderCellDef>Statut</th>
+      <td mat-cell *matCellDef="let c">
+        <span class="badge" [ngClass]="c.statut === 'ACCORDE' ? 'badge-ok' : 'badge-critique'">{{ c.statut }}</span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let c">
+        <button mat-stroked-button color="warn" class="btn-sm" (click)="revoquer(c.id)" *ngIf="c.statut === 'ACCORDE'"
+          matTooltip="Révoquer ce consentement">
+          <mat-icon>cancel</mat-icon> Révoquer
+        </button>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="cols"></tr>
+    <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+  </table>
+
+  <mat-paginator [length]="total" [pageSize]="20" [pageSizeOptions]="[20, 50]" (page)="onPage($event)"></mat-paginator>
+
+  <div *ngIf="!loading && getFiltres().length === 0" class="empty-state">
+    <mat-icon>assignment</mat-icon>
+    <p>Aucun consentement enregistré</p>
+  </div>
+</div>

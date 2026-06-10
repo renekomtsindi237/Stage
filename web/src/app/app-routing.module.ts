@@ -2,6 +2,7 @@ import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
 import { AuthGuard } from "./core/guards/auth.guard";
 import { RoleGuard } from "./core/guards/role.guard";
+import { ErrorPageComponent } from "./shared/error-pages/error-page.component";
 
 const routes: Routes = [
   /* Page d'accueil publique — première page affichée */
@@ -93,6 +94,30 @@ const routes: Routes = [
     loadChildren: () =>
       import("./modules/kyc/kyc.module").then((m) => m.KycModule),
   },
+  /* ── ANALYSTE ── */
+  {
+    path: "analyste",
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ["ANALYSTE"] },
+    loadChildren: () =>
+      import("./modules/analyste/analyste.module").then((m) => m.AnalysteModule),
+  },
+  /* ── DSI ── */
+  {
+    path: "dsi",
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ["DSI"] },
+    loadChildren: () =>
+      import("./modules/dsi/dsi.module").then((m) => m.DsiModule),
+  },
+  /* ── SUPPORT ── */
+  {
+    path: "support",
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ["SUPPORT"] },
+    loadChildren: () =>
+      import("./modules/support/support.module").then((m) => m.SupportModule),
+  },
   {
     path: "admin",
     canActivate: [AuthGuard, RoleGuard],
@@ -106,7 +131,39 @@ const routes: Routes = [
     loadChildren: () =>
       import("./modules/profile/profile.module").then((m) => m.ProfileModule),
   },
-  { path: "**", redirectTo: "" },
+  /* ── Pages d'erreur (shellless) ── */
+  {
+    path: "error",
+    children: [
+      {
+        path: "404",
+        component: ErrorPageComponent,
+        data: { code: "404" },
+      },
+      {
+        path: "403",
+        component: ErrorPageComponent,
+        data: { code: "403" },
+      },
+      {
+        path: "500",
+        component: ErrorPageComponent,
+        data: { code: "500" },
+      },
+      {
+        path: "offline",
+        component: ErrorPageComponent,
+        data: { code: "offline" },
+      },
+      { path: "**", redirectTo: "404" },
+    ],
+  },
+  /* Wildcard — page 404 (URL préservée dans la barre) */
+  {
+    path: "**",
+    component: ErrorPageComponent,
+    data: { code: "404" },
+  },
 ];
 
 @NgModule({

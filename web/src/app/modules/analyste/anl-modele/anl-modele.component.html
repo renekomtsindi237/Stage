@@ -1,0 +1,65 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Qualité du modèle de notation</h1>
+      <p class="page-subtitle">Surveillance de la fiabilité du modèle de scoring MCRS</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+
+  <ng-container *ngIf="!loading && modele">
+    <!-- Alerte dérive -->
+    <div class="alerte-derive" *ngIf="modele.statutDerive === 'DERIVE'">
+      <mat-icon>warning</mat-icon>
+      <div>
+        <strong>Alerte de dérive majeure</strong>
+        <p>Le modèle présente une instabilité significative. Un recalibrage automatique est planifié pour le prochain cycle de maintenance.</p>
+      </div>
+    </div>
+
+    <!-- PSI + infos modèle -->
+    <div class="modele-top-row">
+      <mat-card class="psi-card">
+        <mat-card-content>
+          <p class="psi-label">Indice de stabilité actuel (PSI)</p>
+          <p class="psi-value" [ngClass]="getStatutClass(modele.statutDerive)">{{ modele.psiActuel }}</p>
+          <span class="badge" [ngClass]="getStatutClass(modele.statutDerive)">{{ getStatutLabel(modele.statutDerive) }}</span>
+          <mat-divider class="mt-16"></mat-divider>
+          <div class="modele-meta">
+            <div><span class="meta-label">Modèle actif</span><span>{{ modele.version }}</span></div>
+            <div><span class="meta-label">Dernier recalibrage</span><span>{{ modele.dernierEntrainement | date:'dd/MM/yyyy' }}</span></div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="graph-card">
+        <mat-card-header><mat-card-title>Évolution de la stabilité (90 jours)</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <canvas baseChart [data]="psiChartData" [options]="lineOptions" type="line"></canvas>
+          <div class="legende-seuils">
+            <span class="legende-item legende-warn">— Seuil attention (0.10)</span>
+            <span class="legende-item legende-alert">— Seuil dérive (0.20)</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Contribution des indicateurs -->
+    <mat-card class="features-card">
+      <mat-card-header><mat-card-title>Facteurs contribuant à l'instabilité</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="feature-row" *ngFor="let f of modele.featuresContribution">
+          <div class="feature-name">{{ f.nomMetier }}</div>
+          <div class="feature-bar-wrap">
+            <div class="feature-bar" [style.width.%]="f.contribution" [ngClass]="f.contribution > 30 ? 'bar-alert' : f.contribution > 15 ? 'bar-warn' : 'bar-ok'"></div>
+          </div>
+          <div class="feature-stats">
+            <span>PSI: <strong>{{ f.psi }}</strong></span>
+            <span>Contribution: <strong>{{ f.contribution }}%</strong></span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

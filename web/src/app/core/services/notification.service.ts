@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from "@angular/core";
+﻿import { Injectable, OnDestroy } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
 import { map } from "rxjs/operators";
@@ -8,7 +8,7 @@ import { AuthService } from "./auth.service";
 
 @Injectable({ providedIn: "root" })
 export class NotificationService implements OnDestroy {
-  private readonly API = "/api/notifications";
+  private readonly API = "/api/v1/notifications";
 
   private items$ = new BehaviorSubject<NotificationItem[]>([]);
   private sseSub?: Subscription;
@@ -19,14 +19,14 @@ export class NotificationService implements OnDestroy {
     private auth: AuthService,
   ) {}
 
-  /** Initialise le service : charge l'historique + écoute le flux SSE. */
+  /** Initialise le service : charge l'historique + Ã©coute le flux SSE. */
   init(): void {
     this.loadInitial();
     this.sseSub = this.sseService.connect().subscribe((event) => {
       if (event.type === "HEARTBEAT") return;
-      // Prépend une notification locale depuis l'événement SSE
+      // PrÃ©pend une notification locale depuis l'Ã©vÃ©nement SSE
       const item: NotificationItem = {
-        id: 0, // ID temporaire — sera remplacé au prochain reload
+        id: 0, // ID temporaire â€” sera remplacÃ© au prochain reload
         type: event.type,
         titre: this.titleForType(event.type),
         message: event.message,
@@ -89,13 +89,14 @@ export class NotificationService implements OnDestroy {
 
   private titleForType(type: string): string {
     const titles: Record<string, string> = {
-      ALERTE_CREATED: "Nouvelle alerte impayé",
-      ALERTE_UPDATED: "Alerte mise à jour",
-      COLLECTE_CONFIRMED: "Collecte confirmée",
-      KPI_UPDATED: "KPI mis à jour",
+      ALERTE_CREATED: "Nouvelle alerte impayÃ©",
+      ALERTE_UPDATED: "Alerte mise Ã  jour",
+      COLLECTE_CONFIRMED: "Collecte confirmÃ©e",
+      KPI_UPDATED: "KPI mis Ã  jour",
       PIPELINE_STATUS: "Statut pipeline",
-      SYNC_COMPLETED: "Synchronisation terminée",
+      SYNC_COMPLETED: "Synchronisation terminÃ©e",
     };
     return titles[type] ?? "Notification";
   }
 }
+

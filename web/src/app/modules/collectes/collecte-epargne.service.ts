@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -14,7 +14,7 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class CollecteEpargneService {
-  private readonly API = "/api/collectes-epargne";
+  private readonly API = "/api/v1/collectes-epargne";
 
   constructor(private http: HttpClient) {}
 
@@ -74,3 +74,4 @@ export class CollecteEpargneService {
       .pipe(map((r) => r.data));
   }
 }
+

@@ -5,6 +5,31 @@
   (click)="toast.type === 'error' && close()"
 >
   <div class="fs-card" [@cardPop] (click)="$event.stopPropagation()">
+
+    <!-- ══ LOGIN ═══════════════════════════════════════════════ -->
+    <ng-container *ngIf="toast.type === 'login'">
+      <div class="fs-icon-ring fs-ring-login" [@iconBounce]>
+        <mat-icon class="fs-icon-main fs-icon-login">check_circle</mat-icon>
+      </div>
+
+      <div class="fs-login-badge" *ngIf="toast.username">
+        <span class="fs-login-initial">{{ toast.username.charAt(0).toUpperCase() }}</span>
+      </div>
+
+      <h1 class="fs-title fs-title-login">{{ toast.title }}</h1>
+      <p class="fs-login-username" *ngIf="toast.username">{{ toast.username }}</p>
+      <p class="fs-message">{{ toast.message }}</p>
+
+      <div class="fs-redirect fs-redirect--login">
+        <mat-spinner diameter="20"></mat-spinner>
+        <span>Redirection en cours…</span>
+      </div>
+
+      <div class="fs-progress-wrap">
+        <div class="fs-progress fs-progress-login"></div>
+      </div>
+    </ng-container>
+
     <!-- ══ LOGOUT ══════════════════════════════════════════════ -->
     <ng-container *ngIf="toast.type === 'logout'">
       <div class="fs-icon-ring fs-ring-gold">
@@ -59,5 +84,6 @@
         Fermer
       </button>
     </ng-container>
+
   </div>
 </div>

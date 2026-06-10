@@ -4,6 +4,7 @@ export type Role =
   | "RESPONSABLE_RECOUVREMENT"
   | "ANALYSTE"
   | "DSI"
+  | "SUPPORT"
   | "AGENT";
 
 export interface AuthResponse {
@@ -11,7 +12,7 @@ export interface AuthResponse {
   refreshToken: string;
   role: Role;
   username: string;
-  imfId?: number;
+  imfUid?: string;
   imfCode?: string;
   imfNom?: string;
   mustChangePassword?: boolean;
@@ -19,10 +20,27 @@ export interface AuthResponse {
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RefreshRequest {
   refreshToken: string;
+}
+
+export interface OtpInitResponse {
+  message: string;
+}
+
+export interface OtpVerifyResponse {
+  status: string;
+  accessToken: string;
+  refreshToken: string;
+  role: string;
+  username: string;
+  imfUid?: string;
+  imfCode?: string;
+  imfNom?: string;
+  mustChangePassword?: boolean;
+  expiresIn: number;
 }

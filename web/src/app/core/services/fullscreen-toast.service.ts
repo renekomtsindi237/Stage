@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 
 export interface FullscreenToast {
-  type: "success" | "error" | "logout";
+  type: "success" | "error" | "logout" | "login";
   title: string;
   message: string;
   show: boolean;
@@ -29,6 +29,20 @@ export class FullscreenToastService {
 
   showError(title: string, message: string, duration: number = 3000): void {
     this.toastSubject.next({ type: "error", title, message, show: true });
+    if (duration > 0) setTimeout(() => this.hide(), duration);
+  }
+
+  showLogin(username: string, isSuperAdmin = false, duration: number = 2500): void {
+    const message = isSuperAdmin
+      ? "Bienvenue sur la plateforme MicroRecouv !"
+      : "Redirigé vers votre espace…";
+    this.toastSubject.next({
+      type: "login",
+      title: "Connexion réussie !",
+      message,
+      show: true,
+      username,
+    });
     if (duration > 0) setTimeout(() => this.hide(), duration);
   }
 

@@ -121,6 +121,16 @@ public class SecurityConfig {
                         // Mise à jour d'une échéance : agent, RR ou DSI
                         .requestMatchers(HttpMethod.PUT, "/echeances/**", "/api/v1/echeances/**")
                                 .hasAnyRole("AGENT", "RESPONSABLE_RECOUVREMENT", "DSI")
+                        // Tableau de bord infrastructure SUPPORT (cross-IMF)
+                        .requestMatchers("/api/v1/support/**").hasRole("SUPPORT")
+                        // Tickets : création par tout utilisateur, lecture/maj par SUPPORT
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tickets").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tickets/mes-tickets").authenticated()
+                        .requestMatchers("/api/v1/tickets/**").hasAnyRole("SUPPORT", "SUPER_ADMIN")
+                        // DSI : endpoints dédiés au tableau de bord DSI
+                        .requestMatchers("/api/v1/dsi/**").hasAnyRole("DSI", "SUPER_ADMIN")
+                        // Analyste : scoring, pipeline, drift ML
+                        .requestMatchers("/api/v1/analyste/**").hasAnyRole("ANALYSTE", "DSI", "SUPER_ADMIN")
                         // Tout le reste nécessite une authentification
                         .anyRequest().authenticated()
                 )

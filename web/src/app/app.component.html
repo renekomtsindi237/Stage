@@ -1,3 +1,6 @@
+<!-- Bannière réseau hors-ligne — toujours montée -->
+<imf-offline-banner></imf-offline-banner>
+
 <!-- Splash screen au premier chargement -->
 <app-splash *ngIf="showSplash" (done)="onSplashDone()"></app-splash>
 
@@ -6,6 +9,9 @@
 
 <!-- Dialog de confirmation global -->
 <app-confirmation-dialog></app-confirmation-dialog>
+
+<!-- Loading overlay global (mutations HTTP uniquement) -->
+<imf-loading-overlay></imf-loading-overlay>
 
 <!-- Application principale -->
 <ng-container *ngIf="!showSplash">
@@ -28,6 +34,8 @@
         </main>
       </div>
     </div>
+    <!-- FAB contact support — disponible pour tous les utilisateurs connectés -->
+    <imf-contact-support></imf-contact-support>
   </ng-container>
 
   <!-- Redirection si non authentifié sur une page protégée -->

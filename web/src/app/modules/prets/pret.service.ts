@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -7,7 +7,7 @@ import { PretResponse, StatutPret } from "@core/models/pret.model";
 
 @Injectable({ providedIn: "root" })
 export class PretService {
-  private readonly API = "/api/prets";
+  private readonly API = "/api/v1/prets";
 
   constructor(private http: HttpClient) {}
 
@@ -35,3 +35,4 @@ export class PretService {
       .pipe(map((r) => r.data));
   }
 }
+

@@ -110,6 +110,14 @@ export class PlatformOverviewComponent implements OnInit {
     this.barInactive = months.map((m) => m.inactive);
   }
 
+  get inactiveImfsCount(): number {
+    return this.allImfs.filter((i) => !i.actif).length;
+  }
+
+  get hasInactiveImfs(): boolean {
+    return this.inactiveImfsCount > 0;
+  }
+
   /** Taux d'activation en % */
   get activationRate(): number {
     if (!this.stats || this.stats.totalImfs === 0) return 0;
@@ -128,8 +136,8 @@ export class PlatformOverviewComponent implements OnInit {
     );
   }
 
-  trackByImf(_: number, imf: ImfRecord): number {
-    return imf.id;
+  trackByImf(_: number, imf: ImfRecord): string {
+    return imf.uid;
   }
   trackByPays(_: number, p: { pays: string }): string {
     return p.pays;

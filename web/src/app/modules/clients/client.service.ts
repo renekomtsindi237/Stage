@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -7,7 +7,7 @@ import { ClientResponse } from "@core/models/client.model";
 
 @Injectable({ providedIn: "root" })
 export class ClientService {
-  private readonly API = "/api/clients";
+  private readonly API = "/api/v1/clients";
 
   constructor(private http: HttpClient) {}
 
@@ -37,3 +37,4 @@ export class ClientService {
     );
   }
 }
+

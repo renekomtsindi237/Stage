@@ -16,8 +16,10 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    @EntityGraph(attributePaths = {"imf"})
     Optional<User> findByUid(UUID uid);
 
+    @EntityGraph(attributePaths = {"imf"})
     Optional<User> findByUidAndImfId(UUID uid, Long imfId);
 
     /** Charge toujours l'IMF en même temps — évite LazyInitializationException sur login. */
@@ -52,6 +54,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByImfId(Long imfId);
 
     boolean existsByImfIdAndRole(Long imfId, Role role);
+
+    Optional<User> findByImfIdAndRole(Long imfId, Role role);
 
     boolean existsByImfIdAndZoneId(Long imfId, String zoneId);
 

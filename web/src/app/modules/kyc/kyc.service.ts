@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -19,11 +19,11 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class KycService {
-  private readonly API = "/api/kyc";
+  private readonly API = "/api/v1/kyc";
 
   constructor(private http: HttpClient) {}
 
-  // ── Dossiers ─────────────────────────────────────────────────────────────
+  // â”€â”€ Dossiers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   initierDossier(req: InitierKycRequest): Observable<KycDossierResponse> {
     return this.http
@@ -85,7 +85,7 @@ export class KycService {
       .pipe(map((r) => r.data));
   }
 
-  // ── Documents ────────────────────────────────────────────────────────────
+  // â”€â”€ Documents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   soumettreDocument(
     dossierId: number,
@@ -117,3 +117,4 @@ export class KycService {
       .pipe(map((r) => r.data));
   }
 }
+

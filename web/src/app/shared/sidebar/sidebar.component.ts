@@ -9,11 +9,10 @@ interface NavItem {
   icon: string;
   route: string;
   roles?: Role[];
-  /** Si true, visible UNIQUEMENT pour SUPER_ADMIN */
   superAdminOnly?: boolean;
-  /** Si true, caché pour SUPER_ADMIN */
+  supportOnly?: boolean;
   hideSuperAdmin?: boolean;
-  /** Si true, routerLinkActive utilise exact: true */
+  hideSupport?: boolean;
   exactMatch?: boolean;
 }
 
@@ -23,88 +22,48 @@ interface NavItem {
   styleUrls: ["./sidebar.component.scss"],
 })
 export class SidebarComponent {
-  // Items réservés au SUPER_ADMIN
   readonly superAdminItems: NavItem[] = [
-    {
-      label: "Vue plateforme",
-      icon: "dashboard_customize",
-      route: "/platform",
-      superAdminOnly: true,
-      exactMatch: true,
-    },
-    {
-      label: "Gestion des IMF",
-      icon: "corporate_fare",
-      route: "/platform/imf",
-      superAdminOnly: true,
-      exactMatch: false,
-    },
+    { label: "Dashboard plateforme", icon: "space_dashboard",  route: "/platform",       superAdminOnly: true, exactMatch: true },
+    { label: "Gestion des IMF",      icon: "corporate_fare",   route: "/platform/imf",   superAdminOnly: true },
+    { label: "Audit trail global",   icon: "receipt_long",     route: "/platform/audit", superAdminOnly: true },
+    { label: "Configuration",        icon: "settings",         route: "/platform/config",superAdminOnly: true },
+    { label: "Mon Profil",           icon: "account_circle",   route: "/profile",        superAdminOnly: true },
   ];
 
-  // Items pour les utilisateurs IMF (DSI, DIRECTEUR, etc.)
+  readonly supportItems: NavItem[] = [
+    { label: "Vue d'ensemble", icon: "monitor_heart", route: "/support", supportOnly: true, exactMatch: true },
+    { label: "Infrastructure", icon: "dns", route: "/support/infrastructure", supportOnly: true },
+    { label: "Traitements planifiés", icon: "schedule", route: "/support/traitements", supportOnly: true },
+    { label: "Journaux système", icon: "article", route: "/support/journaux", supportOnly: true },
+    { label: "Alertes système", icon: "notifications_active", route: "/support/alertes", supportOnly: true },
+  ];
+
   readonly navItems: NavItem[] = [
-    {
-      label: "Tableau de bord",
-      icon: "dashboard",
-      route: "/dashboard",
-      hideSuperAdmin: true,
-    },
-    {
-      label: "Alertes",
-      icon: "warning_amber",
-      route: "/admin/alertes",
-      hideSuperAdmin: true,
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
-    },
-    {
-      label: "Prêts",
-      icon: "account_balance_wallet",
-      route: "/admin/prets",
-      hideSuperAdmin: true,
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
-    },
-    {
-      label: "Clients",
-      icon: "people",
-      route: "/admin/clients",
-      hideSuperAdmin: true,
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
-    },
-    {
-      label: "Reporting",
-      icon: "bar_chart",
-      route: "/admin/reporting",
-      hideSuperAdmin: true,
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
-    },
-    {
-      label: "Recouvrement",
-      icon: "account_balance",
-      route: "/admin/recouvrement",
-      hideSuperAdmin: true,
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
-    },
-    {
-      label: "KYC / Conformité",
-      icon: "verified_user",
-      route: "/admin/kyc",
-      hideSuperAdmin: true,
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
-    },
-    {
-      label: "Administration",
-      icon: "admin_panel_settings",
-      route: "/admin",
-      hideSuperAdmin: true,
-      roles: ["DSI"],
-    },
-    {
-      label: "Agences",
-      icon: "business",
-      route: "/admin/agences",
-      hideSuperAdmin: true,
-      roles: ["DSI"],
-    },
+    { label: "Tableau de bord", icon: "dashboard", route: "/dashboard", hideSuperAdmin: true, hideSupport: true },
+    // Directeur
+    { label: "Carte agents", icon: "map", route: "/admin/carte", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR"] },
+    { label: "Alertes ML", icon: "warning_amber", route: "/admin/alertes", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT"] },
+    { label: "KPI Portefeuille", icon: "bar_chart", route: "/admin/reporting", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR"] },
+    { label: "Clients", icon: "people", route: "/admin/clients", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT"] },
+    { label: "KYC", icon: "verified_user", route: "/admin/kyc", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT"] },
+    { label: "Agences", icon: "business", route: "/admin/agences", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR"] },
+    { label: "Utilisateurs", icon: "manage_accounts", route: "/admin/users", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR"] },
+    { label: "Rapports", icon: "description", route: "/admin/rapports", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR"] },
+    // Recouvrement
+    { label: "Dossiers", icon: "folder_open", route: "/admin/recouvrement", hideSuperAdmin: true, hideSupport: true, roles: ["RESPONSABLE_RECOUVREMENT"] },
+    { label: "Tableau terrain", icon: "location_on", route: "/admin/terrain", hideSuperAdmin: true, hideSupport: true, roles: ["RESPONSABLE_RECOUVREMENT"] },
+    // Analyste
+    { label: "Scoring clients", icon: "insights", route: "/analyste/scoring", hideSuperAdmin: true, hideSupport: true, roles: ["ANALYSTE"] },
+    { label: "Suivi des traitements", icon: "sync_alt", route: "/analyste/traitements", hideSuperAdmin: true, hideSupport: true, roles: ["ANALYSTE"] },
+    { label: "Qualité du modèle", icon: "model_training", route: "/analyste/modele", hideSuperAdmin: true, hideSupport: true, roles: ["ANALYSTE"] },
+    // DSI
+    { label: "Conformité RGPD", icon: "shield", route: "/dsi/rgpd", hideSuperAdmin: true, hideSupport: true, roles: ["DSI"] },
+    { label: "Audit trail", icon: "receipt_long", route: "/dsi/audit", hideSuperAdmin: true, hideSupport: true, roles: ["DSI"] },
+    { label: "Consentements", icon: "how_to_reg", route: "/dsi/consentements", hideSuperAdmin: true, hideSupport: true, roles: ["DSI"] },
+    { label: "Santé des services", icon: "health_and_safety", route: "/dsi/monitoring", hideSuperAdmin: true, hideSupport: true, roles: ["DSI"] },
+    { label: "Configuration", icon: "settings", route: "/dsi/configuration", hideSuperAdmin: true, hideSupport: true, roles: ["DSI"] },
+    // Commun
+    { label: "Prêts", icon: "account_balance_wallet", route: "/admin/prets", hideSuperAdmin: true, hideSupport: true, roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE"] },
   ];
 
   constructor(
@@ -113,30 +72,36 @@ export class SidebarComponent {
     private toast: FullscreenToastService,
   ) {}
 
-  get isSuperAdmin(): boolean {
-    return this.auth.isSuperAdmin();
-  }
-  get isDsi(): boolean {
-    return this.auth.isDsi();
-  }
-  get imfNom(): string | null {
-    return this.auth.getImfNom();
-  }
-  get imfCode(): string | null {
-    return this.auth.getImfCode();
+  get isSuperAdmin(): boolean { return this.auth.isSuperAdmin(); }
+  get isSupport(): boolean { return this.auth.hasRole("SUPPORT"); }
+  get isDsi(): boolean { return this.auth.isDsi(); }
+  get imfNom(): string | null { return this.auth.getImfNom(); }
+  get imfCode(): string | null { return this.auth.getImfCode(); }
+  get imfLogo(): string | null {
+    const code = this.auth.getImfCode();
+    return code ? this.auth.getImfLogo(code) : null;
   }
 
   isVisible(item: NavItem): boolean {
     if (item.superAdminOnly) return this.isSuperAdmin;
+    if (item.supportOnly) return this.isSupport;
     if (item.hideSuperAdmin && this.isSuperAdmin) return false;
+    if (item.hideSupport && this.isSupport) return false;
     if (!item.roles || item.roles.length === 0) return true;
     return this.auth.hasRole(...item.roles);
   }
 
   get displayItems(): NavItem[] {
-    return this.isSuperAdmin
-      ? this.superAdminItems
-      : this.navItems.filter((i) => this.isVisible(i));
+    if (this.isSuperAdmin) return this.superAdminItems;
+    if (this.isSupport) return this.supportItems;
+    return this.navItems.filter((i) => this.isVisible(i));
+  }
+
+  get sectionLabel(): string {
+    if (this.isSuperAdmin) return "Plateforme";
+    if (this.isSupport) return "Système";
+    if (this.isDsi) return "Administration IMF";
+    return "Navigation";
   }
 
   changeAvatar(): void {

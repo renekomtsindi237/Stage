@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -8,7 +8,7 @@ import { PageResponse } from "./models/collecte.model";
 
 @Injectable({ providedIn: "root" })
 export class CreanceService {
-  private readonly API = "/api/creances";
+  private readonly API = "/api/v1/creances";
 
   constructor(private http: HttpClient) {}
 
@@ -65,3 +65,4 @@ export class CreanceService {
       .pipe(map((r) => r.data));
   }
 }
+

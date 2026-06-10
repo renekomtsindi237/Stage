@@ -1,10 +1,10 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 
 @Injectable({ providedIn: "root" })
 export class ReportingService {
-  private readonly API = "/api/reporting";
+  private readonly API = "/api/v1/reporting";
 
   constructor(private http: HttpClient) {}
 
@@ -59,3 +59,4 @@ export class ReportingService {
     URL.revokeObjectURL(url);
   }
 }
+

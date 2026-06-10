@@ -1,6 +1,6 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { ReactiveFormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { RouterModule, Routes } from "@angular/router";
 import { SharedModule } from "../../shared/shared.module";
 
@@ -21,11 +21,15 @@ import { PlatformImfComponent } from "./platform-imf/platform-imf.component";
 import { ImfSupervisionComponent } from "./imf-supervision/imf-supervision.component";
 import { PlatformBarChartComponent } from "./platform-overview/imf-bar-chart.component";
 import { PlatformDonutChartComponent } from "./platform-overview/imf-donut-chart.component";
+import { PlatformAuditComponent } from "./platform-audit/platform-audit.component";
+import { PlatformConfigComponent } from "./platform-config/platform-config.component";
 
 const routes: Routes = [
   { path: "", component: PlatformOverviewComponent },
   { path: "imf", component: PlatformImfComponent },
   { path: "imf/:id/supervision", component: ImfSupervisionComponent },
+  { path: "audit", component: PlatformAuditComponent },
+  { path: "config", component: PlatformConfigComponent },
 ];
 
 @NgModule({
@@ -35,9 +39,12 @@ const routes: Routes = [
     ImfSupervisionComponent,
     PlatformBarChartComponent,
     PlatformDonutChartComponent,
+    PlatformAuditComponent,
+    PlatformConfigComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     SharedModule,
     RouterModule.forChild(routes),

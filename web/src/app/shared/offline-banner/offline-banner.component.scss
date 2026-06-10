@@ -1,0 +1,86 @@
+.ob-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 24px;
+  background: #1e293b;
+  border-bottom: 2px solid #ef4444;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+  &.ob-banner--back {
+    border-color: #10b981;
+    background: #042f2e;
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.ob-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ob-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+  color: #ef4444;
+  transition: color 0.3s;
+
+  .ob-banner--back & { color: #10b981; }
+}
+
+.ob-text {
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ob-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  mat-icon {
+    font-size: 15px !important;
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  &:active { transform: scale(0.96); }
+}

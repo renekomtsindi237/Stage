@@ -22,6 +22,7 @@ export interface UserPreferences {
 
 export interface UserResponse {
   id: number;
+  uid?: string;
   username: string;
   role: Role;
   zoneId?: string;

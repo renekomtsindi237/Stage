@@ -1,12 +1,12 @@
 {
   "/api": {
-    "target": "http://backend:8080",
-    "secure": false,
+    "target": "http://84.247.128.40:9090",
+"secure": false,
     "changeOrigin": true,
     "logLevel": "info"
   },
   "/internal": {
-    "target": "http://backend:8080",
+    "target": "http://84.247.128.40:9090",
     "secure": false,
     "changeOrigin": true
   }

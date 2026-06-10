@@ -1,294 +1,471 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-:host {
-  display: block;
+:host { display: block; min-height: 100vh; }
+
+// ── Tokens ──────────────────────────────────────────────────────────────────
+$blue:      #2563EB;
+$blue-h:    #1D4ED8;
+$navy:      #0F172A;
+$slate-mid: #1E293B;
+$slate-6:   #64748B;
+$slate-4:   #94A3B8;
+$slate-2:   #E2E8F0;
+$slate-1:   #F1F5F9;
+$green:     #16A34A;
+$red:       #DC2626;
+$white:     #ffffff;
+$card-r:    28px;
+
+// ── Fond + overlay ──────────────────────────────────────────────────────────
+.login-bg {
+  position: relative;
   min-height: 100vh;
-  background: #0b1220;
-}
-
-.login-root {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 40px 20px;
-  font-family: "Manrope", "Plus Jakarta Sans", sans-serif;
-  color: #0f172a;
-  position: relative;
-  background-image: url("assets/Fintech.jpeg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-}
-
-.login-root::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(8, 12, 20, 0.65),
-    rgba(8, 12, 20, 0.7)
-  );
-  z-index: 0;
-}
-
-.login-shell {
-  width: 100%;
-  max-width: 1120px;
-  position: relative;
-  z-index: 1;
-}
-
-.btn-back {
-  position: absolute;
-  top: -8px;
-  left: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #475569;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.82rem;
-  transition: all 0.2s ease;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-
-  &:hover {
-    border-color: #94a3b8;
-    color: #0f172a;
-    transform: translateY(-1px);
-  }
-}
-
-.login-card {
-  margin-top: 36px;
-  background: transparent;
-  border-radius: 22px;
-  display: grid;
-  grid-template-columns: 1fr;
-  box-shadow: none;
-  overflow: hidden;
-  border: none;
-  backdrop-filter: none;
-}
-
-.media-panel {
-  display: none;
-}
-
-.media-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 23, 42, 0.15),
-    rgba(15, 23, 42, 0.75)
-  );
-  z-index: 0;
-}
-
-.media-brand,
-.media-quote {
-  position: relative;
-  z-index: 1;
-}
-
-.media-brand {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-}
-
-.media-logo {
-  width: 30px;
-  height: 30px;
-}
-.media-title {
-  font-size: 1rem;
-}
-
-.media-quote {
-  background: rgba(15, 23, 42, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 18px;
-  border-radius: 16px;
-}
-
-.quote-text {
-  font-size: 1.1rem;
-  line-height: 1.5;
-  margin: 0 0 10px;
-}
-
-.quote-author {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.form-panel {
-  display: grid;
-  place-items: center;
-  padding: 0;
-}
-
-.form-card {
-  width: 100%;
-  max-width: 420px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 30px 26px;
-  backdrop-filter: blur(20px);
-  color: #f8fafc;
-}
-
-.form-header {
-  margin-bottom: 26px;
-}
-
-.form-title {
-  font-size: 1.65rem;
-  margin: 0 0 6px;
-  font-weight: 700;
-  color: #f8fafc;
-}
-
-.form-sub {
-  color: rgba(248, 250, 252, 0.8);
-  margin: 0;
-}
-
-.login-form {
-  display: grid;
-  gap: 18px;
-}
-
-.field-group {
-  display: grid;
-  gap: 8px;
-}
-
-.field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(248, 250, 252, 0.85);
-}
-
-.field-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(15, 23, 42, 0.35);
-  transition: all 0.2s ease;
-}
-
-.field-focused {
-  border-color: rgba(139, 209, 255, 0.7);
-  box-shadow: 0 0 0 3px rgba(139, 209, 255, 0.2);
-}
-
-.field-error {
-  border-color: rgba(248, 113, 113, 0.8);
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
-}
-
-.field-icon {
-  color: #94a3b8;
-}
-
-.field-input {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 0.95rem;
-  font-family: inherit;
-  color: #f8fafc;
-  background: transparent;
-}
-
-.field-eye {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: rgba(248, 250, 252, 0.7);
-}
-
-.field-error-msg {
-  color: #fda4af;
-  font-size: 0.75rem;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.85rem;
-  color: rgba(248, 250, 252, 0.75);
-}
-
-.remember-me {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.form-link {
-  color: #93c5fd;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.btn-submit {
-  margin-top: 6px;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  color: #0f172a;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: all 0.2s ease;
+  background: url('/assets/Fintech.jpeg') center / cover no-repeat;
+  padding: 32px 16px;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.login-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 12, 35, 0.72);
 }
 
-.form-footer {
-  margin-top: 18px;
+// ── Carte ────────────────────────────────────────────────────────────────────
+.form-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: $white;
+  border-radius: $card-r;
+  padding: 36px 36px 40px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06),
+    0 4px 6px  rgba(0,0,0,.10),
+    0 16px 40px rgba(0,0,0,.22),
+    0 48px 80px rgba(0,0,0,.14);
+  border-top: 3px solid $blue;
+  transition: border-top-color 300ms ease;
+
+  &.mode-admin { border-top-color: $navy; }
+}
+
+// ── Mode switcher ─────────────────────────────────────────────────────────────
+.mode-switcher {
+  position: relative;
+  display: flex;
+  background: $slate-1;
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 28px;
+}
+.mode-track {
+  position: absolute;
+  top: 4px; bottom: 4px; left: 4px;
+  width: calc(50% - 4px);
+  background: $white;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06);
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  &.track-admin { transform: translateX(100%); }
+}
+.mode-btn {
+  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  color: rgba(248, 250, 252, 0.7);
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: $slate-4;
+  transition: color 180ms;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  &.active { color: $navy; }
+  &:hover:not(.active) { color: $slate-6; }
+  &:focus-visible { outline: 2px solid $blue; outline-offset: -1px; border-radius: 10px; }
 }
 
-@media (max-width: 960px) {
-  .login-card {
-    grid-template-columns: 1fr;
+// ── En-tête formulaire ────────────────────────────────────────────────────────
+.form-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid $slate-2;
+  margin-bottom: 24px;
+  gap: 6px;
+}
+.form-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+  mat-icon { font-size: 24px; width: 24px; height: 24px; }
+
+  &--imf {
+    background: #EFF6FF;
+    border: 1.5px solid #BFDBFE;
+    mat-icon { color: $blue; }
+  }
+  &--admin {
+    background: $slate-1;
+    border: 1.5px solid $slate-2;
+    mat-icon { color: $navy; }
+  }
+}
+.form-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: $navy;
+  margin: 0;
+  letter-spacing: -.4px;
+  line-height: 1.2;
+}
+.form-subtitle {
+  font-size: 13.5px;
+  color: $slate-6;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// ── Rôles ─────────────────────────────────────────────────────────────────────
+.roles-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.roles-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: $slate-4;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.roles-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.role-chip {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1px solid;
+  cursor: default;
+  transition: transform 120ms;
+  mat-icon { font-size: 15px; width: 15px; height: 15px; }
+  &:hover { transform: translateY(-2px); }
+}
+.roles-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: #CBD5E1;
+}
+
+// ── Groupes de champs ─────────────────────────────────────────────────────────
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: $slate-mid;
+  line-height: 1;
+}
+.field-input-wrap {
+  display: flex;
+  align-items: center;
+  background: $white;
+  border: 1.5px solid $slate-2;
+  border-radius: 10px;
+  transition: border-color 160ms, box-shadow 160ms;
+  overflow: hidden;
+
+  input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    color: $navy;
+    padding: 10px 12px;
+    width: 100%;
+    &::placeholder { color: #C1CCE4; }
   }
 
-  .btn-back {
-    position: static;
-    margin-bottom: 16px;
+  &.is-focused {
+    border-color: $blue;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    .mode-admin & { border-color: $navy; box-shadow: 0 0 0 3px rgba(15,23,42,.07); }
   }
+  &.is-error {
+    border-color: $red;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.07);
+  }
+}
+.field-ok {
+  font-size: 17px;
+  color: $green;
+  margin-right: 10px;
+  flex-shrink: 0;
+  opacity: .9;
+}
+.field-eye {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  background: none; border: none; cursor: pointer;
+  color: $slate-4; border-radius: 7px;
+  margin-right: 3px;
+  transition: color 140ms, background 140ms;
+  mat-icon { font-size: 18px; }
+  &:hover { color: $slate-6; background: $slate-1; }
+}
+
+// ── Erreurs ───────────────────────────────────────────────────────────────────
+.hint-error {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: $red; margin: 0;
+  mat-icon { font-size: 13px; width: 13px; color: $red; }
+}
+
+// ── Boutons principaux ────────────────────────────────────────────────────────
+.btn-submit {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; margin-top: 6px;
+  border: none; cursor: pointer;
+  font-family: inherit;
+  font-size: 14px; font-weight: 600;
+  border-radius: 10px;
+  padding: 12px 20px;
+  letter-spacing: .01em;
+  transition: background 150ms, box-shadow 150ms, transform 100ms, opacity 150ms;
+  mat-icon { font-size: 18px; }
+  &:active:not(:disabled) { transform: scale(.985); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+.btn-imf {
+  background: $blue;
+  color: $white;
+  box-shadow: 0 1px 2px rgba(37,99,235,.20), 0 4px 12px rgba(37,99,235,.18);
+  &:not(:disabled):hover {
+    background: $blue-h;
+    box-shadow: 0 2px 6px rgba(37,99,235,.28), 0 8px 20px rgba(37,99,235,.18);
+  }
+}
+.btn-admin {
+  background: $navy;
+  color: $white;
+  box-shadow: 0 1px 2px rgba(15,23,42,.20), 0 4px 12px rgba(15,23,42,.18);
+  &:not(:disabled):hover {
+    background: $slate-mid;
+    box-shadow: 0 2px 6px rgba(15,23,42,.28), 0 8px 20px rgba(15,23,42,.18);
+  }
+}
+
+// ── Note bas de formulaire ────────────────────────────────────────────────────
+.form-note {
+  display: flex; align-items: flex-start; gap: 5px;
+  font-size: 11.5px; color: $slate-4;
+  margin: 10px 0 0; line-height: 1.55;
+  mat-icon { font-size: 13px; width: 13px; min-width: 13px; margin-top: 1px; color: #C1CCE4; }
+}
+
+// ── En-tête OTP ───────────────────────────────────────────────────────────────
+.otp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: $slate-1;
+  border: 1px solid $slate-2;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+.otp-icon {
+  width: 42px; min-width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  background: $white;
+  border: 1.5px solid $slate-2;
+  border-radius: 11px;
+  mat-icon { font-size: 20px; color: $blue; }
+  &--spinning mat-icon { color: $slate-6; animation: spin .9s linear infinite; }
+}
+.otp-header-body { flex: 1; }
+.otp-title {
+  font-size: 14px; font-weight: 700;
+  color: $navy; margin: 0 0 2px;
+}
+.otp-desc {
+  font-size: 12px; color: $slate-6;
+  margin: 0 0 8px;
+}
+
+// ── Email chip ────────────────────────────────────────────────────────────────
+.email-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: $white; border: 1.5px solid $slate-2;
+  border-radius: 7px; padding: 4px 5px 4px 8px;
+  font-size: 12.5px; font-weight: 500; color: $navy;
+  margin-bottom: 7px;
+  mat-icon { font-size: 13px; width: 13px; color: $slate-6; }
+}
+.email-chip-edit {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  background: $slate-1; border: none; border-radius: 5px;
+  cursor: pointer; color: $slate-6;
+  transition: background 130ms, color 130ms;
+  mat-icon { font-size: 12px; width: 12px; }
+  &:hover { background: $slate-2; color: $navy; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+.otp-meta {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 11px; color: $slate-4; margin: 0;
+  mat-icon { font-size: 12px; width: 12px; }
+}
+.otp-sep { margin: 0 3px; color: $slate-2; }
+
+// ── Cases OTP ─────────────────────────────────────────────────────────────────
+.otp-boxes {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.otp-box {
+  width: 46px; height: 56px;
+  border: 1.5px solid $slate-2;
+  border-radius: 10px;
+  background: $slate-1;
+  font-family: inherit;
+  font-size: 22px; font-weight: 700;
+  color: $navy;
+  text-align: center;
+  outline: none;
+  caret-color: $blue;
+  transition: border-color 160ms, box-shadow 160ms, background 160ms, transform 120ms;
+
+  &:focus {
+    border-color: $blue;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.09);
+    transform: scale(1.04);
+  }
+  &--filled {
+    background: $white;
+    border-color: #93C5FD;
+    color: $blue;
+  }
+  &--error {
+    border-color: $red !important;
+    background: #FFF5F5 !important;
+    color: $red;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.07) !important;
+    animation: shake .26s ease;
+  }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+// ── Progression OTP ───────────────────────────────────────────────────────────
+.otp-progress {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-bottom: 8px;
+}
+.otp-dots { display: flex; gap: 5px; }
+.otp-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: $slate-2;
+  transition: background 160ms, transform 160ms;
+  &--on { background: $blue; transform: scale(1.3); }
+}
+.otp-count { font-size: 11px; font-weight: 600; color: $slate-4; min-width: 20px; }
+
+// ── Resend / retour ───────────────────────────────────────────────────────────
+.resend-row {
+  display: flex; justify-content: center; align-items: center;
+  min-height: 30px; margin: 6px 0 0;
+}
+.resend-wait {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: $slate-4; font-weight: 500;
+  mat-icon { font-size: 14px; color: $slate-2; }
+  strong { color: $slate-6; }
+}
+.resend-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer;
+  font-family: inherit;
+  font-size: 13px; font-weight: 600; color: $blue;
+  padding: 5px 10px; border-radius: 7px;
+  transition: background 130ms;
+  mat-icon { font-size: 15px; }
+  &:hover:not(:disabled) { background: #EFF6FF; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+.back-btn {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  width: 100%;
+  background: none; border: 1.5px solid $slate-2; cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px; font-weight: 500; color: $slate-6;
+  padding: 9px; border-radius: 10px; margin-top: 8px;
+  transition: border-color 130ms, color 130ms, background 130ms;
+  mat-icon { font-size: 15px; }
+  &:hover:not(:disabled) { border-color: #C1CCE4; color: $navy; background: $slate-1; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+// ── Admin spécifique ──────────────────────────────────────────────────────────
+.admin-badge {
+  display: inline-block;
+  background: $navy;
+  color: $white;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: .16em;
+  padding: 3px 10px; border-radius: 4px;
+}
+.security-notice {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #FEFCE8; border: 1px solid #FDE68A;
+  color: #92400E;
+  border-radius: 8px; padding: 6px 12px;
+  font-size: 11.5px; font-weight: 500;
+  mat-icon { font-size: 14px; color: #CA8A04; }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin .9s linear infinite; display: block; }
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 480px) {
+  .form-card { padding: 24px 20px 30px; border-radius: 20px; }
+  .otp-box   { width: 38px; height: 48px; font-size: 19px; }
+  .otp-boxes { gap: 6px; }
 }

@@ -152,15 +152,39 @@ public class ImfService implements IImfService {
 
         User dsi = User.builder()
                 .username(request.username())
-                .passwordHash(passwordEncoder.encode(request.password()))
+                .email(request.email())
+                .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
                 .role(Role.DSI)
                 .imf(imf)
                 .actif(true)
-                .mustChangePassword(true)
+                .mustChangePassword(false)
                 .build();
 
         userRepository.save(dsi);
         log.info("DSI créé : {} pour IMF {}", request.username(), imf.getCode());
+        return ImfResponse.of(imf, true);
+    }
+
+    /**
+     * Met à jour le compte DSI existant d'une IMF (username et/ou email).
+     */
+    @Transactional
+    public ImfResponse updateAdmin(UUID imfUid, CreateImfAdminRequest request) {
+        Imf imf = imfRepository.findByUid(imfUid)
+                .orElseThrow(() -> new ResourceNotFoundException("IMF", imfUid));
+
+        User dsi = userRepository.findByImfIdAndRole(imf.getId(), Role.DSI)
+                .orElseThrow(() -> new ResourceNotFoundException("DSI pour l'IMF", imfUid));
+
+        // Vérifier unicité username seulement si modifié
+        if (!dsi.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
+            throw new DuplicateResourceException("Utilisateur", "username", request.username());
+        }
+
+        dsi.setUsername(request.username());
+        dsi.setEmail(request.email());
+        userRepository.save(dsi);
+        log.info("DSI mis à jour : {} pour IMF {}", request.username(), imf.getCode());
         return ImfResponse.of(imf, true);
     }
 }

@@ -86,37 +86,8 @@ export class PlatformImfComponent implements OnInit {
 
   // ── Formulaire DSI ────────────────────────────────────────────────────────
   adminForm!: FormGroup;
-  hideAdminPassword = true;
   usernameFocused = false;
-  passwordFocused = false;
-
-  get passwordStrength(): number {
-    const pwd = this.adminForm?.get("password")?.value || "";
-    if (!pwd) return 0;
-    let score = 0;
-    if (pwd.length >= 8) score += 25;
-    if (pwd.length >= 12) score += 15;
-    if (/[A-Z]/.test(pwd)) score += 20;
-    if (/[0-9]/.test(pwd)) score += 20;
-    if (/[^A-Za-z0-9]/.test(pwd)) score += 20;
-    return Math.min(score, 100);
-  }
-
-  get passwordStrengthClass(): string {
-    const s = this.passwordStrength;
-    if (s < 30) return "weak";
-    if (s < 60) return "medium";
-    if (s < 80) return "strong";
-    return "very-strong";
-  }
-
-  get passwordStrengthLabel(): string {
-    const s = this.passwordStrength;
-    if (s < 30) return "Faible";
-    if (s < 60) return "Moyen";
-    if (s < 80) return "Fort";
-    return "Très fort";
-  }
+  emailFocused = false;
 
   constructor(
     public auth: AuthService,
@@ -165,7 +136,7 @@ export class PlatformImfComponent implements OnInit {
 
     this.adminForm = this.fb.group({
       username: ["", [Validators.required, Validators.minLength(3)]],
-      password: ["", [Validators.required, Validators.minLength(8)]],
+      email: ["", [Validators.required, Validators.email]],
     });
 
     this.loadImfs();
@@ -319,15 +290,17 @@ export class PlatformImfComponent implements OnInit {
     this.modalLoading = true;
     this.modalError = "";
     const payload: CreateImfAdminPayload = this.adminForm.value;
-    this.platformService
-      .createImfAdmin(this.selectedImf.id, payload)
-      .subscribe({
+    const apiCall = this.selectedImf.hasDsi
+      ? this.platformService.updateImfAdmin(this.selectedImf.uid, payload)
+      : this.platformService.createImfAdmin(this.selectedImf.uid, payload);
+    apiCall.subscribe({
         next: (updatedImf) => {
           this.modalLoading = false;
-          this.modalSuccess = `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
-          // Mettre à jour la ligne dans la table (hasDsi = true)
+          this.modalSuccess = this.selectedImf!.hasDsi
+            ? `Compte DSI « ${payload.username} » mis à jour.`
+            : `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
           this.dataSource.data = this.dataSource.data.map((i) =>
-            i.id === updatedImf.id ? updatedImf : i,
+            i.uid === updatedImf.uid ? updatedImf : i,
           );
           setTimeout(() => this.closeModal(), 1500);
         },
@@ -351,10 +324,10 @@ export class PlatformImfComponent implements OnInit {
     if (!this.selectedImf || this.modalLoading) return;
     this.modalLoading = true;
     this.modalError = "";
-    this.platformService.deleteImf(this.selectedImf.id).subscribe({
+    this.platformService.deleteImf(this.selectedImf.uid).subscribe({
       next: () => {
         this.dataSource.data = this.dataSource.data.filter(
-          (i) => i.id !== this.selectedImf!.id,
+          (i) => i.uid !== this.selectedImf!.uid,
         );
         this.modalLoading = false;
         this.modalSuccess = `IMF « ${this.selectedImf!.nom} » supprimée définitivement.`;
@@ -413,14 +386,18 @@ export class PlatformImfComponent implements OnInit {
     input.click();
   }
 
+  removeWizardLogo(): void {
+    this.wizardLogoPreview = null;
+  }
+
   toggleStatus(imf: ImfRecord): void {
     const obs = imf.actif
-      ? this.platformService.deactivateImf(imf.id)
-      : this.platformService.activateImf(imf.id);
+      ? this.platformService.deactivateImf(imf.uid)
+      : this.platformService.activateImf(imf.uid);
     obs.subscribe({
       next: (updated) => {
         this.dataSource.data = this.dataSource.data.map((i) =>
-          i.id === updated.id ? updated : i,
+          i.uid === updated.uid ? updated : i,
         );
       },
       error: () => {},

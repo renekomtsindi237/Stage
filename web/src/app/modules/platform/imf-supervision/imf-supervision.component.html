@@ -94,7 +94,21 @@
 <!-- ── Onglet RÉSUMÉ ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'resume'" @fadeInUp>
-  <div class="summary-grid" *ngIf="imf">
+
+  <!-- ── Skeleton résumé ── -->
+  <div class="summary-grid" *ngIf="loadingHeader">
+    <div class="sk-info-card" *ngFor="let i of [1,2,3,4]">
+      <div class="sk-card-header"></div>
+      <div class="sk-card-rows">
+        <div class="sk-card-row" *ngFor="let r of [1,2,3,4]">
+          <div class="sk-block sk-block--label"></div>
+          <div class="sk-block sk-block--value"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-grid" *ngIf="!loadingHeader && imf">
     <!-- Constitution -->
     <div class="info-card">
       <div class="info-card-header">
@@ -241,9 +255,38 @@
 <!-- ── Onglet UTILISATEURS ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'users'" @fadeInUp>
-  <!-- Loader -->
-  <div class="tab-loading" *ngIf="usersLoading">
-    <mat-spinner diameter="36"></mat-spinner>
+
+  <!-- ── Skeleton users ── -->
+  <div class="table-wrap" *ngIf="usersLoading">
+    <table class="sup-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th><th>Rôle</th><th>Zone</th><th>Statut</th><th>Dernière connexion</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of [1,2,3,4,5,6]" class="sk-row-tr">
+          <td>
+            <div class="sk-user-cell">
+              <div class="sk-avatar-circle"></div>
+              <div class="sk-user-lines">
+                <div class="sk-block sk-block--name"></div>
+                <div class="sk-block sk-block--email"></div>
+              </div>
+            </div>
+          </td>
+          <td><div class="sk-block sk-block--role"></div></td>
+          <td><div class="sk-block sk-block--zone"></div></td>
+          <td><div class="sk-block sk-block--status"></div></td>
+          <td><div class="sk-block sk-block--date"></div></td>
+          <td>
+            <div class="sk-actions-row">
+              <div class="sk-action-btn" *ngFor="let b of [1,2,3,4]"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <ng-container *ngIf="!usersLoading">
@@ -256,6 +299,7 @@
             <th>Zone</th>
             <th>Statut</th>
             <th>Dernière connexion</th>
+            <th class="th-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -290,6 +334,36 @@
               </span>
             </td>
             <td class="date-cell">{{ formatDate(u.lastLogin) }}</td>
+            <td class="td-actions">
+              <div class="action-btns">
+                <button class="action-btn action-btn--edit"
+                        (click)="openEditModal(u)"
+                        matTooltip="Modifier"
+                        [disabled]="!u.uid">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="action-btn"
+                        [class.action-btn--suspend]="u.actif"
+                        [class.action-btn--reactivate]="!u.actif"
+                        (click)="openSuspendModal(u)"
+                        [matTooltip]="u.actif ? 'Suspendre' : 'Réactiver'"
+                        [disabled]="!u.uid">
+                  <mat-icon>{{ u.actif ? 'pause_circle' : 'play_circle' }}</mat-icon>
+                </button>
+                <button class="action-btn action-btn--delegate"
+                        (click)="openDelegateModal(u)"
+                        matTooltip="Réleguer vers un autre utilisateur"
+                        [disabled]="!u.uid">
+                  <mat-icon>swap_horiz</mat-icon>
+                </button>
+                <button class="action-btn action-btn--delete"
+                        (click)="openDeleteModal(u)"
+                        matTooltip="Supprimer définitivement"
+                        [disabled]="!u.uid">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -326,11 +400,217 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ── Modals actions utilisateurs ── -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="activeModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <!-- ── MODIFIER ── -->
+    <ng-container *ngIf="activeModal === 'edit'">
+      <div class="modal-hd">
+        <div class="modal-hd-icon modal-hd-icon--blue"><mat-icon>edit</mat-icon></div>
+        <div class="modal-hd-text">
+          <h3>Modifier l'utilisateur</h3>
+          <p>{{ selectedUser?.username }}</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="modal-form">
+        <div class="mf-group">
+          <label>Nom d'utilisateur</label>
+          <input formControlName="username" placeholder="username" />
+          <p class="mf-error"
+             *ngIf="editForm.get('username')?.invalid && editForm.get('username')?.touched">
+            Minimum 3 caractères.
+          </p>
+        </div>
+        <div class="mf-group">
+          <label>Email</label>
+          <input formControlName="email" type="email" placeholder="email@institution.cm" />
+          <p class="mf-error"
+             *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched">
+            Email invalide.
+          </p>
+        </div>
+        <div class="mf-group">
+          <label>Rôle</label>
+          <select formControlName="role">
+            <option *ngFor="let r of imfRoles" [value]="r.value">{{ r.label }}</option>
+          </select>
+        </div>
+        <div class="mf-group">
+          <label>Zone (optionnel)</label>
+          <input formControlName="zoneId" placeholder="ex : Zone Nord" />
+        </div>
+        <p class="modal-error" *ngIf="modalError">
+          <mat-icon>error_outline</mat-icon> {{ modalError }}
+        </p>
+        <p class="modal-success" *ngIf="modalSuccess">
+          <mat-icon>check_circle</mat-icon> {{ modalSuccess }}
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn-confirm btn-confirm--blue"
+                  [disabled]="editForm.invalid || modalLoading">
+            <mat-spinner *ngIf="modalLoading" diameter="16"></mat-spinner>
+            <ng-container *ngIf="!modalLoading">
+              <mat-icon>save</mat-icon> Enregistrer
+            </ng-container>
+          </button>
+        </div>
+      </form>
+    </ng-container>
+
+    <!-- ── SUSPENDRE / RÉACTIVER ── -->
+    <ng-container *ngIf="activeModal === 'suspend'">
+      <div class="modal-hd">
+        <div class="modal-hd-icon"
+             [class.modal-hd-icon--amber]="selectedUser?.actif"
+             [class.modal-hd-icon--green]="!selectedUser?.actif">
+          <mat-icon>{{ selectedUser?.actif ? 'pause_circle' : 'play_circle' }}</mat-icon>
+        </div>
+        <div class="modal-hd-text">
+          <h3>{{ selectedUser?.actif ? 'Suspendre' : 'Réactiver' }} l'utilisateur</h3>
+          <p>{{ selectedUser?.username }}</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="modal-body">
+        <p *ngIf="selectedUser?.actif">
+          L'utilisateur <strong>{{ selectedUser?.username }}</strong> sera immédiatement
+          bloqué et ne pourra plus se connecter. Cette action est réversible.
+        </p>
+        <p *ngIf="!selectedUser?.actif">
+          L'utilisateur <strong>{{ selectedUser?.username }}</strong> retrouvera l'accès
+          à la plateforme.
+        </p>
+      </div>
+      <p class="modal-error" *ngIf="modalError">
+        <mat-icon>error_outline</mat-icon> {{ modalError }}
+      </p>
+      <p class="modal-success" *ngIf="modalSuccess">
+        <mat-icon>check_circle</mat-icon> {{ modalSuccess }}
+      </p>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+        <button class="btn-confirm"
+                [class.btn-confirm--amber]="selectedUser?.actif"
+                [class.btn-confirm--green]="!selectedUser?.actif"
+                (click)="submitSuspend()"
+                [disabled]="modalLoading">
+          <mat-spinner *ngIf="modalLoading" diameter="16"></mat-spinner>
+          <ng-container *ngIf="!modalLoading">
+            <mat-icon>{{ selectedUser?.actif ? 'pause_circle' : 'play_circle' }}</mat-icon>
+            {{ selectedUser?.actif ? 'Suspendre' : 'Réactiver' }}
+          </ng-container>
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- ── RÉLEGUER ── -->
+    <ng-container *ngIf="activeModal === 'delegate'">
+      <div class="modal-hd">
+        <div class="modal-hd-icon modal-hd-icon--purple"><mat-icon>swap_horiz</mat-icon></div>
+        <div class="modal-hd-text">
+          <h3>Réleguer les responsabilités</h3>
+          <p>{{ selectedUser?.username }} · {{ roleLabel(selectedUser?.role ?? '') }}</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="modal-body">
+        <p class="delegate-info">
+          L'utilisateur <strong>{{ selectedUser?.username }}</strong> sera
+          <span class="text-amber">suspendu</span>. Le destinataire hérite de son rôle
+          <strong>{{ roleLabel(selectedUser?.role ?? '') }}</strong>.
+        </p>
+        <div class="mf-group">
+          <label>Déléguer vers</label>
+          <select [(ngModel)]="delegateTargetUid">
+            <option value="">— Choisir un utilisateur —</option>
+            <option *ngFor="let c of delegateCandidates" [value]="c.uid">
+              {{ c.username }} ({{ roleLabel(c.role) }})
+            </option>
+          </select>
+        </div>
+      </div>
+      <p class="modal-error" *ngIf="modalError">
+        <mat-icon>error_outline</mat-icon> {{ modalError }}
+      </p>
+      <p class="modal-success" *ngIf="modalSuccess">
+        <mat-icon>check_circle</mat-icon> {{ modalSuccess }}
+      </p>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+        <button class="btn-confirm btn-confirm--purple"
+                (click)="submitDelegate()"
+                [disabled]="!delegateTargetUid || modalLoading">
+          <mat-spinner *ngIf="modalLoading" diameter="16"></mat-spinner>
+          <ng-container *ngIf="!modalLoading">
+            <mat-icon>swap_horiz</mat-icon> Confirmer la relégation
+          </ng-container>
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- ── SUPPRIMER ── -->
+    <ng-container *ngIf="activeModal === 'delete'">
+      <div class="modal-hd">
+        <div class="modal-hd-icon modal-hd-icon--red"><mat-icon>delete_forever</mat-icon></div>
+        <div class="modal-hd-text">
+          <h3>Supprimer l'utilisateur</h3>
+          <p>{{ selectedUser?.username }}</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-warning">
+          <mat-icon>warning_amber</mat-icon>
+          Cette action est <strong>irréversible</strong>. Toutes les données associées
+          à <strong>{{ selectedUser?.username }}</strong> seront définitivement supprimées.
+        </p>
+      </div>
+      <p class="modal-error" *ngIf="modalError">
+        <mat-icon>error_outline</mat-icon> {{ modalError }}
+      </p>
+      <p class="modal-success" *ngIf="modalSuccess">
+        <mat-icon>check_circle</mat-icon> {{ modalSuccess }}
+      </p>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+        <button class="btn-confirm btn-confirm--red"
+                (click)="submitDelete()"
+                [disabled]="modalLoading">
+          <mat-spinner *ngIf="modalLoading" diameter="16"></mat-spinner>
+          <ng-container *ngIf="!modalLoading">
+            <mat-icon>delete_forever</mat-icon> Supprimer définitivement
+          </ng-container>
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
 <!-- ── Onglet AGENCES ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'agences'" @fadeInUp>
-  <div class="tab-loading" *ngIf="agencesLoading">
-    <mat-spinner diameter="36"></mat-spinner>
+
+  <!-- ── Skeleton agences ── -->
+  <div class="agences-grid" *ngIf="agencesLoading">
+    <div class="sk-agence-card" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="sk-agence-header">
+        <div class="sk-avatar-sq"></div>
+        <div class="sk-agence-lines">
+          <div class="sk-block sk-block--name"></div>
+          <div class="sk-block sk-block--email"></div>
+        </div>
+        <div class="sk-block sk-block--status" style="margin-left:auto"></div>
+      </div>
+      <div class="sk-agence-body">
+        <div class="sk-block sk-block--line-full" *ngFor="let r of [1,2,3]"></div>
+      </div>
+    </div>
   </div>
 
   <ng-container *ngIf="!agencesLoading">
@@ -382,8 +662,26 @@
 <!-- ── Onglet AUDIT ── -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <div class="tab-panel" *ngIf="activeTab === 'audit'" @fadeInUp>
-  <div class="tab-loading" *ngIf="auditLoading">
-    <mat-spinner diameter="36"></mat-spinner>
+
+  <!-- ── Skeleton audit ── -->
+  <div class="table-wrap" *ngIf="auditLoading">
+    <table class="sup-table audit-table">
+      <thead>
+        <tr>
+          <th>Horodatage</th><th>Utilisateur</th><th>Action</th><th>Entité</th><th>Statut</th><th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of [1,2,3,4,5,6,7,8]" class="sk-row-tr">
+          <td><div class="sk-block sk-block--date"></div></td>
+          <td><div class="sk-block sk-block--name"></div></td>
+          <td><div class="sk-block sk-block--role"></div></td>
+          <td><div class="sk-block sk-block--zone"></div></td>
+          <td><div class="sk-block sk-block--status"></div></td>
+          <td><div class="sk-block sk-block--date"></div></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <ng-container *ngIf="!auditLoading">

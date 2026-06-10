@@ -82,4 +82,12 @@ public class PlatformController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Compte DSI créé", imf));
     }
+
+    @Operation(summary = "Mettre à jour le DSI existant d'une IMF")
+    @PatchMapping("/imf/{imfUid}/admin")
+    public ResponseEntity<ApiResponse<ImfResponse>> updateImfAdmin(
+            @PathVariable UUID imfUid,
+            @Valid @RequestBody CreateImfAdminRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("Compte DSI mis à jour", imfService.updateAdmin(imfUid, request)));
+    }
 }

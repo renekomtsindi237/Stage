@@ -27,4 +27,7 @@ public interface IImfService {
 
     /** Crée le compte DSI initial d'une IMF — retourne l'IMF mise à jour (hasDsi = true). */
     ImfResponse createAdmin(UUID imfUid, CreateImfAdminRequest request);
+
+    /** Met à jour le DSI existant d'une IMF (username / email). */
+    ImfResponse updateAdmin(UUID imfUid, CreateImfAdminRequest request);
 }

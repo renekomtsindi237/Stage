@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, map } from "rxjs";
 import { ApiResponse } from "../models/api-response.model";
@@ -10,11 +10,11 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class ProfileService {
-  private readonly API = "/api/users";
+  private readonly API = "/api/v1/users";
 
   constructor(private http: HttpClient) {}
 
-  /** Récupère le profil complet de l'utilisateur connecté, incluant ses préférences. */
+  /** RÃ©cupÃ¨re le profil complet de l'utilisateur connectÃ©, incluant ses prÃ©fÃ©rences. */
   getProfile(): Observable<UserResponse> {
     return this.http
       .get<ApiResponse<UserResponse>>(`${this.API}/me`)
@@ -22,8 +22,8 @@ export class ProfileService {
   }
 
   /**
-   * Met à jour les préférences de l'utilisateur connecté (patch partiel).
-   * Retourne le profil mis à jour pour un feedback immédiat.
+   * Met Ã  jour les prÃ©fÃ©rences de l'utilisateur connectÃ© (patch partiel).
+   * Retourne le profil mis Ã  jour pour un feedback immÃ©diat.
    */
   updatePreferences(prefs: Partial<UserPreferences>): Observable<UserResponse> {
     return this.http
@@ -31,7 +31,7 @@ export class ProfileService {
       .pipe(map((r) => r.data));
   }
 
-  /** Change le mot de passe de l'utilisateur connecté. */
+  /** Change le mot de passe de l'utilisateur connectÃ©. */
   changePassword(payload: ChangePasswordRequest): Observable<void> {
     return this.http
       .patch<ApiResponse<void>>(`${this.API}/me/password`, payload)
@@ -47,10 +47,11 @@ export class ProfileService {
       .pipe(map((r) => r.data));
   }
 
-  /** Supprime l'avatar — revient à l'image par défaut. */
+  /** Supprime l'avatar â€” revient Ã  l'image par dÃ©faut. */
   removeAvatar(): Observable<UserResponse> {
     return this.http
       .delete<ApiResponse<UserResponse>>(`${this.API}/me/avatar`)
       .pipe(map((r) => r.data));
   }
 }
+

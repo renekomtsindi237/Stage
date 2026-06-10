@@ -14,6 +14,10 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatDialogModule } from "@angular/material/dialog";
+import { MatInputModule } from "@angular/material/input";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatSelectModule } from "@angular/material/select";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
 // Components partagés
 import { NavbarComponent } from "./navbar/navbar.component";
@@ -26,6 +30,14 @@ import { FullscreenToastComponent } from "./fullscreen-toast/fullscreen-toast.co
 import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-dialog.component";
 import { NotificationPanelComponent } from "./notification-panel/notification-panel.component";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
+import {
+  ContactSupportComponent,
+  ContactSupportDialogComponent,
+} from "./contact-support/contact-support.component";
+import { IosSpinnerComponent } from "./ios-spinner/ios-spinner.component";
+import { LoadingOverlayComponent } from "./loading-overlay/loading-overlay.component";
+import { ErrorPageComponent } from "./error-pages/error-page.component";
+import { OfflineBannerComponent } from "./offline-banner/offline-banner.component";
 
 const MATERIAL_MODULES = [
   MatToolbarModule,
@@ -38,6 +50,10 @@ const MATERIAL_MODULES = [
   MatMenuModule,
   MatProgressSpinnerModule,
   MatDialogModule,
+  MatInputModule,
+  MatFormFieldModule,
+  MatSelectModule,
+  MatSnackBarModule,
 ];
 
 const SHARED_COMPONENTS = [
@@ -51,6 +67,12 @@ const SHARED_COMPONENTS = [
   ConfirmationDialogComponent,
   NotificationPanelComponent,
   ChangePasswordComponent,
+  ContactSupportComponent,
+  ContactSupportDialogComponent,
+  IosSpinnerComponent,
+  LoadingOverlayComponent,
+  ErrorPageComponent,
+  OfflineBannerComponent,
 ];
 
 @NgModule({

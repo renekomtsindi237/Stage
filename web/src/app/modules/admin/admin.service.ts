@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -18,12 +18,12 @@ export interface ImfInfo {
   hasDsi: boolean;
 }
 
-/** Labels lisibles pour les rôles IMF (hors SUPER_ADMIN). */
+/** Labels lisibles pour les rÃ´les IMF (hors SUPER_ADMIN). */
 export const ROLE_LABELS: Record<string, string> = {
   DSI: "Administrateur IMF",
   DIRECTEUR: "Directeur",
   RESPONSABLE_RECOUVREMENT: "Resp. Recouvrement",
-  ANALYSTE: "Analyste Crédit",
+  ANALYSTE: "Analyste CrÃ©dit",
   AGENT: "Agent de terrain",
 };
 
@@ -56,7 +56,7 @@ export interface CreateAgencePayload {
 
 @Injectable({ providedIn: "root" })
 export class AdminService {
-  private readonly API = "/api/admin";
+  private readonly API = "/api/v1/admin";
 
   constructor(private http: HttpClient) {}
 
@@ -137,7 +137,7 @@ export class AdminService {
     return this.http.delete<void>(`${this.API}/agences/${id}`);
   }
 
-  // ── Avatar utilisateur (admin) ────────────────────────────────────────────
+  // â”€â”€ Avatar utilisateur (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   uploadUserAvatar(userId: number, file: File): Observable<UserResponse> {
     const fd = new FormData();
@@ -153,7 +153,7 @@ export class AdminService {
       .pipe(map((r) => r.data));
   }
 
-  // ── Logo IMF ──────────────────────────────────────────────────────────────
+  // â”€â”€ Logo IMF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   uploadImfLogo(file: File): Observable<any> {
     const fd = new FormData();
@@ -163,3 +163,4 @@ export class AdminService {
       .pipe(map((r) => r.data));
   }
 }
+

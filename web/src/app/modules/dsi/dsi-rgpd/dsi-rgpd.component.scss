@@ -1,0 +1,104 @@
+@import "../../../../styles/shared-page";
+
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+.kpi-card { text-align:center;
+  mat-card-content { display:flex; flex-direction:column; align-items:center; gap:6px; padding:20px !important; }
+  mat-icon { font-size:28px; height:28px; width:28px; opacity:0.7; }
+  .kpi-value { font-size:2rem; font-weight:800; }
+  .kpi-label { font-size:0.78rem; color:#6b7280; }
+  &.kpi-alert { border-top:3px solid #dc2626; .kpi-value{color:#dc2626;} mat-icon{color:#dc2626;} }
+  &.kpi-warn { border-top:3px solid #d97706; .kpi-value{color:#d97706;} mat-icon{color:#d97706;} }
+  &.kpi-info { border-top:3px solid #3b82f6; .kpi-value{color:#3b82f6;} mat-icon{color:#3b82f6;} }
+}
+
+.tab-content { padding:20px 0; }
+
+.droits-legende { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;
+  .legende-chip { background:#f0f4ff; color:#1e3a8a; border-radius:20px; padding:4px 12px; font-size:0.75rem; }
+}
+
+.delai-chip { display:inline-flex; align-items:center; gap:4px; border-radius:20px; padding:2px 8px; font-size:0.78rem;
+  background:#f3f4f6; mat-icon{font-size:14px;height:14px;width:14px;}
+  &.delai-urgent { background:#fef2f2; color:#dc2626; }
+  &.delai-warning { background:#fffbeb; color:#d97706; }
+}
+
+.delai-jours { font-size:0.82rem; &.urgent{color:#dc2626;font-weight:600;} }
+
+.btn-sm { padding:0 8px; font-size:0.78rem; height:28px; line-height:28px; }
+
+// SLA Alert Banner
+.sla-alert-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fef2f2; border: 1.5px solid #dc2626; border-radius: 10px;
+  padding: 14px 20px; margin-bottom: 20px; gap: 16px;
+  .sla-banner-left { display: flex; align-items: center; gap: 12px; }
+  .sla-icon { color: #dc2626; font-size: 28px; height: 28px; width: 28px; }
+  .sla-title { font-size: 0.88rem; font-weight: 700; color: #dc2626; }
+  .sla-desc { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+  .sla-banner-right { display: flex; align-items: center; gap: 14px; text-align: right;
+    .sla-label { font-size: 0.72rem; color: #6b7280; }
+  }
+  .sla-countdown {
+    font-size: 1.6rem; font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+  }
+  .btn-notifier { border-color: #dc2626; color: #dc2626;
+    mat-icon { font-size: 16px; height: 16px; width: 16px; margin-right: 4px; }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+.pulse { animation: pulse 1.2s ease-in-out infinite; }
+
+// Countdown in table
+.countdown-cell {
+  display: inline-flex; align-items: center; gap: 4px;
+  .countdown-icon { font-size: 14px; height: 14px; width: 14px; color: #dc2626; }
+  .countdown-value { font-size: 0.85rem; font-weight: 700; color: #dc2626;
+    font-family: 'Courier New', monospace; font-variant-numeric: tabular-nums; }
+}
+
+// Rows
+.row-critique { background: #fef2f2 !important; }
+
+// Action cell
+.action-cell { display: flex; align-items: center; gap: 8px; }
+
+// Délai progress bar cell
+.delai-progress-cell {
+  display: flex; flex-direction: column; gap: 4px; min-width: 150px;
+  mat-progress-bar { border-radius: 4px; }
+  .delai-jours { font-size: 0.78rem; color: #22c55e; font-weight: 600;
+    &.urgent { color: #dc2626; }
+    &.warning { color: #d97706; }
+  }
+}
+
+// Consentements grid
+.consentements-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+}
+.consentement-card {
+  .consent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .consent-user { display: flex; align-items: center; gap: 8px; }
+  .consent-avatar-icon { color: #1e3a5f; background: #e8eaf6; border-radius: 50%; padding: 4px; }
+  .consent-name { font-size: 0.88rem; font-weight: 700; }
+  .consent-role { font-size: 0.75rem; }
+  .consent-detail { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; }
+  .consent-finalite { font-weight: 600; color: #374151; }
+  .consent-canal { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #6b7280;
+    mat-icon { font-size: 14px; height: 14px; width: 14px; }
+  }
+  .consent-actions { margin-top: 10px; }
+}
+
+.badge-ok { background: #dcfce7 !important; color: #15803d !important; }
+.badge-critique { background: #fee2e2 !important; color: #dc2626 !important; }
+.badge-warn { background: #fef9c3 !important; color: #b45309 !important; }
+.badge-majeur { background: #ffedd5 !important; color: #c2410c !important; }
+
+@media (max-width:900px) { .kpi-row{grid-template-columns:repeat(2,1fr);} }

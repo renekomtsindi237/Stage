@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from "@angular/core";
+﻿import { Injectable, OnDestroy } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Subscription, interval } from "rxjs";
 import {
@@ -14,18 +14,18 @@ import { AuthService } from "./auth.service";
 
 /**
  * Interroge /api/users/online-count toutes les 30 secondes pour tenir
- * à jour le nombre d'utilisateurs actuellement en ligne.
+ * Ã  jour le nombre d'utilisateurs actuellement en ligne.
  *
- * Le comptage est scopé par rôle côté backend :
- *  - SUPER_ADMIN → tous les utilisateurs de la plateforme
- *  - DSI / autres → uniquement les utilisateurs de leur IMF
+ * Le comptage est scopÃ© par rÃ´le cÃ´tÃ© backend :
+ *  - SUPER_ADMIN â†’ tous les utilisateurs de la plateforme
+ *  - DSI / autres â†’ uniquement les utilisateurs de leur IMF
  *
- * Commence à interroger dès la connexion, s'arrête à la déconnexion.
+ * Commence Ã  interroger dÃ¨s la connexion, s'arrÃªte Ã  la dÃ©connexion.
  */
 @Injectable({ providedIn: "root" })
 export class OnlineUsersService implements OnDestroy {
   private readonly POLL_INTERVAL_MS = 30_000;
-  private readonly API = "/api/users/online-count";
+  private readonly API = "/api/v1/users/online-count";
 
   private readonly _count$ = new BehaviorSubject<number>(0);
   readonly count$ = this._count$.asObservable();
@@ -36,9 +36,9 @@ export class OnlineUsersService implements OnDestroy {
     private http: HttpClient,
     private auth: AuthService,
   ) {
-    // Démarrer/arrêter le polling selon l'état de connexion.
-    // distinctUntilChanged évite de relancer le poll à chaque refresh de token
-    // (storeTokens appelle loggedIn$.next(true) ce qui re-émettrait sans cela).
+    // DÃ©marrer/arrÃªter le polling selon l'Ã©tat de connexion.
+    // distinctUntilChanged Ã©vite de relancer le poll Ã  chaque refresh de token
+    // (storeTokens appelle loggedIn$.next(true) ce qui re-Ã©mettrait sans cela).
     this.auth.isLoggedIn$.pipe(distinctUntilChanged()).subscribe((loggedIn) => {
       if (loggedIn) this.startPolling();
       else this.stopPolling();
@@ -77,3 +77,4 @@ export class OnlineUsersService implements OnDestroy {
     this.stopPolling();
   }
 }
+

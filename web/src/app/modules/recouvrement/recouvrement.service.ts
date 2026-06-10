@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+﻿import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -16,11 +16,11 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class RecouvrementService {
-  private readonly API = "/api/recouvrement";
+  private readonly API = "/api/v1/recouvrement";
 
   constructor(private http: HttpClient) {}
 
-  // ── Dossiers ────────────────────────────────────────────────────────────────
+  // â”€â”€ Dossiers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   ouvrirDossier(
     req: OuvrirDossierRequest,
@@ -76,7 +76,7 @@ export class RecouvrementService {
       .pipe(map((r) => r.data));
   }
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   ajouterAction(
     dossierId: number,
@@ -97,7 +97,7 @@ export class RecouvrementService {
       .pipe(map((r) => r.data));
   }
 
-  // ── Accords ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Accords â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   creerAccord(
     dossierId: number,
@@ -118,3 +118,4 @@ export class RecouvrementService {
       .pipe(map((r) => r.data));
   }
 }
+

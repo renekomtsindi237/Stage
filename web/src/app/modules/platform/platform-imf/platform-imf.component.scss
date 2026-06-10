@@ -961,14 +961,144 @@
   outline: none;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #000000; // Noir pur pour le texte sélectionné
+  color: #1e293b;
   font-family: inherit;
   appearance: none;
   cursor: pointer;
 
   option {
-    background: var(--color-surface);
-    color: #000000; // Noir pur pour les options
+    background: #ffffff;
+    color: #1e293b;
+  }
+
+  option:disabled {
+    color: #94a3b8;
+  }
+}
+
+// ── Zone d'upload logo (étape 1) ──────────────────────────────────
+.wz-logo-upload {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  background: #f9fafb;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover,
+  &:focus {
+    border-color: #2563eb;
+    background: #eff6ff;
+    outline: none;
+
+    .wz-logo-empty mat-icon {
+      color: #2563eb;
+    }
+  }
+
+  &.wz-logo-upload--filled {
+    border-style: solid;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+
+    &:hover .wz-logo-hover {
+      opacity: 1;
+    }
+  }
+}
+
+.wz-logo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+
+  mat-icon {
+    font-size: 34px;
+    width: 34px;
+    height: 34px;
+    color: #94a3b8;
+    transition: color 0.2s;
+  }
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  small {
+    font-size: 0.73rem;
+    color: #94a3b8;
+  }
+}
+
+.wz-logo-img {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  padding: 10px;
+  display: block;
+}
+
+.wz-logo-hover {
+  position: absolute;
+  inset: 0;
+  background: rgba(37, 99, 235, 0.72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  color: #ffffff;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+
+  span {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+}
+
+.wz-logo-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.15s;
+
+  mat-icon {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  &:hover {
+    color: #dc2626;
   }
 }
 
@@ -1093,6 +1223,36 @@
   flex-shrink: 0;
 }
 
+// ── Notice Caps Lock (étape 1) ────────────────────────────────────
+.wz-caps-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  margin-bottom: 2px;
+
+  mat-icon {
+    font-size: 17px !important;
+    width: 17px !important;
+    height: 17px !important;
+    color: #d97706;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: #92400e;
+    line-height: 1.5;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+
+    strong { font-weight: 700; }
+  }
+}
+
 // ── Checkbox chips (segments / garanties) ─────────────────────────
 .wz-chips-group {
   display: flex;
@@ -1132,36 +1292,40 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 10px;
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
   cursor: pointer;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #1a1a1a; // Noir atténué pour le texte
+  color: #374151;
   transition: all 0.18s ease;
   user-select: none;
 
   mat-icon {
-    font-size: 17px;
-    width: 17px;
-    height: 17px;
+    font-size: 17px !important;
+    width: 17px !important;
+    height: 17px !important;
+    color: #94a3b8;
+    transition: color 0.15s;
   }
 
   &:hover {
-    border-color: #0066ff; // Bleu Blucash
-    color: #0066ff; // Bleu Blucash
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #2563eb;
+
+    mat-icon { color: #2563eb; }
   }
 
   &.wz-chip--on {
-    border-color: #0066ff; // Bleu Blucash
-    background: #e6f0ff; // Bleu Blucash très pâle
-    color: #0066ff; // Bleu Blucash
+    border-color: #2563eb;
+    background: #dbeafe;
+    color: #1d4ed8;
     font-weight: 700;
-    mat-icon {
-      color: #0066ff;
-    } // Bleu Blucash
+
+    mat-icon { color: #2563eb; }
   }
 }
 
@@ -1264,8 +1428,8 @@
 .wz-opt-tag {
   font-size: 0.66rem;
   font-weight: 600;
-  background: var(--color-border);
-  color: var(--color-text-muted);
+  background: #f1f5f9;
+  color: #64748b;
   padding: 2px 7px;
   border-radius: 10px;
   text-transform: lowercase;
@@ -1897,6 +2061,53 @@
   font-size: 0.74rem;
   font-weight: 600;
   color: #ef4444;
+}
+
+// Notice OTP
+.dsi-otp-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+}
+
+.dsi-otp-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #fff;
+  }
+}
+
+.dsi-otp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dsi-otp-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.dsi-otp-desc {
+  font-size: 0.78rem;
+  color: #047857;
+  line-height: 1.5;
 }
 
 // Note info
