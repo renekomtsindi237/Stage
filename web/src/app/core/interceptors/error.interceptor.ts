@@ -19,15 +19,14 @@ const NAVIGATION_ERRORS: Record<number, string> = {
 };
 
 /** URLs pour lesquelles on ne redirige jamais vers une page d'erreur */
-const NO_REDIRECT_URLS = [
-  "/api/v1/auth/",
-  "/api/v1/sse",
-  "/api/users/me",
-];
+const NO_REDIRECT_URLS = ["/api/v1/auth/", "/api/v1/sse", "/api/users/me"];
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private router: Router, private ngZone: NgZone) {}
+  constructor(
+    private router: Router,
+    private ngZone: NgZone,
+  ) {}
 
   intercept(
     req: HttpRequest<unknown>,
@@ -38,7 +37,8 @@ export class ErrorInterceptor implements HttpInterceptor {
         let message = "Une erreur inattendue est survenue.";
 
         if (err.status === 0) {
-          message = "Impossible de contacter le serveur. Vérifiez votre connexion.";
+          message =
+            "Impossible de contacter le serveur. Vérifiez votre connexion.";
         } else if (err.status === 403) {
           message = "Accès refusé. Vous n'avez pas les droits nécessaires.";
         } else if (err.status === 404) {

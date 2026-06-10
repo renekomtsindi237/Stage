@@ -42,4 +42,3 @@ export class AlerteService {
       .pipe(map((r) => r.data));
   }
 }
-

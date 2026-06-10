@@ -83,7 +83,13 @@ export class SupportService {
     return this.http.post(`${this.API}/airflow/dags/${dagId}/trigger`, {});
   }
 
-  getJournaux(page = 0, size = 100, niveau = "", source = "", search = ""): Observable<any> {
+  getJournaux(
+    page = 0,
+    size = 100,
+    niveau = "",
+    source = "",
+    search = "",
+  ): Observable<any> {
     let params = new HttpParams().set("page", page).set("size", size);
     if (niveau) params = params.set("niveau", niveau);
     if (source) params = params.set("source", source);

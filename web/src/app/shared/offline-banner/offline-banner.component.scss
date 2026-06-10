@@ -41,7 +41,9 @@
   color: #ef4444;
   transition: color 0.3s;
 
-  .ob-banner--back & { color: #10b981; }
+  .ob-banner--back & {
+    color: #10b981;
+  }
 }
 
 .ob-text {
@@ -82,5 +84,7 @@
     border-color: rgba(255, 255, 255, 0.25);
   }
 
-  &:active { transform: scale(0.96); }
+  &:active {
+    transform: scale(0.96);
+  }
 }

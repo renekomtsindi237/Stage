@@ -5,7 +5,6 @@
   (click)="toast.type === 'error' && close()"
 >
   <div class="fs-card" [@cardPop] (click)="$event.stopPropagation()">
-
     <!-- ══ LOGIN ═══════════════════════════════════════════════ -->
     <ng-container *ngIf="toast.type === 'login'">
       <div class="fs-icon-ring fs-ring-login" [@iconBounce]>
@@ -13,11 +12,15 @@
       </div>
 
       <div class="fs-login-badge" *ngIf="toast.username">
-        <span class="fs-login-initial">{{ toast.username.charAt(0).toUpperCase() }}</span>
+        <span class="fs-login-initial">{{
+          toast.username.charAt(0).toUpperCase()
+        }}</span>
       </div>
 
       <h1 class="fs-title fs-title-login">{{ toast.title }}</h1>
-      <p class="fs-login-username" *ngIf="toast.username">{{ toast.username }}</p>
+      <p class="fs-login-username" *ngIf="toast.username">
+        {{ toast.username }}
+      </p>
       <p class="fs-message">{{ toast.message }}</p>
 
       <div class="fs-redirect fs-redirect--login">
@@ -84,6 +87,5 @@
         Fermer
       </button>
     </ng-container>
-
   </div>
 </div>

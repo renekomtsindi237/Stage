@@ -5,9 +5,13 @@
   grid-template-columns: 2fr 1fr;
   gap: 16px;
   margin-bottom: 16px;
-  .chart-card { padding: 8px; }
+  .chart-card {
+    padding: 8px;
+  }
 }
 
 @media (max-width: 900px) {
-  .charts-row { grid-template-columns: 1fr; }
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
 }

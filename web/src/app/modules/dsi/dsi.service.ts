@@ -49,7 +49,12 @@ export interface ServiceSante {
   statut: "UP" | "DOWN" | "DEGRADE";
   version?: string;
   uptime?: string;
-  metrics: Array<{ label: string; value: string; progress?: number; alerte?: boolean }>;
+  metrics: Array<{
+    label: string;
+    value: string;
+    progress?: number;
+    alerte?: boolean;
+  }>;
 }
 
 @Injectable({ providedIn: "root" })
@@ -83,7 +88,13 @@ export class DsiService {
     return this.http.delete(`${this.API}/consentements/${id}`);
   }
 
-  getAuditTrail(page = 0, size = 50, search = "", action = "", entiteType = ""): Observable<any> {
+  getAuditTrail(
+    page = 0,
+    size = 50,
+    search = "",
+    action = "",
+    entiteType = "",
+  ): Observable<any> {
     let params = new HttpParams().set("page", page).set("size", size);
     if (search) params = params.set("search", search);
     if (action) params = params.set("action", action);

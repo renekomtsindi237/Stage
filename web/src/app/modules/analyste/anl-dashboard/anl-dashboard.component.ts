@@ -14,8 +14,13 @@ export class AnlDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.kpiService.getDashboardDirecteur().subscribe({
-      next: (s) => { this.summary = s; this.loading = false; },
-      error: () => { this.loading = false; },
+      next: (s) => {
+        this.summary = s;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 }

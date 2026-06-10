@@ -2,7 +2,9 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Scoring clients</h1>
-      <p class="page-subtitle">Distribution des scores et analyse du risque portefeuille</p>
+      <p class="page-subtitle">
+        Distribution des scores et analyse du risque portefeuille
+      </p>
     </div>
   </div>
 
@@ -12,7 +14,9 @@
       <mat-label>Niveau de risque</mat-label>
       <mat-select [(ngModel)]="niveauFiltre" (ngModelChange)="onFiltreChange()">
         <mat-option value="">Tous les niveaux</mat-option>
-        <mat-option *ngFor="let n of niveaux.slice(1)" [value]="n">{{ n }}</mat-option>
+        <mat-option *ngFor="let n of niveaux.slice(1)" [value]="n">{{
+          n
+        }}</mat-option>
       </mat-select>
     </mat-form-field>
   </div>
@@ -20,15 +24,33 @@
   <!-- Graphiques -->
   <div class="charts-row" *ngIf="!loading">
     <mat-card class="chart-card">
-      <mat-card-header><mat-card-title>Distribution des scores MCRS</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title
+          >Distribution des scores MCRS</mat-card-title
+        ></mat-card-header
+      >
       <mat-card-content>
-        <canvas baseChart [data]="distributionData" [options]="barOptions" type="bar"></canvas>
+        <canvas
+          baseChart
+          [data]="distributionData"
+          [options]="barOptions"
+          type="bar"
+        ></canvas>
       </mat-card-content>
     </mat-card>
     <mat-card class="chart-card chart-card--small">
-      <mat-card-header><mat-card-title>Répartition par niveau de risque</mat-card-title></mat-card-header>
+      <mat-card-header
+        ><mat-card-title
+          >Répartition par niveau de risque</mat-card-title
+        ></mat-card-header
+      >
       <mat-card-content>
-        <canvas baseChart [data]="repartitionData" [options]="doughnutOptions" type="doughnut"></canvas>
+        <canvas
+          baseChart
+          [data]="repartitionData"
+          [options]="doughnutOptions"
+          type="doughnut"
+        ></canvas>
       </mat-card-content>
     </mat-card>
   </div>
@@ -39,15 +61,24 @@
       <mat-card-title>Clients les plus à risque</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div *ngIf="loading" class="loading-state"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
-      <table mat-table [dataSource]="clients" *ngIf="!loading" class="data-table">
+      <div *ngIf="loading" class="loading-state">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </div>
+      <table
+        mat-table
+        [dataSource]="clients"
+        *ngIf="!loading"
+        class="data-table"
+      >
         <ng-container matColumnDef="clientIdExterne">
           <th mat-header-cell *matHeaderCellDef>ID</th>
           <td mat-cell *matCellDef="let c">{{ c.clientIdExterne }}</td>
         </ng-container>
         <ng-container matColumnDef="nomComplet">
           <th mat-header-cell *matHeaderCellDef>Client</th>
-          <td mat-cell *matCellDef="let c"><strong>{{ c.nomComplet }}</strong></td>
+          <td mat-cell *matCellDef="let c">
+            <strong>{{ c.nomComplet }}</strong>
+          </td>
         </ng-container>
         <ng-container matColumnDef="agence">
           <th mat-header-cell *matHeaderCellDef>Agence</th>
@@ -55,25 +86,35 @@
         </ng-container>
         <ng-container matColumnDef="scoreMcrs">
           <th mat-header-cell *matHeaderCellDef>Score MCRS</th>
-          <td mat-cell *matCellDef="let c"><strong>{{ c.scoreMcrs }}</strong></td>
+          <td mat-cell *matCellDef="let c">
+            <strong>{{ c.scoreMcrs }}</strong>
+          </td>
         </ng-container>
         <ng-container matColumnDef="niveauRisque">
           <th mat-header-cell *matHeaderCellDef>Niveau</th>
           <td mat-cell *matCellDef="let c">
-            <span class="badge" [ngClass]="getBadgeClass(c.niveauRisque)">{{ c.niveauRisque }}</span>
+            <span class="badge" [ngClass]="getBadgeClass(c.niveauRisque)">{{
+              c.niveauRisque
+            }}</span>
           </td>
         </ng-container>
         <ng-container matColumnDef="probaDefaut30j">
           <th mat-header-cell *matHeaderCellDef>Défaut 30j</th>
-          <td mat-cell *matCellDef="let c">{{ (c.probaDefaut30j * 100).toFixed(1) }}%</td>
+          <td mat-cell *matCellDef="let c">
+            {{ (c.probaDefaut30j * 100).toFixed(1) }}%
+          </td>
         </ng-container>
         <ng-container matColumnDef="probaDefaut90j">
           <th mat-header-cell *matHeaderCellDef>Défaut 90j</th>
-          <td mat-cell *matCellDef="let c">{{ (c.probaDefaut90j * 100).toFixed(1) }}%</td>
+          <td mat-cell *matCellDef="let c">
+            {{ (c.probaDefaut90j * 100).toFixed(1) }}%
+          </td>
         </ng-container>
         <ng-container matColumnDef="encours">
           <th mat-header-cell *matHeaderCellDef>Encours</th>
-          <td mat-cell *matCellDef="let c">{{ c.encours?.toLocaleString('fr-FR') }} FCFA</td>
+          <td mat-cell *matCellDef="let c">
+            {{ c.encours?.toLocaleString("fr-FR") }} FCFA
+          </td>
         </ng-container>
         <ng-container matColumnDef="cobacClasse">
           <th mat-header-cell *matHeaderCellDef>Catégorie COBAC</th>
@@ -81,13 +122,19 @@
         </ng-container>
         <ng-container matColumnDef="provisionRequise">
           <th mat-header-cell *matHeaderCellDef>Provision requise</th>
-          <td mat-cell *matCellDef="let c">{{ c.provisionRequise?.toLocaleString('fr-FR') }} FCFA</td>
+          <td mat-cell *matCellDef="let c">
+            {{ c.provisionRequise?.toLocaleString("fr-FR") }} FCFA
+          </td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="colonnes; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: colonnes;"></tr>
+        <tr mat-row *matRowDef="let row; columns: colonnes"></tr>
       </table>
-      <mat-paginator [length]="total" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50]"
-        (page)="onPageChange($event)"></mat-paginator>
+      <mat-paginator
+        [length]="total"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      ></mat-paginator>
     </mat-card-content>
   </mat-card>
 </div>

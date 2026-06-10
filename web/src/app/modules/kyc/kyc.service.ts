@@ -117,4 +117,3 @@ export class KycService {
       .pipe(map((r) => r.data));
   }
 }
-

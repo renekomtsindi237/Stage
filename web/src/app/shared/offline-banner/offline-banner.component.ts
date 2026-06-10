@@ -19,10 +19,16 @@ import { NetworkService } from "@core/services/network.service";
     trigger("bannerSlide", [
       transition(":enter", [
         style({ transform: "translateY(-100%)", opacity: 0 }),
-        animate("300ms cubic-bezier(0.22,1,0.36,1)", style({ transform: "translateY(0)", opacity: 1 })),
+        animate(
+          "300ms cubic-bezier(0.22,1,0.36,1)",
+          style({ transform: "translateY(0)", opacity: 1 }),
+        ),
       ]),
       transition(":leave", [
-        animate("220ms ease-in", style({ transform: "translateY(-100%)", opacity: 0 })),
+        animate(
+          "220ms ease-in",
+          style({ transform: "translateY(-100%)", opacity: 0 }),
+        ),
       ]),
     ]),
   ],

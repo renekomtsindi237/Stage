@@ -21,12 +21,22 @@ export class PlatformAuditComponent implements OnInit {
   filterForm!: FormGroup;
 
   readonly displayedColumns = [
-    "createdAt", "username", "action", "entite", "resume", "ipClient",
+    "createdAt",
+    "username",
+    "action",
+    "entite",
+    "resume",
+    "ipClient",
   ];
 
   readonly ACTIONS = [
-    "CONNEXION", "DECONNEXION", "CREATION", "MODIFICATION",
-    "SUPPRESSION", "CHANGEMENT_STATUT", "CONSULTATION",
+    "CONNEXION",
+    "DECONNEXION",
+    "CREATION",
+    "MODIFICATION",
+    "SUPPRESSION",
+    "CHANGEMENT_STATUT",
+    "CONSULTATION",
   ];
 
   constructor(
@@ -35,8 +45,14 @@ export class PlatformAuditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.filterForm = this.fb.group({ search: [""], action: [""], statut: [""] });
-    this.filterForm.valueChanges.pipe(debounceTime(300)).subscribe(() => this.applyFilter());
+    this.filterForm = this.fb.group({
+      search: [""],
+      action: [""],
+      statut: [""],
+    });
+    this.filterForm.valueChanges
+      .pipe(debounceTime(300))
+      .subscribe(() => this.applyFilter());
     this.load();
   }
 
@@ -51,13 +67,18 @@ export class PlatformAuditComponent implements OnInit {
         this.loading = false;
         this.applyFilter();
       },
-      error: () => { this.loading = false; this.error = true; },
+      error: () => {
+        this.loading = false;
+        this.error = true;
+      },
     });
   }
 
   applyFilter(): void {
     const { search, action, statut } = this.filterForm.value as {
-      search: string; action: string; statut: string;
+      search: string;
+      action: string;
+      statut: string;
     };
     const s = (search || "").toLowerCase();
     this.filtered = this.allEntries.filter((e) => {
@@ -74,11 +95,17 @@ export class PlatformAuditComponent implements OnInit {
   }
 
   prevPage(): void {
-    if (this.page > 0) { this.page--; this.load(); }
+    if (this.page > 0) {
+      this.page--;
+      this.load();
+    }
   }
 
   nextPage(): void {
-    if (this.page < this.totalPages - 1) { this.page++; this.load(); }
+    if (this.page < this.totalPages - 1) {
+      this.page++;
+      this.load();
+    }
   }
 
   reset(): void {
@@ -94,7 +121,8 @@ export class PlatformAuditComponent implements OnInit {
   getActionClass(action: string): string {
     const a = (action || "").toUpperCase();
     if (a.includes("CREAT") || a.includes("AJOUT")) return "badge-create";
-    if (a.includes("MODIF") || a.includes("UPDATE") || a.includes("CHANGEMENT")) return "badge-update";
+    if (a.includes("MODIF") || a.includes("UPDATE") || a.includes("CHANGEMENT"))
+      return "badge-update";
     if (a.includes("SUPPRES") || a.includes("DELETE")) return "badge-delete";
     if (a.includes("CONNEXION")) return "badge-login";
     if (a.includes("DECONNEXION")) return "badge-logout";
@@ -103,7 +131,8 @@ export class PlatformAuditComponent implements OnInit {
 
   maskIp(ip: string | null): string {
     if (!ip) return "—";
-    if (ip === "localhost" || ip === "::1" || ip.startsWith("0:0:0:0")) return "localhost";
+    if (ip === "localhost" || ip === "::1" || ip.startsWith("0:0:0:0"))
+      return "localhost";
     const parts = ip.split(".");
     if (parts.length === 4) return `${parts[0]}.${parts[1]}.${parts[2]}.***`;
     return ip;
@@ -117,8 +146,11 @@ export class PlatformAuditComponent implements OnInit {
   formatDate(iso: string): string {
     if (!iso) return "—";
     return new Date(iso).toLocaleString("fr-FR", {
-      day: "2-digit", month: "long", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 

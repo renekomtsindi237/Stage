@@ -25,7 +25,11 @@
           <mat-icon>refresh</mat-icon>
           Réessayer
         </button>
-        <button class="ep-btn ep-btn--secondary" type="button" (click)="goHome()">
+        <button
+          class="ep-btn ep-btn--secondary"
+          type="button"
+          (click)="goHome()"
+        >
           <mat-icon>home</mat-icon>
           Accueil
         </button>
@@ -36,10 +40,8 @@
   <!-- ── TV rétro variant (404 / 403 / 500) ─────────────── -->
   <ng-container *ngIf="!config.isOffline">
     <div class="ep-scene" @fadeUp>
-
       <!-- Conteneur principal TV -->
       <div class="ep-main">
-
         <!-- Antenne -->
         <div class="ep-antenna">
           <div class="ep-antenna-shadow"></div>
@@ -118,9 +120,10 @@
           *ngFor="let digit of codeDigits; let i = index"
           class="ep-digit"
           [class]="'ep-digit ep-digit-' + (i + 1)"
-        >{{ digit }}</div>
+        >
+          {{ digit }}
+        </div>
       </div>
-
     </div>
 
     <!-- Texte explicatif + actions -->
@@ -133,7 +136,11 @@
           <mat-icon>home</mat-icon>
           Retour à l'accueil
         </button>
-        <button class="ep-btn ep-btn--secondary" type="button" (click)="goBack()">
+        <button
+          class="ep-btn ep-btn--secondary"
+          type="button"
+          (click)="goBack()"
+        >
           <mat-icon>arrow_back</mat-icon>
           Page précédente
         </button>

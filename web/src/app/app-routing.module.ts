@@ -100,7 +100,9 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ["ANALYSTE"] },
     loadChildren: () =>
-      import("./modules/analyste/analyste.module").then((m) => m.AnalysteModule),
+      import("./modules/analyste/analyste.module").then(
+        (m) => m.AnalysteModule,
+      ),
   },
   /* ── DSI ── */
   {

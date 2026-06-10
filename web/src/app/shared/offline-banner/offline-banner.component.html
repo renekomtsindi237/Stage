@@ -7,11 +7,15 @@
   aria-live="assertive"
 >
   <div class="ob-left">
-    <mat-icon class="ob-icon">{{ justCameBack ? 'wifi' : 'wifi_off' }}</mat-icon>
+    <mat-icon class="ob-icon">{{
+      justCameBack ? "wifi" : "wifi_off"
+    }}</mat-icon>
     <span class="ob-text">
-      {{ justCameBack
-        ? 'Connexion rétablie — vous êtes à nouveau en ligne.'
-        : 'Vous êtes hors ligne. Vérifiez votre connexion internet.' }}
+      {{
+        justCameBack
+          ? "Connexion rétablie — vous êtes à nouveau en ligne."
+          : "Vous êtes hors ligne. Vérifiez votre connexion internet."
+      }}
     </span>
   </div>
 

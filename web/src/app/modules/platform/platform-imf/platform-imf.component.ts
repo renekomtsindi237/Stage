@@ -294,21 +294,21 @@ export class PlatformImfComponent implements OnInit {
       ? this.platformService.updateImfAdmin(this.selectedImf.uid, payload)
       : this.platformService.createImfAdmin(this.selectedImf.uid, payload);
     apiCall.subscribe({
-        next: (updatedImf) => {
-          this.modalLoading = false;
-          this.modalSuccess = this.selectedImf!.hasDsi
-            ? `Compte DSI « ${payload.username} » mis à jour.`
-            : `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
-          this.dataSource.data = this.dataSource.data.map((i) =>
-            i.uid === updatedImf.uid ? updatedImf : i,
-          );
-          setTimeout(() => this.closeModal(), 1500);
-        },
-        error: (err) => {
-          this.modalLoading = false;
-          this.modalError = err?.error?.message ?? "Une erreur est survenue.";
-        },
-      });
+      next: (updatedImf) => {
+        this.modalLoading = false;
+        this.modalSuccess = this.selectedImf!.hasDsi
+          ? `Compte DSI « ${payload.username} » mis à jour.`
+          : `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
+        this.dataSource.data = this.dataSource.data.map((i) =>
+          i.uid === updatedImf.uid ? updatedImf : i,
+        );
+        setTimeout(() => this.closeModal(), 1500);
+      },
+      error: (err) => {
+        this.modalLoading = false;
+        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+      },
+    });
   }
 
   // ── Suppression ───────────────────────────────────────────────────────────

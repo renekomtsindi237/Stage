@@ -32,7 +32,11 @@ export class FullscreenToastService {
     if (duration > 0) setTimeout(() => this.hide(), duration);
   }
 
-  showLogin(username: string, isSuperAdmin = false, duration: number = 2500): void {
+  showLogin(
+    username: string,
+    isSuperAdmin = false,
+    duration: number = 2500,
+  ): void {
     const message = isSuperAdmin
       ? "Bienvenue sur la plateforme MicroRecouv !"
       : "Redirigé vers votre espace…";

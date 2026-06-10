@@ -25,7 +25,10 @@ export class NavbarComponent implements OnInit {
 
   readonly today = (() => {
     const s = new Date().toLocaleDateString("fr-FR", {
-      weekday: "long", day: "numeric", month: "long", year: "numeric",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
     return s.charAt(0).toUpperCase() + s.slice(1);
   })();

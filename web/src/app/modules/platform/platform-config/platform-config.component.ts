@@ -21,13 +21,20 @@ export class PlatformConfigComponent implements OnInit {
     this.loading = true;
     this.error = false;
     this.service.getConfig().subscribe({
-      next: (c) => { this.config = c; this.loading = false; },
-      error: () => { this.loading = false; this.error = true; },
+      next: (c) => {
+        this.config = c;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.error = true;
+      },
     });
   }
 
   formatMs(minutes: number): string {
-    if (minutes >= 60) return `${minutes / 60} heure${minutes / 60 > 1 ? "s" : ""}`;
+    if (minutes >= 60)
+      return `${minutes / 60} heure${minutes / 60 > 1 ? "s" : ""}`;
     return `${minutes} minute${minutes > 1 ? "s" : ""}`;
   }
 

@@ -15,7 +15,11 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
-import { BaseChartDirective, provideCharts, withDefaultRegisterables } from "ng2-charts";
+import {
+  BaseChartDirective,
+  provideCharts,
+  withDefaultRegisterables,
+} from "ng2-charts";
 
 import { AnlDashboardComponent } from "./anl-dashboard/anl-dashboard.component";
 import { AnlScoringComponent } from "./anl-scoring/anl-scoring.component";
@@ -38,12 +42,22 @@ const routes: Routes = [
     AnlModeleComponent,
   ],
   imports: [
-    CommonModule, FormsModule, SharedModule,
+    CommonModule,
+    FormsModule,
+    SharedModule,
     RouterModule.forChild(routes),
-    MatCardModule, MatTableModule, MatPaginatorModule,
-    MatProgressBarModule, MatSelectModule, MatFormFieldModule,
-    MatButtonModule, MatIconModule, MatChipsModule,
-    MatTooltipModule, MatTabsModule, MatDividerModule,
+    MatCardModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatTooltipModule,
+    MatTabsModule,
+    MatDividerModule,
     BaseChartDirective,
   ],
   providers: [provideCharts(withDefaultRegisterables())],

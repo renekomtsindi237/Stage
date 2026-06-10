@@ -163,4 +163,3 @@ export class AdminService {
       .pipe(map((r) => r.data));
   }
 }
-

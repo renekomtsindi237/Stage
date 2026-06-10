@@ -65,4 +65,3 @@ export class CreanceService {
       .pipe(map((r) => r.data));
   }
 }
-

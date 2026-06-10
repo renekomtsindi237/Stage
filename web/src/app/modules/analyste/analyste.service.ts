@@ -33,7 +33,12 @@ export interface ModeleInfo {
   psiActuel: number;
   statutDerive: "STABLE" | "ATTENTION" | "DERIVE";
   dernierEntrainement: string;
-  featuresContribution: Array<{ nomMetier: string; nomTechnique: string; psi: number; contribution: number }>;
+  featuresContribution: Array<{
+    nomMetier: string;
+    nomTechnique: string;
+    psi: number;
+    contribution: number;
+  }>;
   evolutionPsi: Array<{ date: string; valeur: number }>;
 }
 
@@ -52,7 +57,11 @@ export class AnalysteService {
 
   constructor(private http: HttpClient) {}
 
-  getScoringClients(page = 0, size = 20, niveauRisque?: string): Observable<any> {
+  getScoringClients(
+    page = 0,
+    size = 20,
+    niveauRisque?: string,
+  ): Observable<any> {
     let params = new HttpParams().set("page", page).set("size", size);
     if (niveauRisque) params = params.set("niveauRisque", niveauRisque);
     return this.http.get<any>(`${this.API}/scoring/clients`, { params });

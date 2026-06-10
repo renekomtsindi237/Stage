@@ -15,7 +15,15 @@ export class DsiConsentementsComponent implements OnInit {
   size = 20;
   filtreStatut = "";
 
-  readonly cols = ["utilisateur", "role", "finalite", "canal", "date", "statut", "actions"];
+  readonly cols = [
+    "utilisateur",
+    "role",
+    "finalite",
+    "canal",
+    "date",
+    "statut",
+    "actions",
+  ];
 
   readonly FINALITES: Record<string, string> = {
     TRAITEMENT_CREDIT: "Évaluation crédit",
@@ -25,33 +33,62 @@ export class DsiConsentementsComponent implements OnInit {
     STATISTIQUES: "Statistiques agrégées",
   };
 
-  constructor(private dsi: DsiService, private snack: MatSnackBar) {}
+  constructor(
+    private dsi: DsiService,
+    private snack: MatSnackBar,
+  ) {}
 
-  ngOnInit(): void { this.charger(); }
+  ngOnInit(): void {
+    this.charger();
+  }
 
   charger(): void {
     this.loading = true;
     this.dsi.getConsentements(this.page, this.size).subscribe({
-      next: r => { this.consentements = r.content; this.total = r.totalElements; this.loading = false; },
-      error: () => { this.loading = false; },
+      next: (r) => {
+        this.consentements = r.content;
+        this.total = r.totalElements;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
-  onPage(e: any): void { this.page = e.pageIndex; this.size = e.pageSize; this.charger(); }
+  onPage(e: any): void {
+    this.page = e.pageIndex;
+    this.size = e.pageSize;
+    this.charger();
+  }
 
   revoquer(id: number): void {
     this.dsi.revoquerConsentement(id).subscribe({
-      next: () => { this.snack.open("Consentement révoqué", "Fermer", { duration: 3000 }); this.charger(); },
-      error: () => this.snack.open("Erreur lors de la révocation", "Fermer", { duration: 3000 }),
+      next: () => {
+        this.snack.open("Consentement révoqué", "Fermer", { duration: 3000 });
+        this.charger();
+      },
+      error: () =>
+        this.snack.open("Erreur lors de la révocation", "Fermer", {
+          duration: 3000,
+        }),
     });
   }
 
-  getFinalite(code: string): string { return this.FINALITES[code] ?? code; }
+  getFinalite(code: string): string {
+    return this.FINALITES[code] ?? code;
+  }
 
-  get accordes(): number { return this.consentements.filter(c => c.statut === "ACCORDE").length; }
-  get revoques(): number { return this.consentements.filter(c => c.statut === "REVOQUE").length; }
+  get accordes(): number {
+    return this.consentements.filter((c) => c.statut === "ACCORDE").length;
+  }
+  get revoques(): number {
+    return this.consentements.filter((c) => c.statut === "REVOQUE").length;
+  }
 
   getFiltres(): Consentement[] {
-    return this.filtreStatut ? this.consentements.filter(c => c.statut === this.filtreStatut) : this.consentements;
+    return this.filtreStatut
+      ? this.consentements.filter((c) => c.statut === this.filtreStatut)
+      : this.consentements;
   }
 }

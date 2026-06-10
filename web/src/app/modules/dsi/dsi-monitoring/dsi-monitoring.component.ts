@@ -20,8 +20,8 @@ export class DsiMonitoringComponent implements OnInit, OnDestroy {
     "ML Scoring": "psychology",
     "ML API": "psychology",
     "Base de données": "storage",
-    "PostgreSQL": "storage",
-    "Cache": "memory",
+    PostgreSQL: "storage",
+    Cache: "memory",
     "Redis Cache": "memory",
   };
 
@@ -29,32 +29,58 @@ export class DsiMonitoringComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.charger();
-    this.poll$ = interval(30_000).pipe(switchMap(() => this.dsi.getSantesServices())).subscribe({
-      next: s => { this.services = s; this.derniereMaj = new Date(); },
-    });
+    this.poll$ = interval(30_000)
+      .pipe(switchMap(() => this.dsi.getSantesServices()))
+      .subscribe({
+        next: (s) => {
+          this.services = s;
+          this.derniereMaj = new Date();
+        },
+      });
   }
 
-  ngOnDestroy(): void { this.poll$?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.poll$?.unsubscribe();
+  }
 
   charger(): void {
     this.loading = true;
     this.dsi.getSantesServices().subscribe({
-      next: s => { this.services = s; this.loading = false; this.derniereMaj = new Date(); },
-      error: () => { this.loading = false; },
+      next: (s) => {
+        this.services = s;
+        this.loading = false;
+        this.derniereMaj = new Date();
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
-  getIcone(nom: string): string { return this.ICONES[nom] ?? "dns"; }
+  getIcone(nom: string): string {
+    return this.ICONES[nom] ?? "dns";
+  }
 
   getStatutClass(s: string): string {
-    return { UP: "statut-up", DOWN: "statut-down", DEGRADE: "statut-degrade" }[s] ?? "";
+    return (
+      { UP: "statut-up", DOWN: "statut-down", DEGRADE: "statut-degrade" }[s] ??
+      ""
+    );
   }
 
   getStatutLabel(s: string): string {
-    return { UP: "Opérationnel", DOWN: "Hors service", DEGRADE: "Dégradé" }[s] ?? s;
+    return (
+      { UP: "Opérationnel", DOWN: "Hors service", DEGRADE: "Dégradé" }[s] ?? s
+    );
   }
 
-  get nbUp(): number { return this.services.filter(s => s.statut === "UP").length; }
-  get nbDown(): number { return this.services.filter(s => s.statut === "DOWN").length; }
-  get nbDegrade(): number { return this.services.filter(s => s.statut === "DEGRADE").length; }
+  get nbUp(): number {
+    return this.services.filter((s) => s.statut === "UP").length;
+  }
+  get nbDown(): number {
+    return this.services.filter((s) => s.statut === "DOWN").length;
+  }
+  get nbDegrade(): number {
+    return this.services.filter((s) => s.statut === "DEGRADE").length;
+  }
 }

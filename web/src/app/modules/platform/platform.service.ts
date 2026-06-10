@@ -245,25 +245,33 @@ export class PlatformService {
     payload: UpdateUserPayload,
   ): Observable<UserResponse> {
     return this.http
-      .patch<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}`, payload)
+      .patch<
+        ApiResponse<UserResponse>
+      >(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}`, payload)
       .pipe(map((r) => r.data));
   }
 
   deleteImfUser(imfUid: string, userUid: string): Observable<void> {
     return this.http
-      .delete<ApiResponse<void>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}`)
+      .delete<
+        ApiResponse<void>
+      >(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}`)
       .pipe(map(() => void 0));
   }
 
   suspendImfUser(imfUid: string, userUid: string): Observable<UserResponse> {
     return this.http
-      .patch<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}/suspend`, {})
+      .patch<
+        ApiResponse<UserResponse>
+      >(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}/suspend`, {})
       .pipe(map((r) => r.data));
   }
 
   reactivateImfUser(imfUid: string, userUid: string): Observable<UserResponse> {
     return this.http
-      .patch<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}/reactivate`, {})
+      .patch<
+        ApiResponse<UserResponse>
+      >(`${this.SUPERVISION}/imf/${imfUid}/users/${userUid}/reactivate`, {})
       .pipe(map((r) => r.data));
   }
 
@@ -273,14 +281,18 @@ export class PlatformService {
     payload: DelegateUserPayload,
   ): Observable<UserResponse> {
     return this.http
-      .post<ApiResponse<UserResponse>>(`${this.SUPERVISION}/imf/${imfUid}/users/${fromUserUid}/delegate`, payload)
+      .post<
+        ApiResponse<UserResponse>
+      >(`${this.SUPERVISION}/imf/${imfUid}/users/${fromUserUid}/delegate`, payload)
       .pipe(map((r) => r.data));
   }
 
   getGlobalAudit(page = 0, size = 50): Observable<PageResponse<AuditEntry>> {
     const params = new HttpParams().set("page", page).set("size", size);
     return this.http
-      .get<ApiResponse<PageResponse<AuditEntry>>>(`${this.SUPERVISION}/audit`, { params })
+      .get<
+        ApiResponse<PageResponse<AuditEntry>>
+      >(`${this.SUPERVISION}/audit`, { params })
       .pipe(map((r) => r.data));
   }
 
@@ -290,4 +302,3 @@ export class PlatformService {
       .pipe(map((r) => r.data));
   }
 }
-

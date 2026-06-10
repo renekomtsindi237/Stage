@@ -74,4 +74,3 @@ export class CollecteEpargneService {
       .pipe(map((r) => r.data));
   }
 }
-

@@ -82,6 +82,8 @@ export class AppComponent implements OnInit, OnDestroy {
       "/profile",
       "/error",
     ];
-    return !knownPrefixes.some((p) => url === p || url.startsWith(p + "/") || url.startsWith(p + "?"));
+    return !knownPrefixes.some(
+      (p) => url === p || url.startsWith(p + "/") || url.startsWith(p + "?"),
+    );
   }
 }

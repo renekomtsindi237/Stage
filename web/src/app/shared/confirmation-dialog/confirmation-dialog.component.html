@@ -15,8 +15,12 @@
     <!-- Bande header colorée -->
     <div class="cd-header">
       <div class="cd-icon-wrap">
-        <mat-icon *ngIf="dialog.type === 'warning'" class="cd-icon">warning_amber</mat-icon>
-        <mat-icon *ngIf="dialog.type === 'danger'" class="cd-icon">logout</mat-icon>
+        <mat-icon *ngIf="dialog.type === 'warning'" class="cd-icon"
+          >warning_amber</mat-icon
+        >
+        <mat-icon *ngIf="dialog.type === 'danger'" class="cd-icon"
+          >logout</mat-icon
+        >
         <mat-icon *ngIf="dialog.type === 'info'" class="cd-icon">info</mat-icon>
       </div>
     </div>
@@ -27,10 +31,18 @@
       <p class="cd-message">{{ dialog.message }}</p>
 
       <div class="cd-actions">
-        <button class="cd-btn cd-btn--cancel" type="button" (click)="onCancel()">
+        <button
+          class="cd-btn cd-btn--cancel"
+          type="button"
+          (click)="onCancel()"
+        >
           {{ dialog.cancelText }}
         </button>
-        <button class="cd-btn cd-btn--confirm" type="button" (click)="onConfirm()">
+        <button
+          class="cd-btn cd-btn--confirm"
+          type="button"
+          (click)="onConfirm()"
+        >
           {{ dialog.confirmText }}
         </button>
       </div>

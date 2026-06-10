@@ -77,4 +77,3 @@ export class OnlineUsersService implements OnDestroy {
     this.stopPolling();
   }
 }
-

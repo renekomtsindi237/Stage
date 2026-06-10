@@ -31,7 +31,11 @@
     </div>
 
     <!-- Bouton Support -->
-    <button class="nav-support-btn" (click)="openSupportDialog()" matTooltip="Contacter le support technique">
+    <button
+      class="nav-support-btn"
+      (click)="openSupportDialog()"
+      matTooltip="Contacter le support technique"
+    >
       <mat-icon>support_agent</mat-icon>
       <span>Support</span>
     </button>
@@ -59,7 +63,10 @@
 
     <!-- Profil utilisateur avec menu dropdown -->
     <div class="navbar-user" [matMenuTriggerFor]="profileMenu">
-      <div class="user-avatar-wrap" [class.user-avatar-wrap--super]="isSuperAdmin">
+      <div
+        class="user-avatar-wrap"
+        [class.user-avatar-wrap--super]="isSuperAdmin"
+      >
         <img
           [src]="auth.getUserAvatar() || 'assets/photo_profil.jpg'"
           [alt]="auth.getUsername()"
@@ -74,11 +81,18 @@
       <mat-icon class="user-caret">expand_more</mat-icon>
     </div>
 
-    <mat-menu #profileMenu="matMenu" class="profile-menu-panel" xPosition="before">
+    <mat-menu
+      #profileMenu="matMenu"
+      class="profile-menu-panel"
+      xPosition="before"
+    >
       <!-- En-tête du menu -->
       <div class="pm-header" (click)="$event.stopPropagation()">
         <div class="pm-avatar" [class.pm-avatar--super]="isSuperAdmin">
-          <img [src]="auth.getUserAvatar() || 'assets/photo_profil.jpg'" [alt]="auth.getUsername()" />
+          <img
+            [src]="auth.getUserAvatar() || 'assets/photo_profil.jpg'"
+            [alt]="auth.getUsername()"
+          />
         </div>
         <div class="pm-info">
           <span class="pm-name">{{ auth.getUsername() }}</span>
@@ -91,7 +105,12 @@
         <mat-icon class="pm-icon">account_circle</mat-icon>
         <span>Mon Profil</span>
       </button>
-      <button mat-menu-item class="pm-item" (click)="openChangePassword()" *ngIf="!isSuperAdmin">
+      <button
+        mat-menu-item
+        class="pm-item"
+        (click)="openChangePassword()"
+        *ngIf="!isSuperAdmin"
+      >
         <mat-icon class="pm-icon">lock_reset</mat-icon>
         <span>Changer le mot de passe</span>
       </button>

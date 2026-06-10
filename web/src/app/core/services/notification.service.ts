@@ -99,4 +99,3 @@ export class NotificationService implements OnDestroy {
     return titles[type] ?? "Notification";
   }
 }
-

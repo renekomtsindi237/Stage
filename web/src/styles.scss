@@ -404,10 +404,22 @@ body {
   position: relative;
   display: inline-block;
 
-  &.ios-spinner--sm { width: 14px; height: 14px; }
-  &.ios-spinner--md { width: 20px; height: 20px; }
-  &.ios-spinner--lg { width: 28px; height: 28px; }
-  &.ios-spinner--xl { width: 48px; height: 48px; }
+  &.ios-spinner--sm {
+    width: 14px;
+    height: 14px;
+  }
+  &.ios-spinner--md {
+    width: 20px;
+    height: 20px;
+  }
+  &.ios-spinner--lg {
+    width: 28px;
+    height: 28px;
+  }
+  &.ios-spinner--xl {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .ios-blade {
@@ -423,23 +435,65 @@ body {
   will-change: opacity;
 }
 
-.ios-blade:nth-child(1)  { transform: rotate(0deg) translateY(-145%);   animation-delay: -1.083s; }
-.ios-blade:nth-child(2)  { transform: rotate(30deg) translateY(-145%);  animation-delay: -1s; }
-.ios-blade:nth-child(3)  { transform: rotate(60deg) translateY(-145%);  animation-delay: -0.917s; }
-.ios-blade:nth-child(4)  { transform: rotate(90deg) translateY(-145%);  animation-delay: -0.833s; }
-.ios-blade:nth-child(5)  { transform: rotate(120deg) translateY(-145%); animation-delay: -0.75s; }
-.ios-blade:nth-child(6)  { transform: rotate(150deg) translateY(-145%); animation-delay: -0.667s; }
-.ios-blade:nth-child(7)  { transform: rotate(180deg) translateY(-145%); animation-delay: -0.583s; }
-.ios-blade:nth-child(8)  { transform: rotate(210deg) translateY(-145%); animation-delay: -0.5s; }
-.ios-blade:nth-child(9)  { transform: rotate(240deg) translateY(-145%); animation-delay: -0.417s; }
-.ios-blade:nth-child(10) { transform: rotate(270deg) translateY(-145%); animation-delay: -0.333s; }
-.ios-blade:nth-child(11) { transform: rotate(300deg) translateY(-145%); animation-delay: -0.25s; }
-.ios-blade:nth-child(12) { transform: rotate(330deg) translateY(-145%); animation-delay: -0.167s; }
+.ios-blade:nth-child(1) {
+  transform: rotate(0deg) translateY(-145%);
+  animation-delay: -1.083s;
+}
+.ios-blade:nth-child(2) {
+  transform: rotate(30deg) translateY(-145%);
+  animation-delay: -1s;
+}
+.ios-blade:nth-child(3) {
+  transform: rotate(60deg) translateY(-145%);
+  animation-delay: -0.917s;
+}
+.ios-blade:nth-child(4) {
+  transform: rotate(90deg) translateY(-145%);
+  animation-delay: -0.833s;
+}
+.ios-blade:nth-child(5) {
+  transform: rotate(120deg) translateY(-145%);
+  animation-delay: -0.75s;
+}
+.ios-blade:nth-child(6) {
+  transform: rotate(150deg) translateY(-145%);
+  animation-delay: -0.667s;
+}
+.ios-blade:nth-child(7) {
+  transform: rotate(180deg) translateY(-145%);
+  animation-delay: -0.583s;
+}
+.ios-blade:nth-child(8) {
+  transform: rotate(210deg) translateY(-145%);
+  animation-delay: -0.5s;
+}
+.ios-blade:nth-child(9) {
+  transform: rotate(240deg) translateY(-145%);
+  animation-delay: -0.417s;
+}
+.ios-blade:nth-child(10) {
+  transform: rotate(270deg) translateY(-145%);
+  animation-delay: -0.333s;
+}
+.ios-blade:nth-child(11) {
+  transform: rotate(300deg) translateY(-145%);
+  animation-delay: -0.25s;
+}
+.ios-blade:nth-child(12) {
+  transform: rotate(330deg) translateY(-145%);
+  animation-delay: -0.167s;
+}
 
 @keyframes ios-blade {
-  0%   { opacity: 0.85; }
-  50%  { opacity: 0.25; }
-  100% { opacity: 0.25; }
+  0% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0.25;
+  }
 }
 
 /* ============================================================
@@ -531,14 +585,19 @@ body {
   color: #374151 !important;
   height: 44px !important;
   min-height: 44px !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
   background: transparent !important;
 
-  .mdc-list-item__primary-text { color: #374151 !important; }
+  .mdc-list-item__primary-text {
+    color: #374151 !important;
+  }
 
   &:hover {
     background: #f8fafc !important;
-    .mdc-list-item__primary-text { color: #0f172a !important; }
+    .mdc-list-item__primary-text {
+      color: #0f172a !important;
+    }
   }
 }
 
@@ -553,11 +612,18 @@ body {
 
 .pm-item--logout.mat-mdc-menu-item {
   margin-top: 2px !important;
-  .mdc-list-item__primary-text { color: #dc2626 !important; font-weight: 600 !important; }
-  .pm-icon { color: #ef4444 !important; }
+  .mdc-list-item__primary-text {
+    color: #dc2626 !important;
+    font-weight: 600 !important;
+  }
+  .pm-icon {
+    color: #ef4444 !important;
+  }
   &:hover {
     background: #fef2f2 !important;
-    .mdc-list-item__primary-text { color: #b91c1c !important; }
+    .mdc-list-item__primary-text {
+      color: #b91c1c !important;
+    }
   }
 }
 

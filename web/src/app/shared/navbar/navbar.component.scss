@@ -276,7 +276,8 @@
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.3px;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
   }
 
   .platform-date {
@@ -323,7 +324,9 @@
   }
 
   @media (max-width: 768px) {
-    span { display: none; }
+    span {
+      display: none;
+    }
     padding: 8px 10px;
   }
 }

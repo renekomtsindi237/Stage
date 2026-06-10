@@ -126,7 +126,11 @@
   border-radius: 999px !important;
   font-weight: 700 !important;
   font-size: 0.85rem !important;
-  mat-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }
+  mat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
 }
 
 .btn-header-admin {
@@ -138,10 +142,17 @@
   height: 38px !important;
   padding: 0 !important;
   border-radius: 50% !important;
-  border-color: rgba(255,255,255,.35) !important;
-  color: rgba(255,255,255,.8) !important;
-  mat-icon { font-size: 17px !important; width: 17px !important; height: 17px !important; }
-  &:hover { background: rgba(255,255,255,.12) !important; border-color: rgba(255,255,255,.6) !important; }
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  mat-icon {
+    font-size: 17px !important;
+    width: 17px !important;
+    height: 17px !important;
+  }
+  &:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+  }
 }
 
 /* Hero */
@@ -287,10 +298,17 @@
     gap: 7px !important;
     background: rgba(15, 23, 42, 0.45) !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
-    color: rgba(255,255,255,.75) !important;
-    font-size: .85rem !important;
-    mat-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }
-    &:hover { background: rgba(15,23,42,.65) !important; border-color: rgba(255,255,255,.4) !important; }
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 0.85rem !important;
+    mat-icon {
+      font-size: 16px !important;
+      width: 16px !important;
+      height: 16px !important;
+    }
+    &:hover {
+      background: rgba(15, 23, 42, 0.65) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+    }
   }
 }
 

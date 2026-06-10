@@ -1,6 +1,11 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { DsiService, ViolationDonnees, DemandreDroit, Consentement } from "../dsi.service";
+import {
+  DsiService,
+  ViolationDonnees,
+  DemandreDroit,
+  Consentement,
+} from "../dsi.service";
 import { DsiViolationDialogComponent } from "./dsi-violation-dialog.component";
 
 @Component({
@@ -17,8 +22,23 @@ export class DsiRgpdComponent implements OnInit, OnDestroy {
   countdowns: Record<string, string> = {};
   private timerInterval?: number;
 
-  readonly colsViolations = ["type", "date", "concernes", "severite", "delai", "statut", "actions"];
-  readonly colsDemandes = ["type", "sujet", "date", "delai", "statut", "actions"];
+  readonly colsViolations = [
+    "type",
+    "date",
+    "concernes",
+    "severite",
+    "delai",
+    "statut",
+    "actions",
+  ];
+  readonly colsDemandes = [
+    "type",
+    "sujet",
+    "date",
+    "delai",
+    "statut",
+    "actions",
+  ];
   readonly droitsLegende = [
     { code: "ACCES", label: "Droit d'accès" },
     { code: "RECTIFICATION", label: "Rectification" },
@@ -36,11 +56,17 @@ export class DsiRgpdComponent implements OnInit, OnDestroy {
     LIMITATION: "Limitation du traitement",
   };
 
-  constructor(private dsi: DsiService, private dialog: MatDialog) {}
+  constructor(
+    private dsi: DsiService,
+    private dialog: MatDialog,
+  ) {}
 
   ngOnInit(): void {
     this.charger();
-    this.timerInterval = window.setInterval(() => this.mettreAJourCompteurs(), 1000);
+    this.timerInterval = window.setInterval(
+      () => this.mettreAJourCompteurs(),
+      1000,
+    );
   }
 
   ngOnDestroy(): void {
@@ -48,27 +74,51 @@ export class DsiRgpdComponent implements OnInit, OnDestroy {
   }
 
   mettreAJourCompteurs(): void {
-    this.violations.forEach(v => {
-      if (v.statut === 'EN_COURS' && v.delaiRestantHeures != null) {
+    this.violations.forEach((v) => {
+      if (v.statut === "EN_COURS" && v.delaiRestantHeures != null) {
         const totalSec = v.delaiRestantHeures * 3600;
         const h = Math.floor(totalSec / 3600);
         const m = Math.floor((totalSec % 3600) / 60);
         const s = totalSec % 60;
-        this.countdowns[v.id] = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        this.countdowns[v.id] =
+          `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
       }
     });
   }
 
   charger(): void {
     this.loading = true;
-    this.dsi.getViolations().subscribe({ next: v => { this.violations = v; this.mettreAJourCompteurs(); this.loading = false; }, error: () => { this.loading = false; } });
-    this.dsi.getDemandesDroits().subscribe({ next: d => { this.demandes = d; }, error: () => {} });
-    this.dsi.getConsentements(0, 10).subscribe({ next: (page: any) => { this.consentements = page.content ?? []; }, error: () => {} });
+    this.dsi.getViolations().subscribe({
+      next: (v) => {
+        this.violations = v;
+        this.mettreAJourCompteurs();
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
+    this.dsi.getDemandesDroits().subscribe({
+      next: (d) => {
+        this.demandes = d;
+      },
+      error: () => {},
+    });
+    this.dsi.getConsentements(0, 10).subscribe({
+      next: (page: any) => {
+        this.consentements = page.content ?? [];
+      },
+      error: () => {},
+    });
   }
 
   ouvrirDeclaration(): void {
-    const ref = this.dialog.open(DsiViolationDialogComponent, { width: "640px" });
-    ref.afterClosed().subscribe(data => { if (data) this.charger(); });
+    const ref = this.dialog.open(DsiViolationDialogComponent, {
+      width: "640px",
+    });
+    ref.afterClosed().subscribe((data) => {
+      if (data) this.charger();
+    });
   }
 
   traiter(id: number, statut: string): void {
@@ -87,32 +137,44 @@ export class DsiRgpdComponent implements OnInit, OnDestroy {
   }
 
   getBadgeSeverite(s: string): string {
-    return { CRITIQUE: "badge-critique", MAJEURE: "badge-majeur", MINEURE: "badge-ok" }[s] ?? "";
+    return (
+      {
+        CRITIQUE: "badge-critique",
+        MAJEURE: "badge-majeur",
+        MINEURE: "badge-ok",
+      }[s] ?? ""
+    );
   }
 
   getBadgeStatut(s: string): string {
-    return { EN_COURS: "badge-warn", TRAITE: "badge-ok", DEPASSE: "badge-critique" }[s] ?? "";
+    return (
+      { EN_COURS: "badge-warn", TRAITE: "badge-ok", DEPASSE: "badge-critique" }[
+        s
+      ] ?? ""
+    );
   }
 
   getViolationsEnCours(): number {
-    return this.violations.filter(v => v.statut === "EN_COURS").length;
+    return this.violations.filter((v) => v.statut === "EN_COURS").length;
   }
 
   getDemandesEnAttente(): number {
-    return this.demandes.filter(d => d.statut === "EN_ATTENTE").length;
+    return this.demandes.filter((d) => d.statut === "EN_ATTENTE").length;
   }
 
   getViolationsDepassees(): number {
-    return this.violations.filter(v => v.statut === "DEPASSE").length;
+    return this.violations.filter((v) => v.statut === "DEPASSE").length;
   }
 
   getViolationsEnCoursList(): ViolationDonnees[] {
-    return this.violations.filter(v => v.statut === "EN_COURS");
+    return this.violations.filter((v) => v.statut === "EN_COURS");
   }
 
   notifierAutorite(v: ViolationDonnees): void {
     // Placeholder — ouvre dialog ou appelle endpoint dédié
-    alert(`Notification de l'autorité pour la violation #${v.id} — fonctionnalité à brancher.`);
+    alert(
+      `Notification de l'autorité pour la violation #${v.id} — fonctionnalité à brancher.`,
+    );
   }
 
   revoquerConsentement(id: number): void {
@@ -120,6 +182,6 @@ export class DsiRgpdComponent implements OnInit, OnDestroy {
   }
 
   getBadgeConsentement(statut: string): string {
-    return statut === 'ACCORDE' ? 'badge-ok' : 'badge-critique';
+    return statut === "ACCORDE" ? "badge-ok" : "badge-critique";
   }
 }

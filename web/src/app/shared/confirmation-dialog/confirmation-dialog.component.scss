@@ -38,9 +38,15 @@
   position: relative;
   overflow: visible;
 
-  .cd--warning & { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
-  .cd--danger  & { background: linear-gradient(135deg, #f87171 0%, #dc2626 100%); }
-  .cd--info    & { background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%); }
+  .cd--warning & {
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  }
+  .cd--danger & {
+    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  }
+  .cd--info & {
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+  }
 
   // Cercles décoratifs
   &::before,
@@ -90,9 +96,15 @@
   width: 40px !important;
   height: 40px !important;
 
-  .cd--warning & { color: #d97706; }
-  .cd--danger  & { color: #dc2626; }
-  .cd--info    & { color: #2563eb; }
+  .cd--warning & {
+    color: #d97706;
+  }
+  .cd--danger & {
+    color: #dc2626;
+  }
+  .cd--info & {
+    color: #2563eb;
+  }
 }
 
 // ── Corps ─────────────────────────────────────────────────────────
@@ -118,9 +130,15 @@
   line-height: 1.2;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 
-  .cd--warning & { color: #92400e; }
-  .cd--danger  & { color: #991b1b; }
-  .cd--info    & { color: #1e3a8a; }
+  .cd--warning & {
+    color: #92400e;
+  }
+  .cd--danger & {
+    color: #991b1b;
+  }
+  .cd--info & {
+    color: #1e3a8a;
+  }
 }
 
 // ── Message ───────────────────────────────────────────────────────

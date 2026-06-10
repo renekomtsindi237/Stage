@@ -14,24 +14,41 @@ export class AnlTraitementsComponent implements OnInit {
 
   constructor(private service: AnalysteService) {}
 
-  ngOnInit(): void { this.charger(); }
+  ngOnInit(): void {
+    this.charger();
+  }
 
   charger(): void {
     this.loading = true;
     this.service.getTraitements().subscribe({
       next: (data) => {
-        this.traitements = data.map(d => ({ ...d, nomMetier: this.service.getNomMetier(d.dagId) }));
+        this.traitements = data.map((d) => ({
+          ...d,
+          nomMetier: this.service.getNomMetier(d.dagId),
+        }));
         this.dernierRun = data[0]?.derniereExecution ?? null;
-        this.statutGlobal = data.some(d => d.statut === "FAILED") ? "FAILED"
-          : data.some(d => d.statut === "RUNNING") ? "RUNNING" : "SUCCESS";
+        this.statutGlobal = data.some((d) => d.statut === "FAILED")
+          ? "FAILED"
+          : data.some((d) => d.statut === "RUNNING")
+            ? "RUNNING"
+            : "SUCCESS";
         this.loading = false;
       },
-      error: () => { this.loading = false; },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
   getStatutClass(statut: string): string {
-    return { SUCCESS: "badge-ok", RUNNING: "badge-running", FAILED: "badge-alert", PENDING: "badge-gray" }[statut] ?? "";
+    return (
+      {
+        SUCCESS: "badge-ok",
+        RUNNING: "badge-running",
+        FAILED: "badge-alert",
+        PENDING: "badge-gray",
+      }[statut] ?? ""
+    );
   }
 
   formatDuree(s: number): string {

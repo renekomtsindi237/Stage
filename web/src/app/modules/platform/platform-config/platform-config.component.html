@@ -1,5 +1,4 @@
 <div class="config-page">
-
   <!-- En-tête -->
   <div class="page-header">
     <div class="page-header-left">
@@ -8,7 +7,10 @@
         Tableau de bord
       </a>
       <h1><mat-icon>settings</mat-icon> Configuration plateforme</h1>
-      <p class="page-sub">Paramètres système en lecture seule — modifiables via les variables d'environnement</p>
+      <p class="page-sub">
+        Paramètres système en lecture seule — modifiables via les variables
+        d'environnement
+      </p>
     </div>
     <button mat-stroked-button (click)="load()" [disabled]="loading">
       <mat-icon [class.spinning]="loading">refresh</mat-icon>
@@ -25,9 +27,9 @@
 
   <!-- Skeleton -->
   <div class="config-grid" *ngIf="loading">
-    <div class="config-card sk-card" *ngFor="let i of [1,2,3]">
+    <div class="config-card sk-card" *ngFor="let i of [1, 2, 3]">
       <div class="sk-title"></div>
-      <div class="sk-row" *ngFor="let j of [1,2,3]">
+      <div class="sk-row" *ngFor="let j of [1, 2, 3]">
         <div class="sk-label"></div>
         <div class="sk-value"></div>
       </div>
@@ -36,7 +38,6 @@
 
   <!-- Contenu -->
   <div class="config-grid" *ngIf="!loading && !error && config">
-
     <!-- Sécurité JWT -->
     <mat-card class="config-card">
       <div class="card-header">
@@ -49,18 +50,28 @@
       <div class="config-rows">
         <div class="config-row">
           <span class="cfg-label">Durée access token</span>
-          <span class="cfg-value">{{ formatMs(config.accessTokenExpiryMinutes) }}</span>
+          <span class="cfg-value">{{
+            formatMs(config.accessTokenExpiryMinutes)
+          }}</span>
         </div>
         <div class="config-row">
           <span class="cfg-label">Durée refresh token</span>
-          <span class="cfg-value">{{ formatDays(config.refreshTokenExpiryDays) }}</span>
+          <span class="cfg-value">{{
+            formatDays(config.refreshTokenExpiryDays)
+          }}</span>
         </div>
         <div class="config-row">
           <span class="cfg-label">Cookie Secure (HTTPS)</span>
           <span class="cfg-value">
-            <span class="bool-badge" [class.on]="config.cookieSecure" [class.off]="!config.cookieSecure">
-              <mat-icon>{{ config.cookieSecure ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ config.cookieSecure ? 'Activé' : 'Désactivé' }}
+            <span
+              class="bool-badge"
+              [class.on]="config.cookieSecure"
+              [class.off]="!config.cookieSecure"
+            >
+              <mat-icon>{{
+                config.cookieSecure ? "check_circle" : "cancel"
+              }}</mat-icon>
+              {{ config.cookieSecure ? "Activé" : "Désactivé" }}
             </span>
           </span>
         </div>
@@ -115,9 +126,15 @@
         <div class="config-row">
           <span class="cfg-label">Firebase Push</span>
           <span class="cfg-value">
-            <span class="bool-badge" [class.on]="config.firebaseEnabled" [class.off]="!config.firebaseEnabled">
-              <mat-icon>{{ config.firebaseEnabled ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ config.firebaseEnabled ? 'Activé' : 'Désactivé' }}
+            <span
+              class="bool-badge"
+              [class.on]="config.firebaseEnabled"
+              [class.off]="!config.firebaseEnabled"
+            >
+              <mat-icon>{{
+                config.firebaseEnabled ? "check_circle" : "cancel"
+              }}</mat-icon>
+              {{ config.firebaseEnabled ? "Activé" : "Désactivé" }}
             </span>
           </span>
         </div>
@@ -127,10 +144,12 @@
     <!-- Note lecture seule -->
     <div class="readonly-note">
       <mat-icon>info_outline</mat-icon>
-      <span>Ces paramètres sont définis par les variables d'environnement du serveur
-      (<code>JWT_SECRET</code>, <code>SMTP_HOST</code>, <code>FIREBASE_ENABLED</code>…).
-      Pour les modifier, mettez à jour les variables et redéployez.</span>
+      <span
+        >Ces paramètres sont définis par les variables d'environnement du
+        serveur (<code>JWT_SECRET</code>, <code>SMTP_HOST</code>,
+        <code>FIREBASE_ENABLED</code>…). Pour les modifier, mettez à jour les
+        variables et redéployez.</span
+      >
     </div>
   </div>
-
 </div>

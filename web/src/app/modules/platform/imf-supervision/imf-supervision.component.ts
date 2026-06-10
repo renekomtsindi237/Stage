@@ -12,15 +12,15 @@ import {
 import { UserResponse } from "@core/models/user.model";
 import { fadeInUp, reveal } from "../../../shared/animations";
 
-type Tab         = "resume" | "users" | "agences" | "audit";
+type Tab = "resume" | "users" | "agences" | "audit";
 type ModalAction = "edit" | "delete" | "suspend" | "delegate" | null;
 
 const IMF_ROLES = [
-  { value: "DSI",                      label: "DSI" },
-  { value: "DIRECTEUR",                label: "Directeur" },
+  { value: "DSI", label: "DSI" },
+  { value: "DIRECTEUR", label: "Directeur" },
   { value: "RESPONSABLE_RECOUVREMENT", label: "Resp. Recouvrement" },
-  { value: "ANALYSTE",                 label: "Analyste" },
-  { value: "AGENT",                    label: "Agent terrain" },
+  { value: "ANALYSTE", label: "Analyste" },
+  { value: "AGENT", label: "Agent terrain" },
 ];
 
 @Component({
@@ -78,9 +78,9 @@ export class ImfSupervisionComponent implements OnInit {
     this.imfUid = this.route.snapshot.paramMap.get("id") ?? "";
     this.editForm = this.fb.group({
       username: ["", [Validators.required, Validators.minLength(3)]],
-      email:    ["", [Validators.required, Validators.email]],
-      role:     ["", Validators.required],
-      zoneId:   [""],
+      email: ["", [Validators.required, Validators.email]],
+      role: ["", Validators.required],
+      zoneId: [""],
     });
     this.loadHeader();
   }
@@ -109,9 +109,9 @@ export class ImfSupervisionComponent implements OnInit {
 
   selectTab(tab: Tab): void {
     this.activeTab = tab;
-    if (tab === "users"   && !this.users.length)        this.loadUsers();
-    if (tab === "agences" && !this.agences.length)      this.loadAgences();
-    if (tab === "audit"   && !this.auditEntries.length) this.loadAudit();
+    if (tab === "users" && !this.users.length) this.loadUsers();
+    if (tab === "agences" && !this.agences.length) this.loadAgences();
+    if (tab === "audit" && !this.auditEntries.length) this.loadAudit();
   }
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -119,14 +119,18 @@ export class ImfSupervisionComponent implements OnInit {
   loadUsers(page = 0): void {
     this.usersLoading = true;
     this.usersPage = page;
-    this.platformService.getImfUsers(this.imfUid, page, this.usersSize).subscribe({
-      next: (p) => {
-        this.users = p.content;
-        this.usersTotalElements = p.totalElements;
-        this.usersLoading = false;
-      },
-      error: () => { this.usersLoading = false; },
-    });
+    this.platformService
+      .getImfUsers(this.imfUid, page, this.usersSize)
+      .subscribe({
+        next: (p) => {
+          this.users = p.content;
+          this.usersTotalElements = p.totalElements;
+          this.usersLoading = false;
+        },
+        error: () => {
+          this.usersLoading = false;
+        },
+      });
   }
 
   usersNextPage(): void {
@@ -142,8 +146,13 @@ export class ImfSupervisionComponent implements OnInit {
   loadAgences(): void {
     this.agencesLoading = true;
     this.platformService.getImfAgences(this.imfUid).subscribe({
-      next: (a) => { this.agences = a; this.agencesLoading = false; },
-      error: () => { this.agencesLoading = false; },
+      next: (a) => {
+        this.agences = a;
+        this.agencesLoading = false;
+      },
+      error: () => {
+        this.agencesLoading = false;
+      },
     });
   }
 
@@ -152,14 +161,18 @@ export class ImfSupervisionComponent implements OnInit {
   loadAudit(page = 0): void {
     this.auditLoading = true;
     this.auditPage = page;
-    this.platformService.getImfAudit(this.imfUid, page, this.auditSize).subscribe({
-      next: (p) => {
-        this.auditEntries = p.content;
-        this.auditTotalElements = p.totalElements;
-        this.auditLoading = false;
-      },
-      error: () => { this.auditLoading = false; },
-    });
+    this.platformService
+      .getImfAudit(this.imfUid, page, this.auditSize)
+      .subscribe({
+        next: (p) => {
+          this.auditEntries = p.content;
+          this.auditTotalElements = p.totalElements;
+          this.auditLoading = false;
+        },
+        error: () => {
+          this.auditLoading = false;
+        },
+      });
   }
 
   auditNextPage(): void {
@@ -176,9 +189,9 @@ export class ImfSupervisionComponent implements OnInit {
     this.selectedUser = user;
     this.editForm.setValue({
       username: user.username,
-      email:    user.email ?? "",
-      role:     user.role,
-      zoneId:   user.zoneId ?? "",
+      email: user.email ?? "",
+      role: user.role,
+      zoneId: user.zoneId ?? "",
     });
     this.modalError = "";
     this.modalSuccess = "";
@@ -218,41 +231,50 @@ export class ImfSupervisionComponent implements OnInit {
   // ── Actions ───────────────────────────────────────────────────────────────
 
   submitEdit(): void {
-    if (this.editForm.invalid || !this.selectedUser?.uid || this.modalLoading) return;
+    if (this.editForm.invalid || !this.selectedUser?.uid || this.modalLoading)
+      return;
     this.modalLoading = true;
     this.modalError = "";
     const payload: UpdateUserPayload = this.editForm.value;
-    this.platformService.updateImfUser(this.imfUid, this.selectedUser.uid, payload).subscribe({
-      next: (updated) => {
-        this.users = this.users.map((u) => u.uid === updated.uid ? updated : u);
-        this.modalLoading = false;
-        this.modalSuccess = `Utilisateur « ${updated.username} » mis à jour.`;
-        setTimeout(() => this.closeModal(), 1400);
-      },
-      error: (err) => {
-        this.modalLoading = false;
-        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
-      },
-    });
+    this.platformService
+      .updateImfUser(this.imfUid, this.selectedUser.uid, payload)
+      .subscribe({
+        next: (updated) => {
+          this.users = this.users.map((u) =>
+            u.uid === updated.uid ? updated : u,
+          );
+          this.modalLoading = false;
+          this.modalSuccess = `Utilisateur « ${updated.username} » mis à jour.`;
+          setTimeout(() => this.closeModal(), 1400);
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+        },
+      });
   }
 
   submitDelete(): void {
     if (!this.selectedUser?.uid || this.modalLoading) return;
     this.modalLoading = true;
     this.modalError = "";
-    this.platformService.deleteImfUser(this.imfUid, this.selectedUser.uid).subscribe({
-      next: () => {
-        this.users = this.users.filter((u) => u.uid !== this.selectedUser!.uid);
-        this.usersTotalElements--;
-        this.modalLoading = false;
-        this.modalSuccess = `Utilisateur « ${this.selectedUser!.username} » supprimé.`;
-        setTimeout(() => this.closeModal(), 1400);
-      },
-      error: (err) => {
-        this.modalLoading = false;
-        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
-      },
-    });
+    this.platformService
+      .deleteImfUser(this.imfUid, this.selectedUser.uid)
+      .subscribe({
+        next: () => {
+          this.users = this.users.filter(
+            (u) => u.uid !== this.selectedUser!.uid,
+          );
+          this.usersTotalElements--;
+          this.modalLoading = false;
+          this.modalSuccess = `Utilisateur « ${this.selectedUser!.username} » supprimé.`;
+          setTimeout(() => this.closeModal(), 1400);
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+        },
+      });
   }
 
   submitSuspend(): void {
@@ -261,11 +283,16 @@ export class ImfSupervisionComponent implements OnInit {
     this.modalError = "";
     const isSuspended = !this.selectedUser.actif;
     const obs = isSuspended
-      ? this.platformService.reactivateImfUser(this.imfUid, this.selectedUser.uid)
+      ? this.platformService.reactivateImfUser(
+          this.imfUid,
+          this.selectedUser.uid,
+        )
       : this.platformService.suspendImfUser(this.imfUid, this.selectedUser.uid);
     obs.subscribe({
       next: (updated) => {
-        this.users = this.users.map((u) => u.uid === updated.uid ? updated : u);
+        this.users = this.users.map((u) =>
+          u.uid === updated.uid ? updated : u,
+        );
         this.modalLoading = false;
         this.modalSuccess = `Utilisateur « ${updated.username} » ${updated.actif ? "réactivé" : "suspendu"}.`;
         setTimeout(() => this.closeModal(), 1400);
@@ -278,22 +305,32 @@ export class ImfSupervisionComponent implements OnInit {
   }
 
   submitDelegate(): void {
-    if (!this.selectedUser?.uid || !this.delegateTargetUid || this.modalLoading) return;
+    if (!this.selectedUser?.uid || !this.delegateTargetUid || this.modalLoading)
+      return;
     this.modalLoading = true;
     this.modalError = "";
-    this.platformService.delegateImfUser(this.imfUid, this.selectedUser.uid, { toUserUid: this.delegateTargetUid }).subscribe({
-      next: (updated) => {
-        this.users = this.users.map((u) => u.uid === updated.uid ? updated : u);
-        this.modalLoading = false;
-        this.modalSuccess = `Relégation effectuée — ${updated.username} suspendu.`;
-        // Recharger pour que le destinataire ait son nouveau rôle
-        setTimeout(() => { this.closeModal(); this.loadUsers(this.usersPage); }, 1400);
-      },
-      error: (err) => {
-        this.modalLoading = false;
-        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
-      },
-    });
+    this.platformService
+      .delegateImfUser(this.imfUid, this.selectedUser.uid, {
+        toUserUid: this.delegateTargetUid,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.users = this.users.map((u) =>
+            u.uid === updated.uid ? updated : u,
+          );
+          this.modalLoading = false;
+          this.modalSuccess = `Relégation effectuée — ${updated.username} suspendu.`;
+          // Recharger pour que le destinataire ait son nouveau rôle
+          setTimeout(() => {
+            this.closeModal();
+            this.loadUsers(this.usersPage);
+          }, 1400);
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+        },
+      });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -311,25 +348,28 @@ export class ImfSupervisionComponent implements OnInit {
   formatDate(iso?: string | null): string {
     if (!iso) return "—";
     return new Date(iso).toLocaleDateString("fr-FR", {
-      day: "2-digit", month: "short", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 
   roleLabel(role: string): string {
     const labels: Record<string, string> = {
-      DSI:                      "DSI",
-      DIRECTEUR:                "Directeur",
+      DSI: "DSI",
+      DIRECTEUR: "Directeur",
       RESPONSABLE_RECOUVREMENT: "Resp. Recouvrement",
-      ANALYSTE:                 "Analyste",
-      AGENT:                    "Agent terrain",
+      ANALYSTE: "Analyste",
+      AGENT: "Agent terrain",
     };
     return labels[role] ?? role;
   }
 
   statutClass(statut: string): string {
     if (statut === "SUCCES" || statut === "SUCCESS") return "ok";
-    if (statut === "ECHEC"  || statut === "FAILURE") return "ko";
+    if (statut === "ECHEC" || statut === "FAILURE") return "ko";
     return "neutral";
   }
 

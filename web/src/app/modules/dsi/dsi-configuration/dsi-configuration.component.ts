@@ -32,8 +32,14 @@ export class DsiConfigurationComponent implements OnInit {
       siteWeb: [""],
       alertesEmail: [true],
       alertesSms: [false],
-      delaiRelance: [7, [Validators.required, Validators.min(1), Validators.max(30)]],
-      delaiMiseEnDemeure: [30, [Validators.required, Validators.min(7), Validators.max(90)]],
+      delaiRelance: [
+        7,
+        [Validators.required, Validators.min(1), Validators.max(30)],
+      ],
+      delaiMiseEnDemeure: [
+        30,
+        [Validators.required, Validators.min(7), Validators.max(90)],
+      ],
       tauxProvisionDouteuse: [50],
       tauxProvisionPerdue: [100],
     });
@@ -46,7 +52,7 @@ export class DsiConfigurationComponent implements OnInit {
     }
 
     this.dsi.getConfiguration().subscribe({
-      next: cfg => this.form.patchValue(cfg),
+      next: (cfg) => this.form.patchValue(cfg),
       error: () => {},
     });
   }
@@ -56,7 +62,9 @@ export class DsiConfigurationComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      this.snack.open("Le logo ne doit pas dépasser 2 Mo", "Fermer", { duration: 3000 });
+      this.snack.open("Le logo ne doit pas dépasser 2 Mo", "Fermer", {
+        duration: 3000,
+      });
       return;
     }
     this.logoFile = file;
@@ -67,7 +75,11 @@ export class DsiConfigurationComponent implements OnInit {
       const code = this.auth.getImfCode();
       if (code) {
         this.auth.setImfLogo(code, dataUrl);
-        this.snack.open("Logo mis à jour pour tous les acteurs de l'IMF", "Fermer", { duration: 3500 });
+        this.snack.open(
+          "Logo mis à jour pour tous les acteurs de l'IMF",
+          "Fermer",
+          { duration: 3500 },
+        );
       }
     };
     reader.readAsDataURL(file);
@@ -89,11 +101,15 @@ export class DsiConfigurationComponent implements OnInit {
     this.dsi.saveConfiguration(this.form.getRawValue()).subscribe({
       next: () => {
         this.saving = false;
-        this.snack.open("Configuration sauvegardée avec succès", "Fermer", { duration: 3000 });
+        this.snack.open("Configuration sauvegardée avec succès", "Fermer", {
+          duration: 3000,
+        });
       },
       error: () => {
         this.saving = false;
-        this.snack.open("Erreur lors de la sauvegarde", "Fermer", { duration: 3000 });
+        this.snack.open("Erreur lors de la sauvegarde", "Fermer", {
+          duration: 3000,
+        });
       },
     });
   }

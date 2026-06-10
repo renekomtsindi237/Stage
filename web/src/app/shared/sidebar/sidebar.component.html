@@ -1,10 +1,22 @@
 <nav class="app-sidebar" [class.is-super-admin]="isSuperAdmin">
   <!-- Logo MicroRecouv -->
   <div class="sidebar-logo">
-    <img src="assets/MicroRecouv.png" alt="MicroRecouv" class="sidebar-logo-img" />
+    <img
+      src="assets/MicroRecouv.png"
+      alt="MicroRecouv"
+      class="sidebar-logo-img"
+    />
     <div>
       <div class="sidebar-logo-text">MicroRecouv</div>
-      <div class="sidebar-logo-sub">{{ isSuperAdmin ? "Administration centrale" : isSupport ? "Monitoring système" : "Gestion & Recouvrement" }}</div>
+      <div class="sidebar-logo-sub">
+        {{
+          isSuperAdmin
+            ? "Administration centrale"
+            : isSupport
+              ? "Monitoring système"
+              : "Gestion & Recouvrement"
+        }}
+      </div>
     </div>
   </div>
 
@@ -23,8 +35,15 @@
   <!-- Badge IMF (tous les rôles IMF) -->
   <div class="imf-badge" *ngIf="!isSuperAdmin && !isSupport && imfNom">
     <div class="imf-badge-logo-wrap">
-      <img *ngIf="imfLogo" [src]="imfLogo" alt="Logo IMF" class="imf-badge-logo" />
-      <mat-icon *ngIf="!imfLogo" class="imf-badge-icon">corporate_fare</mat-icon>
+      <img
+        *ngIf="imfLogo"
+        [src]="imfLogo"
+        alt="Logo IMF"
+        class="imf-badge-logo"
+      />
+      <mat-icon *ngIf="!imfLogo" class="imf-badge-icon"
+        >corporate_fare</mat-icon
+      >
     </div>
     <div class="imf-badge-content">
       <span class="imf-badge-label">Institution</span>

@@ -59,4 +59,3 @@ export class ReportingService {
     URL.revokeObjectURL(url);
   }
 }
-

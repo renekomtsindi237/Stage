@@ -17,25 +17,41 @@
     <div class="kpi-row">
       <div class="kpi-card">
         <span class="kpi-label">Encours total</span>
-        <span class="kpi-value">{{ summary.totalEncours?.toLocaleString('fr-FR') || '—' }} FCFA</span>
+        <span class="kpi-value"
+          >{{ summary.totalEncours?.toLocaleString("fr-FR") || "—" }} FCFA</span
+        >
       </div>
-      <div class="kpi-card" [ngClass]="summary.tauxPar30Pct < 5 ? 'kpi-ok' : 'kpi-warn'">
+      <div
+        class="kpi-card"
+        [ngClass]="summary.tauxPar30Pct < 5 ? 'kpi-ok' : 'kpi-warn'"
+      >
         <span class="kpi-label">PAR 30</span>
         <span class="kpi-value">{{ summary.tauxPar30Pct?.toFixed(2) }}%</span>
-        <span class="kpi-badge" [ngClass]="summary.tauxPar30Pct < 5 ? 'badge-ok' : 'badge-warn'">
-          {{ summary.tauxPar30Pct < 5 ? 'CONFORME' : 'ATTENTION' }}
+        <span
+          class="kpi-badge"
+          [ngClass]="summary.tauxPar30Pct < 5 ? 'badge-ok' : 'badge-warn'"
+        >
+          {{ summary.tauxPar30Pct < 5 ? "CONFORME" : "ATTENTION" }}
         </span>
       </div>
-      <div class="kpi-card" [ngClass]="summary.tauxPar90Pct < 3 ? 'kpi-ok' : 'kpi-alert'">
+      <div
+        class="kpi-card"
+        [ngClass]="summary.tauxPar90Pct < 3 ? 'kpi-ok' : 'kpi-alert'"
+      >
         <span class="kpi-label">PAR 90</span>
         <span class="kpi-value">{{ summary.tauxPar90Pct?.toFixed(2) }}%</span>
-        <span class="kpi-badge" [ngClass]="summary.tauxPar90Pct < 3 ? 'badge-ok' : 'badge-alert'">
-          {{ summary.tauxPar90Pct < 3 ? 'CONFORME' : 'HORS NORME' }}
+        <span
+          class="kpi-badge"
+          [ngClass]="summary.tauxPar90Pct < 3 ? 'badge-ok' : 'badge-alert'"
+        >
+          {{ summary.tauxPar90Pct < 3 ? "CONFORME" : "HORS NORME" }}
         </span>
       </div>
       <div class="kpi-card">
         <span class="kpi-label">Taux recouvrement 30j</span>
-        <span class="kpi-value">{{ summary.tauxRecouvrementPct?.toFixed(1) }}%</span>
+        <span class="kpi-value"
+          >{{ summary.tauxRecouvrementPct?.toFixed(1) }}%</span
+        >
       </div>
     </div>
   </div>

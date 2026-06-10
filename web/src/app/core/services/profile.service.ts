@@ -54,4 +54,3 @@ export class ProfileService {
       .pipe(map((r) => r.data));
   }
 }
-

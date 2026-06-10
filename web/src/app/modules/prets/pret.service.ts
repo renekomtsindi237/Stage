@@ -35,4 +35,3 @@ export class PretService {
       .pipe(map((r) => r.data));
   }
 }
-

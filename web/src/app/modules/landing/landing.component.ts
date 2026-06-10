@@ -44,7 +44,11 @@ export class LandingComponent implements OnInit, OnDestroy {
       value: "En direct",
       label: "Tableaux de bord actualisés automatiquement",
     },
-    { icon: "sync", value: "Automatisé", label: "Import quotidien de vos données de prêts" },
+    {
+      icon: "sync",
+      value: "Automatisé",
+      label: "Import quotidien de vos données de prêts",
+    },
   ];
 
   readonly steps = [

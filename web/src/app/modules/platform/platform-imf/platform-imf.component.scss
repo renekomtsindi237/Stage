@@ -1247,9 +1247,12 @@
     font-size: 0.8rem;
     color: #92400e;
     line-height: 1.5;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 
-    strong { font-weight: 700; }
+    strong {
+      font-weight: 700;
+    }
   }
 }
 
@@ -1316,7 +1319,9 @@
     background: #eff6ff;
     color: #2563eb;
 
-    mat-icon { color: #2563eb; }
+    mat-icon {
+      color: #2563eb;
+    }
   }
 
   &.wz-chip--on {
@@ -1325,7 +1330,9 @@
     color: #1d4ed8;
     font-weight: 700;
 
-    mat-icon { color: #2563eb; }
+    mat-icon {
+      color: #2563eb;
+    }
   }
 }
 

@@ -209,7 +209,12 @@
   font-size: 0.75rem;
   font-weight: 800;
   flex-shrink: 0;
-  mat-icon { font-size: 18px; width: 18px; height: 18px; color: #16a34a; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #16a34a;
+  }
 }
 
 .imf-badge {
@@ -510,64 +515,87 @@
    SUPER_ADMIN — dark navy theme
    ════════════════════════════════════════════ */
 .app-sidebar.is-super-admin {
-  background: #0F172A;
-  border-right-color: #1E293B;
+  background: #0f172a;
+  border-right-color: #1e293b;
   box-shadow: 2px 0 20px rgba(0, 0, 0, 0.35);
 
   .sidebar-logo {
-    background: #0B1120;
-    border-bottom-color: #1E293B;
+    background: #0b1120;
+    border-bottom-color: #1e293b;
   }
 
-  .sidebar-logo-text { color: #F59E0B; }
-  .sidebar-logo-sub  { color: #64748B; }
-  .sidebar-logo-img  { filter: none; mix-blend-mode: screen; opacity: 1; }
+  .sidebar-logo-text {
+    color: #f59e0b;
+  }
+  .sidebar-logo-sub {
+    color: #64748b;
+  }
+  .sidebar-logo-img {
+    filter: none;
+    mix-blend-mode: screen;
+    opacity: 1;
+  }
 
-  .sidebar-section-label { color: #475569; }
+  .sidebar-section-label {
+    color: #475569;
+  }
 
   .sidebar-nav {
-    &::-webkit-scrollbar-thumb { background: #1E293B; }
-    &::-webkit-scrollbar-thumb:hover { background: #334155; }
+    &::-webkit-scrollbar-thumb {
+      background: #1e293b;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
   }
 
   .sidebar-item {
-    color: #94A3B8;
-    mat-icon { color: #64748B; }
+    color: #94a3b8;
+    mat-icon {
+      color: #64748b;
+    }
 
     &:hover {
       background: rgba(245, 158, 11, 0.08);
-      color: #FCD34D;
-      mat-icon { color: #FCD34D; transform: scale(1.1); }
+      color: #fcd34d;
+      mat-icon {
+        color: #fcd34d;
+        transform: scale(1.1);
+      }
     }
 
     &.active {
       background: rgba(245, 158, 11, 0.14) !important;
-      color: #F59E0B !important;
+      color: #f59e0b !important;
       font-weight: 700;
       box-shadow: none;
-      mat-icon { color: #F59E0B; }
+      mat-icon {
+        color: #f59e0b;
+      }
 
       &::after {
-        background: #F59E0B;
+        background: #f59e0b;
         box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
       }
     }
   }
 
   .super-admin-badge {
-    background: rgba(245, 158, 11, 0.10);
+    background: rgba(245, 158, 11, 0.1);
     border-color: rgba(245, 158, 11, 0.25);
-    color: #F59E0B;
-    mat-icon { color: #F59E0B; }
+    color: #f59e0b;
+    mat-icon {
+      color: #f59e0b;
+    }
   }
 
   .sidebar-footer {
-    background: #0B1120;
-    border-top-color: #1E293B;
+    background: #0b1120;
+    border-top-color: #1e293b;
   }
 
   .sidebar-user-info {
-    background: #1E293B;
+    background: #1e293b;
     border-color: #334155;
 
     &:hover {
@@ -578,28 +606,43 @@
     }
   }
 
-  .user-name  { color: #E2E8F0; }
-  .user-role  { color: #64748B; }
-  .profile-arrow { color: #475569; }
+  .user-name {
+    color: #e2e8f0;
+  }
+  .user-role {
+    color: #64748b;
+  }
+  .profile-arrow {
+    color: #475569;
+  }
 
-  .sidebar-user-info:hover .profile-arrow { color: #F59E0B; }
+  .sidebar-user-info:hover .profile-arrow {
+    color: #f59e0b;
+  }
 
   .sidebar-user-info.user-active {
-    background: rgba(245, 158, 11, 0.10) !important;
+    background: rgba(245, 158, 11, 0.1) !important;
     border-color: rgba(245, 158, 11, 0.4) !important;
-    .user-name  { color: #FCD34D; }
-    .profile-arrow { color: #F59E0B; opacity: 1; }
+    .user-name {
+      color: #fcd34d;
+    }
+    .profile-arrow {
+      color: #f59e0b;
+      opacity: 1;
+    }
   }
 
   .logout-item {
     background: #c0170f !important;
     color: #fff !important;
     box-shadow: 0 3px 12px rgba(192, 23, 15, 0.55) !important;
-    mat-icon { color: #fff !important; }
+    mat-icon {
+      color: #fff !important;
+    }
 
     &:hover {
       background: #991210 !important;
-      box-shadow: 0 5px 18px rgba(192, 23, 15, 0.70) !important;
+      box-shadow: 0 5px 18px rgba(192, 23, 15, 0.7) !important;
       transform: translateY(-1px);
     }
 

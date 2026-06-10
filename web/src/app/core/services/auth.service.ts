@@ -3,7 +3,13 @@ import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, tap, throwError } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { Router } from "@angular/router";
-import { AuthResponse, LoginRequest, OtpInitResponse, OtpVerifyResponse, Role } from "../models/auth.model";
+import {
+  AuthResponse,
+  LoginRequest,
+  OtpInitResponse,
+  OtpVerifyResponse,
+  Role,
+} from "../models/auth.model";
 
 // Tokens (accessToken, refreshToken) stockÃ©s dans des cookies httpOnly cÃ´tÃ© serveur.
 // Seules les donnÃ©es non-sensibles restent en localStorage.
@@ -37,12 +43,18 @@ export class AuthService {
   }
 
   requestOtp(email: string): Observable<OtpInitResponse> {
-    return this.http.post<OtpInitResponse>(`${this.API}/request-otp`, { email });
+    return this.http.post<OtpInitResponse>(`${this.API}/request-otp`, {
+      email,
+    });
   }
 
   verifyOtp(email: string, code: string): Observable<AuthResponse> {
     return this.http
-      .post<OtpVerifyResponse>(`${this.API}/verify-otp`, { email, code }, { withCredentials: true })
+      .post<OtpVerifyResponse>(
+        `${this.API}/verify-otp`,
+        { email, code },
+        { withCredentials: true },
+      )
       .pipe(
         map((res) => ({
           accessToken: res.accessToken,
@@ -204,4 +216,3 @@ export class AuthService {
     localStorage.removeItem(MUST_CHANGE_KEY);
   }
 }
-

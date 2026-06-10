@@ -13,7 +13,7 @@ import { AuthService } from "@core/services/auth.service";
 import { FullscreenToastService } from "@core/services/fullscreen-toast.service";
 
 export type LoginMode = "imf" | "admin";
-export type OtpStep  = "email" | "code";
+export type OtpStep = "email" | "code";
 
 @Component({
   selector: "imf-login",
@@ -23,26 +23,34 @@ export type OtpStep  = "email" | "code";
     trigger("fade", [
       transition(":enter", [
         style({ opacity: 0, transform: "translateY(-12px)" }),
-        animate("240ms 30ms cubic-bezier(0.16,1,0.3,1)",
-          style({ opacity: 1, transform: "translateY(0)" })),
+        animate(
+          "240ms 30ms cubic-bezier(0.16,1,0.3,1)",
+          style({ opacity: 1, transform: "translateY(0)" }),
+        ),
       ]),
       transition(":leave", [
-        animate("160ms ease",
-          style({ opacity: 0, transform: "translateY(10px)" })),
+        animate(
+          "160ms ease",
+          style({ opacity: 0, transform: "translateY(10px)" }),
+        ),
       ]),
     ]),
     trigger("slideUp", [
       transition(":enter", [
         style({ opacity: 0, transform: "translateY(24px)" }),
-        animate("320ms cubic-bezier(0.16,1,0.3,1)",
-          style({ opacity: 1, transform: "translateY(0)" })),
+        animate(
+          "320ms cubic-bezier(0.16,1,0.3,1)",
+          style({ opacity: 1, transform: "translateY(0)" }),
+        ),
       ]),
     ]),
     trigger("boxPop", [
       transition(":enter", [
         style({ opacity: 0, transform: "scale(0.7)" }),
-        animate("200ms cubic-bezier(0.34,1.56,0.64,1)",
-          style({ opacity: 1, transform: "scale(1)" })),
+        animate(
+          "200ms cubic-bezier(0.34,1.56,0.64,1)",
+          style({ opacity: 1, transform: "scale(1)" }),
+        ),
       ]),
     ]),
   ],
@@ -69,11 +77,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   passwordFocused = false;
 
   readonly IMF_ROLES = [
-    { label: "DSI",                 icon: "settings_suggest",  color: "#2563EB" },
-    { label: "Directeur",           icon: "business_center",   color: "#0D9488" },
-    { label: "Analyste",            icon: "analytics",         color: "#8B5CF6" },
-    { label: "Resp. Recouvrement",  icon: "account_balance",   color: "#EC4899" },
-    { label: "Agent terrain",       icon: "person_pin",        color: "#F59E0B" },
+    { label: "DSI", icon: "settings_suggest", color: "#2563EB" },
+    { label: "Directeur", icon: "business_center", color: "#0D9488" },
+    { label: "Analyste", icon: "analytics", color: "#8B5CF6" },
+    { label: "Resp. Recouvrement", icon: "account_balance", color: "#EC4899" },
+    { label: "Agent terrain", icon: "person_pin", color: "#F59E0B" },
   ];
 
   constructor(
@@ -92,7 +100,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       code: ["", [Validators.required, Validators.pattern(/^\d{6}$/)]],
     });
     this.adminForm = this.fb.group({
-      email:    ["", [Validators.required, Validators.email]],
+      email: ["", [Validators.required, Validators.email]],
       password: ["", [Validators.required, Validators.minLength(6)]],
     });
 
@@ -130,8 +138,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.loading = true;
     const email: string = this.emailForm.value.email;
     this.authService.requestOtp(email).subscribe({
-      next:  () => this.onOtpSent(email),
-      error: () => this.onOtpSent(email),  // réponse générique — ne pas révéler si l'email existe
+      next: () => this.onOtpSent(email),
+      error: () => this.onOtpSent(email), // réponse générique — ne pas révéler si l'email existe
     });
   }
 
@@ -156,8 +164,16 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.resendCountdown > 0 || this.loading) return;
     this.loading = true;
     this.authService.requestOtp(this.otpEmail).subscribe({
-      next:  () => { this.loading = false; this.resetOtpBoxes(); this.startResendTimer(); },
-      error: () => { this.loading = false; this.resetOtpBoxes(); this.startResendTimer(); },
+      next: () => {
+        this.loading = false;
+        this.resetOtpBoxes();
+        this.startResendTimer();
+      },
+      error: () => {
+        this.loading = false;
+        this.resetOtpBoxes();
+        this.startResendTimer();
+      },
     });
   }
 
@@ -198,7 +214,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     // Auto-submit quand les 6 chiffres sont saisis
-    if (this.otpDigits.every(d => d !== "")) {
+    if (this.otpDigits.every((d) => d !== "")) {
       setTimeout(() => this.submitVerifyOtp(), 200);
     }
   }
@@ -222,7 +238,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   onOtpPaste(event: ClipboardEvent): void {
     event.preventDefault();
-    const paste = (event.clipboardData?.getData("text") ?? "").replace(/\D/g, "").slice(0, 6);
+    const paste = (event.clipboardData?.getData("text") ?? "")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     paste.split("").forEach((d, i) => (this.otpDigits[i] = d));
     this.otpForm.get("code")?.setValue(this.otpDigits.join(""));
     const focusIdx = Math.min(paste.length, 5);
@@ -245,9 +263,10 @@ export class LoginComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.loading = false;
         this.resetOtpBoxes();
-        const msg = err?.status === 400
-          ? "Code invalide ou expiré. Vérifiez le code reçu par email."
-          : "Une erreur est survenue. Veuillez réessayer.";
+        const msg =
+          err?.status === 400
+            ? "Code invalide ou expiré. Vérifiez le code reçu par email."
+            : "Une erreur est survenue. Veuillez réessayer.";
         this.toastService.showError("Code incorrect", msg, 0);
       },
     });
@@ -263,8 +282,15 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.loading = false;
         if (res.mustChangePassword) {
-          this.toastService.showSuccess("Connexion réussie", "Vous devez définir un nouveau mot de passe.", 2000);
-          setTimeout(() => this.router.navigate(["/login/change-password"]), 2000);
+          this.toastService.showSuccess(
+            "Connexion réussie",
+            "Vous devez définir un nouveau mot de passe.",
+            2000,
+          );
+          setTimeout(
+            () => this.router.navigate(["/login/change-password"]),
+            2000,
+          );
           return;
         }
         this.toastService.showLogin(res.username, true);
@@ -274,9 +300,11 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.loading = false;
         const status = err?.status;
         const message =
-          status === 401 ? "Identifiants invalides. Vérifiez votre email et mot de passe." :
-          status === 0   ? "Serveur injoignable. Vérifiez votre connexion." :
-                           "Une erreur est survenue. Veuillez réessayer.";
+          status === 401
+            ? "Identifiants invalides. Vérifiez votre email et mot de passe."
+            : status === 0
+              ? "Serveur injoignable. Vérifiez votre connexion."
+              : "Une erreur est survenue. Veuillez réessayer.";
         this.toastService.showError("Échec de connexion", message, 0);
       },
     });
@@ -284,23 +312,31 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   // ── Getters ──────────────────────────────────────────────────────────────
 
-  get imfEmail()      { return this.emailForm.get("email")!; }
-  get otpCode()       { return this.otpForm.get("code")!; }
-  get adminEmail()    { return this.adminForm.get("email")!; }
-  get adminPassword() { return this.adminForm.get("password")!; }
+  get imfEmail() {
+    return this.emailForm.get("email")!;
+  }
+  get otpCode() {
+    return this.otpForm.get("code")!;
+  }
+  get adminEmail() {
+    return this.adminForm.get("email")!;
+  }
+  get adminPassword() {
+    return this.adminForm.get("password")!;
+  }
 
   get otpComplete(): boolean {
-    return this.otpDigits.every(d => d !== "");
+    return this.otpDigits.every((d) => d !== "");
   }
 
   get otpFilledCount(): number {
-    return this.otpDigits.filter(d => d !== "").length;
+    return this.otpDigits.filter((d) => d !== "").length;
   }
 
   maskEmail(email: string): string {
     const [local, domain] = email.split("@");
     if (!domain) return email;
-    const shown = local.length > 2 ? local.slice(0, 2) : local[0] ?? "";
+    const shown = local.length > 2 ? local.slice(0, 2) : (local[0] ?? "");
     return `${shown}${"•".repeat(Math.max(local.length - 2, 3))}@${domain}`;
   }
 }
