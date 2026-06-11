@@ -157,7 +157,7 @@
               [disabled]="!row.actif"
               [matTooltip]="
                 row.hasDsi
-                  ? 'Mettre à jour le compte DSI'
+                  ? 'Gérer le compte DSI (désactiver / supprimer)'
                   : 'Créer un compte DSI'
               "
             >
@@ -938,24 +938,16 @@
     </ng-container>
 
     <!-- ════════════════════════════════
-         Créer / Mettre à jour DSI
+         Créer DSI
          ════════════════════════════════ -->
     <ng-container *ngIf="modalMode === 'create-admin'">
       <!-- En-tête -->
       <div class="modal-hd dsi-modal-hd">
-        <div class="dsi-hd-icon" [class.dsi-icon-gold]="selectedImf?.hasDsi">
-          <mat-icon>{{
-            selectedImf?.hasDsi ? "manage_accounts" : "person_add"
-          }}</mat-icon>
+        <div class="dsi-hd-icon">
+          <mat-icon>person_add</mat-icon>
         </div>
         <div class="modal-hd-content">
-          <h3>
-            {{
-              selectedImf?.hasDsi
-                ? "Mettre à jour le DSI"
-                : "Créer un compte DSI"
-            }}
-          </h3>
+          <h3>Créer un compte DSI</h3>
           <p>
             Pour <strong>{{ selectedImf?.nom }}</strong> ·
             <span class="dsi-hd-code">{{ selectedImf?.code }}</span>
@@ -1003,12 +995,7 @@
               <span>{{ selectedImf?.actif ? "Active" : "Inactive" }}</span>
             </span>
           </div>
-          <span
-            class="dsi-imf-badge"
-            [class.badge-update]="selectedImf?.hasDsi"
-          >
-            {{ selectedImf?.hasDsi ? "Mise à jour" : "Nouveau DSI" }}
-          </span>
+          <span class="dsi-imf-badge">Nouveau DSI</span>
         </div>
 
         <!-- Champ : Identifiant -->
@@ -1136,23 +1123,131 @@
             mat-flat-button
             type="submit"
             class="dsi-btn-submit"
-            [class.dsi-btn-gold]="selectedImf?.hasDsi"
             [disabled]="adminForm.invalid || modalLoading"
           >
             <mat-spinner *ngIf="modalLoading" diameter="18"></mat-spinner>
             <ng-container *ngIf="!modalLoading">
-              <mat-icon>{{
-                selectedImf?.hasDsi ? "save" : "person_add"
-              }}</mat-icon>
-              {{
-                selectedImf?.hasDsi
-                  ? "Mettre à jour le DSI"
-                  : "Créer le compte DSI"
-              }}
+              <mat-icon>person_add</mat-icon>
+              Créer le compte DSI
             </ng-container>
           </button>
         </div>
       </form>
+    </ng-container>
+
+    <!-- ════════════════════════════════
+         Gérer DSI existant
+         ════════════════════════════════ -->
+    <ng-container *ngIf="modalMode === 'manage-admin'">
+      <div class="modal-hd dsi-modal-hd">
+        <div class="dsi-hd-icon dsi-icon-gold">
+          <mat-icon>manage_accounts</mat-icon>
+        </div>
+        <div class="modal-hd-content">
+          <h3>Gérer le compte DSI</h3>
+          <p>
+            Pour <strong>{{ selectedImf?.nom }}</strong> ·
+            <span class="dsi-hd-code">{{ selectedImf?.code }}</span>
+          </p>
+        </div>
+        <button mat-icon-button (click)="closeModal()" class="modal-close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-feedback success" *ngIf="modalSuccess" @fadeInUp>
+        <mat-icon>check_circle</mat-icon><span>{{ modalSuccess }}</span>
+      </div>
+      <div class="modal-feedback error" *ngIf="modalError" @fadeInUp>
+        <mat-icon>error_outline</mat-icon><span>{{ modalError }}</span>
+      </div>
+
+      <ng-container *ngIf="!modalSuccess">
+        <!-- Carte récap IMF -->
+        <div class="dsi-imf-card">
+          <div class="dsi-imf-avatar-wrap">
+            <img
+              [src]="getImfLogo(selectedImf?.code || '')"
+              [alt]="selectedImf?.nom"
+              class="dsi-imf-avatar-img"
+            />
+          </div>
+          <div class="dsi-imf-info">
+            <span class="dsi-imf-name">{{ selectedImf?.nom }}</span>
+            <span class="dsi-imf-meta">
+              <span class="dsi-imf-code">{{ selectedImf?.code }}</span>
+              <span class="dsi-sep">·</span>
+              <span
+                class="dsi-status-dot"
+                [class.dot-active]="selectedImf?.actif"
+              ></span>
+              <span>{{ selectedImf?.actif ? "Active" : "Inactive" }}</span>
+            </span>
+          </div>
+          <span class="dsi-imf-badge badge-update">DSI actif</span>
+        </div>
+
+        <!-- Notice -->
+        <div class="dsi-info-note">
+          <mat-icon>info_outline</mat-icon>
+          <span>
+            Un compte DSI est déjà associé à cette IMF. Vous pouvez le
+            <strong>désactiver</strong> temporairement (le compte reste en
+            base) ou le <strong>supprimer</strong> définitivement pour en
+            créer un nouveau.
+          </span>
+        </div>
+
+        <!-- Actions -->
+        <div class="dsi-actions" style="flex-direction: column; gap: 12px; padding: 0 24px 8px">
+          <button
+            mat-stroked-button
+            type="button"
+            class="dsi-btn-cancel"
+            style="width: 100%; color: var(--color-warning, #f59e0b); border-color: var(--color-warning, #f59e0b)"
+            [disabled]="modalLoading"
+            (click)="submitSuspendAdmin()"
+          >
+            <mat-spinner
+              *ngIf="modalLoading && manageDsiAction === 'suspend'"
+              diameter="18"
+            ></mat-spinner>
+            <mat-icon *ngIf="!(modalLoading && manageDsiAction === 'suspend')"
+              >pause_circle</mat-icon
+            >
+            Désactiver le DSI
+          </button>
+          <button
+            mat-flat-button
+            type="button"
+            class="btn-danger"
+            style="width: 100%"
+            [disabled]="modalLoading"
+            (click)="submitDeleteAdmin()"
+          >
+            <mat-spinner
+              *ngIf="modalLoading && manageDsiAction === 'delete'"
+              diameter="18"
+            ></mat-spinner>
+            <mat-icon *ngIf="!(modalLoading && manageDsiAction === 'delete')"
+              >delete_forever</mat-icon
+            >
+            Supprimer définitivement le DSI
+          </button>
+        </div>
+
+        <div class="dsi-actions" style="padding: 0 24px 24px">
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="closeModal()"
+            class="dsi-btn-cancel"
+            style="width: 100%"
+          >
+            Annuler
+          </button>
+        </div>
+      </ng-container>
     </ng-container>
 
     <!-- ════════════════════

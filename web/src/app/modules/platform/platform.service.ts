@@ -184,12 +184,18 @@ export class PlatformService {
       .pipe(map((r) => r.data));
   }
 
-  updateImfAdmin(
-    imfUid: string,
-    payload: CreateImfAdminPayload,
-  ): Observable<ImfRecord> {
+  suspendImfAdmin(imfUid: string): Observable<ImfRecord> {
     return this.http
-      .patch<ApiResponse<ImfRecord>>(`${this.API}/imf/${imfUid}/admin`, payload)
+      .patch<ApiResponse<ImfRecord>>(
+        `${this.API}/imf/${imfUid}/admin/suspend`,
+        {},
+      )
+      .pipe(map((r) => r.data));
+  }
+
+  deleteImfAdmin(imfUid: string): Observable<ImfRecord> {
+    return this.http
+      .delete<ApiResponse<ImfRecord>>(`${this.API}/imf/${imfUid}/admin`)
       .pipe(map((r) => r.data));
   }
 

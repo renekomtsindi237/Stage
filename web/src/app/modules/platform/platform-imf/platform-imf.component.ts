@@ -13,7 +13,7 @@ import {
 } from "../platform.service";
 import { fadeInUp, reveal } from "../../../shared/animations";
 
-type ModalMode = "create-imf" | "create-admin" | "delete-imf" | null;
+type ModalMode = "create-imf" | "create-admin" | "manage-admin" | "delete-imf" | null;
 
 export const FORMES_JURIDIQUES = [
   "Société Anonyme (SA)",
@@ -88,6 +88,7 @@ export class PlatformImfComponent implements OnInit {
   adminForm!: FormGroup;
   usernameFocused = false;
   emailFocused = false;
+  manageDsiAction: "suspend" | "delete" | null = null;
 
   constructor(
     public auth: AuthService,
@@ -281,7 +282,8 @@ export class PlatformImfComponent implements OnInit {
     this.adminForm.reset();
     this.modalError = "";
     this.modalSuccess = "";
-    this.modalMode = "create-admin";
+    this.manageDsiAction = null;
+    this.modalMode = imf.hasDsi ? "manage-admin" : "create-admin";
   }
 
   submitCreateAdmin(): void {
@@ -290,15 +292,10 @@ export class PlatformImfComponent implements OnInit {
     this.modalLoading = true;
     this.modalError = "";
     const payload: CreateImfAdminPayload = this.adminForm.value;
-    const apiCall = this.selectedImf.hasDsi
-      ? this.platformService.updateImfAdmin(this.selectedImf.uid, payload)
-      : this.platformService.createImfAdmin(this.selectedImf.uid, payload);
-    apiCall.subscribe({
+    this.platformService.createImfAdmin(this.selectedImf.uid, payload).subscribe({
       next: (updatedImf) => {
         this.modalLoading = false;
-        this.modalSuccess = this.selectedImf!.hasDsi
-          ? `Compte DSI « ${payload.username} » mis à jour.`
-          : `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
+        this.modalSuccess = `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
         this.dataSource.data = this.dataSource.data.map((i) =>
           i.uid === updatedImf.uid ? updatedImf : i,
         );
@@ -306,6 +303,50 @@ export class PlatformImfComponent implements OnInit {
       },
       error: (err) => {
         this.modalLoading = false;
+        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+      },
+    });
+  }
+
+  submitSuspendAdmin(): void {
+    if (!this.selectedImf || this.modalLoading) return;
+    this.modalLoading = true;
+    this.modalError = "";
+    this.manageDsiAction = "suspend";
+    this.platformService.suspendImfAdmin(this.selectedImf.uid).subscribe({
+      next: (updated) => {
+        this.modalLoading = false;
+        this.modalSuccess = `Compte DSI désactivé pour ${this.selectedImf!.nom}.`;
+        this.dataSource.data = this.dataSource.data.map((i) =>
+          i.uid === updated.uid ? updated : i,
+        );
+        setTimeout(() => this.closeModal(), 1500);
+      },
+      error: (err) => {
+        this.modalLoading = false;
+        this.manageDsiAction = null;
+        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+      },
+    });
+  }
+
+  submitDeleteAdmin(): void {
+    if (!this.selectedImf || this.modalLoading) return;
+    this.modalLoading = true;
+    this.modalError = "";
+    this.manageDsiAction = "delete";
+    this.platformService.deleteImfAdmin(this.selectedImf.uid).subscribe({
+      next: (updated) => {
+        this.modalLoading = false;
+        this.modalSuccess = `Compte DSI supprimé. L'IMF ${this.selectedImf!.nom} peut maintenant recevoir un nouveau DSI.`;
+        this.dataSource.data = this.dataSource.data.map((i) =>
+          i.uid === updated.uid ? updated : i,
+        );
+        setTimeout(() => this.closeModal(), 2000);
+      },
+      error: (err) => {
+        this.modalLoading = false;
+        this.manageDsiAction = null;
         this.modalError = err?.error?.message ?? "Une erreur est survenue.";
       },
     });
@@ -412,6 +453,7 @@ export class PlatformImfComponent implements OnInit {
     this.modalLoading = false;
     this.wizardStep = 1;
     this.wizardLogoPreview = null;
+    this.manageDsiAction = null;
   }
 
   formatDate(iso: string): string {

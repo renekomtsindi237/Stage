@@ -73,7 +73,7 @@ public class PlatformController {
         return ResponseEntity.ok(ApiResponse.ok("IMF réactivée", imfService.activate(uid)));
     }
 
-    @Operation(summary = "Créer le compte DSI (administrateur) d'une IMF")
+    @Operation(summary = "Créer le compte DSI (administrateur) d'une IMF — une seule création autorisée")
     @PostMapping("/imf/{imfUid}/admin")
     public ResponseEntity<ApiResponse<ImfResponse>> createImfAdmin(
             @PathVariable UUID imfUid,
@@ -83,11 +83,15 @@ public class PlatformController {
                 .body(ApiResponse.ok("Compte DSI créé", imf));
     }
 
-    @Operation(summary = "Mettre à jour le DSI existant d'une IMF")
-    @PatchMapping("/imf/{imfUid}/admin")
-    public ResponseEntity<ApiResponse<ImfResponse>> updateImfAdmin(
-            @PathVariable UUID imfUid,
-            @Valid @RequestBody CreateImfAdminRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok("Compte DSI mis à jour", imfService.updateAdmin(imfUid, request)));
+    @Operation(summary = "Désactiver (suspendre) le DSI d'une IMF")
+    @PatchMapping("/imf/{imfUid}/admin/suspend")
+    public ResponseEntity<ApiResponse<ImfResponse>> suspendImfAdmin(@PathVariable UUID imfUid) {
+        return ResponseEntity.ok(ApiResponse.ok("Compte DSI désactivé", imfService.suspendAdmin(imfUid)));
+    }
+
+    @Operation(summary = "Supprimer définitivement le DSI d'une IMF")
+    @DeleteMapping("/imf/{imfUid}/admin")
+    public ResponseEntity<ApiResponse<ImfResponse>> deleteImfAdmin(@PathVariable UUID imfUid) {
+        return ResponseEntity.ok(ApiResponse.ok("Compte DSI supprimé", imfService.deleteAdmin(imfUid)));
     }
 }

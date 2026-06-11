@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,7 @@ public class ImfService implements IImfService {
     private final ImfRepository imfRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     // ── Helper ───────────────────────────────────────────────────────────────
 
@@ -131,7 +133,7 @@ public class ImfService implements IImfService {
             throw new BusinessException(
                 "Impossible de supprimer : " + userCount + " utilisateur(s) rattaché(s) à cette IMF. " +
                 "Supprimez d'abord les utilisateurs ou désactivez l'IMF.",
-                org.springframework.http.HttpStatus.CONFLICT
+                HttpStatus.CONFLICT
             );
         }
         imfRepository.delete(imf);
@@ -139,12 +141,20 @@ public class ImfService implements IImfService {
     }
 
     /**
-     * Crée le compte DSI et retourne l'IMF mise à jour (hasDsi = true).
+     * Crée le compte DSI initial d'une IMF.
+     * Règle métier : une seule IMF = un seul DSI.
      */
     @Transactional
     public ImfResponse createAdmin(UUID imfUid, CreateImfAdminRequest request) {
         Imf imf = imfRepository.findByUid(imfUid)
                 .orElseThrow(() -> new ResourceNotFoundException("IMF", imfUid));
+
+        if (userRepository.existsByImfIdAndRole(imf.getId(), Role.DSI)) {
+            throw new BusinessException(
+                "Cette IMF possède déjà un compte DSI. Désactivez-le ou supprimez-le avant d'en créer un nouveau.",
+                HttpStatus.CONFLICT
+            );
+        }
 
         if (userRepository.existsByUsername(request.username())) {
             throw new DuplicateResourceException("Utilisateur", "username", request.username());
@@ -162,29 +172,38 @@ public class ImfService implements IImfService {
 
         userRepository.save(dsi);
         log.info("DSI créé : {} pour IMF {}", request.username(), imf.getCode());
+
+        emailService.sendWelcomeEmail(request.email(), request.username(), "DSI", imf.getNom());
+
         return ImfResponse.of(imf, true);
     }
 
     /**
-     * Met à jour le compte DSI existant d'une IMF (username et/ou email).
+     * Désactive (suspend) le DSI d'une IMF sans le supprimer.
      */
     @Transactional
-    public ImfResponse updateAdmin(UUID imfUid, CreateImfAdminRequest request) {
+    public ImfResponse suspendAdmin(UUID imfUid) {
         Imf imf = imfRepository.findByUid(imfUid)
                 .orElseThrow(() -> new ResourceNotFoundException("IMF", imfUid));
-
         User dsi = userRepository.findByImfIdAndRole(imf.getId(), Role.DSI)
                 .orElseThrow(() -> new ResourceNotFoundException("DSI pour l'IMF", imfUid));
-
-        // Vérifier unicité username seulement si modifié
-        if (!dsi.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
-            throw new DuplicateResourceException("Utilisateur", "username", request.username());
-        }
-
-        dsi.setUsername(request.username());
-        dsi.setEmail(request.email());
+        dsi.setActif(false);
         userRepository.save(dsi);
-        log.info("DSI mis à jour : {} pour IMF {}", request.username(), imf.getCode());
+        log.info("DSI suspendu pour IMF {}", imf.getCode());
         return ImfResponse.of(imf, true);
+    }
+
+    /**
+     * Supprime définitivement le DSI d'une IMF — permet d'en créer un nouveau.
+     */
+    @Transactional
+    public ImfResponse deleteAdmin(UUID imfUid) {
+        Imf imf = imfRepository.findByUid(imfUid)
+                .orElseThrow(() -> new ResourceNotFoundException("IMF", imfUid));
+        User dsi = userRepository.findByImfIdAndRole(imf.getId(), Role.DSI)
+                .orElseThrow(() -> new ResourceNotFoundException("DSI pour l'IMF", imfUid));
+        userRepository.delete(dsi);
+        log.info("DSI supprimé pour IMF {}", imf.getCode());
+        return ImfResponse.of(imf, false);
     }
 }
