@@ -13,6 +13,7 @@ import cm.imf.pipeline.repository.DemandeRgpdRepository;
 import cm.imf.pipeline.repository.ImfRepository;
 import cm.imf.pipeline.security.Auditable;
 import cm.imf.pipeline.security.TenantContext;
+import cm.imf.pipeline.service.EmailService;
 import cm.imf.pipeline.service.INotificationService;
 import cm.imf.pipeline.sse.SseEmitterRegistry;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,6 +55,7 @@ public class DsiController {
     private final ImfRepository          imfRepository;
     private final INotificationService   notificationService;
     private final SseEmitterRegistry     sseRegistry;
+    private final EmailService           emailService;
 
     // ── Records DTOs inline ───────────────────────────────────────────────────
 
@@ -72,6 +74,32 @@ public class DsiController {
             boolean notifAutoriteRequise, boolean notifPersonnesRequise,
             OffsetDateTime dateDecouverte
     ) {}
+
+    // ── POST /api/v1/dsi/email/test ───────────────────────────────────────────
+
+    record TestEmailRequest(String to) {}
+
+    @Operation(summary = "Envoyer un email de test pour valider la configuration SMTP")
+    @PostMapping("/email/test")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> testEmail(
+            @RequestBody TestEmailRequest req) {
+
+        String dest = req.to() != null && !req.to().isBlank() ? req.to() : "albanrene77@gmail.com";
+        try {
+            emailService.sendTestEmail(dest);
+            log.info("Email de test envoyé → {}", dest);
+            return ResponseEntity.ok(ApiResponse.ok(Map.of(
+                    "statut",  "OK",
+                    "message", "Email envoyé à " + dest,
+                    "to",      dest
+            )));
+        } catch (Exception e) {
+            log.error("Échec email test → {} : {}", dest, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ApiResponse.error(
+                    "Échec SMTP : " + e.getMessage()
+            ));
+        }
+    }
 
     // ── GET /api/v1/dsi/violations ────────────────────────────────────────────
 

@@ -26,8 +26,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/v1/analyste")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ANALYSTE', 'DSI', 'DIRECTEUR')")
-@Tag(name = "Analyste", description = "Scoring MCRS, pipeline Airflow et métriques de dérive ML")
+@PreAuthorize("hasAnyRole('ANALYSTE', 'ANALYSTE_ENGAGEMENTS', 'DSI', 'DIRECTEUR')")
+@Tag(name = "Analyste", description = "Scoring MCRS, pipeline Airflow, métriques dérive ML et Risk Manager PAR")
 public class AnalysteController {
 
     private final JdbcTemplate jdbc;
@@ -211,6 +211,67 @@ public class AnalysteController {
                     evolutionPsiMockee(),
                     featuresContributionMockees()
             )));
+        }
+    }
+
+    // ── Risk Manager ──────────────────────────────────────────────────────────
+
+    @Operation(summary = "PAR 30/60/90 pour l'IMF du connecté")
+    @GetMapping("/risk/par")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> parIndicateurs() {
+        Long imfId = TenantContext.currentImfId();
+        try {
+            Map<String, Object> row = jdbc.queryForMap(
+                    "SELECT * FROM app.v_par_par_imf WHERE imf_id = ?", imfId);
+            return ResponseEntity.ok(ApiResponse.ok(row));
+        } catch (Exception e) {
+            log.debug("v_par_par_imf indisponible : {}", e.getMessage());
+            return ResponseEntity.ok(ApiResponse.ok(Map.of(
+                    "imf_id", imfId,
+                    "encours_par30", 0, "encours_par60", 0, "encours_par90", 0,
+                    "total_impaye", 0, "montant_par30", 0, "montant_par60", 0, "montant_par90", 0)));
+        }
+    }
+
+    @Operation(summary = "Concentration du portefeuille par secteur d'activité")
+    @GetMapping("/risk/concentration")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> concentration() {
+        Long imfId = TenantContext.currentImfId();
+        try {
+            List<Map<String, Object>> rows = jdbc.queryForList(
+                    "SELECT * FROM app.v_concentration_risque WHERE imf_id = ? ORDER BY exposition_totale DESC",
+                    imfId);
+            return ResponseEntity.ok(ApiResponse.ok(rows));
+        } catch (Exception e) {
+            log.debug("v_concentration_risque indisponible : {}", e.getMessage());
+            return ResponseEntity.ok(ApiResponse.ok(List.of()));
+        }
+    }
+
+    @Operation(summary = "Dossiers crédit en souffrance >90j avec anomalies d'octroi (audit fraude)")
+    @GetMapping("/risk/dossiers-souffrance")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> dossiersSouffrance(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Long imfId = TenantContext.currentImfId();
+        try {
+            List<Map<String, Object>> rows = jdbc.queryForList("""
+                    SELECT ai.id_pret, ai.nom_client, ai.jours_retard, ai.montant_impaye,
+                           dc.objet_financement, dc.secteur_activite, dc.montant_demande,
+                           dc.created_at AS date_octroi
+                    FROM app.alertes_impayes ai
+                    LEFT JOIN app.dossiers_credit dc ON dc.client_id = ai.id_pret
+                            AND dc.imf_id = ai.imf_id
+                    WHERE ai.imf_id = ?
+                      AND ai.jours_retard > 90
+                      AND ai.statut_alerte = 'ACTIVE'
+                    ORDER BY ai.jours_retard DESC
+                    LIMIT ? OFFSET ?
+                    """, imfId, size, (long) page * size);
+            return ResponseEntity.ok(ApiResponse.ok(rows));
+        } catch (Exception e) {
+            log.debug("dossiers-souffrance indisponible : {}", e.getMessage());
+            return ResponseEntity.ok(ApiResponse.ok(List.of()));
         }
     }
 

@@ -30,8 +30,17 @@ public class EmailService {
     private final JavaMailSender  mailSender;
     private final ResourceLoader  resourceLoader;
 
-    @Value("${spring.mail.username:noreply@imf.cm}")
+    /** Adresse technique Gmail (authentification SMTP). */
+    @Value("${imf.mail.from:${spring.mail.username:noreply@imf.cm}}")
     private String fromAddress;
+
+    /** Nom affiché dans le champ "De :" — ex: MicroRecouv, ServantAssist… */
+    @Value("${imf.mail.from-name:MicroRecouv}")
+    private String fromName;
+
+    /** Reply-To : adresse Cloudflare redirigée (ex: contact@rene.it.com). Vide = pas de Reply-To. */
+    @Value("${imf.mail.reply-to:}")
+    private String replyTo;
 
     @Value("${imf.app.url:http://localhost:4200}")
     private String appUrl;
@@ -286,6 +295,34 @@ public class EmailService {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
+    // TEST — diagnostic de configuration SMTP (synchrone, lève une exception)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Envoi de test synchrone (non-@Async) : lève une exception si la
+     * configuration SMTP est incorrecte, permettant un retour immédiat dans
+     * l'API sans attendre un log asynchrone.
+     */
+    public void sendTestEmail(String to) throws Exception {
+        String subject = "[TEST] " + fromName + " — Configuration SMTP Gmail";
+        String replyToDisplay = (replyTo != null && !replyTo.isBlank()) ? replyTo : "— (non configuré)";
+        String content = block("Test de configuration SMTP",
+                "<p style=\"margin:0 0 16px\">Cet email confirme que la configuration SMTP Gmail est correcte.</p>"
+                + metaTable(new String[][]{
+                        {"Serveur SMTP",  "smtp.gmail.com:587 (STARTTLS)"},
+                        {"De (technique)", fromAddress},
+                        {"Nom affiché",   fromName},
+                        {"Reply-To",      replyToDisplay},
+                        {"URL app",       appUrl},
+                        {"Date",          today()}
+                })
+                + infoBox("Si vous recevez cet email et que le champ \"Répondre à\" pointe vers "
+                        + replyToDisplay + ", la configuration est complète.", "success"),
+                "success");
+        sendSync(to, subject, layout(content, subject));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
     // INFRASTRUCTURE — envoi + layout HTML
     // ══════════════════════════════════════════════════════════════════════════
 
@@ -296,27 +333,36 @@ public class EmailService {
      */
     private void send(String to, String subject, String html) {
         try {
-            var message = mailSender.createMimeMessage();
-            // multipart=true obligatoire pour les images inline CID
-            var helper  = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress, appName);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(html, true);
-
-            // Attachment inline CID — logo MicroRecouv embarqué dans l'email
-            Resource logo = resourceLoader.getResource(LOGO_CLASSPATH);
-            if (logo.exists()) {
-                helper.addInline(LOGO_CID, logo, "image/png");
-            } else {
-                log.warn("Logo email introuvable : {}", LOGO_CLASSPATH);
-            }
-
-            mailSender.send(message);
-            log.info("Email envoyé → {} | {}", to, subject);
+            sendSync(to, subject, html);
         } catch (Exception e) {
             log.error("Échec envoi email → {} | {} : {}", to, subject, e.getMessage());
         }
+    }
+
+    /** Version synchrone qui propage l'exception — utilisée par sendTestEmail(). */
+    private void sendSync(String to, String subject, String html) throws Exception {
+        var message = mailSender.createMimeMessage();
+        var helper  = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom(fromAddress, fromName);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(html, true);
+
+        // Reply-To : adresse Cloudflare (contact@rene.it.com) si configurée
+        if (replyTo != null && !replyTo.isBlank()) {
+            helper.setReplyTo(replyTo);
+        }
+
+        Resource logo = resourceLoader.getResource(LOGO_CLASSPATH);
+        if (logo.exists()) {
+            helper.addInline(LOGO_CID, logo, "image/png");
+        } else {
+            log.warn("Logo email introuvable : {}", LOGO_CLASSPATH);
+        }
+
+        mailSender.send(message);
+        log.info("Email envoyé → {} | {} [from-name={} reply-to={}]", to, subject, fromName,
+                replyTo != null && !replyTo.isBlank() ? replyTo : "—");
     }
 
     // ── Composants HTML ───────────────────────────────────────────────────────

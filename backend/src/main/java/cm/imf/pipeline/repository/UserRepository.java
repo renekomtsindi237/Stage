@@ -39,6 +39,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByIdAndImfId(Long id, Long imfId);
 
+    List<User> findByImfIdAndRoleIn(Long imfId, List<Role> roles);
+
     List<User> findByImfIdAndZoneIdAndRoleIn(Long imfId, String zoneId, List<Role> roles);
 
     List<User> findByImfIdAndRoleAndFcmTokenIsNotNull(Long imfId, Role role);

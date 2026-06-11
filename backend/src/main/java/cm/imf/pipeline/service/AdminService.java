@@ -50,7 +50,9 @@ public class AdminService implements IAdminService {
 
     /** Rôles que le DSI peut assigner — jamais DSI ni SUPER_ADMIN. */
     private static final Set<Role>    ROLES_DSI_ALLOWED = Set.of(
-            Role.DIRECTEUR, Role.RESPONSABLE_RECOUVREMENT, Role.ANALYSTE, Role.AGENT);
+            Role.DIRECTEUR, Role.RESPONSABLE_RECOUVREMENT, Role.ANALYSTE, Role.AGENT,
+            Role.AGENT_CREDIT, Role.CHEF_AGENCE, Role.ANALYSTE_ENGAGEMENTS,
+            Role.AGENT_SAISIE, Role.CAISSIER);
     private static final Set<String>  ALLOWED_IMG_TYPES  =
             Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
     private static final String       LOGO_SUB           = "imf-logos";

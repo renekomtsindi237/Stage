@@ -106,7 +106,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/violations/**", "/api/v1/admin/violations/**").hasAnyRole("DSI", "SUPER_ADMIN")
                         // Étiquettes dossiers
                         .requestMatchers(HttpMethod.GET, "/dossiers/*/etiquettes", "/api/v1/dossiers/*/etiquettes")
-                                .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN", "ANALYSTE")
+                                .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN", "ANALYSTE",
+                                        "AGENT_CREDIT", "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS")
                         .requestMatchers(HttpMethod.POST,   "/dossiers/*/etiquettes", "/api/v1/dossiers/*/etiquettes")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/dossiers/*/etiquettes/*", "/api/v1/dossiers/*/etiquettes/*")
@@ -120,7 +121,7 @@ public class SecurityConfig {
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI")
                         // Mise à jour d'une échéance : agent, RR ou DSI
                         .requestMatchers(HttpMethod.PUT, "/echeances/**", "/api/v1/echeances/**")
-                                .hasAnyRole("AGENT", "RESPONSABLE_RECOUVREMENT", "DSI")
+                                .hasAnyRole("AGENT", "AGENT_CREDIT", "RESPONSABLE_RECOUVREMENT", "DSI")
                         // Tableau de bord infrastructure SUPPORT (cross-IMF)
                         .requestMatchers("/api/v1/support/**").hasRole("SUPPORT")
                         // Tickets : création par tout utilisateur, lecture/maj par SUPPORT
@@ -129,8 +130,37 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/tickets/**").hasAnyRole("SUPPORT", "SUPER_ADMIN")
                         // DSI : endpoints dédiés au tableau de bord DSI
                         .requestMatchers("/api/v1/dsi/**").hasAnyRole("DSI", "SUPER_ADMIN")
-                        // Analyste : scoring, pipeline, drift ML
-                        .requestMatchers("/api/v1/analyste/**").hasAnyRole("ANALYSTE", "DSI", "SUPER_ADMIN")
+                        // Analyste : scoring, pipeline, drift ML, risk PAR
+                        .requestMatchers("/api/v1/analyste/**")
+                                .hasAnyRole("ANALYSTE", "ANALYSTE_ENGAGEMENTS", "DSI", "SUPER_ADMIN")
+                        // Octroi crédit — dossiers, garanties, comité, visite J+15
+                        .requestMatchers("/api/v1/dossiers-credit/**")
+                                .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+                                        "DIRECTEUR", "DSI", "SUPER_ADMIN")
+                        .requestMatchers("/api/v1/garanties/**")
+                                .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+                                        "DSI", "SUPER_ADMIN")
+                        .requestMatchers("/api/v1/comite/**")
+                                .hasAnyRole("CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS", "DIRECTEUR",
+                                        "DSI", "SUPER_ADMIN")
+                        .requestMatchers("/api/v1/visites-conformite/**")
+                                .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "DSI", "SUPER_ADMIN")
+                        // Back-office : contrats, signatures
+                        .requestMatchers("/api/v1/back-office/**")
+                                .hasAnyRole("AGENT_SAISIE", "CHEF_AGENCE", "DIRECTEUR", "DSI", "SUPER_ADMIN")
+                        // Caisse : décaissements, encaissements
+                        .requestMatchers("/api/v1/caisse/**")
+                                .hasAnyRole("CAISSIER", "DIRECTEUR", "DSI", "SUPER_ADMIN")
+                        // Plans d'apurement (recouvrement amiable)
+                        .requestMatchers("/api/v1/plans-apurement/**")
+                                .hasAnyRole("AGENT", "AGENT_CREDIT", "RESPONSABLE_RECOUVREMENT",
+                                        "DSI", "SUPER_ADMIN")
+                        // Contentieux OHADA
+                        .requestMatchers("/api/v1/contentieux/**")
+                                .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN")
+                        // Délégations hiérarchiques : lecture ouverte à tout utilisateur authentifié,
+                        // écriture restreinte aux rôles managériaux (vérifiée en @PreAuthorize)
+                        .requestMatchers("/api/v1/delegations/**").authenticated()
                         // Tout le reste nécessite une authentification
                         .anyRequest().authenticated()
                 )

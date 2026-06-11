@@ -1,0 +1,13 @@
+-- ============================================================
+-- V34 : Nouveaux rôles métier microfinance
+--
+-- Aucun DDL requis : la colonne utilisateurs.role est VARCHAR(30),
+-- les nouvelles valeurs sont simplement acceptées par PostgreSQL.
+--
+-- Rôles ajoutés dans cm.imf.pipeline.enums.Role :
+--   AGENT_CREDIT          — Chargé de clientèle (octroi, dossiers, garanties)
+--   CHEF_AGENCE           — Validation délégation, président comité d'agence
+--   ANALYSTE_ENGAGEMENTS  — Conformité COBAC, ratios prudentiels, Grand Comité
+--   AGENT_SAISIE          — Back-office : contrats, amortissement, signatures
+--   CAISSIER              — Décaissement ordonné, encaissement remboursements
+-- ============================================================

@@ -111,6 +111,10 @@ imf:
   app:
     name: ${APP_NAME:IMF Pipeline}
     url: ${APP_URL:http://localhost:4200}
+  mail:
+    from-name: ${SMTP_FROM_NAME:MicroRecouv}
+    from: ${SMTP_FROM:${SMTP_USER:noreply@imf.cm}}
+    reply-to: ${SMTP_REPLY_TO:}
   cache:
     kpi-ttl-seconds: 3600     # 1h
   pipeline:
