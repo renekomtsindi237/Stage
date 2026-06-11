@@ -1,0 +1,165 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Délégations hiérarchiques</h1>
+    <div class="tabs" *ngIf="isManager">
+      <button [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+        <mat-icon>list</mat-icon> Toutes les délégations IMF
+      </button>
+      <button [class.active]="activeTab === 'mes'" (click)="activeTab = 'mes'">
+        <mat-icon>person</mat-icon> Mes délégations reçues
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Toutes les délégations IMF (DIRECTEUR / DSI) ── -->
+  <ng-container *ngIf="activeTab === 'all' && isManager">
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+
+    <mat-card *ngIf="!loading && delegations.length === 0">
+      <p style="padding:16px;text-align:center;color:#888;">Aucune délégation enregistrée dans cette IMF.</p>
+    </mat-card>
+
+    <mat-card *ngIf="!loading && delegations.length > 0">
+      <mat-table [dataSource]="delegations">
+
+        <ng-container matColumnDef="typeDelegation">
+          <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
+          <mat-cell *matCellDef="let d">
+            <mat-chip [color]="d.typeDelegation === 'REASSIGNATION_DOSSIER' ? 'accent' : 'primary'">
+              {{ typeLabel(d.typeDelegation) }}
+            </mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="delegantId">
+          <mat-header-cell *matHeaderCellDef>Délégant (ID)</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.delegantId }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="delegataireId">
+          <mat-header-cell *matHeaderCellDef>Délégataire (ID)</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.delegataireId }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="motif">
+          <mat-header-cell *matHeaderCellDef>Motif</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.motif || '—' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="dateDebut">
+          <mat-header-cell *matHeaderCellDef>Début</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.dateDebut | date:'dd/MM/yyyy' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="dateFin">
+          <mat-header-cell *matHeaderCellDef>Fin</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.dateFin ? (d.dateFin | date:'dd/MM/yyyy') : 'Indéfinie' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actif">
+          <mat-header-cell *matHeaderCellDef>Statut</mat-header-cell>
+          <mat-cell *matCellDef="let d">
+            <mat-chip [color]="d.actif ? 'primary' : 'warn'">{{ d.actif ? 'Active' : 'Révoquée' }}</mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let d">
+            <button
+              mat-icon-button
+              color="warn"
+              *ngIf="d.actif && d.typeDelegation === 'DELEGATION_AUTORITE'"
+              title="Révoquer"
+              (click)="confirmerRevocation(d.uid); $event.stopPropagation()">
+              <mat-icon>block</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: columns;"></mat-row>
+      </mat-table>
+
+      <mat-paginator
+        [length]="total"
+        [pageSize]="size"
+        [pageIndex]="page"
+        (page)="onPageChange($event.pageIndex)">
+      </mat-paginator>
+    </mat-card>
+  </ng-container>
+
+  <!-- ── Mes délégations reçues (tout utilisateur) ── -->
+  <ng-container *ngIf="activeTab === 'mes' || !isManager">
+    <mat-progress-bar *ngIf="loadingMes" mode="indeterminate"></mat-progress-bar>
+
+    <mat-card *ngIf="!loadingMes && mesDelegations.length === 0">
+      <p style="padding:16px;text-align:center;color:#888;">
+        Aucune délégation d'autorité active vous a été accordée.
+      </p>
+    </mat-card>
+
+    <mat-card *ngIf="!loadingMes && mesDelegations.length > 0">
+      <mat-table [dataSource]="mesDelegations">
+
+        <ng-container matColumnDef="typeDelegation">
+          <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ typeLabel(d.typeDelegation) }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="roleDelegue">
+          <mat-header-cell *matHeaderCellDef>Rôle délégué</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.roleDelegue || '—' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="montantSeuil">
+          <mat-header-cell *matHeaderCellDef>Plafond</mat-header-cell>
+          <mat-cell *matCellDef="let d">
+            {{ d.montantSeuil ? (d.montantSeuil | number:'1.0-0') + ' FCFA' : 'Sans limite' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="dateDebut">
+          <mat-header-cell *matHeaderCellDef>Depuis</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.dateDebut | date:'dd/MM/yyyy' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="dateFin">
+          <mat-header-cell *matHeaderCellDef>Jusqu'au</mat-header-cell>
+          <mat-cell *matCellDef="let d">{{ d.dateFin ? (d.dateFin | date:'dd/MM/yyyy') : 'Indéfinie' }}</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="columnsMes"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: columnsMes;"></mat-row>
+      </mat-table>
+    </mat-card>
+  </ng-container>
+</div>
+
+<!-- Modal de confirmation de révocation -->
+<div class="modal-overlay" *ngIf="revoqueUid" (click)="annulerRevocation()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-hd-icon modal-hd-icon--warn">
+        <mat-icon>block</mat-icon>
+      </div>
+      <div class="modal-hd-text">
+        <h3>Révoquer la délégation</h3>
+        <p>Cette action est irréversible.</p>
+      </div>
+    </div>
+    <div class="modal-body">
+      <p>La délégation sera immédiatement désactivée. Le délégataire perdra les droits étendus accordés.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="annulerRevocation()">Annuler</button>
+      <button class="btn-confirm btn-confirm--warn" (click)="revoquer()" [disabled]="revoqueLoading">
+        <mat-spinner *ngIf="revoqueLoading" diameter="16"></mat-spinner>
+        <ng-container *ngIf="!revoqueLoading">
+          <mat-icon>block</mat-icon> Révoquer
+        </ng-container>
+      </button>
+    </div>
+  </div>
+</div>

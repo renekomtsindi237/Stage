@@ -40,7 +40,10 @@ const routes: Routes = [
     path: "admin/alertes",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
+      roles: [
+        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
+        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+      ],
     },
     loadChildren: () =>
       import("./modules/alertes/alertes.module").then((m) => m.AlertesModule),
@@ -49,7 +52,10 @@ const routes: Routes = [
     path: "admin/prets",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
+      roles: [
+        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
+        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+      ],
     },
     loadChildren: () =>
       import("./modules/prets/prets.module").then((m) => m.PretsModule),
@@ -58,7 +64,10 @@ const routes: Routes = [
     path: "admin/clients",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
+      roles: [
+        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
+        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+      ],
     },
     loadChildren: () =>
       import("./modules/clients/clients.module").then((m) => m.ClientsModule),
@@ -67,7 +76,10 @@ const routes: Routes = [
     path: "admin/reporting",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
+      roles: [
+        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
+        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+      ],
     },
     loadChildren: () =>
       import("./modules/reporting/reporting.module").then(
@@ -78,7 +90,10 @@ const routes: Routes = [
     path: "admin/recouvrement",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
+      roles: [
+        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
+        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+      ],
     },
     loadChildren: () =>
       import("./modules/recouvrement/recouvrement.module").then(
@@ -89,16 +104,67 @@ const routes: Routes = [
     path: "admin/kyc",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI"],
+      roles: [
+        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
+        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+      ],
     },
     loadChildren: () =>
       import("./modules/kyc/kyc.module").then((m) => m.KycModule),
+  },
+  /* ── Crédit (AGENT_CREDIT, CHEF_AGENCE, ANALYSTE_ENGAGEMENTS, DIRECTEUR) ── */
+  {
+    path: "credit",
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      roles: ["AGENT_CREDIT", "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS", "DIRECTEUR", "DSI"],
+    },
+    loadChildren: () =>
+      import("./modules/credit/credit.module").then((m) => m.CreditModule),
+  },
+  /* ── Back-Office (AGENT_SAISIE, CAISSIER, CHEF_AGENCE) ── */
+  {
+    path: "back-office",
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ["AGENT_SAISIE", "CAISSIER", "CHEF_AGENCE", "DIRECTEUR", "DSI"] },
+    loadChildren: () =>
+      import("./modules/back-office/back-office.module").then(
+        (m) => m.BackOfficeModule,
+      ),
+  },
+  /* ── Délégations hiérarchiques (tout utilisateur IMF) ── */
+  {
+    path: 'delegations',
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      roles: [
+        'DIRECTEUR', 'CHEF_AGENCE', 'RESPONSABLE_RECOUVREMENT',
+        'ANALYSTE_ENGAGEMENTS', 'AGENT_CREDIT', 'AGENT_SAISIE',
+        'CAISSIER', 'AGENT', 'DSI',
+      ],
+    },
+    loadChildren: () =>
+      import('./modules/delegations/delegations.module').then(
+        (m) => m.DelegationsModule,
+      ),
+  },
+  /* ── Contentieux OHADA (RESPONSABLE_RECOUVREMENT, DIRECTEUR) ── */
+  {
+    path: "contentieux",
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      roles: ["RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI"],
+    },
+    loadChildren: () =>
+      import("./modules/contentieux/contentieux.module").then(
+        (m) => m.ContentieuxModule,
+      ),
   },
   /* ── ANALYSTE ── */
   {
     path: "analyste",
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ["ANALYSTE"] },
+    data: { roles: ["ANALYSTE", "ANALYSTE_ENGAGEMENTS"] },
     loadChildren: () =>
       import("./modules/analyste/analyste.module").then(
         (m) => m.AnalysteModule,

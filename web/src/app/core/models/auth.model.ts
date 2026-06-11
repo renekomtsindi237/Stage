@@ -5,7 +5,12 @@ export type Role =
   | "ANALYSTE"
   | "DSI"
   | "SUPPORT"
-  | "AGENT";
+  | "AGENT"
+  | "AGENT_CREDIT"
+  | "CHEF_AGENCE"
+  | "ANALYSTE_ENGAGEMENTS"
+  | "AGENT_SAISIE"
+  | "CAISSIER";
 
 export interface AuthResponse {
   accessToken: string;

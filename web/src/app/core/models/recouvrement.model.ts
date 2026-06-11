@@ -53,6 +53,7 @@ export type ResultatActionRecouvrement =
 
 export interface DossierRecouvrementResponse {
   id: number;
+  uid?: string;
   idPret: string;
   nomClient?: string;
   montantImpaye: number;
