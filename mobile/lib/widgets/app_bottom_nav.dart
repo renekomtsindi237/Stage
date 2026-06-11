@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../core/constants/app_colors.dart';
+import '../core/providers/auth_provider.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -10,6 +12,10 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = context.watch<AuthProvider>().currentUser;
+    final role = user?.role ?? '';
+
+    final items = _itemsForRole(role);
 
     return Container(
       decoration: BoxDecoration(
@@ -22,7 +28,7 @@ class AppBottomNav extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -34,43 +40,78 @@ class AppBottomNav extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.dashboard_rounded,
-                label: 'Accueil',
-                isActive: currentIndex == 0,
-                onTap: () => context.go('/dashboard'),
-              ),
-              _NavItem(
-                icon: Icons.account_balance_wallet_rounded,
-                label: 'Prêts',
-                isActive: currentIndex == 1,
-                onTap: () => context.go('/prets'),
-              ),
-              _NavItem(
-                icon: Icons.notifications_rounded,
-                label: 'Alertes',
-                isActive: currentIndex == 2,
-                onTap: () => context.go('/alertes'),
-              ),
-              _NavItem(
-                icon: Icons.people_rounded,
-                label: 'Clients',
-                isActive: currentIndex == 3,
-                onTap: () => context.go('/clients'),
-              ),
-              _NavItem(
-                icon: Icons.person_rounded,
-                label: 'Profil',
-                isActive: currentIndex == 4,
-                onTap: () => context.go('/profil'),
-              ),
-            ],
+            children: items
+                .asMap()
+                .entries
+                .map((e) => _NavItem(
+                      icon: e.value.icon,
+                      label: e.value.label,
+                      isActive: currentIndex == e.key,
+                      onTap: () => context.go(e.value.route),
+                    ))
+                .toList(),
           ),
         ),
       ),
     );
   }
+
+  List<_NavDef> _itemsForRole(String role) {
+    switch (role) {
+      case 'AGENT_CREDIT':
+      case 'CHEF_AGENCE':
+      case 'ANALYSTE_ENGAGEMENTS':
+        return [
+          _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
+          _NavDef(Icons.folder_open_rounded, 'Dossiers', '/credit'),
+          _NavDef(Icons.notifications_rounded, 'Alertes', '/alertes'),
+          _NavDef(Icons.people_rounded, 'Clients', '/clients'),
+          _NavDef(Icons.person_rounded, 'Profil', '/profil'),
+        ];
+
+      case 'CAISSIER':
+        return [
+          _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
+          _NavDef(Icons.account_balance_wallet_rounded, 'Caisse', '/caisse'),
+          _NavDef(Icons.notifications_rounded, 'Alertes', '/alertes'),
+          _NavDef(Icons.person_rounded, 'Profil', '/profil'),
+        ];
+
+      case 'AGENT_SAISIE':
+        return [
+          _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
+          _NavDef(Icons.description_rounded, 'Contrats', '/back-office'),
+          _NavDef(Icons.notifications_rounded, 'Alertes', '/alertes'),
+          _NavDef(Icons.person_rounded, 'Profil', '/profil'),
+        ];
+
+      case 'RESPONSABLE_RECOUVREMENT':
+        return [
+          _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
+          _NavDef(Icons.account_balance_wallet_rounded, 'Prêts', '/prets'),
+          _NavDef(Icons.notifications_rounded, 'Alertes', '/alertes'),
+          _NavDef(Icons.gavel_rounded, 'Contentieux', '/recouvrement'),
+          _NavDef(Icons.person_rounded, 'Profil', '/profil'),
+        ];
+
+      default:
+        // AGENT, DIRECTEUR, ANALYSTE, DSI, SUPPORT — navigation standard
+        return [
+          _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
+          _NavDef(Icons.account_balance_wallet_rounded, 'Prêts', '/prets'),
+          _NavDef(Icons.notifications_rounded, 'Alertes', '/alertes'),
+          _NavDef(Icons.people_rounded, 'Clients', '/clients'),
+          _NavDef(Icons.person_rounded, 'Profil', '/profil'),
+        ];
+    }
+  }
+}
+
+class _NavDef {
+  final IconData icon;
+  final String label;
+  final String route;
+  const _NavDef(this.icon, this.label, this.route);
 }
 
 class _NavItem extends StatelessWidget {
@@ -96,7 +137,7 @@ class _NavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: isActive
             ? BoxDecoration(
-                color: AppColors.gold.withOpacity(0.12),
+                color: AppColors.gold.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               )
             : null,

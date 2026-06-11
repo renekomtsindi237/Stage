@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 
 class StatusBadge extends StatelessWidget {
@@ -41,60 +41,60 @@ class StatusBadge extends StatelessWidget {
       case 'ACTIVE':
         return _StatusConfig(
           label: 'Actif',
-          bg: AppColors.success.withOpacity(0.15),
+          bg: AppColors.success.withValues(alpha: 0.15),
           textColor: AppColors.success,
         );
       case 'EN_RETARD':
         return _StatusConfig(
           label: 'En retard',
-          bg: AppColors.error.withOpacity(0.15),
+          bg: AppColors.error.withValues(alpha: 0.15),
           textColor: AppColors.error,
         );
       case 'SOLDE':
-      case 'SOLDÉ':
+      case 'SOLDÃ‰':
         return _StatusConfig(
-          label: 'Soldé',
-          bg: AppColors.textMuted.withOpacity(0.15),
+          label: 'SoldÃ©',
+          bg: AppColors.textMuted.withValues(alpha: 0.15),
           textColor: AppColors.textMuted,
         );
       case 'ESCALADEE':
-      case 'ESCALADÉE':
+      case 'ESCALADÃ‰E':
         return _StatusConfig(
-          label: 'Escaladée',
-          bg: AppColors.warning.withOpacity(0.15),
+          label: 'EscaladÃ©e',
+          bg: AppColors.warning.withValues(alpha: 0.15),
           textColor: AppColors.warning,
         );
       case 'CLOTUREE':
-      case 'CLÔTURÉE':
+      case 'CLÃ”TURÃ‰E':
         return _StatusConfig(
-          label: 'Clôturée',
-          bg: AppColors.textMuted.withOpacity(0.15),
+          label: 'ClÃ´turÃ©e',
+          bg: AppColors.textMuted.withValues(alpha: 0.15),
           textColor: AppColors.textMuted,
         );
       case 'TRAITEE':
-      case 'TRAITÉE':
+      case 'TRAITÃ‰E':
         return _StatusConfig(
-          label: 'Traitée',
-          bg: AppColors.teal.withOpacity(0.15),
+          label: 'TraitÃ©e',
+          bg: AppColors.teal.withValues(alpha: 0.15),
           textColor: AppColors.teal,
         );
       case 'PAYEE':
-      case 'PAYÉE':
+      case 'PAYÃ‰E':
         return _StatusConfig(
-          label: 'Payée',
-          bg: AppColors.success.withOpacity(0.15),
+          label: 'PayÃ©e',
+          bg: AppColors.success.withValues(alpha: 0.15),
           textColor: AppColors.success,
         );
       case 'EN_ATTENTE':
         return _StatusConfig(
           label: 'En attente',
-          bg: AppColors.info.withOpacity(0.15),
+          bg: AppColors.info.withValues(alpha: 0.15),
           textColor: AppColors.info,
         );
       default:
         return _StatusConfig(
           label: statut,
-          bg: AppColors.navy.withOpacity(0.15),
+          bg: AppColors.navy.withValues(alpha: 0.15),
           textColor: AppColors.navy,
         );
     }
@@ -131,9 +131,9 @@ class RetardBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         '$joursRetard j',
@@ -147,3 +147,4 @@ class RetardBadge extends StatelessWidget {
     );
   }
 }
+

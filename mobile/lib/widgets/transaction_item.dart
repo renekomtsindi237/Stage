@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/app_colors.dart';
 
@@ -47,7 +47,7 @@ class TransactionItem extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.15),
+                color: iconColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -142,3 +142,4 @@ class TransactionItem extends StatelessWidget {
     }
   }
 }
+

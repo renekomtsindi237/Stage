@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 
 class AppErrorWidget extends StatelessWidget {
@@ -23,7 +23,7 @@ class AppErrorWidget extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -57,7 +57,7 @@ class AppErrorWidget extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Réessayer'),
+                label: const Text('RÃ©essayer'),
               ),
             ],
           ],
@@ -66,3 +66,4 @@ class AppErrorWidget extends StatelessWidget {
     );
   }
 }
+

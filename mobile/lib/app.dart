@@ -16,9 +16,9 @@ class _MicroRecouv extends State<MicroRecouv> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
-    final authProvider = context.watch<AuthProvider>();
+    context.watch<AuthProvider>(); // force rebuild sur changement d'auth
 
-    final router = AppRouter.createRouter(context);
+    final router = AppRouter.router;
 
     return MaterialApp.router(
       title: 'MicroRecouv',

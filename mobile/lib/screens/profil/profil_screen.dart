@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../widgets/app_bottom_nav.dart';
@@ -39,7 +38,7 @@ class ProfilScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.navy.withOpacity(0.5),
+                    color: AppColors.navy.withValues(alpha: 0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
@@ -128,14 +127,14 @@ class ProfilScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             // Settings section
-            _buildSection('Paramètres de l\'application', [
+            _buildSection('ParamÃ¨tres de l\'application', [
               _SettingsTile(
                 icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                 label: 'Mode sombre',
                 trailing: Switch(
                   value: isDark,
                   onChanged: (val) => themeProvider.toggleTheme(),
-                  activeColor: AppColors.gold,
+                  activeThumbColor: AppColors.gold,
                 ),
               ),
             ]),
@@ -161,9 +160,9 @@ class ProfilScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.1),
+                  color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -171,7 +170,7 @@ class ProfilScreen extends StatelessWidget {
                     Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
                     SizedBox(width: 10),
                     Text(
-                      'Se déconnecter',
+                      'Se dÃ©connecter',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 15,
@@ -198,7 +197,7 @@ class ProfilScreen extends StatelessWidget {
         backgroundColor: AppColors.darkSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
-          'Déconnexion',
+          'DÃ©connexion',
           style: TextStyle(
             fontFamily: 'Inter',
             fontWeight: FontWeight.w700,
@@ -206,7 +205,7 @@ class ProfilScreen extends StatelessWidget {
           ),
         ),
         content: const Text(
-          'Voulez-vous vraiment vous déconnecter ?',
+          'Voulez-vous vraiment vous dÃ©connecter ?',
           style: TextStyle(
             fontFamily: 'Inter',
             color: AppColors.textSecondary,
@@ -221,7 +220,7 @@ class ProfilScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Déconnecter',
+            child: const Text('DÃ©connecter',
                 style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -269,20 +268,18 @@ class _SettingsTile extends StatelessWidget {
   final String label;
   final String? subtitle;
   final Widget? trailing;
-  final VoidCallback? onTap;
 
   const _SettingsTile({
     required this.icon,
     required this.label,
     this.subtitle,
     this.trailing,
-    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: null,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -335,3 +332,4 @@ class _SettingsTile extends StatelessWidget {
     );
   }
 }
+

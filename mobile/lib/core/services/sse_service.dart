@@ -63,6 +63,7 @@ class SseService {
       String currentType = '';
 
       _sub = response.data!.stream
+          .cast<List<int>>()
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .listen(

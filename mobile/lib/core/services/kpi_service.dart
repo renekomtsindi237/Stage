@@ -15,7 +15,7 @@ class KpiService {
     if (dateFin != null) params['dateFin'] = dateFin;
 
     return _api.get<KpiSummary>(
-      '/api/kpi/summary',
+      '/api/v1/kpi/summary',
       queryParameters: params.isEmpty ? null : params,
       fromJson: (data) => KpiSummary.fromJson(data as Map<String, dynamic>),
     );

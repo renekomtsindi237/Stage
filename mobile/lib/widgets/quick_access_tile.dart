@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 
 class QuickAccessTile extends StatelessWidget {
@@ -50,7 +50,7 @@ class QuickAccessTile extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: activeColor.withOpacity(0.15),
+                    color: activeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(icon, color: activeColor, size: 26),
@@ -99,3 +99,4 @@ class QuickAccessTile extends StatelessWidget {
     );
   }
 }
+

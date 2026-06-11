@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/app_colors.dart';
 
@@ -26,7 +26,7 @@ class KpiCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeIconColor = iconColor ?? AppColors.gold;
-    final activeIconBg = iconBg ?? AppColors.gold.withOpacity(0.15);
+    final activeIconBg = iconBg ?? AppColors.gold.withValues(alpha: 0.15);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -64,8 +64,8 @@ class KpiCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
                     color: delta! >= 0
-                        ? AppColors.success.withOpacity(0.15)
-                        : AppColors.error.withOpacity(0.15),
+                        ? AppColors.success.withValues(alpha: 0.15)
+                        : AppColors.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -134,3 +134,4 @@ class KpiCard extends StatelessWidget {
     return value?.toString() ?? '--';
   }
 }
+

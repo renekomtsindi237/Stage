@@ -11,7 +11,7 @@ class ClientService {
     if (search != null && search.isNotEmpty) params['search'] = search;
 
     return _api.get<List<Client>>(
-      '/api/clients',
+      '/api/v1/clients',
       queryParameters: params.isEmpty ? null : params,
       fromJson: (data) {
         final list = data as List<dynamic>;
@@ -24,7 +24,7 @@ class ClientService {
 
   Future<Client> getClientDetail(int idClient) async {
     return _api.get<Client>(
-      '/api/clients/$idClient',
+      '/api/v1/clients/$idClient',
       fromJson: (data) => Client.fromJson(data as Map<String, dynamic>),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +37,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
     {'label': 'Tous', 'value': ''},
     {'label': 'Actifs', 'value': 'ACTIF'},
     {'label': 'En retard', 'value': 'EN_RETARD'},
-    {'label': 'Soldés', 'value': 'SOLDE'},
+    {'label': 'SoldÃ©s', 'value': 'SOLDE'},
   ];
 
   @override
@@ -118,7 +118,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
     return Scaffold(
       backgroundColor: AppColors.darkBg,
       appBar: AppBar(
-        title: const Text('Prêts'),
+        title: const Text('PrÃªts'),
         backgroundColor: AppColors.darkBg,
         actions: [
           Padding(
@@ -153,7 +153,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
               controller: _searchController,
               style: const TextStyle(color: Colors.white, fontFamily: 'Inter'),
               decoration: InputDecoration(
-                hintText: 'Rechercher un prêt...',
+                hintText: 'Rechercher un prÃªt...',
                 prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -184,7 +184,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
                       setState(() => _selectedStatut = f['value']!);
                       _loadPrets(reset: true);
                     },
-                    selectedColor: AppColors.gold.withOpacity(0.2),
+                    selectedColor: AppColors.gold.withValues(alpha: 0.2),
                     checkmarkColor: AppColors.gold,
                     labelStyle: TextStyle(
                       fontFamily: 'Inter',
@@ -220,8 +220,8 @@ class _PretsListScreenState extends State<PretsListScreen> {
                     : _prets.isEmpty
                         ? EmptyState(
                             icon: Icons.account_balance_wallet_outlined,
-                            title: 'Aucun prêt trouvé',
-                            subtitle: 'Modifiez les filtres ou réessayez',
+                            title: 'Aucun prÃªt trouvÃ©',
+                            subtitle: 'Modifiez les filtres ou rÃ©essayez',
                             onRetry: () => _loadPrets(reset: true),
                           )
                         : RefreshIndicator(
@@ -276,7 +276,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.teal.withOpacity(0.15),
+                    color: AppColors.teal.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.account_balance_wallet_rounded,
@@ -353,3 +353,4 @@ class _PretsListScreenState extends State<PretsListScreen> {
     );
   }
 }
+

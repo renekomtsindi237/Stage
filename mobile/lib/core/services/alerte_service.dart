@@ -19,7 +19,7 @@ class AlerteService {
     if (statut != null && statut.isNotEmpty) params['statut'] = statut;
 
     return _api.get<PageResponse<Alerte>>(
-      '/api/alertes',
+      '/api/v1/alertes',
       queryParameters: params,
       fromJson: (data) => PageResponse.fromJson(
         data as Map<String, dynamic>,
@@ -30,14 +30,14 @@ class AlerteService {
 
   Future<Alerte> getAlerteDetail(int id) async {
     return _api.get<Alerte>(
-      '/api/alertes/$id',
+      '/api/v1/alertes/$id',
       fromJson: (data) => Alerte.fromJson(data as Map<String, dynamic>),
     );
   }
 
   Future<Alerte> updateStatut(int id, String statut) async {
     return _api.put<Alerte>(
-      '/api/alertes/$id/statut',
+      '/api/v1/alertes/$id/statut',
       data: {'statut': statut},
       fromJson: (data) => Alerte.fromJson(data as Map<String, dynamic>),
     );

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -78,7 +78,7 @@ class _PretDetailScreenState extends State<PretDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.darkBg,
       appBar: AppBar(
-        title: Text(_pret?.reference ?? 'Détail du prêt'),
+        title: Text(_pret?.reference ?? 'DÃ©tail du prÃªt'),
         backgroundColor: AppColors.darkBg,
         leading: IconButton(
           onPressed: () => context.go('/prets'),
@@ -176,7 +176,7 @@ class _PretDetailScreenState extends State<PretDetailScreen> {
                         ),
                       if (pret.nombreEcheances != null)
                         _SummaryItem(
-                          label: 'Échéances',
+                          label: 'Ã‰chÃ©ances',
                           value:
                               '${pret.echeancesPayees ?? 0}/${pret.nombreEcheances}',
                         ),
@@ -198,7 +198,7 @@ class _PretDetailScreenState extends State<PretDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${(pret.progressionPaiement * 100).toStringAsFixed(0)}% remboursé',
+                    '${(pret.progressionPaiement * 100).toStringAsFixed(0)}% remboursÃ©',
                     style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 11,
@@ -210,13 +210,13 @@ class _PretDetailScreenState extends State<PretDetailScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          // Informations générales
+          // Informations gÃ©nÃ©rales
           _buildSection(
-            title: 'Informations générales',
+            title: 'Informations gÃ©nÃ©rales',
             children: [
-              _InfoRow(label: 'Référence', value: pret.reference),
+              _InfoRow(label: 'RÃ©fÃ©rence', value: pret.reference),
               _InfoRow(label: 'Client', value: pret.nomClient ?? '--'),
-              _InfoRow(label: 'Date début', value: _formatDate(pret.dateDebut)),
+              _InfoRow(label: 'Date dÃ©but', value: _formatDate(pret.dateDebut)),
               _InfoRow(label: 'Date fin', value: _formatDate(pret.dateFin)),
               _InfoRow(
                 label: 'Statut',
@@ -225,7 +225,7 @@ class _PretDetailScreenState extends State<PretDetailScreen> {
               ),
               if (pret.tauxInteret != null)
                 _InfoRow(
-                  label: "Taux d'intérêt",
+                  label: "Taux d'intÃ©rÃªt",
                   value: '${pret.tauxInteret!.toStringAsFixed(2)}%',
                 ),
             ],
@@ -234,7 +234,7 @@ class _PretDetailScreenState extends State<PretDetailScreen> {
           if (_echeances.isNotEmpty) ...[
             const SizedBox(height: 20),
             _buildSection(
-              title: 'Échéances (${_echeances.length})',
+              title: 'Ã‰chÃ©ances (${_echeances.length})',
               children: [
                 ..._echeances.map((e) => _EcheanceRow(
                       echeance: e,
@@ -414,7 +414,7 @@ class _EcheanceRow extends StatelessWidget {
           bottom: BorderSide(color: AppColors.darkBorder, width: 0.5),
         ),
         color: echeance.isOverdue
-            ? AppColors.error.withOpacity(0.05)
+            ? AppColors.error.withValues(alpha: 0.05)
             : null,
       ),
       child: Row(
@@ -433,7 +433,7 @@ class _EcheanceRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Échéance #${echeance.numero ?? echeance.id}',
+                  'Ã‰chÃ©ance #${echeance.numero ?? echeance.id}',
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 13,
@@ -472,3 +472,4 @@ class _EcheanceRow extends StatelessWidget {
     );
   }
 }
+

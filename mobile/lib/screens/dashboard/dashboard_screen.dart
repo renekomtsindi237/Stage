@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -139,7 +139,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildHeaderCard(user?.fullName ?? user?.username ?? 'Utilisateur',
                         user?.displayRole ?? user?.role ?? ''),
                     const SizedBox(height: 12),
-                    // Carte synchronisation + scoring temps réel
+                    // Carte synchronisation + scoring temps rÃ©el
                     _buildSyncCard(),
                     const SizedBox(height: 20),
                     // KPI Cards grid
@@ -154,7 +154,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // Recent alertes
                     if (_recentAlertes.isNotEmpty) ...[
                       _buildSectionHeader(
-                        'Alertes récentes',
+                        'Alertes rÃ©centes',
                         onViewAll: () => context.go('/alertes'),
                       ),
                       const SizedBox(height: 12),
@@ -163,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: TransactionItem(
                               icon: Icons.warning_amber_rounded,
                               iconColor: a.isEscaladee ? AppColors.warning : AppColors.error,
-                              title: a.nomClient ?? 'Prêt #${a.idPret}',
+                              title: a.nomClient ?? 'PrÃªt #${a.idPret}',
                               subtitle: a.message ?? 'Alerte active',
                               trailing: StatusBadge(statut: a.statut, small: true),
                               onTap: () => context.go('/alertes/${a.id}'),
@@ -174,7 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // Recent prets
                     if (_recentPrets.isNotEmpty) ...[
                       _buildSectionHeader(
-                        'Prêts en retard',
+                        'PrÃªts en retard',
                         onViewAll: () => context.go('/prets'),
                       ),
                       const SizedBox(height: 12),
@@ -273,8 +273,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: kpi.nbAlertesActives > 0
-                      ? AppColors.error.withOpacity(0.15)
-                      : AppColors.success.withOpacity(0.15),
+                      ? AppColors.error.withValues(alpha: 0.15)
+                      : AppColors.success.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -308,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 20),
           const Text(
-            'Aperçu du portefeuille',
+            'AperÃ§u du portefeuille',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 12,
@@ -357,7 +357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           value: kpi.encoursPar30,
           isCurrency: true,
           iconColor: AppColors.warning,
-          iconBg: AppColors.warning.withOpacity(0.15),
+          iconBg: AppColors.warning.withValues(alpha: 0.15),
         ),
         KpiCard(
           icon: Icons.trending_down_rounded,
@@ -365,21 +365,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
           value: kpi.encoursPar90,
           isCurrency: true,
           iconColor: AppColors.error,
-          iconBg: AppColors.error.withOpacity(0.15),
+          iconBg: AppColors.error.withValues(alpha: 0.15),
         ),
         KpiCard(
           icon: Icons.receipt_long_rounded,
           label: 'Nb Collectes',
           value: kpi.nbCollectes,
           iconColor: AppColors.teal,
-          iconBg: AppColors.teal.withOpacity(0.15),
+          iconBg: AppColors.teal.withValues(alpha: 0.15),
         ),
         KpiCard(
           icon: Icons.notifications_active_rounded,
           label: 'Alertes actives',
           value: kpi.nbAlertesActives,
           iconColor: AppColors.error,
-          iconBg: AppColors.error.withOpacity(0.15),
+          iconBg: AppColors.error.withValues(alpha: 0.15),
         ),
       ],
     );
@@ -405,7 +405,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: AppColors.textSecondary, size: 18),
                   SizedBox(width: 8),
                   Text(
-                    'Prêts actifs',
+                    'PrÃªts actifs',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
@@ -431,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.gold.withOpacity(0.3),
+                    color: AppColors.gold.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -467,7 +467,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Accès rapide',
+          'AccÃ¨s rapide',
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 16,
@@ -481,7 +481,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: QuickAccessTile(
                 icon: Icons.account_balance_wallet_rounded,
-                label: 'Prêts',
+                label: 'PrÃªts',
                 onTap: () => context.go('/prets'),
                 color: AppColors.teal,
               ),
@@ -514,7 +514,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildSyncCard() {
     final sync = context.watch<SyncProvider>();
 
-    // Couleur et icône selon l'état du scoring
+    // Couleur et icÃ´ne selon l'Ã©tat du scoring
     Color stateColor;
     IconData stateIcon;
     String stateLabel;
@@ -522,11 +522,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case ScoringState.pending:
         stateColor = AppColors.warning;
         stateIcon  = Icons.autorenew_rounded;
-        stateLabel = 'Analyse MCRS en cours…';
+        stateLabel = 'Analyse MCRS en coursâ€¦';
       case ScoringState.done:
         stateColor = AppColors.success;
         stateIcon  = Icons.check_circle_outline_rounded;
-        stateLabel = 'Scores mis à jour (${sync.latestScores.length} client(s))';
+        stateLabel = 'Scores mis Ã  jour (${sync.latestScores.length} client(s))';
       case ScoringState.unavailable:
         stateColor = AppColors.textSecondary;
         stateIcon  = Icons.cloud_off_rounded;
@@ -537,8 +537,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         stateLabel = sync.pendingCount > 0
             ? '${sync.pendingCount} collecte(s) en attente'
             : sync.lastResult != null
-                ? 'Dernière sync : ${sync.lastResult!.resume}'
-                : 'Synchronisation à jour';
+                ? 'DerniÃ¨re sync : ${sync.lastResult!.resume}'
+                : 'Synchronisation Ã  jour';
     }
 
     return Container(
@@ -550,7 +550,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Row(
         children: [
-          // Icône d'état (animée si pending)
+          // IcÃ´ne d'Ã©tat (animÃ©e si pending)
           sync.scoringState == ScoringState.pending
               ? SizedBox(
                   width: 20,
@@ -645,7 +645,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           GestureDetector(
             onTap: onViewAll,
             child: const Text(
-              'Voir tout →',
+              'Voir tout â†’',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
@@ -658,3 +658,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+

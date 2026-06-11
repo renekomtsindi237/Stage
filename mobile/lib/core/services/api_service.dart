@@ -12,8 +12,7 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8080'; // Android emulator localhost
-  // For physical device use your machine's IP: e.g. 'http://192.168.1.x:8080'
+  static const String baseUrl = 'http://84.247.128.40:9090';
 
   late final Dio _dio;
   final StorageService _storage;
@@ -78,7 +77,7 @@ class ApiService {
         }
 
         final refreshResponse = await _dio.post(
-          '/api/auth/refresh',
+          '/api/v1/auth/refresh',
           data: {'refreshToken': refreshToken},
           options: Options(
             headers: {'Authorization': null},
@@ -166,6 +165,25 @@ class ApiService {
     }
   }
 
+  Future<T> patch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    T Function(dynamic)? fromJson,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      if (fromJson != null) return fromJson(response.data);
+      return response.data as T;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Future<T> delete<T>(
     String path, {
     dynamic data,
@@ -218,11 +236,7 @@ class ApiService {
     }
   }
 
-  String get sseUrl => '$baseUrl/api/sse/stream';
+  String get sseUrl => '$baseUrl/api/v1/sse/stream';
 
-  /// URL SSE pour les alertes de recouvrement.
-  /// Pointe vers l'endpoint SSE du backend Spring (inchangé).
-  /// À utiliser avec le package `http` (EventSource) ou `dio` en mode stream.
-  /// Note : Supabase Realtime est prévu comme alternative future — voir pubspec.yaml.
-  String get sseAlerteUrl => '$baseUrl/api/sse/alertes';
+  String get sseAlerteUrl => '$baseUrl/api/v1/sse/alertes';
 }

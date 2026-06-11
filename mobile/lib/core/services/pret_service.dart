@@ -20,7 +20,7 @@ class PretService {
     if (statut != null && statut.isNotEmpty) params['statut'] = statut;
 
     return _api.get<PageResponse<Pret>>(
-      '/api/prets',
+      '/api/v1/prets',
       queryParameters: params,
       fromJson: (data) => PageResponse.fromJson(
         data as Map<String, dynamic>,
@@ -31,14 +31,14 @@ class PretService {
 
   Future<Pret> getPretDetail(int idPret) async {
     return _api.get<Pret>(
-      '/api/prets/$idPret',
+      '/api/v1/prets/$idPret',
       fromJson: (data) => Pret.fromJson(data as Map<String, dynamic>),
     );
   }
 
   Future<List<Echeance>> getEcheances(int idPret) async {
     return _api.get<List<Echeance>>(
-      '/api/echeances/pret/$idPret',
+      '/api/v1/echeances/pret/$idPret',
       fromJson: (data) {
         final list = data as List<dynamic>;
         return list

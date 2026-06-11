@@ -49,15 +49,27 @@ class User {
   String get displayRole {
     switch (role) {
       case 'AGENT':
-        return 'Agent de terrain';
+        return 'Agent Recouvrement';
+      case 'AGENT_CREDIT':
+        return 'Chargé de Clientèle';
+      case 'CHEF_AGENCE':
+        return "Chef d'Agence";
+      case 'ANALYSTE_ENGAGEMENTS':
+        return 'Analyste des Engagements';
+      case 'AGENT_SAISIE':
+        return 'Agent de Saisie';
+      case 'CAISSIER':
+        return 'Caissier';
       case 'RESPONSABLE_RECOUVREMENT':
         return 'Responsable Recouvrement';
       case 'ANALYSTE':
-        return 'Analyste';
+        return 'Analyste / Risk Manager';
       case 'DIRECTEUR':
         return 'Directeur';
       case 'DSI':
         return 'DSI';
+      case 'SUPER_ADMIN':
+        return 'Super Administrateur';
       default:
         return role;
     }
@@ -66,7 +78,23 @@ class User {
   bool get isManager {
     return role == 'RESPONSABLE_RECOUVREMENT' ||
         role == 'ANALYSTE' ||
+        role == 'ANALYSTE_ENGAGEMENTS' ||
+        role == 'CHEF_AGENCE' ||
         role == 'DIRECTEUR' ||
         role == 'DSI';
+  }
+
+  bool get isCreditRole {
+    return role == 'AGENT_CREDIT' ||
+        role == 'CHEF_AGENCE' ||
+        role == 'ANALYSTE_ENGAGEMENTS';
+  }
+
+  bool get isCaisseRole {
+    return role == 'CAISSIER';
+  }
+
+  bool get isBackOfficeRole {
+    return role == 'AGENT_SAISIE' || role == 'CAISSIER';
   }
 }
