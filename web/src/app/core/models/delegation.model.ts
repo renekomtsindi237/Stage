@@ -1,6 +1,6 @@
 export interface Delegation {
   uid: string;
-  typeDelegation: 'REASSIGNATION_DOSSIER' | 'DELEGATION_AUTORITE';
+  typeDelegation: "REASSIGNATION_DOSSIER" | "DELEGATION_AUTORITE";
   delegantId: number;
   delegataireId: number;
   objetId?: number;

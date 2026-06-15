@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../core/services/auth.service';
+import { Component, OnInit } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { AuthService } from "../../../core/services/auth.service";
 
 @Component({
-  selector: 'app-back-office-list',
-  templateUrl: './back-office-list.component.html',
+  selector: "app-back-office-list",
+  templateUrl: "./back-office-list.component.html",
 })
 export class BackOfficeListComponent implements OnInit {
   operations: any[] = [];
@@ -13,28 +13,43 @@ export class BackOfficeListComponent implements OnInit {
   size = 20;
   total = 0;
 
-  readonly role = this.auth.getRole() ?? '';
-  readonly isCaissier = ['CAISSIER', 'CHEF_AGENCE', 'DIRECTEUR', 'DSI'].includes(this.role);
+  readonly role = this.auth.getRole() ?? "";
+  readonly isCaissier = [
+    "CAISSIER",
+    "CHEF_AGENCE",
+    "DIRECTEUR",
+    "DSI",
+  ].includes(this.role);
 
-  readonly columns = ['id', 'type', 'montant', 'reference', 'dateOperation'];
+  readonly columns = ["id", "type", "montant", "reference", "dateOperation"];
 
   // ── Décaissement ──────────────────────────────────────────────────────────
   showDecModal = false;
   decLoading = false;
   decSuccess = false;
-  dec = { montantNet: null as number | null, mode: 'ESPECES', referencePaiement: '', pretId: '' };
+  dec = {
+    montantNet: null as number | null,
+    mode: "ESPECES",
+    referencePaiement: "",
+    pretId: "",
+  };
 
   // ── Encaissement ──────────────────────────────────────────────────────────
   showEncModal = false;
   encLoading = false;
   encSuccess = false;
-  enc = { montant: null as number | null, mode: 'ESPECES', referencePaiement: '', pretId: '' };
+  enc = {
+    montant: null as number | null,
+    mode: "ESPECES",
+    referencePaiement: "",
+    pretId: "",
+  };
 
   readonly modeOptions = [
-    { value: 'ESPECES',       label: 'Espèces' },
-    { value: 'MOBILE_MONEY',  label: 'Mobile Money' },
-    { value: 'VIREMENT',      label: 'Virement bancaire' },
-    { value: 'CHEQUE',        label: 'Chèque' },
+    { value: "ESPECES", label: "Espèces" },
+    { value: "MOBILE_MONEY", label: "Mobile Money" },
+    { value: "VIREMENT", label: "Virement bancaire" },
+    { value: "CHEQUE", label: "Chèque" },
   ];
 
   constructor(
@@ -49,14 +64,18 @@ export class BackOfficeListComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.http
-      .get<any>('/api/v1/caisse/journal', { params: { page: this.page, size: this.size } })
+      .get<any>("/api/v1/caisse/journal", {
+        params: { page: this.page, size: this.size },
+      })
       .subscribe({
         next: (r) => {
           this.operations = r.data?.content ?? [];
           this.total = r.data?.totalElements ?? 0;
           this.loading = false;
         },
-        error: () => { this.loading = false; },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
@@ -68,7 +87,12 @@ export class BackOfficeListComponent implements OnInit {
   // ── Décaissement ──────────────────────────────────────────────────────────
 
   ouvrirDecModal(): void {
-    this.dec = { montantNet: null, mode: 'ESPECES', referencePaiement: '', pretId: '' };
+    this.dec = {
+      montantNet: null,
+      mode: "ESPECES",
+      referencePaiement: "",
+      pretId: "",
+    };
     this.decSuccess = false;
     this.showDecModal = true;
   }
@@ -82,20 +106,30 @@ export class BackOfficeListComponent implements OnInit {
       referencePaiement: this.dec.referencePaiement || undefined,
       pretId: this.dec.pretId || undefined,
     };
-    this.http.post<any>('/api/v1/caisse/decaissements', body).subscribe({
+    this.http.post<any>("/api/v1/caisse/decaissements", body).subscribe({
       next: () => {
         this.decSuccess = true;
         this.decLoading = false;
-        setTimeout(() => { this.showDecModal = false; this.load(); }, 1200);
+        setTimeout(() => {
+          this.showDecModal = false;
+          this.load();
+        }, 1200);
       },
-      error: () => { this.decLoading = false; },
+      error: () => {
+        this.decLoading = false;
+      },
     });
   }
 
   // ── Encaissement ──────────────────────────────────────────────────────────
 
   ouvrirEncModal(): void {
-    this.enc = { montant: null, mode: 'ESPECES', referencePaiement: '', pretId: '' };
+    this.enc = {
+      montant: null,
+      mode: "ESPECES",
+      referencePaiement: "",
+      pretId: "",
+    };
     this.encSuccess = false;
     this.showEncModal = true;
   }
@@ -109,13 +143,18 @@ export class BackOfficeListComponent implements OnInit {
       referencePaiement: this.enc.referencePaiement || undefined,
       pretId: this.enc.pretId || undefined,
     };
-    this.http.post<any>('/api/v1/caisse/encaissements', body).subscribe({
+    this.http.post<any>("/api/v1/caisse/encaissements", body).subscribe({
       next: () => {
         this.encSuccess = true;
         this.encLoading = false;
-        setTimeout(() => { this.showEncModal = false; this.load(); }, 1200);
+        setTimeout(() => {
+          this.showEncModal = false;
+          this.load();
+        }, 1200);
       },
-      error: () => { this.encLoading = false; },
+      error: () => {
+        this.encLoading = false;
+      },
     });
   }
 }

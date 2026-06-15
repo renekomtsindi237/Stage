@@ -41,8 +41,12 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
-        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE",
+        "DSI",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
       ],
     },
     loadChildren: () =>
@@ -53,8 +57,12 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
-        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE",
+        "DSI",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
       ],
     },
     loadChildren: () =>
@@ -65,8 +73,12 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
-        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE",
+        "DSI",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
       ],
     },
     loadChildren: () =>
@@ -77,8 +89,12 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
-        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE",
+        "DSI",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
       ],
     },
     loadChildren: () =>
@@ -91,8 +107,12 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
-        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE",
+        "DSI",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
       ],
     },
     loadChildren: () =>
@@ -105,8 +125,12 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        "DIRECTEUR", "RESPONSABLE_RECOUVREMENT", "ANALYSTE", "DSI",
-        "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE",
+        "DSI",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
       ],
     },
     loadChildren: () =>
@@ -117,7 +141,13 @@ const routes: Routes = [
     path: "credit",
     canActivate: [AuthGuard, RoleGuard],
     data: {
-      roles: ["AGENT_CREDIT", "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS", "DIRECTEUR", "DSI"],
+      roles: [
+        "AGENT_CREDIT",
+        "CHEF_AGENCE",
+        "ANALYSTE_ENGAGEMENTS",
+        "DIRECTEUR",
+        "DSI",
+      ],
     },
     loadChildren: () =>
       import("./modules/credit/credit.module").then((m) => m.CreditModule),
@@ -126,7 +156,9 @@ const routes: Routes = [
   {
     path: "back-office",
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ["AGENT_SAISIE", "CAISSIER", "CHEF_AGENCE", "DIRECTEUR", "DSI"] },
+    data: {
+      roles: ["AGENT_SAISIE", "CAISSIER", "CHEF_AGENCE", "DIRECTEUR", "DSI"],
+    },
     loadChildren: () =>
       import("./modules/back-office/back-office.module").then(
         (m) => m.BackOfficeModule,
@@ -134,17 +166,23 @@ const routes: Routes = [
   },
   /* ── Délégations hiérarchiques (tout utilisateur IMF) ── */
   {
-    path: 'delegations',
+    path: "delegations",
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: [
-        'DIRECTEUR', 'CHEF_AGENCE', 'RESPONSABLE_RECOUVREMENT',
-        'ANALYSTE_ENGAGEMENTS', 'AGENT_CREDIT', 'AGENT_SAISIE',
-        'CAISSIER', 'AGENT', 'DSI',
+        "DIRECTEUR",
+        "CHEF_AGENCE",
+        "RESPONSABLE_RECOUVREMENT",
+        "ANALYSTE_ENGAGEMENTS",
+        "AGENT_CREDIT",
+        "AGENT_SAISIE",
+        "CAISSIER",
+        "AGENT",
+        "DSI",
       ],
     },
     loadChildren: () =>
-      import('./modules/delegations/delegations.module').then(
+      import("./modules/delegations/delegations.module").then(
         (m) => m.DelegationsModule,
       ),
   },

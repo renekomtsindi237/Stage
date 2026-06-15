@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { DelegationService } from '../../../core/services/delegation.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { Delegation } from '../../../core/models/delegation.model';
+import { Component, OnInit } from "@angular/core";
+import { DelegationService } from "../../../core/services/delegation.service";
+import { AuthService } from "../../../core/services/auth.service";
+import { Delegation } from "../../../core/models/delegation.model";
 
 @Component({
-  selector: 'app-delegation-list',
-  templateUrl: './delegation-list.component.html',
+  selector: "app-delegation-list",
+  templateUrl: "./delegation-list.component.html",
 })
 export class DelegationListComponent implements OnInit {
   delegations: Delegation[] = [];
@@ -15,13 +15,30 @@ export class DelegationListComponent implements OnInit {
   page = 0;
   size = 20;
   total = 0;
-  activeTab: 'all' | 'mes' = 'mes';
+  activeTab: "all" | "mes" = "mes";
 
   readonly role = this.auth.getRole();
-  readonly isManager = ['DIRECTEUR', 'DSI', 'SUPER_ADMIN'].includes(this.role ?? '');
+  readonly isManager = ["DIRECTEUR", "DSI", "SUPER_ADMIN"].includes(
+    this.role ?? "",
+  );
 
-  readonly columns = ['typeDelegation', 'delegantId', 'delegataireId', 'motif', 'dateDebut', 'dateFin', 'actif', 'actions'];
-  readonly columnsMes = ['typeDelegation', 'roleDelegue', 'montantSeuil', 'dateDebut', 'dateFin'];
+  readonly columns = [
+    "typeDelegation",
+    "delegantId",
+    "delegataireId",
+    "motif",
+    "dateDebut",
+    "dateFin",
+    "actif",
+    "actions",
+  ];
+  readonly columnsMes = [
+    "typeDelegation",
+    "roleDelegue",
+    "montantSeuil",
+    "dateDebut",
+    "dateFin",
+  ];
 
   revoqueUid: string | null = null;
   revoqueLoading = false;
@@ -34,7 +51,7 @@ export class DelegationListComponent implements OnInit {
   ngOnInit(): void {
     this.loadMes();
     if (this.isManager) {
-      this.activeTab = 'all';
+      this.activeTab = "all";
       this.loadAll();
     }
   }
@@ -47,7 +64,9 @@ export class DelegationListComponent implements OnInit {
         this.total = r.totalElements ?? 0;
         this.loading = false;
       },
-      error: () => { this.loading = false; },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
@@ -58,7 +77,9 @@ export class DelegationListComponent implements OnInit {
         this.mesDelegations = list;
         this.loadingMes = false;
       },
-      error: () => { this.loadingMes = false; },
+      error: () => {
+        this.loadingMes = false;
+      },
     });
   }
 
@@ -86,11 +107,15 @@ export class DelegationListComponent implements OnInit {
         this.revoqueUid = null;
         this.revoqueLoading = false;
       },
-      error: () => { this.revoqueLoading = false; },
+      error: () => {
+        this.revoqueLoading = false;
+      },
     });
   }
 
   typeLabel(type: string): string {
-    return type === 'REASSIGNATION_DOSSIER' ? 'Réassignation dossier' : "Délégation d'autorité";
+    return type === "REASSIGNATION_DOSSIER"
+      ? "Réassignation dossier"
+      : "Délégation d'autorité";
   }
 }

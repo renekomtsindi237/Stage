@@ -1,34 +1,54 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../core/services/auth.service';
-import { DelegationService } from '../../../core/services/delegation.service';
-import { AgentCredit } from '../../../core/models/delegation.model';
+import { Component, OnInit } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { AuthService } from "../../../core/services/auth.service";
+import { DelegationService } from "../../../core/services/delegation.service";
+import { AgentCredit } from "../../../core/models/delegation.model";
 
 @Component({
-  selector: 'app-credit-list',
-  templateUrl: './credit-list.component.html',
+  selector: "app-credit-list",
+  templateUrl: "./credit-list.component.html",
 })
 export class CreditListComponent implements OnInit {
   dossiers: any[] = [];
   loading = true;
-  statut = '';
+  statut = "";
   page = 0;
   size = 20;
   total = 0;
 
   readonly role = this.auth.getRole();
-  readonly canReassign = ['CHEF_AGENCE', 'DIRECTEUR', 'DSI', 'SUPER_ADMIN'].includes(this.role ?? '');
+  readonly canReassign = [
+    "CHEF_AGENCE",
+    "DIRECTEUR",
+    "DSI",
+    "SUPER_ADMIN",
+  ].includes(this.role ?? "");
 
   readonly columns = this.canReassign
-    ? ['uid', 'clientNom', 'montantDemande', 'dureeMois', 'statut', 'createdAt', 'actions']
-    : ['uid', 'clientNom', 'montantDemande', 'dureeMois', 'statut', 'createdAt'];
+    ? [
+        "uid",
+        "clientNom",
+        "montantDemande",
+        "dureeMois",
+        "statut",
+        "createdAt",
+        "actions",
+      ]
+    : [
+        "uid",
+        "clientNom",
+        "montantDemande",
+        "dureeMois",
+        "statut",
+        "createdAt",
+      ];
 
   // ── État modal réassignation ──────────────────────────────────────────────
   reassignDossier: any = null;
   agents: AgentCredit[] = [];
   agentsLoading = false;
-  selectedAgentUid = '';
-  reassignMotif = '';
+  selectedAgentUid = "";
+  reassignMotif = "";
   reassignLoading = false;
   reassignSuccess = false;
 
@@ -45,17 +65,17 @@ export class CreditListComponent implements OnInit {
   load(): void {
     this.loading = true;
     const params: any = { page: this.page, size: this.size };
-    if (this.statut) params['statut'] = this.statut;
-    this.http
-      .get<any>('/api/v1/dossiers-credit', { params })
-      .subscribe({
-        next: (r) => {
-          this.dossiers = r.data?.content ?? [];
-          this.total = r.data?.totalElements ?? 0;
-          this.loading = false;
-        },
-        error: () => { this.loading = false; },
-      });
+    if (this.statut) params["statut"] = this.statut;
+    this.http.get<any>("/api/v1/dossiers-credit", { params }).subscribe({
+      next: (r) => {
+        this.dossiers = r.data?.content ?? [];
+        this.total = r.data?.totalElements ?? 0;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   onStatutChange(s: string): void {
@@ -73,8 +93,8 @@ export class CreditListComponent implements OnInit {
 
   ouvrirReassign(dossier: any): void {
     this.reassignDossier = dossier;
-    this.selectedAgentUid = '';
-    this.reassignMotif = '';
+    this.selectedAgentUid = "";
+    this.reassignMotif = "";
     this.reassignSuccess = false;
     this.agentsLoading = true;
     this.delegationSvc.getAgentsCredit().subscribe({
@@ -82,7 +102,9 @@ export class CreditListComponent implements OnInit {
         this.agents = list.filter((a) => a.actif);
         this.agentsLoading = false;
       },
-      error: () => { this.agentsLoading = false; },
+      error: () => {
+        this.agentsLoading = false;
+      },
     });
   }
 
@@ -107,7 +129,9 @@ export class CreditListComponent implements OnInit {
             this.load();
           }, 1200);
         },
-        error: () => { this.reassignLoading = false; },
+        error: () => {
+          this.reassignLoading = false;
+        },
       });
   }
 }

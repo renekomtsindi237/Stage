@@ -13,7 +13,12 @@ import {
 } from "../platform.service";
 import { fadeInUp, reveal } from "../../../shared/animations";
 
-type ModalMode = "create-imf" | "create-admin" | "manage-admin" | "delete-imf" | null;
+type ModalMode =
+  | "create-imf"
+  | "create-admin"
+  | "manage-admin"
+  | "delete-imf"
+  | null;
 
 export const FORMES_JURIDIQUES = [
   "Société Anonyme (SA)",
@@ -292,20 +297,22 @@ export class PlatformImfComponent implements OnInit {
     this.modalLoading = true;
     this.modalError = "";
     const payload: CreateImfAdminPayload = this.adminForm.value;
-    this.platformService.createImfAdmin(this.selectedImf.uid, payload).subscribe({
-      next: (updatedImf) => {
-        this.modalLoading = false;
-        this.modalSuccess = `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
-        this.dataSource.data = this.dataSource.data.map((i) =>
-          i.uid === updatedImf.uid ? updatedImf : i,
-        );
-        setTimeout(() => this.closeModal(), 1500);
-      },
-      error: (err) => {
-        this.modalLoading = false;
-        this.modalError = err?.error?.message ?? "Une erreur est survenue.";
-      },
-    });
+    this.platformService
+      .createImfAdmin(this.selectedImf.uid, payload)
+      .subscribe({
+        next: (updatedImf) => {
+          this.modalLoading = false;
+          this.modalSuccess = `Compte DSI « ${payload.username} » créé pour ${this.selectedImf!.nom}.`;
+          this.dataSource.data = this.dataSource.data.map((i) =>
+            i.uid === updatedImf.uid ? updatedImf : i,
+          );
+          setTimeout(() => this.closeModal(), 1500);
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          this.modalError = err?.error?.message ?? "Une erreur est survenue.";
+        },
+      });
   }
 
   submitSuspendAdmin(): void {

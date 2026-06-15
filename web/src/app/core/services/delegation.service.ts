@@ -1,22 +1,25 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 import {
   AgentCredit,
   Delegation,
   DeleguerAutoriteRequest,
   ReassignerDossierRequest,
-} from '../models/delegation.model';
+} from "../models/delegation.model";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class DelegationService {
-  private readonly BASE = '/api/v1/delegations';
-  private readonly CREDIT = '/api/v1/dossiers-credit';
+  private readonly BASE = "/api/v1/delegations";
+  private readonly CREDIT = "/api/v1/dossiers-credit";
 
   constructor(private http: HttpClient) {}
 
-  listDelegations(page = 0, size = 20): Observable<{ content: Delegation[]; totalElements: number }> {
+  listDelegations(
+    page = 0,
+    size = 20,
+  ): Observable<{ content: Delegation[]; totalElements: number }> {
     return this.http
       .get<any>(this.BASE, { params: { page, size } })
       .pipe(map((r) => r.data));
@@ -34,7 +37,10 @@ export class DelegationService {
       .pipe(map((r) => r.data));
   }
 
-  reassignerDossier(dossierUid: string, req: ReassignerDossierRequest): Observable<Delegation> {
+  reassignerDossier(
+    dossierUid: string,
+    req: ReassignerDossierRequest,
+  ): Observable<Delegation> {
     return this.http
       .patch<any>(`${this.CREDIT}/${dossierUid}/reassigner`, req)
       .pipe(map((r) => r.data));

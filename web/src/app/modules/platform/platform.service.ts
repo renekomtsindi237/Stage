@@ -186,10 +186,9 @@ export class PlatformService {
 
   suspendImfAdmin(imfUid: string): Observable<ImfRecord> {
     return this.http
-      .patch<ApiResponse<ImfRecord>>(
-        `${this.API}/imf/${imfUid}/admin/suspend`,
-        {},
-      )
+      .patch<
+        ApiResponse<ImfRecord>
+      >(`${this.API}/imf/${imfUid}/admin/suspend`, {})
       .pipe(map((r) => r.data));
   }
 

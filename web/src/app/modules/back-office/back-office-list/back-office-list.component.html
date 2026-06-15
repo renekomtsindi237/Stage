@@ -1,7 +1,7 @@
 <div class="page-container">
   <div class="page-header">
     <h1>Journal de caisse</h1>
-    <div *ngIf="isCaissier" style="display:flex;gap:8px">
+    <div *ngIf="isCaissier" style="display: flex; gap: 8px">
       <button mat-raised-button color="primary" (click)="ouvrirDecModal()">
         <mat-icon>arrow_downward</mat-icon> Décaissement
       </button>
@@ -23,30 +23,39 @@
       <ng-container matColumnDef="type">
         <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
         <mat-cell *matCellDef="let o">
-          <mat-chip [color]="o.type === 'ENCAISSEMENT' ? 'primary' : 'warn'">{{ o.type }}</mat-chip>
+          <mat-chip [color]="o.type === 'ENCAISSEMENT' ? 'primary' : 'warn'">{{
+            o.type
+          }}</mat-chip>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="montant">
         <mat-header-cell *matHeaderCellDef>Montant</mat-header-cell>
-        <mat-cell *matCellDef="let o">{{ o.montant | number:'1.0-0' }} FCFA</mat-cell>
+        <mat-cell *matCellDef="let o"
+          >{{ o.montant | number: "1.0-0" }} FCFA</mat-cell
+        >
       </ng-container>
 
       <ng-container matColumnDef="reference">
         <mat-header-cell *matHeaderCellDef>Référence</mat-header-cell>
-        <mat-cell *matCellDef="let o">{{ o.reference || '—' }}</mat-cell>
+        <mat-cell *matCellDef="let o">{{ o.reference || "—" }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="dateOperation">
         <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
-        <mat-cell *matCellDef="let o">{{ o.dateOperation | date:'dd/MM/yyyy HH:mm' }}</mat-cell>
+        <mat-cell *matCellDef="let o">{{
+          o.dateOperation | date: "dd/MM/yyyy HH:mm"
+        }}</mat-cell>
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: columns;"></mat-row>
+      <mat-row *matRowDef="let row; columns: columns"></mat-row>
     </mat-table>
 
-    <p *ngIf="operations.length === 0" style="padding:24px;text-align:center;color:#888">
+    <p
+      *ngIf="operations.length === 0"
+      style="padding: 24px; text-align: center; color: #888"
+    >
       Aucune opération enregistrée.
     </p>
 
@@ -54,7 +63,8 @@
       [length]="total"
       [pageSize]="size"
       [pageIndex]="page"
-      (page)="onPageChange($event.pageIndex)">
+      (page)="onPageChange($event.pageIndex)"
+    >
     </mat-paginator>
   </mat-card>
 </div>
@@ -63,46 +73,69 @@
 <div class="modal-overlay" *ngIf="showDecModal" (click)="showDecModal = false">
   <div class="modal-box" (click)="$event.stopPropagation()">
     <div class="modal-hd">
-      <div class="modal-hd-icon" style="background:rgba(244,67,54,.15)">
-        <mat-icon style="color:#f44336">arrow_downward</mat-icon>
+      <div class="modal-hd-icon" style="background: rgba(244, 67, 54, 0.15)">
+        <mat-icon style="color: #f44336">arrow_downward</mat-icon>
       </div>
       <div class="modal-hd-text"><h3>Nouveau décaissement</h3></div>
     </div>
 
     <div class="modal-body" *ngIf="!decSuccess">
       <div class="mf-group">
-        <label>Montant net (FCFA) <span style="color:red">*</span></label>
-        <input type="number" [(ngModel)]="dec.montantNet" placeholder="Ex: 500000">
+        <label>Montant net (FCFA) <span style="color: red">*</span></label>
+        <input
+          type="number"
+          [(ngModel)]="dec.montantNet"
+          placeholder="Ex: 500000"
+        />
       </div>
       <div class="mf-group">
         <label>Mode de paiement</label>
         <select [(ngModel)]="dec.mode">
-          <option *ngFor="let m of modeOptions" [value]="m.value">{{ m.label }}</option>
+          <option *ngFor="let m of modeOptions" [value]="m.value">
+            {{ m.label }}
+          </option>
         </select>
       </div>
       <div class="mf-group">
         <label>Référence de transaction (optionnel)</label>
-        <input type="text" [(ngModel)]="dec.referencePaiement" placeholder="N° chèque, code MoMo…">
+        <input
+          type="text"
+          [(ngModel)]="dec.referencePaiement"
+          placeholder="N° chèque, code MoMo…"
+        />
       </div>
       <div class="mf-group">
         <label>Numéro de prêt (optionnel)</label>
-        <input type="text" [(ngModel)]="dec.pretId" placeholder="Ex: PRE-0042">
+        <input
+          type="text"
+          [(ngModel)]="dec.pretId"
+          placeholder="Ex: PRE-0042"
+        />
       </div>
     </div>
 
     <div class="modal-body success-body" *ngIf="decSuccess">
-      <mat-icon style="color:#4caf50;font-size:48px;width:48px;height:48px">check_circle</mat-icon>
+      <mat-icon
+        style="color: #4caf50; font-size: 48px; width: 48px; height: 48px"
+        >check_circle</mat-icon
+      >
       <p>Décaissement enregistré avec succès.</p>
     </div>
 
     <div class="modal-footer" *ngIf="!decSuccess">
       <button class="btn-cancel" (click)="showDecModal = false">Annuler</button>
-      <button class="btn-confirm btn-confirm--danger"
+      <button
+        class="btn-confirm btn-confirm--danger"
         [disabled]="!dec.montantNet || decLoading"
-        (click)="soumettreDec()">
-        <mat-spinner *ngIf="decLoading" diameter="16" style="display:inline-block;vertical-align:middle"></mat-spinner>
+        (click)="soumettreDec()"
+      >
+        <mat-spinner
+          *ngIf="decLoading"
+          diameter="16"
+          style="display: inline-block; vertical-align: middle"
+        ></mat-spinner>
         <mat-icon *ngIf="!decLoading">arrow_downward</mat-icon>
-        {{ decLoading ? 'Enregistrement…' : 'Valider le décaissement' }}
+        {{ decLoading ? "Enregistrement…" : "Valider le décaissement" }}
       </button>
     </div>
   </div>
@@ -112,46 +145,69 @@
 <div class="modal-overlay" *ngIf="showEncModal" (click)="showEncModal = false">
   <div class="modal-box" (click)="$event.stopPropagation()">
     <div class="modal-hd">
-      <div class="modal-hd-icon" style="background:rgba(76,175,80,.15)">
-        <mat-icon style="color:#4caf50">arrow_upward</mat-icon>
+      <div class="modal-hd-icon" style="background: rgba(76, 175, 80, 0.15)">
+        <mat-icon style="color: #4caf50">arrow_upward</mat-icon>
       </div>
       <div class="modal-hd-text"><h3>Enregistrer un encaissement</h3></div>
     </div>
 
     <div class="modal-body" *ngIf="!encSuccess">
       <div class="mf-group">
-        <label>Montant (FCFA) <span style="color:red">*</span></label>
-        <input type="number" [(ngModel)]="enc.montant" placeholder="Ex: 75000">
+        <label>Montant (FCFA) <span style="color: red">*</span></label>
+        <input
+          type="number"
+          [(ngModel)]="enc.montant"
+          placeholder="Ex: 75000"
+        />
       </div>
       <div class="mf-group">
         <label>Mode de paiement</label>
         <select [(ngModel)]="enc.mode">
-          <option *ngFor="let m of modeOptions" [value]="m.value">{{ m.label }}</option>
+          <option *ngFor="let m of modeOptions" [value]="m.value">
+            {{ m.label }}
+          </option>
         </select>
       </div>
       <div class="mf-group">
         <label>Référence de transaction (optionnel)</label>
-        <input type="text" [(ngModel)]="enc.referencePaiement" placeholder="Code MoMo, N° reçu…">
+        <input
+          type="text"
+          [(ngModel)]="enc.referencePaiement"
+          placeholder="Code MoMo, N° reçu…"
+        />
       </div>
       <div class="mf-group">
         <label>Numéro de prêt (optionnel)</label>
-        <input type="text" [(ngModel)]="enc.pretId" placeholder="Ex: PRE-0042">
+        <input
+          type="text"
+          [(ngModel)]="enc.pretId"
+          placeholder="Ex: PRE-0042"
+        />
       </div>
     </div>
 
     <div class="modal-body success-body" *ngIf="encSuccess">
-      <mat-icon style="color:#4caf50;font-size:48px;width:48px;height:48px">check_circle</mat-icon>
+      <mat-icon
+        style="color: #4caf50; font-size: 48px; width: 48px; height: 48px"
+        >check_circle</mat-icon
+      >
       <p>Encaissement enregistré avec succès.</p>
     </div>
 
     <div class="modal-footer" *ngIf="!encSuccess">
       <button class="btn-cancel" (click)="showEncModal = false">Annuler</button>
-      <button class="btn-confirm"
+      <button
+        class="btn-confirm"
         [disabled]="!enc.montant || encLoading"
-        (click)="soumettreEnc()">
-        <mat-spinner *ngIf="encLoading" diameter="16" style="display:inline-block;vertical-align:middle"></mat-spinner>
+        (click)="soumettreEnc()"
+      >
+        <mat-spinner
+          *ngIf="encLoading"
+          diameter="16"
+          style="display: inline-block; vertical-align: middle"
+        ></mat-spinner>
         <mat-icon *ngIf="!encLoading">arrow_upward</mat-icon>
-        {{ encLoading ? 'Enregistrement…' : 'Valider l\'encaissement' }}
+        {{ encLoading ? "Enregistrement…" : "Valider l'encaissement" }}
       </button>
     </div>
   </div>

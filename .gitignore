@@ -11,6 +11,14 @@ secrets/
 *.pem
 *.p12
 firebase-credentials.json
+*-credentials.json
+*.bak
+
+# ── VPS / Déploiement ─────────────────────
+vps_connect.sh
+vps_sync/
+deploy/secrets/
+*.staging.bak
 
 # ── Docker ────────────────────────────────
 docker/volumes/
@@ -27,6 +35,12 @@ web/dist/
 web/.angular/cache/
 src/web/node_modules/
 src/web/dist/
+
+# ── Python venv ───────────────────────────
+.venv/
+__pycache__/
+*.pyc
+*.pyo
 
 # ── Pipeline (Python) ─────────────────────
 pipeline/src/__pycache__/
@@ -49,6 +63,9 @@ mobile/ios/Pods/
 mobile/ios/.symlinks/
 mobile/coverage/
 mobile/pubspec.lock
+mobile/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
 
 # ── dbt ───────────────────────────────────
 pipeline/dbt_project/target/
@@ -79,3 +96,16 @@ data/
 
 # ── Screens
 screens/
+
+# ── ML modèles entraînés ──────────────────
+pipeline/models/
+ml/models/
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# ── Airflow ───────────────────────────────
+pipeline/dags/__pycache__/
+airflow.cfg
+standalone_admin_password.txt
