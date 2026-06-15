@@ -173,7 +173,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         // En dev : localhost sur n'importe quel port (4200 Angular, 8080 backend, etc.)
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "https://*.imf.cm"));
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://*.imf.cm",
+                "http://84.247.128.40:*"   // VPS staging
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of(
                 "Authorization", "Content-Type", "X-Requested-With",
