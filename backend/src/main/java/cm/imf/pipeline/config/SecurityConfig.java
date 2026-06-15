@@ -176,7 +176,8 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
                 "https://*.imf.cm",
-                "http://84.247.128.40:*"   // VPS staging
+                "http://84.247.128.40:*",   // VPS staging (accès direct IP)
+                "https://imf.rene.it.com"   // domaine staging Cloudflare
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of(
