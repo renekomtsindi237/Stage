@@ -184,7 +184,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
                       setState(() => _selectedStatut = f['value']!);
                       _loadPrets(reset: true);
                     },
-                    selectedColor: AppColors.gold.withValues(alpha: 0.2),
+                    selectedColor: AppColors.gold.withOpacity(0.2),
                     checkmarkColor: AppColors.gold,
                     labelStyle: TextStyle(
                       fontFamily: 'Inter',
@@ -276,7 +276,7 @@ class _PretsListScreenState extends State<PretsListScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.teal.withValues(alpha: 0.15),
+                    color: AppColors.teal.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.account_balance_wallet_rounded,

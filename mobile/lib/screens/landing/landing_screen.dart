@@ -137,7 +137,7 @@ class _LandingScreenState extends State<LandingScreen>
                     height: size.width * 0.75 * _orb.value,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.navy.withValues(alpha: 0.35),
+                      color: AppColors.navy.withOpacity(0.35),
                     ),
                   ),
                 ),
@@ -149,7 +149,7 @@ class _LandingScreenState extends State<LandingScreen>
                     height: size.width * 0.65 / _orb.value,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.teal.withValues(alpha: 0.07),
+                      color: AppColors.teal.withOpacity(0.07),
                     ),
                   ),
                 ),
@@ -161,7 +161,7 @@ class _LandingScreenState extends State<LandingScreen>
                     height: size.width * 0.5 * _orb.value,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.gold.withValues(alpha: 0.04),
+                      color: AppColors.gold.withOpacity(0.04),
                     ),
                   ),
                 ),
@@ -178,17 +178,17 @@ class _LandingScreenState extends State<LandingScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
 
-                    // Logo
+                    // Logo centré
                     FadeTransition(
                       opacity: _logoFade,
                       child: ScaleTransition(
                         scale: _logoScale,
-                        child: _buildLogo(),
+                        child: Center(child: _buildLogo()),
                       ),
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 20),
 
                     // Title
                     FadeTransition(
@@ -198,7 +198,7 @@ class _LandingScreenState extends State<LandingScreen>
                         child: _buildTitle(),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
 
                     // Subtitle
                     FadeTransition(
@@ -214,7 +214,7 @@ class _LandingScreenState extends State<LandingScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 24),
 
                     // Feature cards
                     FadeTransition(
@@ -281,7 +281,7 @@ class _LandingScreenState extends State<LandingScreen>
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.45),
+                                  color: AppColors.gold.withOpacity(0.45),
                                   blurRadius: 24,
                                   spreadRadius: 2,
                                   offset: const Offset(0, 6),
@@ -335,25 +335,35 @@ class _LandingScreenState extends State<LandingScreen>
 
   Widget _buildLogo() {
     return Container(
-      width: 68,
-      height: 68,
+      width: 190,
+      height: 100,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.gold, AppColors.goldLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(0.96),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withValues(alpha: 0.5),
-            blurRadius: 28,
-            spreadRadius: 2,
-            offset: const Offset(0, 8),
+            color: AppColors.gold.withOpacity(0.35),
+            blurRadius: 32,
+            spreadRadius: 4,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: const Icon(Icons.account_balance, size: 34, color: AppColors.navyDeep),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Image.asset(
+            'assets/images/logo.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
     );
   }
 
@@ -435,9 +445,9 @@ class _FeatureCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: Colors.white.withOpacity(0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Row(
         children: [
@@ -445,7 +455,7 @@ class _FeatureCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 22),

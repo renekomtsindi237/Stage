@@ -198,7 +198,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.19.7</version>
+        <version>1.20.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -217,6 +217,19 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
+        </configuration>
+      </plugin>
+
+      <!-- docker-java lit api.version via System.getProperty(), pas DOCKER_API_VERSION env -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Dapi.version=1.44 -DDOCKER_HOST=unix:///var/run/docker.sock</argLine>
+          <environmentVariables>
+            <DOCKER_HOST>unix:///var/run/docker.sock</DOCKER_HOST>
+            <TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE>/var/run/docker.sock</TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE>
+          </environmentVariables>
         </configuration>
       </plugin>
 

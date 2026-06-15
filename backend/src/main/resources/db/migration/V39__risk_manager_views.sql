@@ -11,10 +11,10 @@ SELECT
     COUNT(*) FILTER (WHERE jours_retard > 30)   AS encours_par30,
     COUNT(*) FILTER (WHERE jours_retard > 60)   AS encours_par60,
     COUNT(*) FILTER (WHERE jours_retard > 90)   AS encours_par90,
-    SUM(montant_impaye)                          AS total_impaye,
-    SUM(montant_impaye) FILTER (WHERE jours_retard > 30) AS montant_par30,
-    SUM(montant_impaye) FILTER (WHERE jours_retard > 60) AS montant_par60,
-    SUM(montant_impaye) FILTER (WHERE jours_retard > 90) AS montant_par90
+    SUM(montant_en_retard)                          AS total_impaye,
+    SUM(montant_en_retard) FILTER (WHERE jours_retard > 30) AS montant_par30,
+    SUM(montant_en_retard) FILTER (WHERE jours_retard > 60) AS montant_par60,
+    SUM(montant_en_retard) FILTER (WHERE jours_retard > 90) AS montant_par90
 FROM app.alertes_impayes
 WHERE statut_alerte = 'ACTIVE'
 GROUP BY imf_id;

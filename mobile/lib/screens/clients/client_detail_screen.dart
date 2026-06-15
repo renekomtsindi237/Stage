@@ -118,7 +118,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.teal.withValues(alpha: 0.3),
+                        color: AppColors.teal.withOpacity(0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 4),
                       ),
@@ -152,7 +152,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.15),
+                      color: AppColors.success.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(

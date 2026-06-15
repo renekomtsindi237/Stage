@@ -414,7 +414,7 @@ class _EcheanceRow extends StatelessWidget {
           bottom: BorderSide(color: AppColors.darkBorder, width: 0.5),
         ),
         color: echeance.isOverdue
-            ? AppColors.error.withValues(alpha: 0.05)
+            ? AppColors.error.withOpacity(0.05)
             : null,
       ),
       child: Row(

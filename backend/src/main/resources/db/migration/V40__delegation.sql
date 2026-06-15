@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS app.delegations (
     id              BIGSERIAL PRIMARY KEY,
     uid             UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-    imf_id          BIGINT NOT NULL REFERENCES app.imfs(id),
+    imf_id          BIGINT NOT NULL REFERENCES app.imf(id),
     delegant_id     BIGINT NOT NULL REFERENCES app.utilisateurs(id),
     delegataire_id  BIGINT NOT NULL REFERENCES app.utilisateurs(id),
     type_delegation VARCHAR(30)  NOT NULL,           -- REASSIGNATION_DOSSIER | DELEGATION_AUTORITE

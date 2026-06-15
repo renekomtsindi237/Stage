@@ -273,8 +273,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: kpi.nbAlertesActives > 0
-                      ? AppColors.error.withValues(alpha: 0.15)
-                      : AppColors.success.withValues(alpha: 0.15),
+                      ? AppColors.error.withOpacity(0.15)
+                      : AppColors.success.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -357,7 +357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           value: kpi.encoursPar30,
           isCurrency: true,
           iconColor: AppColors.warning,
-          iconBg: AppColors.warning.withValues(alpha: 0.15),
+          iconBg: AppColors.warning.withOpacity(0.15),
         ),
         KpiCard(
           icon: Icons.trending_down_rounded,
@@ -365,21 +365,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
           value: kpi.encoursPar90,
           isCurrency: true,
           iconColor: AppColors.error,
-          iconBg: AppColors.error.withValues(alpha: 0.15),
+          iconBg: AppColors.error.withOpacity(0.15),
         ),
         KpiCard(
           icon: Icons.receipt_long_rounded,
           label: 'Nb Collectes',
           value: kpi.nbCollectes,
           iconColor: AppColors.teal,
-          iconBg: AppColors.teal.withValues(alpha: 0.15),
+          iconBg: AppColors.teal.withOpacity(0.15),
         ),
         KpiCard(
           icon: Icons.notifications_active_rounded,
           label: 'Alertes actives',
           value: kpi.nbAlertesActives,
           iconColor: AppColors.error,
-          iconBg: AppColors.error.withValues(alpha: 0.15),
+          iconBg: AppColors.error.withOpacity(0.15),
         ),
       ],
     );
@@ -431,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.3),
+                    color: AppColors.gold.withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -595,7 +595,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               decoration: BoxDecoration(
                 color: sync.syncing
                     ? AppColors.darkBorder
-                    : AppColors.teal.withValues(alpha: 0.15),
+                    : AppColors.teal.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: sync.syncing

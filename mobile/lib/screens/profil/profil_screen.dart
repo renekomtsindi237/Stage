@@ -38,7 +38,7 @@ class ProfilScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.navy.withValues(alpha: 0.5),
+                    color: AppColors.navy.withOpacity(0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
@@ -134,7 +134,7 @@ class ProfilScreen extends StatelessWidget {
                 trailing: Switch(
                   value: isDark,
                   onChanged: (val) => themeProvider.toggleTheme(),
-                  activeThumbColor: AppColors.gold,
+                  activeColor: AppColors.gold,
                 ),
               ),
             ]),
@@ -160,9 +160,9 @@ class ProfilScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
+                  color: AppColors.error.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  border: Border.all(color: AppColors.error.withOpacity(0.3)),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,

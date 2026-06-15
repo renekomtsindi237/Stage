@@ -22,7 +22,7 @@ class AppTheme {
         outline: AppColors.darkBorder,
         surfaceTint: Colors.transparent,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppColors.darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -205,7 +205,7 @@ class AppTheme {
         outline: AppColors.lightBorder,
         surfaceTint: Colors.transparent,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppColors.lightSurface,
         elevation: 1,
         shadowColor: Colors.black12,
