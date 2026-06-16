@@ -42,18 +42,21 @@ CPU_WARN    = 90
 IMF_CONTAINERS = [
     "imf-backend",
     "imf-frontend",
+    "imf-nginx-api",
     "imf-airflow-scheduler",
     "imf-airflow-webserver",
     "imf-ml-api",
-    "imf_staging_redis",
+    "imf-redis",
+    "imf-airflow-db",
 ]
 
+# 127.0.0.1 explicite : localhost résout en ::1 (IPv6) sur ce VPS
+# expected_status=None → tout code < 500 est considéré UP
 HTTP_CHECKS = [
-    ("Backend health",   "http://localhost:9200/actuator/health", 200),
-    ("Frontend",         "http://localhost:9091/health",           200),
-    ("API gateway",      "http://localhost:9090/health",           200),
-    ("Airflow web",      "http://localhost:8090/health",           200),
-    ("ML API",           "http://localhost:8090/model/health",     200),
+    ("Backend health",  "http://127.0.0.1:9200/actuator/health", 200),
+    ("Frontend nginx",  "http://127.0.0.1:9091/",                200),
+    ("API nginx",       "http://127.0.0.1:9090/",                None),
+    ("ML API",          "http://127.0.0.1:8090/",                None),
 ]
 
 
@@ -118,29 +121,24 @@ def check_containers() -> list[dict]:
     issues = []
     try:
         out = subprocess.check_output(
-            ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.Status}}\t{{.RestartCount}}"],
+            ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.Status}}"],
             text=True, timeout=10,
         )
         running = {}
         for line in out.strip().splitlines():
             parts = line.split("\t")
             if len(parts) >= 2:
-                name, status = parts[0], parts[1]
-                restarts = int(parts[2]) if len(parts) > 2 else 0
-                running[name] = (status, restarts)
+                running[parts[0]] = parts[1]
 
         for cname in IMF_CONTAINERS:
             if cname not in running:
                 issues.append({"key": f"container_{cname}", "severity": "CRITICAL",
                                 "msg": f"Container <b>{cname}</b> introuvable (non démarré ?)"})
             else:
-                status, restarts = running[cname]
+                status = running[cname]
                 if not status.startswith("Up"):
                     issues.append({"key": f"container_{cname}", "severity": "CRITICAL",
                                    "msg": f"Container <b>{cname}</b> DOWN — statut : {status}"})
-                elif restarts > 5:
-                    issues.append({"key": f"container_{cname}_restart", "severity": "WARNING",
-                                   "msg": f"Container <b>{cname}</b> a redémarré {restarts}× (crash loop ?)"})
     except Exception as e:
         issues.append({"key": "docker_daemon", "severity": "CRITICAL",
                        "msg": f"Docker daemon inaccessible : {e}"})
@@ -149,20 +147,26 @@ def check_containers() -> list[dict]:
 
 def check_http() -> list[dict]:
     issues = []
-    try:
-        import urllib.request
-        for name, url, expected_status in HTTP_CHECKS:
+    import urllib.request, urllib.error
+    for name, url, expected_status in HTTP_CHECKS:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "IMF-Monitor/1.0"})
             try:
-                req = urllib.request.Request(url, headers={"User-Agent": "IMF-Monitor/1.0"})
                 with urllib.request.urlopen(req, timeout=8) as r:
-                    if r.status != expected_status:
-                        issues.append({"key": f"http_{name}", "severity": "WARNING",
-                                       "msg": f"<b>{name}</b> — HTTP {r.status} (attendu {expected_status})"})
-            except Exception as e:
-                issues.append({"key": f"http_{name}", "severity": "CRITICAL",
-                               "msg": f"<b>{name}</b> inaccessible : {e}"})
-    except Exception as e:
-        issues.append({"key": "http_check", "severity": "WARNING", "msg": str(e)})
+                    code = r.status
+            except urllib.error.HTTPError as e:
+                code = e.code
+            # None = tout code < 500 est OK (service répond)
+            if expected_status is None:
+                if code >= 500:
+                    issues.append({"key": f"http_{name}", "severity": "CRITICAL",
+                                   "msg": f"<b>{name}</b> — HTTP {code} (erreur serveur)"})
+            elif code != expected_status:
+                issues.append({"key": f"http_{name}", "severity": "WARNING",
+                               "msg": f"<b>{name}</b> — HTTP {code} (attendu {expected_status})"})
+        except Exception as e:
+            issues.append({"key": f"http_{name}", "severity": "CRITICAL",
+                           "msg": f"<b>{name}</b> inaccessible : {e}"})
     return issues
 
 
