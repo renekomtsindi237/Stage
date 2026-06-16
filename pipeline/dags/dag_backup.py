@@ -29,11 +29,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import boto3
-from botocore.config import Config as BotoConfig
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
+from botocore.config import Config as BotoConfig
 
 # ── Config R2 ──────────────────────────────────────────────────────────────────
 R2_ENDPOINT = "https://61a23f65159306f2aaf08c0e0bf76d59.r2.cloudflarestorage.com"
