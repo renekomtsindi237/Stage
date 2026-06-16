@@ -116,6 +116,19 @@ def send_alert(subject: str, body_html: str, severity: str = "WARNING") -> bool:
         return False
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def _container_logs(name: str, lines: int = 30) -> str:
+    """Récupère les dernières lignes de logs d'un container."""
+    try:
+        out = subprocess.check_output(
+            ["docker", "logs", "--tail", str(lines), name],
+            text=True, stderr=subprocess.STDOUT, timeout=10,
+        )
+        return out.strip()
+    except Exception as e:
+        return f"(logs indisponibles : {e})"
+
+
 # ── Checks ────────────────────────────────────────────────────────────────────
 def check_containers() -> list[dict]:
     issues = []
@@ -133,12 +146,15 @@ def check_containers() -> list[dict]:
         for cname in IMF_CONTAINERS:
             if cname not in running:
                 issues.append({"key": f"container_{cname}", "severity": "CRITICAL",
-                                "msg": f"Container <b>{cname}</b> introuvable (non démarré ?)"})
+                                "msg": f"Container <b>{cname}</b> introuvable (non démarré ?)",
+                                "logs": ""})
             else:
                 status = running[cname]
                 if not status.startswith("Up"):
+                    logs = _container_logs(cname)
                     issues.append({"key": f"container_{cname}", "severity": "CRITICAL",
-                                   "msg": f"Container <b>{cname}</b> DOWN — statut : {status}"})
+                                   "msg": f"Container <b>{cname}</b> DOWN — statut : {status}",
+                                   "logs": logs})
     except Exception as e:
         issues.append({"key": "docker_daemon", "severity": "CRITICAL",
                        "msg": f"Docker daemon inaccessible : {e}"})
@@ -268,9 +284,19 @@ def run_once() -> None:
     # Nouvelles alertes (pas encore dans state)
     for key, issue in current_issues.items():
         if key not in state["incidents"]:
+            logs_html = ""
+            if issue.get("logs"):
+                logs_html = (
+                    "<p style='margin-top:12px'><b>Derniers logs du container :</b></p>"
+                    f"<pre style='background:#0f172a;color:#e2e8f0;padding:12px;"
+                    f"border-radius:6px;font-size:11px;overflow-x:auto;white-space:pre-wrap'>"
+                    f"{issue['logs']}</pre>"
+                )
             send_alert(
                 subject=f"{issue['severity']} — {issue['msg'].replace('<b>', '').replace('</b>', '')}",
-                body_html=f"<p>{issue['msg']}</p><p style='color:#64748b;font-size:13px'>Détecté le {now}</p>",
+                body_html=f"<p>{issue['msg']}</p>"
+                          f"<p style='color:#64748b;font-size:13px'>Détecté le {now}</p>"
+                          f"{logs_html}",
                 severity=issue["severity"],
             )
             state["incidents"][key] = {"severity": issue["severity"], "since": now, "alerted": True}
