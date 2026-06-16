@@ -5,6 +5,7 @@ En cas d'incident → email à renekomtsindi7@gmail.com.
 En cas de résolution → email de récupération.
 Déduplication via XCom (état persisté dans /var/lib/imf-monitor/state.json sur le host).
 """
+
 from __future__ import annotations
 
 import json
@@ -22,11 +23,11 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # ── Config ─────────────────────────────────────────────────────────────────────
-ALERT_TO   = os.getenv("ALERT_EMAIL", "renekomtsindi7@gmail.com")
-SMTP_HOST  = os.getenv("SMTP_HOST",   "smtp.gmail.com")
-SMTP_PORT  = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER  = os.getenv("SMTP_USER",   "renekomtsindi7@gmail.com")
-SMTP_PASS  = os.getenv("SMTP_PASSWORD", "")
+ALERT_TO = os.getenv("ALERT_EMAIL", "renekomtsindi7@gmail.com")
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "renekomtsindi7@gmail.com")
+SMTP_PASS = os.getenv("SMTP_PASSWORD", "")
 STATE_FILE = Path("/var/lib/imf-monitor/state.json")
 
 IMF_CONTAINERS = [
@@ -39,9 +40,9 @@ IMF_CONTAINERS = [
 
 HTTP_CHECKS = [
     ("Backend /actuator/health", "http://localhost:9200/actuator/health", 200),
-    ("Frontend nginx",           "http://localhost:9091/",               200),
-    ("API nginx",                "http://localhost:9090/actuator/health", 200),
-    ("Airflow webserver",        "http://localhost:8090/health",          200),
+    ("Frontend nginx", "http://localhost:9091/", 200),
+    ("API nginx", "http://localhost:9090/actuator/health", 200),
+    ("Airflow webserver", "http://localhost:8090/health", 200),
 ]
 
 PG_HOST = os.getenv("POSTGRES_HOST", "aws-0-eu-west-3.pooler.supabase.com")
@@ -75,10 +76,12 @@ def _send(subject: str, body_html: str, severity: str) -> None:
     emoji = {"CRITICAL": "🔴", "WARNING": "🟡", "OK": "🟢"}.get(severity, "⚪")
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"{emoji} [IMF] {subject}"
-    msg["From"]    = SMTP_USER
-    msg["To"]      = ALERT_TO
+    msg["From"] = SMTP_USER
+    msg["To"] = ALERT_TO
 
-    color = {"CRITICAL": "#ef4444", "WARNING": "#f59e0b", "OK": "#22c55e"}.get(severity, "#94a3b8")
+    color = {"CRITICAL": "#ef4444", "WARNING": "#f59e0b", "OK": "#22c55e"}.get(
+        severity, "#94a3b8"
+    )
     html = f"""<html><body style="font-family:sans-serif;margin:20px">
 <div style="background:#1e293b;color:#fff;padding:16px;border-radius:8px;margin-bottom:16px">
   <h2 style="margin:0">IMF Pipeline — Monitoring</h2>
@@ -107,8 +110,15 @@ def collect_issues() -> list[dict]:
     # Containers
     try:
         out = subprocess.check_output(
-            ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.Status}}\t{{.RestartCount}}"],
-            text=True, timeout=10,
+            [
+                "docker",
+                "ps",
+                "-a",
+                "--format",
+                "{{.Names}}\t{{.Status}}\t{{.RestartCount}}",
+            ],
+            text=True,
+            timeout=10,
         )
         running = {}
         for line in out.strip().splitlines():
@@ -117,31 +127,59 @@ def collect_issues() -> list[dict]:
                 running[parts[0]] = (parts[1], int(parts[2]) if len(parts) > 2 else 0)
         for name in IMF_CONTAINERS:
             if name not in running:
-                issues.append({"key": f"ctr_{name}", "sev": "CRITICAL",
-                                "msg": f"Container <b>{name}</b> introuvable"})
+                issues.append(
+                    {
+                        "key": f"ctr_{name}",
+                        "sev": "CRITICAL",
+                        "msg": f"Container <b>{name}</b> introuvable",
+                    }
+                )
             else:
                 status, restarts = running[name]
                 if not status.startswith("Up"):
-                    issues.append({"key": f"ctr_{name}", "sev": "CRITICAL",
-                                   "msg": f"Container <b>{name}</b> DOWN ({status})"})
+                    issues.append(
+                        {
+                            "key": f"ctr_{name}",
+                            "sev": "CRITICAL",
+                            "msg": f"Container <b>{name}</b> DOWN ({status})",
+                        }
+                    )
                 elif restarts > 5:
-                    issues.append({"key": f"ctr_{name}_rst", "sev": "WARNING",
-                                   "msg": f"Container <b>{name}</b> : {restarts} redémarrages"})
+                    issues.append(
+                        {
+                            "key": f"ctr_{name}_rst",
+                            "sev": "WARNING",
+                            "msg": f"Container <b>{name}</b> : {restarts} redémarrages",
+                        }
+                    )
     except Exception as e:
-        issues.append({"key": "docker", "sev": "CRITICAL", "msg": f"Docker daemon : {e}"})
+        issues.append(
+            {"key": "docker", "sev": "CRITICAL", "msg": f"Docker daemon : {e}"}
+        )
 
     # HTTP
     import urllib.request
+
     for name, url, expected in HTTP_CHECKS:
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "IMF-Monitor/1.0"})
             with urllib.request.urlopen(req, timeout=8) as r:
                 if r.status != expected:
-                    issues.append({"key": f"http_{name}", "sev": "WARNING",
-                                   "msg": f"<b>{name}</b> → HTTP {r.status}"})
+                    issues.append(
+                        {
+                            "key": f"http_{name}",
+                            "sev": "WARNING",
+                            "msg": f"<b>{name}</b> → HTTP {r.status}",
+                        }
+                    )
         except Exception as e:
-            issues.append({"key": f"http_{name}", "sev": "CRITICAL",
-                           "msg": f"<b>{name}</b> inaccessible : {e}"})
+            issues.append(
+                {
+                    "key": f"http_{name}",
+                    "sev": "CRITICAL",
+                    "msg": f"<b>{name}</b> inaccessible : {e}",
+                }
+            )
 
     # Disque
     for path in ["/", "/var", "/opt"]:
@@ -151,11 +189,21 @@ def collect_issues() -> list[dict]:
         pct = int(u.used / u.total * 100)
         free = u.free / 1e9
         if pct >= 90:
-            issues.append({"key": f"disk{path}", "sev": "CRITICAL",
-                           "msg": f"Disque <b>{path}</b> : {pct}% ({free:.1f}GB libres)"})
+            issues.append(
+                {
+                    "key": f"disk{path}",
+                    "sev": "CRITICAL",
+                    "msg": f"Disque <b>{path}</b> : {pct}% ({free:.1f}GB libres)",
+                }
+            )
         elif pct >= 80:
-            issues.append({"key": f"disk{path}", "sev": "WARNING",
-                           "msg": f"Disque <b>{path}</b> : {pct}% ({free:.1f}GB libres)"})
+            issues.append(
+                {
+                    "key": f"disk{path}",
+                    "sev": "WARNING",
+                    "msg": f"Disque <b>{path}</b> : {pct}% ({free:.1f}GB libres)",
+                }
+            )
 
     # RAM
     try:
@@ -165,11 +213,21 @@ def collect_issues() -> list[dict]:
         avail = info.get("MemAvailable", total)
         pct = int((1 - avail / total) * 100)
         if pct >= 95:
-            issues.append({"key": "ram", "sev": "CRITICAL",
-                           "msg": f"RAM : {pct}% ({(total-avail)/1e6:.1f}/{total/1e6:.1f}GB)"})
+            issues.append(
+                {
+                    "key": "ram",
+                    "sev": "CRITICAL",
+                    "msg": f"RAM : {pct}% ({(total-avail)/1e6:.1f}/{total/1e6:.1f}GB)",
+                }
+            )
         elif pct >= 85:
-            issues.append({"key": "ram", "sev": "WARNING",
-                           "msg": f"RAM : {pct}% ({(total-avail)/1e6:.1f}/{total/1e6:.1f}GB)"})
+            issues.append(
+                {
+                    "key": "ram",
+                    "sev": "WARNING",
+                    "msg": f"RAM : {pct}% ({(total-avail)/1e6:.1f}/{total/1e6:.1f}GB)",
+                }
+            )
     except Exception:
         pass
 
@@ -178,15 +236,20 @@ def collect_issues() -> list[dict]:
         sock = socket.create_connection((PG_HOST, PG_PORT), timeout=8)
         sock.close()
     except Exception as e:
-        issues.append({"key": "postgres", "sev": "CRITICAL",
-                       "msg": f"PostgreSQL Supabase inaccessible ({PG_HOST}:{PG_PORT}) : {e}"})
+        issues.append(
+            {
+                "key": "postgres",
+                "sev": "CRITICAL",
+                "msg": f"PostgreSQL Supabase inaccessible ({PG_HOST}:{PG_PORT}) : {e}",
+            }
+        )
 
     return issues
 
 
 # ── Tâche principale ───────────────────────────────────────────────────────────
 def run_monitoring(**ctx) -> None:
-    now   = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     state = _load_state()
 
     issues = collect_issues()
@@ -209,7 +272,7 @@ def run_monitoring(**ctx) -> None:
         _send(
             subject=f"RÉSOLU — {key.replace('_', ' ')}",
             body_html=f"<p>Incident <b>{key}</b> résolu.</p>"
-                      f"<p style='color:#64748b;font-size:12px'>Début : {prev['since']} · Fin : {now}</p>",
+            f"<p style='color:#64748b;font-size:12px'>Début : {prev['since']} · Fin : {now}</p>",
             severity="OK",
         )
         print(f"[RESOLVED] {key}")

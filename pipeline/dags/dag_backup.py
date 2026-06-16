@@ -16,6 +16,7 @@ Artefacts sauvegardés :
 Retention : 7 quotidiens · 4 hebdomadaires · 3 mensuels
 Chaque backup produit un manifeste JSON avec SHA-256 par fichier.
 """
+
 from __future__ import annotations
 
 import gzip
@@ -35,18 +36,21 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 # ── Config R2 ──────────────────────────────────────────────────────────────────
-R2_ENDPOINT    = "https://61a23f65159306f2aaf08c0e0bf76d59.r2.cloudflarestorage.com"
-R2_ACCESS_KEY  = os.environ.get("R2_ACCESS_KEY_ID", "6702e95fdff644802dc657728977f54e")
-R2_SECRET_KEY  = os.environ.get("R2_SECRET_ACCESS_KEY", "40caa6eb64cf35728bf69fe56f48d3de109a835dc8294e609734e7d517b8b966")
-R2_BUCKET      = "imf-ml"
-BACKUP_PREFIX  = "backups"
+R2_ENDPOINT = "https://61a23f65159306f2aaf08c0e0bf76d59.r2.cloudflarestorage.com"
+R2_ACCESS_KEY = os.environ.get("R2_ACCESS_KEY_ID", "6702e95fdff644802dc657728977f54e")
+R2_SECRET_KEY = os.environ.get(
+    "R2_SECRET_ACCESS_KEY",
+    "40caa6eb64cf35728bf69fe56f48d3de109a835dc8294e609734e7d517b8b966",
+)
+R2_BUCKET = "imf-ml"
+BACKUP_PREFIX = "backups"
 
 # ── PostgreSQL ─────────────────────────────────────────────────────────────────
 PG_HOST = os.environ.get("POSTGRES_HOST", "aws-0-eu-west-3.pooler.supabase.com")
 PG_PORT = os.environ.get("POSTGRES_PORT", "6543")
 PG_USER = os.environ.get("POSTGRES_USER", "postgres.ceiqkvvacjsakycsgcfz")
 PG_PASS = os.environ.get("POSTGRES_PASSWORD", "")
-PG_DB   = os.environ.get("POSTGRES_DB", "postgres")
+PG_DB = os.environ.get("POSTGRES_DB", "postgres")
 
 # ── Retention GFS ──────────────────────────────────────────────────────────────
 RETENTION = {"daily": 7, "weekly": 4, "monthly": 3}
@@ -85,8 +89,8 @@ def _upload(client, local_path: str, r2_key: str) -> str:
 
 # ── Tâche 1 : dump PostgreSQL ──────────────────────────────────────────────────
 def dump_postgres(scope: str, **ctx) -> dict:
-    ts    = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
-    date  = datetime.utcnow().strftime("%Y-%m-%d")
+    ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+    date = datetime.utcnow().strftime("%Y-%m-%d")
     fname = f"postgres_{scope}_{ts}.sql.gz"
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -95,12 +99,20 @@ def dump_postgres(scope: str, **ctx) -> dict:
         proc = subprocess.run(
             [
                 "pg_dump",
-                f"--host={PG_HOST}", f"--port={PG_PORT}",
-                f"--username={PG_USER}", f"--dbname={PG_DB}",
-                "--schema=app", "--schema=ml", "--schema=dw",
-                "--clean", "--if-exists", "--no-password",
+                f"--host={PG_HOST}",
+                f"--port={PG_PORT}",
+                f"--username={PG_USER}",
+                f"--dbname={PG_DB}",
+                "--schema=app",
+                "--schema=ml",
+                "--schema=dw",
+                "--clean",
+                "--if-exists",
+                "--no-password",
             ],
-            capture_output=True, env=env, check=True,
+            capture_output=True,
+            env=env,
+            check=True,
         )
         with gzip.open(out, "wb", compresslevel=9) as gz:
             gz.write(proc.stdout)
@@ -110,13 +122,15 @@ def dump_postgres(scope: str, **ctx) -> dict:
         key = f"{BACKUP_PREFIX}/{scope}/{date}/{fname}"
         _upload(_r2_client(), out, key)
 
-    print(f"[backup] PostgreSQL → r2://{R2_BUCKET}/{key} ({size//1024}KB, sha256:{sha[:16]}…)")
+    print(
+        f"[backup] PostgreSQL → r2://{R2_BUCKET}/{key} ({size//1024}KB, sha256:{sha[:16]}…)"
+    )
     return {"file": fname, "key": key, "sha256": sha, "size": size}
 
 
 # ── Tâche 2 : archive modèles ML ──────────────────────────────────────────────
 def backup_ml_models(scope: str, **ctx) -> dict:
-    ts   = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+    ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     date = datetime.utcnow().strftime("%Y-%m-%d")
     fname = f"ml_models_{scope}_{ts}.tar.gz"
 
@@ -125,15 +139,19 @@ def backup_ml_models(scope: str, **ctx) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         out = os.path.join(tmp, fname)
         if ml_dir.exists():
-            subprocess.run(["tar", "-czf", out, "-C", str(ml_dir.parent), ml_dir.name], check=True)
+            subprocess.run(
+                ["tar", "-czf", out, "-C", str(ml_dir.parent), ml_dir.name], check=True
+            )
         else:
             # Models dans le container ml-api
-            subprocess.run(["docker", "cp", "imf-ml-api:/ml/models", f"{tmp}/models"], check=True)
+            subprocess.run(
+                ["docker", "cp", "imf-ml-api:/ml/models", f"{tmp}/models"], check=True
+            )
             subprocess.run(["tar", "-czf", out, "-C", tmp, "models"], check=True)
 
-        sha  = _sha256(out)
+        sha = _sha256(out)
         size = os.path.getsize(out)
-        key  = f"{BACKUP_PREFIX}/{scope}/{date}/{fname}"
+        key = f"{BACKUP_PREFIX}/{scope}/{date}/{fname}"
         _upload(_r2_client(), out, key)
 
     print(f"[backup] ML models → r2://{R2_BUCKET}/{key} ({size//1024}KB)")
@@ -142,7 +160,7 @@ def backup_ml_models(scope: str, **ctx) -> dict:
 
 # ── Tâche 3 : snapshot Redis ───────────────────────────────────────────────────
 def backup_redis(scope: str, **ctx) -> dict:
-    ts   = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+    ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     date = datetime.utcnow().strftime("%Y-%m-%d")
     fname = f"redis_{scope}_{ts}.rdb.gz"
 
@@ -151,22 +169,34 @@ def backup_redis(scope: str, **ctx) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         # Forcer un save Redis
         subprocess.run(
-            ["docker", "exec", "imf_staging_redis",
-             "redis-cli", "-a", redis_pass, "--no-auth-warning", "BGSAVE"],
+            [
+                "docker",
+                "exec",
+                "imf_staging_redis",
+                "redis-cli",
+                "-a",
+                redis_pass,
+                "--no-auth-warning",
+                "BGSAVE",
+            ],
             capture_output=True,
         )
-        import time; time.sleep(3)
+        import time
+
+        time.sleep(3)
 
         rdb_tmp = os.path.join(tmp, "dump.rdb")
-        subprocess.run(["docker", "cp", "imf_staging_redis:/data/dump.rdb", rdb_tmp], check=True)
+        subprocess.run(
+            ["docker", "cp", "imf_staging_redis:/data/dump.rdb", rdb_tmp], check=True
+        )
 
         out = os.path.join(tmp, fname)
         with open(rdb_tmp, "rb") as fi, gzip.open(out, "wb", compresslevel=9) as gz:
             gz.write(fi.read())
 
-        sha  = _sha256(out)
+        sha = _sha256(out)
         size = os.path.getsize(out)
-        key  = f"{BACKUP_PREFIX}/{scope}/{date}/{fname}"
+        key = f"{BACKUP_PREFIX}/{scope}/{date}/{fname}"
         _upload(_r2_client(), out, key)
 
     print(f"[backup] Redis → r2://{R2_BUCKET}/{key} ({size//1024}KB)")
@@ -175,21 +205,21 @@ def backup_redis(scope: str, **ctx) -> dict:
 
 # ── Tâche 4 : manifest + upload ───────────────────────────────────────────────
 def build_manifest(scope: str, **ctx) -> None:
-    ti   = ctx["ti"]
+    ti = ctx["ti"]
     date = datetime.utcnow().strftime("%Y-%m-%d")
-    ts   = datetime.utcnow().isoformat()
+    ts = datetime.utcnow().isoformat()
 
     manifest = {
-        "backup_id":  datetime.utcnow().strftime("%Y%m%dT%H%M%S"),
-        "scope":      scope,
-        "date":       date,
-        "generated":  ts,
-        "bucket":     R2_BUCKET,
-        "retention":  RETENTION,
+        "backup_id": datetime.utcnow().strftime("%Y%m%dT%H%M%S"),
+        "scope": scope,
+        "date": date,
+        "generated": ts,
+        "bucket": R2_BUCKET,
+        "retention": RETENTION,
         "artefacts": {
-            "postgres":    ti.xcom_pull(task_ids="dump_postgres"),
-            "ml_models":   ti.xcom_pull(task_ids="backup_ml_models"),
-            "redis":       ti.xcom_pull(task_ids="backup_redis"),
+            "postgres": ti.xcom_pull(task_ids="dump_postgres"),
+            "ml_models": ti.xcom_pull(task_ids="backup_ml_models"),
+            "redis": ti.xcom_pull(task_ids="backup_redis"),
         },
     }
 
@@ -206,13 +236,16 @@ def build_manifest(scope: str, **ctx) -> None:
 
 # ── Tâche 5 : rotation GFS ────────────────────────────────────────────────────
 def rotate_old_backups(scope: str, **ctx) -> None:
-    keep  = RETENTION[scope]
-    r2    = _r2_client()
+    keep = RETENTION[scope]
+    r2 = _r2_client()
     prefix = f"{BACKUP_PREFIX}/{scope}/"
 
     resp = r2.list_objects_v2(Bucket=R2_BUCKET, Prefix=prefix, Delimiter="/")
     dirs = sorted(
-        [cp["Prefix"].rstrip("/").split("/")[-1] for cp in resp.get("CommonPrefixes", [])],
+        [
+            cp["Prefix"].rstrip("/").split("/")[-1]
+            for cp in resp.get("CommonPrefixes", [])
+        ],
         reverse=True,
     )
 
@@ -270,6 +303,6 @@ def _make_dag(dag_id: str, schedule: str, scope: str) -> DAG:
     return dag
 
 
-dag_backup_daily   = _make_dag("dag_backup_daily",   "0 3 * * *",   "daily")
-dag_backup_weekly  = _make_dag("dag_backup_weekly",  "30 3 * * 0",  "weekly")
-dag_backup_monthly = _make_dag("dag_backup_monthly", "0 4 1 * *",   "monthly")
+dag_backup_daily = _make_dag("dag_backup_daily", "0 3 * * *", "daily")
+dag_backup_weekly = _make_dag("dag_backup_weekly", "30 3 * * 0", "weekly")
+dag_backup_monthly = _make_dag("dag_backup_monthly", "0 4 1 * *", "monthly")
