@@ -197,7 +197,7 @@ jobs:
   # ════════════════════════════════════════════════════════════════════════════
   build-backend:
     name: "Build & Push imf-backend (GHCR)"
-    needs: backend-ci
+    needs: [backend-ci, pipeline-ci, frontend-ci]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || github.event_name == 'workflow_dispatch'
@@ -231,7 +231,7 @@ jobs:
 
   build-ml-api:
     name: "Build & Push imf-ml-api (GHCR)"
-    needs: pipeline-ci
+    needs: [backend-ci, pipeline-ci, frontend-ci]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || github.event_name == 'workflow_dispatch'
@@ -265,7 +265,7 @@ jobs:
 
   build-airflow:
     name: "Build & Push imf-airflow (GHCR)"
-    needs: pipeline-ci
+    needs: [backend-ci, pipeline-ci, frontend-ci]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || github.event_name == 'workflow_dispatch'
@@ -299,7 +299,7 @@ jobs:
 
   build-frontend:
     name: "Build & Push imf-frontend (GHCR)"
-    needs: frontend-ci
+    needs: [backend-ci, pipeline-ci, frontend-ci]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || github.event_name == 'workflow_dispatch'
