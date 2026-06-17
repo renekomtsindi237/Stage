@@ -511,6 +511,25 @@ jobs:
             SMTP_PASSWORD=${SMTP_PASSWORD}
             ENVEOF
             chmod 600 "$ENVFILE"
+
+            # Persistance SMTP : si les secrets GitHub sont renseignés → sauvegarde locale
+            # Si secrets vides → restauration depuis la sauvegarde locale précédente
+            SMTP_WRITTEN=$(grep "^SMTP_PASSWORD=" "$ENVFILE" | cut -d= -f2-)
+            if [ -n "$SMTP_WRITTEN" ]; then
+              grep "^SMTP_" "$ENVFILE" > "$APP_DIR/.env.smtp.local" || true
+              chmod 600 "$APP_DIR/.env.smtp.local"
+              echo "  SMTP credentials sauvegardés dans .env.smtp.local"
+            elif [ -f "$APP_DIR/.env.smtp.local" ]; then
+              while IFS= read -r smtpline; do
+                SVAR="${smtpline%%=*}"
+                if grep -q "^${SVAR}=" "$ENVFILE"; then
+                  sed -i "s|^${SVAR}=.*|${smtpline}|" "$ENVFILE"
+                else
+                  echo "$smtpline" >> "$ENVFILE"
+                fi
+              done < "$APP_DIR/.env.smtp.local"
+              echo "  SMTP credentials restaurés depuis .env.smtp.local"
+            fi
             echo "==> .env.staging écrit"
 
             # ── Login GHCR ────────────────────────────────────────────────
