@@ -7,6 +7,7 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import type { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "../../../core/auth/auth.service";
 
 @Component({
@@ -42,9 +43,15 @@ export class LoginComponent {
         this.loading.set(false);
         this.router.navigate(["/login/otp"], { state: { email } });
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.error.set("Adresse introuvable ou compte désactivé.");
+        if (err.status === 0 || err.status === 504 || err.status === 502) {
+          this.error.set(
+            "Serveur temporairement indisponible. Veuillez réessayer dans quelques instants.",
+          );
+        } else {
+          this.error.set("Adresse introuvable ou compte désactivé.");
+        }
       },
     });
   }
