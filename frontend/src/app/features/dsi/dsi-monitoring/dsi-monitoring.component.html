@@ -1,0 +1,133 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Monitoring IMF</h2>
+      <p class="text-muted text-sm">Activité et santé de votre institution</p>
+    </div>
+    <button class="btn btn-ghost" (click)="load()">
+      <span class="material-icons-round">refresh</span> Actualiser
+    </button>
+  </div>
+
+  <!-- KPI cards -->
+  @if (loadingHealth()) {
+    <div class="stat-grid">
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="card skeleton" style="height:100px"></div>
+      }
+    </div>
+  } @else if (imfHealth()) {
+    <div class="stat-grid">
+      <div class="card stat-card">
+        <div class="stat-icon" style="background:rgba(99,102,241,.1)">
+          <span class="material-icons-round" style="color:#6366f1">people</span>
+        </div>
+        <div>
+          <p class="stat-label">Utilisateurs actifs</p>
+          <p class="stat-value">{{ imfHealth()!.usersActifs | number }}</p>
+        </div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="stat-icon" style="background:rgba(34,197,94,.1)">
+          <span class="material-icons-round" style="color:var(--color-success)">login</span>
+        </div>
+        <div>
+          <p class="stat-label">Connexions aujourd'hui</p>
+          <p class="stat-value">{{ imfHealth()!.connexionsAujourdHui | number }}</p>
+        </div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="stat-icon" style="background:rgba(239,68,68,.1)">
+          <span class="material-icons-round" style="color:var(--color-danger)">block</span>
+        </div>
+        <div>
+          <p class="stat-label">Tentatives échouées</p>
+          <p class="stat-value">{{ imfHealth()!.tentativesEchouees | number }}</p>
+        </div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="stat-icon" style="background:rgba(234,179,8,.1)">
+          <span class="material-icons-round" style="color:var(--color-warning)">storage</span>
+        </div>
+        <div>
+          <p class="stat-label">Stockage utilisé</p>
+          <p class="stat-value">{{ imfHealth()!.stockageUtilise }}</p>
+          <p class="text-xs text-muted">/ {{ imfHealth()!.stockageTotal }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Storage bar + global status -->
+    <div class="card" style="margin-top:16px">
+      <div class="status-row">
+        <div>
+          <p class="text-sm font-semibold">Statut global</p>
+          <p class="text-xs text-muted">Dernière synchronisation : {{ imfHealth()!.derniereSync | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <span class="badge" [ngClass]="statutClass(imfHealth()!.statut)">{{ imfHealth()!.statut }}</span>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="storage-bar-labels">
+          <span class="text-sm">Stockage</span>
+          <span class="text-sm font-semibold">{{ storagePercent(imfHealth()!) }}%</span>
+        </div>
+        <div class="storage-bar-track">
+          <div class="storage-bar-fill"
+               [style.width.%]="storagePercent(imfHealth()!)"
+               [class.fill-warn]="storagePercent(imfHealth()!) > 70"
+               [class.fill-danger]="storagePercent(imfHealth()!) > 90">
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="card empty-state">
+      <span class="material-icons-round" style="font-size:48px;color:var(--color-border)">monitor_heart</span>
+      <p class="text-muted">Données de monitoring non disponibles</p>
+    </div>
+  }
+
+  <!-- Recent logins -->
+  <div class="card" style="margin-top:24px">
+    <h3 style="margin-bottom:16px">Connexions récentes</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôle</th>
+          <th>Heure</th>
+          <th>IP</th>
+          <th>Résultat</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loadingLogins()) {
+          @for (_ of [1,2,3,4,5]; track $index) {
+            <tr>@for (__ of [1,2,3,4,5]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          }
+        } @else {
+          @for (login of recentLogins(); track login.heure + login.utilisateur) {
+            <tr>
+              <td class="font-semibold">{{ login.utilisateur }}</td>
+              <td><span class="badge badge-info">{{ login.role }}</span></td>
+              <td class="text-sm text-muted">{{ login.heure | date:'HH:mm:ss' }}</td>
+              <td class="text-sm" style="font-family:monospace">{{ login.ip }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="login.succes" [class.badge-danger]="!login.succes">
+                  {{ login.succes ? 'Succès' : 'Échec' }}
+                </span>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="5" class="text-center text-muted" style="padding:24px">Aucune connexion enregistrée</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

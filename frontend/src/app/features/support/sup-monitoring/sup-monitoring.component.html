@@ -1,0 +1,90 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Monitoring système</h2>
+      <p class="text-muted text-sm">Infrastructure globale — Grafana, Prometheus, services</p>
+    </div>
+    <button class="btn btn-ghost" (click)="loadHealth()">
+      <span class="material-icons-round">refresh</span> Actualiser
+    </button>
+  </div>
+
+  <!-- Quick links -->
+  <div class="tool-grid">
+    <a class="tool-card" [href]="grafanaUrl" target="_blank" rel="noopener">
+      <div class="tool-icon" style="background:#f46800">
+        <span class="material-icons-round">bar_chart</span>
+      </div>
+      <div>
+        <h4>Grafana</h4>
+        <p>Dashboards métriques temps réel</p>
+        <small class="text-muted">:3000</small>
+      </div>
+      <span class="material-icons-round open-icon">open_in_new</span>
+    </a>
+
+    <a class="tool-card" [href]="prometheusUrl" target="_blank" rel="noopener">
+      <div class="tool-icon" style="background:#e6522c">
+        <span class="material-icons-round">data_thresholding</span>
+      </div>
+      <div>
+        <h4>Prometheus</h4>
+        <p>Collecte et requêtes de métriques</p>
+        <small class="text-muted">:9100</small>
+      </div>
+      <span class="material-icons-round open-icon">open_in_new</span>
+    </a>
+
+    <a class="tool-card" href="/actuator" target="_blank" rel="noopener">
+      <div class="tool-icon" style="background:#6366f1">
+        <span class="material-icons-round">health_and_safety</span>
+      </div>
+      <div>
+        <h4>Spring Actuator</h4>
+        <p>Santé et métriques JVM</p>
+        <small class="text-muted">/actuator</small>
+      </div>
+      <span class="material-icons-round open-icon">open_in_new</span>
+    </a>
+  </div>
+
+  <!-- Service health -->
+  <div class="card" style="margin-top:24px">
+    <h3 style="margin-bottom:16px">État des services</h3>
+
+    @if (loading()) {
+      @for (_ of [1,2,3]; track $index) {
+        <div class="health-row">
+          <div class="skeleton" style="height:16px;width:120px"></div>
+          <div class="skeleton" style="height:22px;width:60px;border-radius:12px"></div>
+        </div>
+      }
+    } @else {
+      @for (svc of services(); track svc.name) {
+        <div class="health-row">
+          <div class="svc-name">
+            <span class="dot" [class.dot-up]="svc.status==='UP'" [class.dot-down]="svc.status==='DOWN'"
+                  [class.dot-warn]="svc.status==='DEGRADED'"></span>
+            {{ svc.name }}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            @if (svc.responseTimeMs) { <span class="text-sm text-muted">{{ svc.responseTimeMs }}ms</span> }
+            <span class="badge" [ngClass]="statusClass(svc.status)">{{ svc.status }}</span>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="card" style="margin-top:24px">
+    <h3 style="margin-bottom:12px">Aperçu Grafana</h3>
+    <p class="text-sm text-muted" style="margin-bottom:12px">
+      Pour afficher les dashboards ici, assurez-vous que Grafana tourne sur le port 3000
+      avec le paramètre <code>allow_embedding = true</code>.
+    </p>
+    <a class="btn btn-primary" [href]="grafanaUrl + '/dashboards'" target="_blank" rel="noopener">
+      <span class="material-icons-round">open_in_new</span>
+      Ouvrir Grafana
+    </a>
+  </div>
+</div>

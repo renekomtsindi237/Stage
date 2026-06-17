@@ -1,0 +1,95 @@
+<div class="collecte-shell">
+  <header class="collecte-header">
+    <button class="btn btn-ghost" routerLink="/agent">
+      <span class="material-icons-round">arrow_back</span>
+    </button>
+    <h3>Enregistrer une collecte</h3>
+  </header>
+
+  @if (saved()) {
+    <div class="success-overlay">
+      <span class="material-icons-round">check_circle</span>
+      <p>Collecte enregistrée !</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-danger" style="margin:16px">
+      {{ error() }}
+    </div>
+  }
+
+  <div class="collecte-content">
+    <!-- Client search -->
+    <div class="form-group">
+      <label>Client</label>
+      @if (!selectedClient()) {
+        <div class="search-bar">
+          <span class="material-icons-round">search</span>
+          <input type="text" placeholder="Rechercher un client..."
+                 (input)="search($any($event.target).value)">
+        </div>
+        @if (searchResults().length) {
+          <div class="client-results">
+            @for (c of searchResults(); track c.id) {
+              <div class="client-result" (click)="select(c)">
+                <p class="font-semibold">{{ c.nom }} {{ c.prenom }}</p>
+                <p class="text-sm text-muted">{{ c.code }} · Solde: {{ c.encours | number:'1.0-0' }} FCFA</p>
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <div class="client-selected">
+          <div>
+            <p class="font-semibold">{{ selectedClient()!.nom }} {{ selectedClient()!.prenom }}</p>
+            <p class="text-sm text-muted">{{ selectedClient()!.code }} · Solde: {{ selectedClient()!.encours | number:'1.0-0' }} FCFA</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" (click)="selectedClient.set(null)">Changer</button>
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <!-- Montant -->
+      <div class="form-group">
+        <label>Montant (FCFA)</label>
+        <input type="number" class="form-control montant-input"
+               formControlName="montant" placeholder="0" min="1">
+      </div>
+
+      <!-- Type opération -->
+      <div class="form-group">
+        <label>Type d'opération</label>
+        <div class="type-toggle">
+          <button type="button" class="type-btn" [class.active]="typeOp === 'EPARGNE'"
+                  (click)="setType('EPARGNE')">Épargne</button>
+          <button type="button" class="type-btn" [class.active]="typeOp === 'REMBOURSEMENT'"
+                  (click)="setType('REMBOURSEMENT')">Remboursement</button>
+        </div>
+      </div>
+
+      <!-- GPS -->
+      <div class="toggle-wrap" style="margin-bottom:16px">
+        <div>
+          <p class="font-semibold text-sm">
+            <span class="material-icons-round" style="font-size:14px;vertical-align:middle">location_on</span>
+            Position GPS jointe
+          </p>
+          <p class="text-sm text-muted">Utilisée uniquement pour valider l'opération (Loi 2024/017)</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" [checked]="gpsEnabled()" (change)="toggleGps()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full"
+              style="padding:14px;font-size:15px;justify-content:center"
+              [disabled]="loading() || !selectedClient()">
+        @if (loading()) { <span class="material-icons-round spin">refresh</span> }
+        @else { Enregistrer }
+      </button>
+    </form>
+  </div>
+</div>

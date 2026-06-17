@@ -1,0 +1,82 @@
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Analyse du Drift ML</h2>
+    <p class="page-subtitle">Surveillance de la dérive du modèle MCRS (Population Stability Index)</p>
+  </div>
+</div>
+
+<!-- Alerte drift -->
+@if (!loading() && data()?.driftDetecte) {
+  <div class="alert alert-danger">
+    <span class="material-icons-round">warning</span>
+    <div>
+      <p class="alert-title">Alerte de Dérive Majeure</p>
+      <p class="alert-body">
+        Le PSI global a dépassé le seuil critique de {{ data()!.seuilCritique }}.
+        Un ré-entraînement du modèle (Retraining) est planifié automatiquement.
+      </p>
+    </div>
+  </div>
+}
+
+<div class="content-grid two-col" style="margin-bottom:20px">
+  <!-- PSI Card -->
+  <div class="card psi-card">
+    <p class="text-muted text-sm text-center" style="margin-bottom:8px">PSI Actuel</p>
+    <div class="psi-value" [class]="psiClass">
+      {{ data()?.psiActuel ?? 0 | number:'1.2-2' }}
+    </div>
+    @if (data()?.driftDetecte) {
+      <div class="psi-badge">DRIFT DÉTECTÉ</div>
+    } @else {
+      <div class="psi-badge psi-badge--ok">STABLE</div>
+    }
+
+    <div class="psi-meta">
+      <div class="psi-meta__row">
+        <span class="text-muted text-sm">Modèle Actif</span>
+        <span class="font-semibold">{{ data()?.modeleActif ?? '—' }}</span>
+      </div>
+      <div class="psi-meta__row">
+        <span class="text-muted text-sm">Dernier entraînement</span>
+        <span class="font-semibold">{{ data()?.dernierEntrainement ?? '—' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features contribution -->
+  <div class="card">
+    <h4 style="margin-bottom:16px">Contribution des Features à la Dérive</h4>
+    @if (loading()) {
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="skeleton" style="height:32px;margin-bottom:10px"></div>
+      }
+    } @else {
+      @for (f of data()?.contributionFeatures ?? []; track f.nom) {
+        <div class="feature-row">
+          <div class="feature-row__header">
+            <code class="feature-row__name">{{ f.nom }}</code>
+            <span class="text-sm text-muted">PSI: <strong>{{ f.psi | number:'1.2-2' }}</strong></span>
+            <span class="text-sm font-semibold ml-auto">Contrib: {{ f.contribution }}%</span>
+          </div>
+          <div class="progress" style="margin-top:4px">
+            <div class="progress-bar"
+                 [style.width.%]="f.contribution"
+                 [class]="f.contribution > 30 ? 'danger' : f.contribution > 15 ? 'warning' : 'accent'">
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- PSI Chart -->
+<div class="card chart-card">
+  <div class="card-header"><h4>Évolution du PSI (90 jours)</h4></div>
+  <div style="height:250px;position:relative">
+    @if (!loading()) {
+      <canvas baseChart [data]="psiChartData" [options]="psiChartOptions" type="line"></canvas>
+    }
+  </div>
+</div>

@@ -1,0 +1,115 @@
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Tableau de bord</h2>
+    <p class="page-subtitle">Vue d'ensemble de votre portefeuille</p>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="stats-grid">
+  <app-stat-card
+    label="Encours Total"
+    [value]="data()?.encoursTotalFcfa ?? 0"
+    [trend]="data()?.variation?.encours"
+    [isCurrency]="true"
+    [loading]="loading()" />
+
+  <app-stat-card
+    label="PAR 30"
+    [value]="data()?.par30 ?? 0"
+    [trend]="data()?.variation?.par30"
+    [isPercent]="true"
+    [loading]="loading()" />
+
+  <app-stat-card
+    label="PAR 90 (COBAC)"
+    [value]="data()?.par90 ?? 0"
+    [trend]="data()?.variation?.par90"
+    [isPercent]="true"
+    [loading]="loading()" />
+
+  <app-stat-card
+    label="Collectes du jour"
+    [value]="data()?.collectesDuJour ?? 0"
+    [isCurrency]="true"
+    [loading]="loading()" />
+</div>
+
+<div class="content-grid two-col">
+  <!-- Alertes prédictives -->
+  <div class="card">
+    <div class="card-header">
+      <h4>Alertes prédictives actives</h4>
+      <a routerLink="/directeur/alertes" class="btn btn-ghost btn-sm">
+        Voir toutes <span class="material-icons-round" style="font-size:14px">arrow_forward</span>
+      </a>
+    </div>
+
+    @if (loading()) {
+      @for (_ of [1,2,3]; track $index) {
+        <div class="skeleton" style="height:60px;margin-bottom:10px;border-radius:8px"></div>
+      }
+    } @else if (!data()?.alertesActives?.length) {
+      <p class="text-muted" style="font-size:13px">Aucune alerte active.</p>
+    } @else {
+      @for (a of (data()?.alertesActives ?? []).slice(0, 4); track a.id) {
+        <div class="alerte-item severity-bar" [class]="a.severite.toLowerCase()">
+          <div class="alerte-item__header">
+            <app-alert-badge [severite]="a.severite" />
+            <span class="alerte-item__client font-semibold">{{ a.nomClient }}</span>
+          </div>
+          <p class="alerte-item__msg">{{ a.message }}</p>
+          <div class="alerte-item__footer">
+            <span class="text-muted text-sm">{{ a.createdAt | timeAgo }}</span>
+            <a routerLink="/directeur/alertes" class="btn btn-ghost btn-sm">Traiter</a>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Activité récente -->
+  <div class="card">
+    <div class="card-header">
+      <h4>Activité récente</h4>
+      <button class="btn btn-ghost btn-sm">Voir l'historique</button>
+    </div>
+
+    @if (loading()) {
+      @for (_ of [1,2,3]; track $index) {
+        <div class="skeleton" style="height:44px;margin-bottom:8px;border-radius:8px"></div>
+      }
+    } @else {
+      @for (item of (data()?.activiteRecente ?? []).slice(0, 6); track item.id) {
+        <div class="activity-item">
+          <div class="activity-item__icon">
+            <span class="material-icons-round">{{ activityIcon(item.type) }}</span>
+          </div>
+          <div class="activity-item__content">
+            <span class="activity-item__desc">{{ item.description }}</span>
+            @if (item.montant) {
+              <span class="activity-item__amount">{{ item.montant | fcfa }}</span>
+            }
+          </div>
+          <span class="activity-item__time text-muted text-sm">{{ item.createdAt | timeAgo }}</span>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- PAR Chart -->
+<div class="card chart-card" style="margin-top:20px">
+  <div class="card-header">
+    <h4>Évolution du Portefeuille à Risque (PAR)</h4>
+  </div>
+  <div style="height:240px;position:relative">
+    @if (!loading()) {
+      <canvas baseChart
+        [data]="parChartData"
+        [options]="parChartOptions"
+        type="line">
+      </canvas>
+    }
+  </div>
+</div>

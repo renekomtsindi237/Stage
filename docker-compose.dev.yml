@@ -92,6 +92,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    image: ghcr.io/microrecouv/backend:latest
     container_name: imf_backend_dev
     restart: unless-stopped
     env_file: .env
@@ -118,28 +119,21 @@ services:
     volumes:
       - backend_uploads:/uploads
     ports:
-      - "8088:8080"
+      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  # ── Angular Web (dev server via nginx) ──────────────────────────────────
+  # ── Angular Frontend (nginx, image buildée par make build-frontend) ─────
   web:
     build:
-      context: ./web
+      context: ./frontend
       dockerfile: Dockerfile
-      target: development
+    image: ghcr.io/microrecouv/frontend:latest
     container_name: imf_web_dev
     restart: unless-stopped
-    environment:
-      CHOKIDAR_USEPOLLING: "true"
-    command: ["npx", "ng", "serve", "--configuration", "development", "--host", "0.0.0.0", "--port", "80", "--poll", "1000"]
-    volumes:
-      - ./web:/app
-      - web_dev_node_modules:/app/node_modules
-      - web_dev_angular_cache:/app/.angular
     ports:
       - "4200:80"
     depends_on:
@@ -199,6 +193,7 @@ services:
     build:
       context: ./pipeline
       dockerfile: Dockerfile.ml
+    image: ghcr.io/microrecouv/ml-api:latest
     container_name: imf_ml_api_dev
     restart: unless-stopped
     env_file: .env
@@ -257,10 +252,6 @@ services:
 
 volumes:
   postgres_dev_data:
-    driver: local
-  web_dev_node_modules:
-    driver: local
-  web_dev_angular_cache:
     driver: local
   backend_uploads:
     driver: local

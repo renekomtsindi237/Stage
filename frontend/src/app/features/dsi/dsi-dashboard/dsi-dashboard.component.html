@@ -1,0 +1,50 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Dashboard DSI</h2>
+      <p class="text-muted text-sm">Administration système et conformité</p>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="margin-bottom:24px">
+    <app-stat-card label="Utilisateurs actifs"  [value]="data()?.utilisateursActifs ?? 0" [loading]="loading()" />
+    <app-stat-card label="Alertes système"       [value]="data()?.alertesSysteme ?? 0"    [loading]="loading()" />
+    <app-stat-card label="Score RGPD"            [value]="data()?.rgpdScore ?? 0"          [loading]="loading()" [isPercent]="true" />
+    <app-stat-card label="Violations ouvertes"   [value]="data()?.violationsOuvertes ?? 0"[loading]="loading()" />
+  </div>
+
+  <div class="quick-links">
+    <a routerLink="/dsi/users" class="quick-link-card">
+      <span class="material-icons-round">manage_accounts</span>
+      <div>
+        <h4>Gestion Utilisateurs</h4>
+        <p class="text-sm text-muted">Créer, désactiver, réinitialiser</p>
+      </div>
+      <span class="material-icons-round text-muted">chevron_right</span>
+    </a>
+    <a routerLink="/dsi/audit" class="quick-link-card">
+      <span class="material-icons-round">history_edu</span>
+      <div>
+        <h4>Audit Trail</h4>
+        <p class="text-sm text-muted">Dernière consultation: {{ data()?.dernierAudit | date:'dd/MM/yyyy' }}</p>
+      </div>
+      <span class="material-icons-round text-muted">chevron_right</span>
+    </a>
+    <a routerLink="/dsi/rgpd" class="quick-link-card">
+      <span class="material-icons-round">security</span>
+      <div>
+        <h4>Conformité RGPD</h4>
+        <p class="text-sm text-muted">{{ data()?.demandesDroits ?? 0 }} demandes en attente</p>
+      </div>
+      <span class="material-icons-round text-muted">chevron_right</span>
+    </a>
+    <a routerLink="/dsi/monitoring" class="quick-link-card">
+      <span class="material-icons-round">monitor_heart</span>
+      <div>
+        <h4>Monitoring</h4>
+        <p class="text-sm text-muted">Grafana · Prometheus</p>
+      </div>
+      <span class="material-icons-round text-muted">chevron_right</span>
+    </a>
+  </div>
+</div>

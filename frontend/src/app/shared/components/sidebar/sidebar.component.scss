@@ -1,0 +1,101 @@
+.sidebar {
+  width: var(--sidebar-width);
+  min-height: 100vh;
+  background: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+
+  &__brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    gap: 8px;
+  }
+
+  &__logo-wrap {
+    background: #fff;
+    border-radius: 14px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+
+  &__logo-img {
+    width: 120px;
+    height: auto;
+    display: block;
+  }
+
+  &__institution {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,.55);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 8px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
+    color: rgba(255,255,255,.65);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all .15s ease;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+
+    &--active {
+      background: rgba(255,255,255,.15);
+      color: #fff;
+
+      .sidebar__item-icon { color: var(--color-accent); }
+    }
+  }
+
+  &__item-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    color: rgba(255,255,255,.5);
+  }
+
+  &__item--active &__item-icon {
+    color: var(--color-accent);
+  }
+
+  &__footer {
+    padding: 8px 8px 16px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+}

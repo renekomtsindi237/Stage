@@ -1,0 +1,138 @@
+.notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: transparent;
+}
+
+.notif-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 380px;
+  max-width: 100vw;
+  background: var(--color-surface);
+  box-shadow: -4px 0 24px rgba(0,0,0,.12);
+  display: flex;
+  flex-direction: column;
+  z-index: 401;
+
+  @media (max-width: 480px) { width: 100%; }
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    h3 { font-size: 16px; font-weight: 700; }
+  }
+}
+
+.notif-count-badge {
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  line-height: 1.4;
+}
+
+.notif-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background .12s;
+  position: relative;
+
+  &:hover { background: var(--color-bg); }
+
+  &.unread {
+    background: #f0f5ff;
+    border-left: 3px solid var(--color-primary);
+    padding-left: 17px;
+  }
+}
+
+.notif-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .material-icons-round { font-size: 18px; }
+}
+
+.notif-body { flex: 1; min-width: 0; }
+
+.notif-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-msg {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.notif-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 20px;
+  color: var(--color-text-muted);
+
+  .material-icons-round { font-size: 48px; }
+  p { font-size: 14px; }
+}
+
+.btn.icon-only { padding: 6px; }

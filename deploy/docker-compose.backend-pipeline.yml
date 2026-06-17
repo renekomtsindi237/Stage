@@ -101,12 +101,13 @@ services:
       SPRING_DATASOURCE_PASSWORD:    ${SUPABASE_DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       JWT_SECRET:                    ${JWT_SECRET}
-      # Frontend sur port 9091 (séparé) + API sur 9090
-      CORS_ALLOWED_ORIGINS:          "http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:9091"
+      # CORS : domaine public Cloudflare + accès direct IP (debug/CI)
+      CORS_ALLOWED_ORIGINS:          "https://imf.rene.it.com,http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:9091"
       REDIS_HOST:                    127.0.0.1
       REDIS_PORT:                    6380
-      APP_URL:                       "http://${VPS_IP:-84.247.128.40}:9091"
-      APP_NAME:                      "IMF Pipeline"
+      # URL publique → liens OTP emails + cookies sécurisés
+      APP_URL:                       "https://imf.rene.it.com"
+      APP_NAME:                      "MicroRecouv"
       SUPABASE_URL:                  https://ceiqkvvacjsakycsgcfz.supabase.co
       SUPABASE_ANON_KEY:             ${SUPABASE_ANON_KEY}
       SMTP_HOST:                     ${SMTP_HOST:-}
@@ -114,7 +115,7 @@ services:
       SMTP_USER:                     ${SMTP_USER:-}
       SMTP_PASSWORD:                 ${SMTP_PASSWORD:-}
       FIREBASE_ENABLED:              "false"
-      IMF_SWAGGER_SERVER_URL:        "http://${VPS_IP:-84.247.128.40}:9090"
+      IMF_SWAGGER_SERVER_URL:        "https://imf.rene.it.com"
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:

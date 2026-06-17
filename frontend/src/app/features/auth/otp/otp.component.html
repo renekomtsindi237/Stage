@@ -1,0 +1,49 @@
+<div class="otp-card">
+  <h2 class="otp-card__title">Vérification</h2>
+  <p class="otp-card__subtitle">
+    Code envoyé à <strong>{{ email }}</strong>
+  </p>
+
+  @if (error()) {
+    <div class="alert alert-danger">
+      <span class="material-icons-round">error_outline</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <div class="otp-inputs">
+    @for (digit of digits(); track $index) {
+      <input
+        #digitInput
+        class="otp-input"
+        type="text"
+        inputmode="numeric"
+        maxlength="1"
+        [value]="digit"
+        (input)="onInput($index, $event)"
+        (keydown)="onKeydown($index, $event)"
+      >
+    }
+  </div>
+
+  <button
+    class="btn btn-primary otp-card__submit"
+    [disabled]="loading() || digits().join('').length < 6"
+    (click)="submit()">
+    @if (loading()) {
+      <span class="material-icons-round spin">refresh</span>
+    } @else {
+      Confirmer
+    }
+  </button>
+
+  <div class="otp-card__resend">
+    @if (countdown() > 0) {
+      <span class="text-muted">Renvoyer dans {{ countdown() }}s</span>
+    } @else {
+      <button class="btn btn-ghost" (click)="resend()">
+        <span class="material-icons-round">refresh</span> Renvoyer le code
+      </button>
+    }
+  </div>
+</div>

@@ -1,0 +1,91 @@
+<div class="page-content">
+  <div class="page-header">
+    <h2>Décaissement de crédit</h2>
+    <p class="text-muted text-sm">Verser les fonds pour un dossier de crédit validé</p>
+  </div>
+
+  @if (confirmed()) {
+    <!-- Success state -->
+    <div class="success-overlay card">
+      <div class="success-icon">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <h3>Décaissement effectué !</h3>
+      <p class="text-muted">Les fonds ont été versés avec succès.</p>
+      <button class="btn btn-primary" style="margin-top:24px" (click)="reset()">
+        Nouveau décaissement
+      </button>
+    </div>
+  } @else {
+    <div class="decaissement-shell" [formGroup]="form">
+      <!-- Step 1: Search dossier -->
+      <div class="card search-card">
+        <h3>1. Rechercher le dossier de crédit</h3>
+        <div class="search-row">
+          <input class="form-control" formControlName="reference"
+                 placeholder="Référence ou N° de dossier"
+                 (keydown.enter)="searchDossier()">
+          <button class="btn btn-primary" [disabled]="searchLoading()" (click)="searchDossier()">
+            @if (searchLoading()) { <span class="css-spinner-sm"></span> } @else { <span class="material-icons-round">search</span> }
+          </button>
+        </div>
+
+        @if (dossierFound()) {
+          <div class="dossier-found">
+            <span class="material-icons-round" style="color:var(--color-success)">check_circle</span>
+            <div>
+              <p class="font-semibold">{{ dossierFound()!.clientNom }}</p>
+              <p class="text-sm text-muted">{{ dossierFound()!.numeroReference }}</p>
+            </div>
+            <span class="amount">{{ dossierFound()!.montant | number:'1.0-0' }} FCFA</span>
+          </div>
+        }
+      </div>
+
+      <!-- Step 2: Canal + confirmation -->
+      @if (dossierFound()) {
+        <div class="card">
+          <h3>2. Modalités de versement</h3>
+
+          <div class="form-group" style="margin-bottom:16px">
+            <label>Canal de paiement *</label>
+            <div class="canal-grid">
+              @for (c of canaux; track c) {
+                <button type="button" class="canal-btn"
+                        [class.active]="form.value.canal === c"
+                        (click)="form.patchValue({canal: c})">
+                  <span class="material-icons-round">
+                    @switch (c) {
+                      @case ('ESPECES') { payments }
+                      @case ('MOBILE_MONEY') { smartphone }
+                      @case ('VIREMENT') { account_balance }
+                      @case ('CHEQUE') { description }
+                    }
+                  </span>
+                  <span>{{ c | titlecase }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:24px">
+            <label>Observations</label>
+            <textarea class="form-control" formControlName="observations" rows="2" placeholder="Optionnel..."></textarea>
+          </div>
+
+          <div class="confirm-row">
+            <div>
+              <p class="text-sm text-muted">Montant à décaisser</p>
+              <p class="amount-large">{{ dossierFound()!.montant | number:'1.0-0' }} FCFA</p>
+            </div>
+            <button class="btn btn-primary btn-lg" [disabled]="submitting()" (click)="submit()">
+              @if (submitting()) { <span class="css-spinner-sm"></span> Traitement… } @else {
+                <span class="material-icons-round">send</span> Confirmer le décaissement
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

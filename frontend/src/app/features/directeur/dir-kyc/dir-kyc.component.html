@@ -1,0 +1,53 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>KYC — Conformité clients</h2>
+      <p class="text-muted text-sm">Know Your Customer — vérification des pièces d'identité</p>
+    </div>
+  </div>
+
+  <div class="tabs" style="margin-bottom:16px">
+    <button class="tab-btn" [class.active]="tab()==='EN_ATTENTE'" (click)="setTab('EN_ATTENTE')">En attente</button>
+    <button class="tab-btn" [class.active]="tab()==='EXPIRE'"    (click)="setTab('EXPIRE')">Expirés</button>
+    <button class="tab-btn" [class.active]="tab()==='TOUS'"      (click)="setTab('TOUS')">Tous</button>
+  </div>
+
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Statut KYC</th>
+          <th>Documents</th>
+          <th>Date de validité</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1,2,3,4,5]; track $index) {
+            <tr>@for (__ of [1,2,3,4,5]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          }
+        } @else {
+          @for (k of page()?.content ?? []; track k.clientId) {
+            <tr>
+              <td class="font-semibold">{{ k.nomClient }}</td>
+              <td><span class="badge" [class]="statutClass(k.statut)">{{ k.statut }}</span></td>
+              <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap">
+                  @for (doc of k.documents; track doc.type) {
+                    <span class="badge" [class]="statutClass(doc.statut)" style="font-size:10px">{{ doc.type }}</span>
+                  }
+                </div>
+              </td>
+              <td class="text-sm text-muted">{{ k.dateValidite | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <button class="btn btn-primary btn-sm">Valider</button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

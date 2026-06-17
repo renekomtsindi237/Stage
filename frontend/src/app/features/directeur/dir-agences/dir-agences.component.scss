@@ -1,0 +1,23 @@
+.agences-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.agence-card {
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+
+    .material-icons-round { font-size: 28px; color: var(--color-primary); }
+  }
+
+  &__stats {
+    display: flex;
+    gap: 24px;
+  }
+}
+
+.danger { color: var(--color-danger); }

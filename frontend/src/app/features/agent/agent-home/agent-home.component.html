@@ -1,0 +1,103 @@
+<div class="agent-shell">
+  <!-- Header mobile -->
+  <header class="agent-header">
+    <div class="agent-header__avatar">{{ auth.initials() }}</div>
+    <div class="agent-header__info">
+      <span class="agent-header__name">{{ auth.fullName() }}</span>
+      <span class="agent-header__imf">{{ auth.currentUser()?.nomImf }}</span>
+    </div>
+    <div class="agent-header__actions">
+      <button class="agent-header__btn" (click)="sync()" [class.spin]="syncing()">
+        <span class="material-icons-round">sync</span>
+      </button>
+      <button class="agent-header__btn">
+        <span class="material-icons-round">notifications</span>
+        <span class="notif-dot"></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="agent-content">
+    <!-- Sync banner -->
+    @if (data()?.synchronise) {
+      <div class="sync-banner">
+        <span class="material-icons-round">check_circle</span>
+        Synchronisé à l'instant
+      </div>
+    }
+
+    <!-- Objectif card -->
+    <div class="objectif-card">
+      <p class="objectif-card__label">Objectif du jour</p>
+      <div class="objectif-card__amount">
+        @if (loading()) {
+          <span class="skeleton" style="height:36px;width:200px;display:inline-block"></span>
+        } @else {
+          {{ data()?.objectifJour | number:'1.0-0' }}
+          <span class="objectif-card__unit">FCFA</span>
+        }
+      </div>
+      <div class="progress" style="margin:12px 0">
+        <div class="progress-bar accent" [style.width.%]="progressPct"></div>
+      </div>
+      <div class="objectif-card__stats">
+        <div>
+          <p class="text-sm" style="color:rgba(255,255,255,.7)">Clients visités</p>
+          <p class="font-semibold">{{ data()?.clientsVisites ?? 0 }} / {{ data()?.clientsTotal ?? 0 }}</p>
+        </div>
+        <div>
+          <p class="text-sm" style="color:rgba(255,255,255,.7)">Collectes</p>
+          <p class="font-semibold">{{ data()?.collectesCount ?? 0 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+      <a routerLink="/agent/collecte" class="quick-action">
+        <span class="material-icons-round">account_balance_wallet</span>
+        <span>Nouvelle Collecte</span>
+      </a>
+      <a routerLink="/agent/clients" class="quick-action">
+        <span class="material-icons-round">group</span>
+        <span>Mes Clients</span>
+      </a>
+    </div>
+
+    <!-- Alertes clients -->
+    <div class="section-header">
+      <h4>Alertes sur vos clients</h4>
+      <a routerLink="/directeur/alertes" class="text-sm" style="color:var(--color-primary)">Voir tout</a>
+    </div>
+
+    @for (a of data()?.alertesClients ?? []; track a.clientId) {
+      <div class="client-alerte">
+        <div>
+          <p class="font-semibold">{{ a.nom }}</p>
+          <p class="text-sm text-muted">{{ a.message }}</p>
+        </div>
+        <app-alert-badge [severite]="a.severite" />
+        <span class="material-icons-round text-muted">chevron_right</span>
+      </div>
+    }
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="agent-nav">
+    <a routerLink="/agent" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="agent-nav__item">
+      <span class="material-icons-round">home</span>
+      <span>Accueil</span>
+    </a>
+    <a routerLink="/agent/clients" routerLinkActive="active" class="agent-nav__item">
+      <span class="material-icons-round">group</span>
+      <span>Clients</span>
+    </a>
+    <a routerLink="/agent/collecte" class="agent-nav__fab">
+      <span class="material-icons-round">add</span>
+    </a>
+    <a routerLink="/agent/historique" routerLinkActive="active" class="agent-nav__item">
+      <span class="material-icons-round">history</span>
+      <span>Historique</span>
+    </a>
+  </nav>
+</div>

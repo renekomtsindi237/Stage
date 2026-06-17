@@ -1,0 +1,33 @@
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.score-bar {
+  width: 80px;
+  height: 6px;
+  background: var(--color-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 3px;
+
+  &.badge-critique { background: var(--color-danger); }
+  &.badge-haute    { background: var(--color-warning); }
+  &.badge-moyenne  { background: var(--color-info); }
+  &.badge-basse    { background: var(--color-success); }
+  &.badge-success  { background: #1b2f4b; }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 0 0;
+}

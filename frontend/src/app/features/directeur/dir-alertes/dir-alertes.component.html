@@ -1,0 +1,84 @@
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Alertes prédictives ML</h2>
+    <p class="page-subtitle">Centre de commande des alertes générées par le modèle MCRS</p>
+  </div>
+  <div class="alertes-counters">
+    <span class="counter counter--critique">
+      <span class="counter__dot"></span> {{ critiques() }} Critiques
+    </span>
+    <span class="counter counter--haute">
+      <span class="counter__dot"></span> {{ hautes() }} Hautes
+    </span>
+    <span class="counter counter--moyenne">
+      <span class="counter__dot"></span> {{ moyennes() }} Moyennes
+    </span>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="alertes-toolbar">
+  <div class="search-bar" style="flex:1;max-width:340px">
+    <span class="material-icons-round">search</span>
+    <input type="text" placeholder="Rechercher un client, ID..."
+           [value]="search()" (input)="search.set($any($event.target).value)">
+  </div>
+  <button class="btn btn-outline btn-sm">
+    <span class="material-icons-round">filter_list</span> Filtres
+  </button>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <span class="tab-item" [class.active]="tab() === 'NON_TRAITEE'" (click)="setTab('NON_TRAITEE')">
+    Non traitées
+  </span>
+  <span class="tab-item" [class.active]="tab() === 'EN_TRAITEMENT'" (click)="setTab('EN_TRAITEMENT')">
+    En traitement
+  </span>
+  <span class="tab-item" [class.active]="tab() === 'TOUTES'" (click)="setTab('TOUTES')">
+    Toutes
+  </span>
+</div>
+
+<!-- Liste alertes -->
+@if (loading()) {
+  @for (_ of [1,2,3,4]; track $index) {
+    <div class="skeleton" style="height:90px;margin-bottom:12px;border-radius:10px"></div>
+  }
+} @else if (!filtered.length) {
+  <div class="card" style="text-align:center;padding:40px;color:var(--color-text-muted)">
+    <span class="material-icons-round" style="font-size:40px;display:block;margin-bottom:8px">check_circle</span>
+    Aucune alerte dans cette catégorie.
+  </div>
+} @else {
+  @for (a of filtered; track a.id) {
+    <div class="alerte-row severity-bar" [class]="a.severite.toLowerCase()">
+      <div class="alerte-row__body">
+        <div class="alerte-row__header">
+          <app-alert-badge [severite]="a.severite" />
+          <span class="font-semibold">{{ a.nomClient }}</span>
+          <span class="text-muted text-sm">{{ a.clientId }}</span>
+          <span class="sep">•</span>
+          <span class="text-muted text-sm">{{ a.agence }}</span>
+          <span class="sep">•</span>
+          <span class="font-semibold text-sm">{{ a.encours | fcfa }}</span>
+        </div>
+        <p class="alerte-row__msg">{{ a.message }}</p>
+        <div class="alerte-row__footer">
+          <span class="text-muted text-sm">{{ a.createdAt | timeAgo }}</span>
+          <span class="badge" [class]="'badge-' + a.statut.toLowerCase().replace('_','-')">
+            {{ a.statut.replace('_', ' ') }}
+          </span>
+        </div>
+      </div>
+      @if (a.statut !== 'RESOLUE') {
+        <button class="btn btn-primary btn-sm alerte-row__action"
+                [disabled]="treating() === a.id"
+                (click)="traiter(a.id)">
+          {{ treating() === a.id ? '...' : 'Traiter' }}
+        </button>
+      }
+    </div>
+  }
+}

@@ -1,0 +1,100 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Équipe de l'agence</h2>
+      <p class="text-muted text-sm">{{ page()?.totalElements ?? 0 | number }} membres</p>
+    </div>
+    <button class="btn btn-primary" (click)="showModal.set(true)">
+      <span class="material-icons-round">person_add</span> Ajouter un membre
+    </button>
+  </div>
+
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1,2,3,4,5]; track $index) {
+            <tr>@for (__ of [1,2,3,4,5]; track $index) {<td><div class="skeleton" style="height:14px;width:80%"></div></td>}</tr>
+          }
+        } @else {
+          @for (u of page()?.content ?? []; track u.uid) {
+            <tr>
+              <td class="font-semibold">{{ u.prenom }} {{ u.nom }}</td>
+              <td class="text-sm text-muted">{{ u.email }}</td>
+              <td><span class="badge badge-info">{{ u.role }}</span></td>
+              <td>
+                <span class="badge" [class.badge-success]="u.actif" [class.badge-danger]="!u.actif">
+                  {{ u.actif ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-ghost btn-sm" (click)="toggle(u.uid, !u.actif)"
+                        [title]="u.actif ? 'Désactiver' : 'Réactiver'">
+                  <span class="material-icons-round">{{ u.actif ? 'block' : 'check_circle' }}</span>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    @if (page() && (page()?.totalPages ?? 0) > 1) {
+      <div class="pagination">
+        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()===0" (click)="goPage(currentPage()-1)">
+          <span class="material-icons-round">chevron_left</span>
+        </button>
+        <span class="text-sm">Page {{ currentPage()+1 }} / {{ page()?.totalPages }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()>=(page()?.totalPages??1)-1"
+                (click)="goPage(currentPage()+1)">
+          <span class="material-icons-round">chevron_right</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="showModal.set(false)">
+    <div class="modal-card" (click)="$event.stopPropagation()" [formGroup]="createForm">
+      <div class="modal-header">
+        <h3>Ajouter un membre</h3>
+        <button class="btn-icon" (click)="showModal.set(false)"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Prénom *</label>
+          <input class="form-control" formControlName="prenom" placeholder="Jean">
+        </div>
+        <div class="form-group">
+          <label>Nom *</label>
+          <input class="form-control" formControlName="nom" placeholder="DUPONT">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Email *</label>
+          <input class="form-control" type="email" formControlName="email">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Rôle *</label>
+          <select class="form-select" formControlName="role">
+            @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showModal.set(false)">Annuler</button>
+        <button class="btn btn-primary" [disabled]="createForm.invalid || creating()" (click)="create()">
+          @if (creating()) { <span class="css-spinner-sm"></span> } @else { Ajouter }
+        </button>
+      </div>
+    </div>
+  </div>
+}

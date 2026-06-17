@@ -11,26 +11,26 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = context.watch<AuthProvider>().currentUser;
     final role = user?.role ?? '';
+
+    if (_isAgentRole(role)) {
+      return _AgentBottomNav(currentIndex: currentIndex);
+    }
 
     final items = _itemsForRole(role);
 
     return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      decoration: const BoxDecoration(
+        color: AppColors.darkSurface,
         border: Border(
-          top: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            width: 1,
-          ),
+          top: BorderSide(color: AppColors.darkBorder, width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: Color(0x4D000000),
             blurRadius: 12,
-            offset: const Offset(0, -4),
+            offset: Offset(0, -4),
           ),
         ],
       ),
@@ -56,9 +56,12 @@ class AppBottomNav extends StatelessWidget {
     );
   }
 
+  bool _isAgentRole(String role) {
+    return role == 'AGENT_CREDIT' || role == 'AGENT_SAISIE' || role == 'AGENT';
+  }
+
   List<_NavDef> _itemsForRole(String role) {
     switch (role) {
-      case 'AGENT_CREDIT':
       case 'CHEF_AGENCE':
       case 'ANALYSTE_ENGAGEMENTS':
         return [
@@ -77,14 +80,6 @@ class AppBottomNav extends StatelessWidget {
           _NavDef(Icons.person_rounded, 'Profil', '/profil'),
         ];
 
-      case 'AGENT_SAISIE':
-        return [
-          _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
-          _NavDef(Icons.description_rounded, 'Contrats', '/back-office'),
-          _NavDef(Icons.notifications_rounded, 'Alertes', '/alertes'),
-          _NavDef(Icons.person_rounded, 'Profil', '/profil'),
-        ];
-
       case 'RESPONSABLE_RECOUVREMENT':
         return [
           _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
@@ -95,7 +90,6 @@ class AppBottomNav extends StatelessWidget {
         ];
 
       default:
-        // AGENT, DIRECTEUR, ANALYSTE, DSI, SUPPORT — navigation standard
         return [
           _NavDef(Icons.dashboard_rounded, 'Accueil', '/dashboard'),
           _NavDef(Icons.account_balance_wallet_rounded, 'Prêts', '/prets'),
@@ -104,6 +98,82 @@ class AppBottomNav extends StatelessWidget {
           _NavDef(Icons.person_rounded, 'Profil', '/profil'),
         ];
     }
+  }
+}
+
+// Agent-specific bottom nav: Accueil | Clients | [+ FAB] | Historique
+class _AgentBottomNav extends StatelessWidget {
+  final int currentIndex;
+
+  const _AgentBottomNav({required this.currentIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.darkSurface,
+        border: Border(
+          top: BorderSide(color: AppColors.darkBorder, width: 1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x4D000000),
+            blurRadius: 12,
+            offset: Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _NavItem(
+                icon: Icons.home_rounded,
+                label: 'Accueil',
+                isActive: currentIndex == 0,
+                onTap: () => context.go('/dashboard'),
+              ),
+              _NavItem(
+                icon: Icons.people_rounded,
+                label: 'Clients',
+                isActive: currentIndex == 1,
+                onTap: () => context.go('/clients'),
+              ),
+              // Center FAB button
+              GestureDetector(
+                onTap: () => context.go('/collectes/nouvelle'),
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.navyDeep,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.darkBorder, width: 1.5),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x4D000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 26),
+                ),
+              ),
+              _NavItem(
+                icon: Icons.history_rounded,
+                label: 'Historique',
+                isActive: currentIndex == 3,
+                onTap: () => context.go('/historique'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

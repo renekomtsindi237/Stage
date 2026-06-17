@@ -1,0 +1,72 @@
+<div class="page-content" style="max-width:640px">
+  <div class="page-header">
+    <h2>Nouvel Encaissement</h2>
+  </div>
+
+  <div class="card">
+    <!-- Client -->
+    <div class="form-group">
+      <label>Client</label>
+      @if (!selectedClient()) {
+        <div class="search-bar">
+          <span class="material-icons-round">search</span>
+          <input type="text" placeholder="Nom, code ou téléphone..." (input)="search($any($event.target).value)">
+        </div>
+        @if (searchResults().length) {
+          <div class="client-results">
+            @for (c of searchResults(); track c.id) {
+              <div class="client-result" (click)="select(c)">
+                <p class="font-semibold">{{ c.nom }} {{ c.prenom }}</p>
+                <p class="text-sm text-muted">{{ c.code }}</p>
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <div class="client-selected">
+          <span class="material-icons-round" style="color:var(--color-success)">check_circle</span>
+          <div class="flex-1">
+            <p class="font-semibold">{{ selectedClient()!.nom }} {{ selectedClient()!.prenom }}</p>
+            <p class="text-sm text-muted">{{ selectedClient()!.code }}</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" (click)="selectedClient.set(null)">Changer</button>
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-group">
+        <label>Montant (FCFA)</label>
+        <input type="number" class="form-control" formControlName="montant" placeholder="0">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type d'opération</label>
+          <select class="form-control" formControlName="typeOperation">
+            <option value="REMBOURSEMENT">Remboursement</option>
+            <option value="EPARGNE">Épargne</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Canal de paiement</label>
+          <select class="form-control" formControlName="canal">
+            <option value="ESPECES">Espèces</option>
+            <option value="MOBILE_MONEY">Mobile Money</option>
+            <option value="VIREMENT">Virement</option>
+            <option value="CHEQUE">Chèque</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button type="button" class="btn btn-ghost" routerLink="/caisse/dashboard">Annuler</button>
+        <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center"
+                [disabled]="loading() || !selectedClient()">
+          @if (loading()) { <span class="material-icons-round spin">refresh</span> }
+          @else { Enregistrer l'encaissement }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

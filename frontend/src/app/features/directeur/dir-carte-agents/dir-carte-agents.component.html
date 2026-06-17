@@ -1,0 +1,80 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Carte des agents</h2>
+      <p class="text-muted text-sm">Positions GPS en temps réel — actualisation auto 30s</p>
+    </div>
+    <button class="btn btn-ghost" (click)="load()">
+      <span class="material-icons-round">my_location</span> Actualiser
+    </button>
+  </div>
+
+  <div class="map-layout">
+    <!-- Agent list -->
+    <div class="agent-list card">
+      <h3 style="margin-bottom:12px">{{ agents().length }} agents</h3>
+
+      @if (loading()) {
+        @for (_ of [1,2,3,4]; track $index) {
+          <div class="agent-item">
+            <div class="skeleton" style="height:14px;width:120px;margin-bottom:4px"></div>
+            <div class="skeleton" style="height:12px;width:80px"></div>
+          </div>
+        }
+      } @else {
+        @for (a of agents(); track a.agentUid) {
+          <div class="agent-item" [class.active]="selected()?.agentUid === a.agentUid" (click)="select(a)">
+            <div class="agent-avatar">{{ a.prenom[0] }}{{ a.nom[0] }}</div>
+            <div style="flex:1">
+              <p class="font-semibold text-sm">{{ a.prenom }} {{ a.nom }}</p>
+              <span class="badge badge-sm" [ngClass]="statusClass(a.statut)">{{ statusLabel(a.statut) }}</span>
+            </div>
+            <span class="material-icons-round text-muted" style="font-size:16px">chevron_right</span>
+          </div>
+        }
+        @empty {
+          <p class="text-muted text-sm" style="padding:16px 0">Aucun agent localisé.</p>
+        }
+      }
+    </div>
+
+    <!-- Map placeholder / detail -->
+    <div class="map-area card">
+      @if (selected()) {
+        <div class="agent-detail">
+          <h3>{{ selected()!.prenom }} {{ selected()!.nom }}</h3>
+          <span class="badge" [ngClass]="statusClass(selected()!.statut)">{{ statusLabel(selected()!.statut) }}</span>
+
+          <div class="coords">
+            <div>
+              <p class="text-xs text-muted">Latitude</p>
+              <p class="font-semibold">{{ selected()!.latitude | number:'1.6-6' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted">Longitude</p>
+              <p class="font-semibold">{{ selected()!.longitude | number:'1.6-6' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted">Dernière vue</p>
+              <p class="font-semibold">{{ selected()!.lastSeen | date:'HH:mm:ss' }}</p>
+            </div>
+          </div>
+
+          <a class="btn btn-primary"
+             [href]="'https://maps.google.com/?q=' + selected()!.latitude + ',' + selected()!.longitude"
+             target="_blank" rel="noopener">
+            <span class="material-icons-round">open_in_new</span> Ouvrir dans Google Maps
+          </a>
+        </div>
+      } @else {
+        <div class="map-placeholder">
+          <span class="material-icons-round" style="font-size:64px;color:var(--color-border)">map</span>
+          <p class="text-muted">Sélectionnez un agent pour voir sa position</p>
+          <p class="text-xs text-muted" style="margin-top:4px">
+            Pour une carte interactive, intégrez Leaflet.js ou Google Maps
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

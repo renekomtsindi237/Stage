@@ -2,6 +2,9 @@
 # MicroRecouv — .gitignore monorepo
 # ══════════════════════════════════════════
 
+# ── Rapport de stage (contenu académique privé) ───
+rapport/
+
 # ── Secrets & Env ─────────────────────────
 .env
 .env.*
@@ -35,6 +38,11 @@ web/dist/
 web/.angular/cache/
 src/web/node_modules/
 src/web/dist/
+
+# ── Frontend Angular (nouveau) ────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
 
 # ── Python venv ───────────────────────────
 .venv/
@@ -94,8 +102,8 @@ data/
 *.arrow
 *.json.gz
 
-# ── Screens
-screens/
+# ── Screens (design mockups à la racine uniquement)
+/screens/
 
 # ── ML modèles entraînés ──────────────────
 pipeline/models/

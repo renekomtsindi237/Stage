@@ -1,3 +1,5 @@
+#Pipeline CI/CD qui s'effectuera sur un runner vers le serveur VPS directement 
+
 name: CI/CD — IMF Pipeline
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -11,7 +13,7 @@ name: CI/CD — IMF Pipeline
 #   imf-backend   → backend/Dockerfile       (Spring Boot / Java 17)
 #   imf-ml-api    → pipeline/Dockerfile.ml   (FastAPI ML scoring)
 #   imf-airflow   → pipeline/Dockerfile.airflow (Airflow 2.8 + DAGs)
-#   imf-frontend  → web/Dockerfile           (Angular 17 / nginx)
+#   imf-frontend  → frontend/Dockerfile       (Angular 17 / nginx)
 #
 # Fichiers de déploiement (versionnés dans le repo) :
 #   deploy/docker-compose.backend-pipeline.yml  ← backend + pipeline + nginx-api
@@ -168,7 +170,7 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: web/
+        working-directory: frontend/
     steps:
       - uses: actions/checkout@v4
 
@@ -176,7 +178,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
@@ -321,9 +323,8 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
       - uses: docker/build-push-action@v5
         with:
-          context: ./web
-          file: ./web/Dockerfile
-          target: production
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

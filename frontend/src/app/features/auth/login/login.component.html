@@ -1,0 +1,45 @@
+<div class="login-card">
+  <h2 class="login-card__title">Connexion</h2>
+  <p class="login-card__subtitle">
+    Un code de vérification sera envoyé à votre adresse email
+  </p>
+
+  @if (error()) {
+    <div class="alert alert-danger" style="margin-bottom:16px">
+      <span class="material-icons-round">error_outline</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label for="email">Adresse email professionnelle</label>
+      <input
+        id="email"
+        type="email"
+        class="form-control"
+        [class.is-invalid]="emailCtrl.invalid && emailCtrl.touched"
+        formControlName="email"
+        placeholder="votre@institution.cm"
+        autocomplete="email"
+      >
+      @if (emailCtrl.invalid && emailCtrl.touched) {
+        <span class="login-card__error">Veuillez saisir une adresse email valide.</span>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-primary login-card__submit" [disabled]="loading()">
+      @if (loading()) {
+        <span class="material-icons-round spin">refresh</span>
+      } @else {
+        Recevoir mon code
+      }
+    </button>
+  </form>
+
+  <div class="login-card__footer">
+    <a routerLink="/login/admin">Connexion administrateur</a>
+    &nbsp;·&nbsp;
+    <span>Problème de connexion ? Contacter l'administrateur</span>
+  </div>
+</div>

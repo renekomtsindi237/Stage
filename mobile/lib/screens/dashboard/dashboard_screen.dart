@@ -1,23 +1,15 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/models/alerte.dart';
 import '../../core/models/kpi_summary.dart';
-import '../../core/models/pret.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/sync_provider.dart';
 import '../../core/services/alerte_service.dart';
 import '../../core/services/kpi_service.dart';
-import '../../core/services/pret_service.dart';
 import '../../widgets/app_bottom_nav.dart';
-import '../../widgets/error_widget.dart';
-import '../../widgets/kpi_card.dart';
-import '../../widgets/quick_access_tile.dart';
-import '../../widgets/skeleton_loader.dart';
-import '../../widgets/status_badge.dart';
-import '../../widgets/transaction_item.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,21 +20,13 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   KpiSummary? _kpi;
-  List<Alerte> _recentAlertes = [];
-  List<Pret> _recentPrets = [];
+  List<Alerte> _alertes = [];
   bool _loading = true;
   String? _error;
-  late final KpiService _kpiService;
-  late final AlerteService _alerteService;
-  late final PretService _pretService;
 
   @override
   void initState() {
     super.initState();
-    final context2 = context;
-    _kpiService = context2.read<KpiService>();
-    _alerteService = context2.read<AlerteService>();
-    _pretService = context2.read<PretService>();
     _loadData();
   }
 
@@ -52,21 +36,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _error = null;
     });
     try {
+      final kpiService = context.read<KpiService>();
+      final alerteService = context.read<AlerteService>();
       final now = DateTime.now();
-      final firstOfMonth = DateTime(now.year, now.month, 1);
-      final dateDebut = DateFormat('yyyy-MM-dd').format(firstOfMonth);
+      final dateDebut = DateFormat('yyyy-MM-dd').format(DateTime(now.year, now.month, 1));
       final dateFin = DateFormat('yyyy-MM-dd').format(now);
 
       final results = await Future.wait([
-        _kpiService.getSummary(dateDebut: dateDebut, dateFin: dateFin),
-        _alerteService.getAlertes(statut: 'ACTIVE', page: 0, size: 5),
-        _pretService.getPrets(statut: 'EN_RETARD', page: 0, size: 5),
+        kpiService.getSummary(dateDebut: dateDebut, dateFin: dateFin),
+        alerteService.getAlertes(statut: 'ACTIVE', page: 0, size: 5),
       ]);
 
       setState(() {
         _kpi = results[0] as KpiSummary;
-        _recentAlertes = (results[1] as dynamic).content as List<Alerte>;
-        _recentPrets = (results[2] as dynamic).content as List<Pret>;
+        _alertes = (results[1] as dynamic).content as List<Alerte>;
         _loading = false;
       });
     } catch (e) {
@@ -77,550 +60,144 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String _formatCurrency(double value) {
-    return NumberFormat.currency(
-      locale: 'fr_CM',
-      symbol: 'FCFA',
-      decimalDigits: 0,
-    ).format(value);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.currentUser;
+    final auth = context.watch<AuthProvider>();
+    final sync = context.watch<SyncProvider>();
+    final user = auth.currentUser;
+    final name = user?.fullName ?? user?.username ?? 'Utilisateur';
+    final initials = name
+        .trim()
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .take(2)
+        .map((s) => s[0].toUpperCase())
+        .join();
+    final role = user?.displayRole ?? user?.role ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.darkBg,
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        color: AppColors.gold,
-        backgroundColor: AppColors.darkSurface,
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 0,
-              floating: true,
-              backgroundColor: AppColors.darkBg,
-              actions: [
-                IconButton(
-                  onPressed: () => context.go('/profil'),
-                  icon: const Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  if (_loading) ...[
-                    const SkeletonDashboardHeader(),
-                    const SizedBox(height: 20),
-                    const SkeletonCard(),
-                    const SizedBox(height: 12),
-                    const SkeletonCard(),
-                    const SizedBox(height: 20),
-                    Row(children: const [
-                      Expanded(child: SkeletonCard()),
-                      SizedBox(width: 12),
-                      Expanded(child: SkeletonCard()),
-                      SizedBox(width: 12),
-                      Expanded(child: SkeletonCard()),
-                    ]),
-                  ] else if (_error != null) ...[
-                    const SizedBox(height: 80),
-                    AppErrorWidget(
-                      message: _error!,
-                      onRetry: _loadData,
-                    ),
-                  ] else ...[
-                    // Header card
-                    _buildHeaderCard(user?.fullName ?? user?.username ?? 'Utilisateur',
-                        user?.displayRole ?? user?.role ?? ''),
-                    const SizedBox(height: 12),
-                    // Carte synchronisation + scoring temps rÃ©el
-                    _buildSyncCard(),
-                    const SizedBox(height: 20),
-                    // KPI Cards grid
-                    _buildKpiSection(),
-                    const SizedBox(height: 20),
-                    // Action buttons
-                    _buildActionButtons(),
-                    const SizedBox(height: 24),
-                    // Quick access
-                    _buildQuickAccess(),
-                    const SizedBox(height: 24),
-                    // Recent alertes
-                    if (_recentAlertes.isNotEmpty) ...[
-                      _buildSectionHeader(
-                        'Alertes rÃ©centes',
-                        onViewAll: () => context.go('/alertes'),
-                      ),
-                      const SizedBox(height: 12),
-                      ..._recentAlertes.map((a) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: TransactionItem(
-                              icon: Icons.warning_amber_rounded,
-                              iconColor: a.isEscaladee ? AppColors.warning : AppColors.error,
-                              title: a.nomClient ?? 'PrÃªt #${a.idPret}',
-                              subtitle: a.message ?? 'Alerte active',
-                              trailing: StatusBadge(statut: a.statut, small: true),
-                              onTap: () => context.go('/alertes/${a.id}'),
-                            ),
-                          )),
-                      const SizedBox(height: 16),
-                    ],
-                    // Recent prets
-                    if (_recentPrets.isNotEmpty) ...[
-                      _buildSectionHeader(
-                        'PrÃªts en retard',
-                        onViewAll: () => context.go('/prets'),
-                      ),
-                      const SizedBox(height: 12),
-                      ..._recentPrets.map((p) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: TransactionItem(
-                              icon: Icons.account_balance_wallet_rounded,
-                              iconColor: AppColors.teal,
-                              title: p.reference,
-                              subtitle: p.nomClient ?? 'Client inconnu',
-                              amount: _formatCurrency(p.montantRestant ?? p.montantInitial),
-                              trailing: p.isEnRetard
-                                  ? RetardBadge(joursRetard: p.joursRetard ?? 0)
-                                  : null,
-                              onTap: () => context.go('/prets/${p.idPret}'),
-                            ),
-                          )),
-                    ],
-                    const SizedBox(height: 24),
-                  ],
-                ]),
+      body: Column(
+        children: [
+          _buildTopBar(context, sync, initials, name, role),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadData,
+              color: AppColors.gold,
+              backgroundColor: AppColors.darkSurface,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                children: [
+                  _buildSyncBanner(sync),
+                  const SizedBox(height: 16),
+                  _buildObjectifCard(_kpi),
+                  const SizedBox(height: 16),
+                  _buildQuickActions(),
+                  const SizedBox(height: 24),
+                  _buildAlertesSection(),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 
-  Widget _buildHeaderCard(String name, String role) {
-    final kpi = _kpi ?? KpiSummary.empty();
+  Widget _buildTopBar(
+    BuildContext context,
+    SyncProvider sync,
+    String initials,
+    String name,
+    String role,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.darkSurface, AppColors.darkSurfaceRaised],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.darkBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.navy, AppColors.teal],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bonjour, $name',
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      role,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: kpi.nbAlertesActives > 0
-                      ? AppColors.error.withOpacity(0.15)
-                      : AppColors.success.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      kpi.nbAlertesActives > 0
-                          ? Icons.warning_amber_rounded
-                          : Icons.check_circle_outline,
-                      size: 14,
-                      color: kpi.nbAlertesActives > 0
-                          ? AppColors.error
-                          : AppColors.success,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${kpi.nbAlertesActives}',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: kpi.nbAlertesActives > 0
-                            ? AppColors.error
-                            : AppColors.success,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'AperÃ§u du portefeuille',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            _formatCurrency(kpi.totalCollectes),
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${kpi.nbCollectes} collecte${kpi.nbCollectes > 1 ? 's' : ''} ce mois',
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildKpiSection() {
-    final kpi = _kpi ?? KpiSummary.empty();
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.3,
-      children: [
-        KpiCard(
-          icon: Icons.trending_up_rounded,
-          label: 'Encours +30j',
-          value: kpi.encoursPar30,
-          isCurrency: true,
-          iconColor: AppColors.warning,
-          iconBg: AppColors.warning.withOpacity(0.15),
-        ),
-        KpiCard(
-          icon: Icons.trending_down_rounded,
-          label: 'Encours +90j',
-          value: kpi.encoursPar90,
-          isCurrency: true,
-          iconColor: AppColors.error,
-          iconBg: AppColors.error.withOpacity(0.15),
-        ),
-        KpiCard(
-          icon: Icons.receipt_long_rounded,
-          label: 'Nb Collectes',
-          value: kpi.nbCollectes,
-          iconColor: AppColors.teal,
-          iconBg: AppColors.teal.withOpacity(0.15),
-        ),
-        KpiCard(
-          icon: Icons.notifications_active_rounded,
-          label: 'Alertes actives',
-          value: kpi.nbAlertesActives,
-          iconColor: AppColors.error,
-          iconBg: AppColors.error.withOpacity(0.15),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: () => context.go('/prets'),
-            child: Container(
-              height: 48,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.darkBorder),
-                borderRadius: BorderRadius.circular(12),
-                color: AppColors.darkSurfaceRaised,
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.account_balance_wallet_rounded,
-                      color: AppColors.textSecondary, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'PrÃªts actifs',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => context.go('/alertes'),
-            child: Container(
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.gold, AppColors.goldLight],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.gold.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.warning_amber_rounded,
-                      color: AppColors.navyDeep, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Alertes',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.navyDeep,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickAccess() {
-    final kpi = _kpi;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'AccÃ¨s rapide',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: QuickAccessTile(
-                icon: Icons.account_balance_wallet_rounded,
-                label: 'PrÃªts',
-                onTap: () => context.go('/prets'),
-                color: AppColors.teal,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: QuickAccessTile(
-                icon: Icons.warning_amber_rounded,
-                label: 'Alertes',
-                onTap: () => context.go('/alertes'),
-                color: AppColors.warning,
-                badge: kpi?.nbAlertesActives,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: QuickAccessTile(
-                icon: Icons.people_rounded,
-                label: 'Clients',
-                onTap: () => context.go('/clients'),
-                color: AppColors.navy,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSyncCard() {
-    final sync = context.watch<SyncProvider>();
-
-    // Couleur et icÃ´ne selon l'Ã©tat du scoring
-    Color stateColor;
-    IconData stateIcon;
-    String stateLabel;
-    switch (sync.scoringState) {
-      case ScoringState.pending:
-        stateColor = AppColors.warning;
-        stateIcon  = Icons.autorenew_rounded;
-        stateLabel = 'Analyse MCRS en coursâ€¦';
-      case ScoringState.done:
-        stateColor = AppColors.success;
-        stateIcon  = Icons.check_circle_outline_rounded;
-        stateLabel = 'Scores mis Ã  jour (${sync.latestScores.length} client(s))';
-      case ScoringState.unavailable:
-        stateColor = AppColors.textSecondary;
-        stateIcon  = Icons.cloud_off_rounded;
-        stateLabel = 'Scoring non disponible';
-      case ScoringState.idle:
-        stateColor = AppColors.teal;
-        stateIcon  = Icons.sync_rounded;
-        stateLabel = sync.pendingCount > 0
-            ? '${sync.pendingCount} collecte(s) en attente'
-            : sync.lastResult != null
-                ? 'DerniÃ¨re sync : ${sync.lastResult!.resume}'
-                : 'Synchronisation Ã  jour';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.darkSurface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.darkBorder),
+      color: AppColors.navyDark,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 10,
+        bottom: 14,
+        left: 16,
+        right: 16,
       ),
       child: Row(
         children: [
-          // IcÃ´ne d'Ã©tat (animÃ©e si pending)
-          sync.scoringState == ScoringState.pending
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(stateColor),
-                  ),
-                )
-              : Icon(stateIcon, color: stateColor, size: 20),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(
+              color: AppColors.navy,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initials.isNotEmpty ? initials : 'U',
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  stateLabel,
-                  style: TextStyle(
+                  name,
+                  style: const TextStyle(
                     fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: stateColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
-                if (sync.syncError != null)
-                  Text(
-                    sync.syncError!,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11,
-                      color: AppColors.error,
-                    ),
+                Text(
+                  role,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
                   ),
+                ),
               ],
             ),
           ),
-          // Bouton sync manuelle
           GestureDetector(
             onTap: sync.syncing ? null : () => sync.syncNow(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: sync.syncing
-                    ? AppColors.darkBorder
-                    : AppColors.teal.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: sync.syncing
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.sync_rounded,
-                            size: 14, color: AppColors.teal),
-                        const SizedBox(width: 4),
-                        Text(
-                          sync.pendingCount > 0 ? 'Syncer' : 'Actualiser',
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.teal,
-                          ),
-                        ),
-                      ],
+            child: sync.syncing
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Icon(Icons.sync_rounded, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 18),
+          GestureDetector(
+            onTap: () => context.go('/alertes'),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_outlined, color: Colors.white, size: 22),
+                if ((_kpi?.nbAlertesActives ?? 0) > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
                     ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -628,34 +205,342 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, {VoidCallback? onViewAll}) {
+  Widget _buildSyncBanner(SyncProvider sync) {
+    Color color;
+    IconData icon;
+    String label;
+
+    if (sync.syncing || sync.scoringState == ScoringState.pending) {
+      color = AppColors.warning;
+      icon = Icons.autorenew_rounded;
+      label = 'Synchronisation en cours…';
+    } else if (sync.pendingCount > 0) {
+      color = AppColors.warning;
+      icon = Icons.cloud_upload_outlined;
+      label = '${sync.pendingCount} collecte(s) en attente de sync';
+    } else {
+      color = AppColors.success;
+      icon = Icons.check_circle_outline_rounded;
+      label = 'Synchronisé à l\'instant';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildObjectifCard(KpiSummary? kpi) {
+    const double targetAmount = 350000;
+    final collected = kpi?.totalCollectes ?? 0.0;
+    final progress = (collected / targetAmount).clamp(0.0, 1.0);
+    final collectes = kpi?.nbCollectes ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.darkSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.darkBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Objectif du jour',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              Text(
+                '${NumberFormat('#,###', 'fr_FR').format(targetAmount.toInt())} FCFA',
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.gold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: AppColors.darkBorder,
+              valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              _buildStat(Icons.people_outline_rounded, 'Clients visités', '$collectes/20'),
+              const SizedBox(width: 28),
+              _buildStat(Icons.receipt_long_rounded, 'Collectes', '$collectes'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStat(IconData icon, String label, String value) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+        Icon(icon, color: AppColors.textSecondary, size: 16),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildActionTile(
+            icon: Icons.account_balance_wallet_rounded,
+            label: 'Nouvelle\nCollecte',
+            onTap: () => context.go('/collectes/nouvelle'),
           ),
         ),
-        if (onViewAll != null)
-          GestureDetector(
-            onTap: onViewAll,
-            child: const Text(
-              'Voir tout â†’',
-              style: TextStyle(
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildActionTile(
+            icon: Icons.people_rounded,
+            label: 'Mes\nClients',
+            onTap: () => context.go('/clients'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 22),
+        decoration: BoxDecoration(
+          color: AppColors.darkSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.darkBorder),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: AppColors.gold, size: 30),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.gold,
+                color: Colors.white,
+                height: 1.3,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Alertes sur vos clients',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => context.go('/alertes'),
+              child: const Text(
+                'Voir tout',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.teal,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_loading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+          )
+        else if (_error != null)
+          _buildEmptyCard('Impossible de charger les alertes')
+        else if (_alertes.isEmpty)
+          _buildEmptyCard('Aucune alerte active')
+        else
+          ..._alertes.map(
+            (a) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _buildAlerteItem(a),
             ),
           ),
       ],
     );
   }
-}
 
+  Widget _buildEmptyCard(String message) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.darkSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.darkBorder),
+      ),
+      child: Center(
+        child: Text(
+          message,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlerteItem(Alerte a) {
+    final isCritique = a.isEscaladee;
+    return GestureDetector(
+      onTap: () => context.go('/alertes/${a.id}'),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.darkSurface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.darkBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    a.nomClient ?? 'Prêt #${a.idPret}',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    a.message ?? 'Alerte active',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                isCritique ? 'CRITIQUE' : 'ACTIVE',
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.error,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,47 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Dashboard Crédit</h2>
+      <p class="text-muted text-sm">Gestion de vos dossiers de crédit</p>
+    </div>
+    <a routerLink="/credit/nouveau" class="btn btn-primary">
+      <span class="material-icons-round">add</span> Nouveau dossier
+    </a>
+  </div>
+
+  <div class="stats-grid" style="margin-bottom:24px">
+    <app-stat-card label="Total dossiers"  [value]="data()?.total ?? 0"        [loading]="loading()" />
+    <app-stat-card label="En instruction"  [value]="data()?.enInstruction ?? 0"[loading]="loading()" />
+    <app-stat-card label="Approuvés"       [value]="data()?.approuves ?? 0"    [loading]="loading()" />
+    <app-stat-card label="Rejetés"         [value]="data()?.rejetes ?? 0"      [loading]="loading()" />
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h4>Dossiers récents</h4>
+      <a routerLink="/credit/dossiers" class="text-sm" style="color:var(--color-primary)">Voir tout</a>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Référence</th><th>Client</th><th>Montant</th><th>Statut</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <tr>@for (__ of [1,2,3,4,5]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          }
+        } @else {
+          @for (d of data()?.recents ?? []; track d.uid) {
+            <tr>
+              <td class="font-semibold" style="color:var(--color-primary)">{{ d.reference }}</td>
+              <td>{{ d.clientNom }}</td>
+              <td>{{ d.montant | fcfa }}</td>
+              <td><span class="badge" [class]="statutClass(d.statut)">{{ d.statut }}</span></td>
+              <td class="text-sm text-muted">{{ d.createdAt | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

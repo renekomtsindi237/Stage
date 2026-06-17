@@ -1,0 +1,61 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>Audit Trail</h2>
+      <p class="text-muted text-sm">{{ page()?.totalElements ?? 0 | number }} événements enregistrés</p>
+    </div>
+    <button class="btn btn-ghost" (click)="exportCsv()">
+      <span class="material-icons-round">download</span> Exporter CSV
+    </button>
+  </div>
+
+  <div class="card filter-bar" [formGroup]="filterForm" style="margin-bottom:16px">
+    <input class="form-control" formControlName="utilisateur" placeholder="Filtrer par utilisateur..." style="flex:1">
+    <input class="form-control" formControlName="action"      placeholder="Filtrer par action..."       style="flex:1">
+    <button class="btn btn-primary" (click)="load()">Filtrer</button>
+  </div>
+
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Horodatage</th>
+          <th>Utilisateur</th>
+          <th>Action</th>
+          <th>Entité</th>
+          <th>ID Entité</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+            <tr>@for (__ of [1,2,3,4,5]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          }
+        } @else {
+          @for (e of page()?.content ?? []; track e.id) {
+            <tr>
+              <td class="text-sm text-muted">{{ e.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+              <td class="font-semibold">{{ e.utilisateur }}</td>
+              <td><span class="action-badge">{{ e.action }}</span></td>
+              <td class="text-sm">{{ e.entite }}</td>
+              <td class="text-sm text-muted" style="font-family:monospace">{{ e.entiteId | slice:0:12 }}…</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    @if (page() && (page()?.totalPages ?? 0) > 1) {
+      <div class="pagination">
+        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()===0" (click)="goPage(currentPage()-1)">
+          <span class="material-icons-round">chevron_left</span>
+        </button>
+        <span class="text-sm">Page {{ currentPage()+1 }} / {{ page()?.totalPages }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()>=(page()?.totalPages??1)-1"
+                (click)="goPage(currentPage()+1)">
+          <span class="material-icons-round">chevron_right</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

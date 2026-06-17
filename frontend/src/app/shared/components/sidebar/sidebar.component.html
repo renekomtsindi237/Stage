@@ -1,0 +1,29 @@
+<aside class="sidebar">
+  <!-- Logo -->
+  <div class="sidebar__brand">
+    <div class="sidebar__logo-wrap">
+      <img src="assets/logo.png" alt="MicroRecouv" class="sidebar__logo-img" width="240" height="130">
+    </div>
+    <span class="sidebar__institution">{{ institutionLabel }}</span>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar__nav">
+    @for (item of menuItems; track item.route) {
+      <a class="sidebar__item"
+         [routerLink]="item.route"
+         routerLinkActive="sidebar__item--active">
+        <span class="material-icons-round sidebar__item-icon">{{ item.icon }}</span>
+        <span class="sidebar__item-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <!-- Profile -->
+  <div class="sidebar__footer">
+    <a class="sidebar__item sidebar__item--profile" routerLink="/profile">
+      <span class="material-icons-round sidebar__item-icon">person</span>
+      <span class="sidebar__item-label">Mon Profil</span>
+    </a>
+  </div>
+</aside>
