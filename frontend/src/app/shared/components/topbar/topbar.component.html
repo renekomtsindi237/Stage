@@ -1,7 +1,7 @@
 <header class="topbar">
   <div class="topbar__left">
     <div class="topbar__institution">
-      {{ auth.currentUser()?.nomImf ?? "MicroRecouv" }}
+      {{ auth.currentUser()?.imfNom ?? "MicroRecouv" }}
     </div>
     <div class="topbar__date">{{ today }}</div>
   </div>
