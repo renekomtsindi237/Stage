@@ -337,7 +337,7 @@ jobs:
   # ════════════════════════════════════════════════════════════════════════════
   bootstrap-staging:
     name: "Bootstrap VPS Staging"
-    needs: [build-backend, build-ml-api, build-airflow, build-frontend]
+    needs: [backend-ci, pipeline-ci, frontend-ci]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env != 'production')
@@ -412,7 +412,7 @@ jobs:
   # ════════════════════════════════════════════════════════════════════════════
   deploy-backend-staging:
     name: "Deploy Backend + Pipeline → Staging (:9090)"
-    needs: bootstrap-staging
+    needs: [bootstrap-staging, build-backend, build-ml-api, build-airflow]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env != 'production')
@@ -676,7 +676,7 @@ jobs:
   # ════════════════════════════════════════════════════════════════════════════
   deploy-frontend-staging:
     name: "Deploy Frontend Web → Staging (:9091)"
-    needs: [bootstrap-staging, deploy-backend-staging]
+    needs: [bootstrap-staging, build-frontend]
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
       || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env != 'production')
