@@ -30,9 +30,11 @@ export class AuthService {
   }
 
   requestOtp(email: string) {
-    return this.http.post(`${environment.apiUrl}/api/v1/auth/request-otp`, {
-      email,
-    });
+    return this.http.post(
+      `${environment.apiUrl}/api/v1/auth/request-otp`,
+      null,
+      { params: { email } },
+    );
   }
 
   verifyOtp(email: string, code: string) {
