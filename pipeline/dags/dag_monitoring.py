@@ -208,7 +208,9 @@ def collect_issues() -> list[dict]:
     # RAM
     try:
         with open("/proc/meminfo") as f:
-            info = {line.split(":")[0]: int(line.split()[1]) for line in f if ":" in line}
+            info = {
+                line.split(":")[0]: int(line.split()[1]) for line in f if ":" in line
+            }
         total = info.get("MemTotal", 1)
         avail = info.get("MemAvailable", total)
         pct = int((1 - avail / total) * 100)
