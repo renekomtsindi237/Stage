@@ -7,15 +7,16 @@ package cm.imf.pipeline.dto.response;
  */
 public record OtpVerifyResponse(
 
-        String status,
-        String accessToken,
-        String refreshToken,
-        String role,
-        String username,
-        String imfUid,
-        String imfCode,
-        String imfNom,
-        Long   expiresIn
+        String  status,
+        String  accessToken,
+        String  refreshToken,
+        String  role,
+        String  username,
+        String  imfUid,
+        String  imfCode,
+        String  imfNom,
+        boolean mustChangePassword,
+        Long    expiresIn
 
 ) {
     public static final String AUTHENTICATED = "AUTHENTICATED";
@@ -26,6 +27,7 @@ public record OtpVerifyResponse(
                 auth.accessToken(), auth.refreshToken(),
                 auth.role(), auth.username(),
                 auth.imfUid(), auth.imfCode(), auth.imfNom(),
+                auth.mustChangePassword(),
                 auth.expiresIn()
         );
     }

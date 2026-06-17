@@ -13,22 +13,25 @@ export type Role =
   | "SUPPORT";
 
 export interface User {
-  id: string;
-  nom: string;
-  prenom: string;
-  email: string;
+  username: string;
   role: Role;
-  agenceId?: string;
-  imfId?: string;
-  nomImf?: string;
-  nomAgence?: string;
-  avatarUrl?: string;
-  actif: boolean;
+  imfUid?: string | null;
+  imfCode?: string | null;
+  imfNom?: string | null;
+  mustChangePassword?: boolean;
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  accessToken: string;
+  refreshToken: string;
+  role: string;
+  username: string;
+  imfUid?: string | null;
+  imfCode?: string | null;
+  imfNom?: string | null;
+  mustChangePassword?: boolean;
+  expiresIn: number;
+  status?: string;
 }
 
 export interface Notification {

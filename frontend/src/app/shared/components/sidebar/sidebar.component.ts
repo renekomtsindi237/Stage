@@ -171,7 +171,7 @@ export class SidebarComponent {
   }
 
   get institutionLabel(): string {
-    return this.auth.currentUser()?.nomImf ?? "MicroRecouv";
+    return this.auth.currentUser()?.imfNom ?? "MicroRecouv";
   }
 
   get isAgent(): boolean {

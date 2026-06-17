@@ -16,13 +16,13 @@ export class AuthService {
   readonly currentUser = signal<User | null>(this.loadUser());
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
-  readonly fullName = computed(() => {
-    const u = this.currentUser();
-    return u ? `${u.prenom} ${u.nom}` : "";
-  });
+  readonly fullName = computed(() => this.currentUser()?.username ?? "");
   readonly initials = computed(() => {
-    const u = this.currentUser();
-    return u ? `${u.prenom[0]}${u.nom[0]}`.toUpperCase() : "?";
+    const name = this.currentUser()?.username;
+    if (!name) return "?";
+    const parts = name.split(/[\s._-]+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
   });
 
   getToken(): string | null {
@@ -50,7 +50,7 @@ export class AuthService {
     return this.http
       .post<AuthResponse>(`${environment.apiUrl}/api/v1/auth/login`, {
         email,
-        motDePasse,
+        password: motDePasse,
       })
       .pipe(
         tap((res: AuthResponse) => this.saveSession(res)),
@@ -102,9 +102,17 @@ export class AuthService {
   }
 
   private saveSession(res: AuthResponse) {
-    localStorage.setItem(TOKEN_KEY, res.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    this.currentUser.set(res.user);
+    localStorage.setItem(TOKEN_KEY, res.accessToken);
+    const user: User = {
+      username: res.username,
+      role: res.role as Role,
+      imfUid: res.imfUid ?? null,
+      imfCode: res.imfCode ?? null,
+      imfNom: res.imfNom ?? null,
+      mustChangePassword: res.mustChangePassword ?? false,
+    };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this.currentUser.set(user);
   }
 
   private loadUser(): User | null {
