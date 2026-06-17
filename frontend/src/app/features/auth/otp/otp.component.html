@@ -22,14 +22,15 @@
         [value]="digit"
         (input)="onInput($index, $event)"
         (keydown)="onKeydown($index, $event)"
-      >
+      />
     }
   </div>
 
   <button
     class="btn btn-primary otp-card__submit"
     [disabled]="loading() || digits().join('').length < 6"
-    (click)="submit()">
+    (click)="submit()"
+  >
     @if (loading()) {
       <span class="material-icons-round spin">refresh</span>
     } @else {

@@ -1,11 +1,12 @@
 @if (toast.show) {
   <div class="fs-overlay" [@overlayFade] (click)="onOverlayClick()">
     <div class="fs-card" [@cardPop] (click)="$event.stopPropagation()">
-
       <!-- ══ LOGIN ════════════════════════════════════════════════════════════ -->
-      @if (toast.type === 'login') {
+      @if (toast.type === "login") {
         <div class="fs-icon-ring fs-ring-login" [@iconBounce]>
-          <span class="material-icons-round fs-icon-main fs-icon-login">check_circle</span>
+          <span class="material-icons-round fs-icon-main fs-icon-login"
+            >check_circle</span
+          >
         </div>
         @if (toast.username) {
           <div class="fs-login-badge">
@@ -22,30 +23,43 @@
           <span>Redirection en cours…</span>
         </div>
         <div class="fs-progress-wrap">
-          <div class="fs-progress fs-progress-login" [style.animation-duration.ms]="toast.duration"></div>
+          <div
+            class="fs-progress fs-progress-login"
+            [style.animation-duration.ms]="toast.duration"
+          ></div>
         </div>
       }
 
       <!-- ══ LOGOUT ═══════════════════════════════════════════════════════════ -->
-      @if (toast.type === 'logout') {
+      @if (toast.type === "logout") {
         <div class="fs-icon-ring fs-ring-gold" [@iconBounce]>
           <div class="fs-avatar-gold">
-            @if (toast.username) { <span>{{ initial }}</span> }
-            @else { <span class="material-icons-round" style="font-size:34px">person</span> }
+            @if (toast.username) {
+              <span>{{ initial }}</span>
+            } @else {
+              <span class="material-icons-round" style="font-size: 34px"
+                >person</span
+              >
+            }
           </div>
         </div>
         <span class="material-icons-round fs-wave">waving_hand</span>
         <h1 class="fs-title fs-title-gold">{{ toast.title }}</h1>
         <p class="fs-message">{{ toast.message }}</p>
         <div class="fs-progress-wrap">
-          <div class="fs-progress fs-progress-gold" [style.animation-duration.ms]="toast.duration"></div>
+          <div
+            class="fs-progress fs-progress-gold"
+            [style.animation-duration.ms]="toast.duration"
+          ></div>
         </div>
       }
 
       <!-- ══ SUCCÈS ════════════════════════════════════════════════════════════ -->
-      @if (toast.type === 'success') {
+      @if (toast.type === "success") {
         <div class="fs-icon-ring fs-ring-success" [@iconBounce]>
-          <span class="material-icons-round fs-icon-main fs-icon-success">check_circle</span>
+          <span class="material-icons-round fs-icon-main fs-icon-success"
+            >check_circle</span
+          >
         </div>
         <h1 class="fs-title fs-title-success">{{ toast.title }}</h1>
         <p class="fs-message">{{ toast.message }}</p>
@@ -54,48 +68,67 @@
           <span>Traitement en cours…</span>
         </div>
         <div class="fs-progress-wrap">
-          <div class="fs-progress fs-progress-success" [style.animation-duration.ms]="toast.duration"></div>
+          <div
+            class="fs-progress fs-progress-success"
+            [style.animation-duration.ms]="toast.duration"
+          ></div>
         </div>
       }
 
       <!-- ══ ERREUR ════════════════════════════════════════════════════════════ -->
-      @if (toast.type === 'error') {
+      @if (toast.type === "error") {
         <div class="fs-icon-ring fs-ring-error" [@iconBounce]>
-          <span class="material-icons-round fs-icon-main fs-icon-error">error_outline</span>
+          <span class="material-icons-round fs-icon-main fs-icon-error"
+            >error_outline</span
+          >
         </div>
         <h1 class="fs-title fs-title-error">{{ toast.title }}</h1>
         <p class="fs-message">{{ toast.message }}</p>
         <button class="fs-close-btn" (click)="close()" type="button">
-          <span class="material-icons-round" style="font-size:20px">close</span>
+          <span class="material-icons-round" style="font-size: 20px"
+            >close</span
+          >
           Fermer
         </button>
       }
 
       <!-- ══ ATTENTION ═════════════════════════════════════════════════════════ -->
-      @if (toast.type === 'warning') {
+      @if (toast.type === "warning") {
         <div class="fs-icon-ring fs-ring-warning" [@iconBounce]>
-          <span class="material-icons-round fs-icon-main fs-icon-warning">warning_amber</span>
+          <span class="material-icons-round fs-icon-main fs-icon-warning"
+            >warning_amber</span
+          >
         </div>
         <h1 class="fs-title fs-title-warning">{{ toast.title }}</h1>
         <p class="fs-message">{{ toast.message }}</p>
-        <button class="fs-close-btn fs-close-btn--warning" (click)="close()" type="button">
-          <span class="material-icons-round" style="font-size:20px">close</span>
+        <button
+          class="fs-close-btn fs-close-btn--warning"
+          (click)="close()"
+          type="button"
+        >
+          <span class="material-icons-round" style="font-size: 20px"
+            >close</span
+          >
           Fermer
         </button>
       }
 
       <!-- ══ INFO ══════════════════════════════════════════════════════════════ -->
-      @if (toast.type === 'info') {
+      @if (toast.type === "info") {
         <div class="fs-icon-ring fs-ring-info" [@iconBounce]>
-          <span class="material-icons-round fs-icon-main fs-icon-info">info</span>
+          <span class="material-icons-round fs-icon-main fs-icon-info"
+            >info</span
+          >
         </div>
         <h1 class="fs-title fs-title-info">{{ toast.title }}</h1>
         <p class="fs-message">{{ toast.message }}</p>
         <div class="fs-progress-wrap">
-          <div class="fs-progress fs-progress-info" [style.animation-duration.ms]="toast.duration"></div>
+          <div
+            class="fs-progress fs-progress-info"
+            [style.animation-duration.ms]="toast.duration"
+          ></div>
         </div>
       }
-
     </div>
   </div>
 }

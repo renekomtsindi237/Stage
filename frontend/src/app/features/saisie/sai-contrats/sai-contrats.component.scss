@@ -1,29 +1,78 @@
 .tab-bar {
-  display: flex; gap: 4px; margin-bottom: 16px;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
   border-bottom: 2px solid var(--color-border);
 }
 .tab-btn {
-  background: none; border: none; padding: 8px 16px;
-  font-size: 13px; font-weight: 500; cursor: pointer;
-  color: var(--color-text-muted); border-bottom: 2px solid transparent;
-  margin-bottom: -2px; transition: color .15s, border-color .15s;
-  &.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+  &.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
 }
-.pagination { display:flex; align-items:center; justify-content:center; gap:12px; padding-top:16px; }
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 16px;
+}
 .modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,.45);
-  display:flex; align-items:center; justify-content:center; z-index:200;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
 }
 .modal-card {
-  background:var(--color-surface); border-radius:var(--radius-xl);
-  width:min(580px,95vw); box-shadow:var(--shadow-xl); padding:28px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  width: min(580px, 95vw);
+  box-shadow: var(--shadow-xl);
+  padding: 28px;
 }
-.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
-.modal-footer { display:flex; justify-content:flex-end; gap:12px; }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
 .css-spinner-sm {
-  display:inline-block; width:14px; height:14px;
-  border:2px solid rgba(255,255,255,.3); border-top-color:#fff;
-  border-radius:50%; animation:spin .7s linear infinite;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
-@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

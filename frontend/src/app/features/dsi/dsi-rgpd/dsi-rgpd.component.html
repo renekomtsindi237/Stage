@@ -2,11 +2,21 @@
   <div class="page-header">
     <div>
       <h2>Conformité RGPD / Loi 2024/017</h2>
-      <p class="text-muted text-sm">Protection des données personnelles des clients</p>
+      <p class="text-muted text-sm">
+        Protection des données personnelles des clients
+      </p>
     </div>
-    <button class="btn btn-primary" (click)="exportRapport()" [disabled]="exporting()">
+    <button
+      class="btn btn-primary"
+      (click)="exportRapport()"
+      [disabled]="exporting()"
+    >
       <span class="material-icons-round">download</span>
-      @if (exporting()) { Export en cours... } @else { Exporter rapport }
+      @if (exporting()) {
+        Export en cours...
+      } @else {
+        Exporter rapport
+      }
     </button>
   </div>
 
@@ -14,18 +24,28 @@
   <div class="conformite-card" [class]="'conformite-card--' + conformiteClass">
     <div class="conformite-card__score">
       @if (loading()) {
-        <span class="skeleton" style="height:80px;width:120px;display:block"></span>
+        <span
+          class="skeleton"
+          style="height: 80px; width: 120px; display: block"
+        ></span>
       } @else {
         {{ conformitePct }}<small>%</small>
       }
     </div>
     <div>
       <p class="conformite-card__label">Score de conformité global</p>
-      <div class="progress" style="width:300px;max-width:100%;margin-top:8px">
-        <div class="progress-bar" [class]="conformiteClass" [style.width.%]="conformitePct"></div>
+      <div
+        class="progress"
+        style="width: 300px; max-width: 100%; margin-top: 8px"
+      >
+        <div
+          class="progress-bar"
+          [class]="conformiteClass"
+          [style.width.%]="conformitePct"
+        ></div>
       </div>
-      <p class="text-sm text-muted" style="margin-top:4px">
-        Dernier audit: {{ data()?.dernierAudit | date:'dd/MM/yyyy' }}
+      <p class="text-sm text-muted" style="margin-top: 4px">
+        Dernier audit: {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
       </p>
     </div>
   </div>
@@ -38,21 +58,30 @@
         <h4>Consentements</h4>
       </div>
       @if (loading()) {
-        @for (_ of [1,2,3]; track $index) {
-          <div class="skeleton" style="height:18px;width:80%;margin-bottom:8px"></div>
+        @for (_ of [1, 2, 3]; track $index) {
+          <div
+            class="skeleton"
+            style="height: 18px; width: 80%; margin-bottom: 8px"
+          ></div>
         }
       } @else {
         <div class="stat-row">
           <span class="text-muted">Total recueillis</span>
-          <span class="font-semibold">{{ data()?.consentements?.total | number }}</span>
+          <span class="font-semibold">{{
+            data()?.consentements?.total | number
+          }}</span>
         </div>
         <div class="stat-row">
           <span class="text-muted">Valides</span>
-          <span class="font-semibold success">{{ data()?.consentements?.valides | number }}</span>
+          <span class="font-semibold success">{{
+            data()?.consentements?.valides | number
+          }}</span>
         </div>
         <div class="stat-row">
           <span class="text-muted">Expirés</span>
-          <span class="font-semibold danger">{{ data()?.consentements?.expires | number }}</span>
+          <span class="font-semibold danger">{{
+            data()?.consentements?.expires | number
+          }}</span>
         </div>
       }
     </div>
@@ -64,21 +93,30 @@
         <h4>Droits exercés</h4>
       </div>
       @if (loading()) {
-        @for (_ of [1,2,3]; track $index) {
-          <div class="skeleton" style="height:18px;width:80%;margin-bottom:8px"></div>
+        @for (_ of [1, 2, 3]; track $index) {
+          <div
+            class="skeleton"
+            style="height: 18px; width: 80%; margin-bottom: 8px"
+          ></div>
         }
       } @else {
         <div class="stat-row">
           <span class="text-muted">Demandes</span>
-          <span class="font-semibold">{{ data()?.droitsExercices?.demandes | number }}</span>
+          <span class="font-semibold">{{
+            data()?.droitsExercices?.demandes | number
+          }}</span>
         </div>
         <div class="stat-row">
           <span class="text-muted">Traitées</span>
-          <span class="font-semibold success">{{ data()?.droitsExercices?.traitees | number }}</span>
+          <span class="font-semibold success">{{
+            data()?.droitsExercices?.traitees | number
+          }}</span>
         </div>
         <div class="stat-row">
           <span class="text-muted">En cours</span>
-          <span class="font-semibold warning">{{ data()?.droitsExercices?.enCours | number }}</span>
+          <span class="font-semibold warning">{{
+            data()?.droitsExercices?.enCours | number
+          }}</span>
         </div>
       }
     </div>
@@ -90,17 +128,29 @@
         <h4>Rétention des données</h4>
       </div>
       @if (loading()) {
-        <div class="skeleton" style="height:40px;width:100%"></div>
+        <div class="skeleton" style="height: 40px; width: 100%"></div>
       } @else {
         @if ((data()?.retentionAnomalies ?? 0) > 0) {
-          <div class="alert alert-danger" style="margin:0">
-            <span class="material-icons-round" style="font-size:18px">warning</span>
-            {{ data()?.retentionAnomalies }} anomalie(s) de rétention détectée(s).
-            Des données dépassent la durée légale de conservation.
+          <div class="alert alert-danger" style="margin: 0">
+            <span class="material-icons-round" style="font-size: 18px"
+              >warning</span
+            >
+            {{ data()?.retentionAnomalies }} anomalie(s) de rétention
+            détectée(s). Des données dépassent la durée légale de conservation.
           </div>
         } @else {
-          <div class="alert alert-success" style="margin:0;background:#f0fdf4;border-color:#bbf7d0;color:var(--color-success)">
-            <span class="material-icons-round" style="font-size:18px">check_circle</span>
+          <div
+            class="alert alert-success"
+            style="
+              margin: 0;
+              background: #f0fdf4;
+              border-color: #bbf7d0;
+              color: var(--color-success);
+            "
+          >
+            <span class="material-icons-round" style="font-size: 18px"
+              >check_circle</span
+            >
             Toutes les données sont dans les délais légaux de conservation.
           </div>
         }
@@ -116,8 +166,11 @@
       <div class="checklist">
         @for (item of checklistItems; track item.label) {
           <div class="checklist__item">
-            <span class="material-icons-round" [class]="item.ok ? 'success' : 'danger'">
-              {{ item.ok ? 'check_circle' : 'cancel' }}
+            <span
+              class="material-icons-round"
+              [class]="item.ok ? 'success' : 'danger'"
+            >
+              {{ item.ok ? "check_circle" : "cancel" }}
             </span>
             <span class="text-sm">{{ item.label }}</span>
           </div>

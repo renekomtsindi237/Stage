@@ -1,16 +1,16 @@
 export type Role =
-  | 'AGENT'
-  | 'ANALYSTE'
-  | 'DIRECTEUR'
-  | 'DSI'
-  | 'SUPER_ADMIN'
-  | 'RESPONSABLE_RECOUVREMENT'
-  | 'CHEF_AGENCE'
-  | 'AGENT_CREDIT'
-  | 'AGENT_SAISIE'
-  | 'CAISSIER'
-  | 'ANALYSTE_ENGAGEMENTS'
-  | 'SUPPORT';
+  | "AGENT"
+  | "ANALYSTE"
+  | "DIRECTEUR"
+  | "DSI"
+  | "SUPER_ADMIN"
+  | "RESPONSABLE_RECOUVREMENT"
+  | "CHEF_AGENCE"
+  | "AGENT_CREDIT"
+  | "AGENT_SAISIE"
+  | "CAISSIER"
+  | "ANALYSTE_ENGAGEMENTS"
+  | "SUPPORT";
 
 export interface User {
   id: string;
@@ -35,7 +35,7 @@ export interface Notification {
   id: string;
   titre: string;
   message: string;
-  type: 'INFO' | 'WARNING' | 'CRITICAL' | 'SUCCESS';
+  type: "INFO" | "WARNING" | "CRITICAL" | "SUCCESS";
   lu: boolean;
   createdAt: string;
 }

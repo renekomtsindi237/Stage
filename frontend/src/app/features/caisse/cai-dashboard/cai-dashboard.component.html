@@ -4,7 +4,7 @@
       <h2>Caisse</h2>
       <p class="text-muted text-sm">{{ today }}</p>
     </div>
-    <div style="display:flex;gap:8px">
+    <div style="display: flex; gap: 8px">
       <a routerLink="/caisse/encaissements" class="btn btn-primary">
         <span class="material-icons-round">add</span> Encaissement
       </a>
@@ -14,40 +14,86 @@
     </div>
   </div>
 
-  <div class="stats-grid" style="margin-bottom:24px">
-    <app-stat-card label="Encaissements du jour"  [value]="data()?.encaissementsJour ?? 0" [loading]="loading()" [isCurrency]="true" />
-    <app-stat-card label="Décaissements du jour"  [value]="data()?.decaissementsJour ?? 0" [loading]="loading()" [isCurrency]="true" />
-    <app-stat-card label="Solde net"               [value]="data()?.soldeNet ?? 0"           [loading]="loading()" [isCurrency]="true" />
+  <div class="stats-grid" style="margin-bottom: 24px">
+    <app-stat-card
+      label="Encaissements du jour"
+      [value]="data()?.encaissementsJour ?? 0"
+      [loading]="loading()"
+      [isCurrency]="true"
+    />
+    <app-stat-card
+      label="Décaissements du jour"
+      [value]="data()?.decaissementsJour ?? 0"
+      [loading]="loading()"
+      [isCurrency]="true"
+    />
+    <app-stat-card
+      label="Solde net"
+      [value]="data()?.soldeNet ?? 0"
+      [loading]="loading()"
+      [isCurrency]="true"
+    />
   </div>
 
   <div class="card">
-    <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+    <div
+      style="display: flex; justify-content: space-between; margin-bottom: 16px"
+    >
       <h4>Journal du jour</h4>
-      <a routerLink="/caisse/journal" class="text-sm" style="color:var(--color-primary)">Journal complet</a>
+      <a
+        routerLink="/caisse/journal"
+        class="text-sm"
+        style="color: var(--color-primary)"
+        >Journal complet</a
+      >
     </div>
     <table class="data-table">
       <thead>
-        <tr><th>Type</th><th>Client / Bénéficiaire</th><th>Montant</th><th>Canal</th><th>Heure</th></tr>
+        <tr>
+          <th>Type</th>
+          <th>Client / Bénéficiaire</th>
+          <th>Montant</th>
+          <th>Canal</th>
+          <th>Heure</th>
+        </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4]; track $index) {
-            <tr>@for (__ of [1,2,3,4,5]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          @for (_ of [1, 2, 3, 4]; track $index) {
+            <tr>
+              @for (__ of [1, 2, 3, 4, 5]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
+              }
+            </tr>
           }
         } @else {
           @for (op of data()?.operations ?? []; track op.id) {
             <tr>
               <td>
-                <span class="badge" [class]="op.type === 'ENCAISSEMENT' ? 'badge-basse' : 'badge-haute'">
-                  {{ op.type === 'ENCAISSEMENT' ? '+ Encaissement' : '- Décaissement' }}
+                <span
+                  class="badge"
+                  [class]="
+                    op.type === 'ENCAISSEMENT' ? 'badge-basse' : 'badge-haute'
+                  "
+                >
+                  {{
+                    op.type === "ENCAISSEMENT"
+                      ? "+ Encaissement"
+                      : "- Décaissement"
+                  }}
                 </span>
               </td>
               <td class="font-semibold">{{ op.clientNom }}</td>
               <td [class]="op.type === 'ENCAISSEMENT' ? 'success' : 'danger'">
-                {{ op.type === 'ENCAISSEMENT' ? '+' : '-' }} {{ op.montant | fcfa }}
+                {{ op.type === "ENCAISSEMENT" ? "+" : "-" }}
+                {{ op.montant | fcfa }}
               </td>
               <td class="text-sm text-muted">{{ op.canal }}</td>
-              <td class="text-sm text-muted">{{ op.createdAt | date:'HH:mm' }}</td>
+              <td class="text-sm text-muted">
+                {{ op.createdAt | date: "HH:mm" }}
+              </td>
             </tr>
           }
         }

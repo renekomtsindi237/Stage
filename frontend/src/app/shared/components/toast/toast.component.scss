@@ -24,12 +24,18 @@
   align-items: center;
   text-align: center;
   gap: 20px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.06);
   position: relative;
   overflow: hidden;
 
-  @media (max-width: 600px) { padding: 44px 28px 36px; }
-  @media (max-width: 380px) { padding: 36px 20px 28px; }
+  @media (max-width: 600px) {
+    padding: 44px 28px 36px;
+  }
+  @media (max-width: 380px) {
+    padding: 36px 20px 28px;
+  }
 }
 
 // ── Anneau icône (une seule animation, couleur via CSS custom property) ───────
@@ -44,17 +50,44 @@
   flex-shrink: 0;
   animation: pulse-ring 2.4s ease-in-out infinite;
 
-  &.fs-ring-login   { background: linear-gradient(135deg,#dbeafe,#ede9fe); --pr: 37,99,235;  }
-  &.fs-ring-success { background: #e6f9f3;  --pr: 0,208,132;  }
-  &.fs-ring-error   { background: #ffe6e6;  --pr: 255,59,48;  }
-  &.fs-ring-gold    { background: #fff4e6;  --pr: 255,149,0;  }
-  &.fs-ring-warning { background: #fffbeb;  --pr: 245,158,11; }
-  &.fs-ring-info    { background: #eff6ff;  --pr: 59,130,246; }
+  &.fs-ring-login {
+    background: linear-gradient(135deg, #dbeafe, #ede9fe);
+    --pr: 37, 99, 235;
+  }
+  &.fs-ring-success {
+    background: #e6f9f3;
+    --pr: 0, 208, 132;
+  }
+  &.fs-ring-error {
+    background: #ffe6e6;
+    --pr: 255, 59, 48;
+  }
+  &.fs-ring-gold {
+    background: #fff4e6;
+    --pr: 255, 149, 0;
+  }
+  &.fs-ring-warning {
+    background: #fffbeb;
+    --pr: 245, 158, 11;
+  }
+  &.fs-ring-info {
+    background: #eff6ff;
+    --pr: 59, 130, 246;
+  }
 }
 
 @keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 12px rgba(var(--pr),.10), 0 0 0 24px rgba(var(--pr),.05); }
-  50%       { box-shadow: 0 0 0 18px rgba(var(--pr),.15), 0 0 0 32px rgba(var(--pr),.08); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(var(--pr), 0.1),
+      0 0 0 24px rgba(var(--pr), 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 0 18px rgba(var(--pr), 0.15),
+      0 0 0 32px rgba(var(--pr), 0.08);
+  }
 }
 
 .fs-icon-main {
@@ -62,11 +95,21 @@
   width: 58px !important;
   height: 58px !important;
 
-  &.fs-icon-login   { color: #2563eb; }
-  &.fs-icon-success { color: #00d084; }
-  &.fs-icon-error   { color: #ff3b30; }
-  &.fs-icon-warning { color: #f59e0b; }
-  &.fs-icon-info    { color: #3b82f6; }
+  &.fs-icon-login {
+    color: #2563eb;
+  }
+  &.fs-icon-success {
+    color: #00d084;
+  }
+  &.fs-icon-error {
+    color: #ff3b30;
+  }
+  &.fs-icon-warning {
+    color: #f59e0b;
+  }
+  &.fs-icon-info {
+    color: #3b82f6;
+  }
 }
 
 // ── Badge initiale (login) ────────────────────────────────────────────────────
@@ -79,7 +122,7 @@
   align-items: center;
   justify-content: center;
   margin-top: -8px;
-  box-shadow: 0 4px 16px rgba(37,99,235,.4);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
 }
 
 .fs-login-initial {
@@ -108,7 +151,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(255,149,0,.35);
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.35);
 }
 
 .fs-wave {
@@ -127,14 +170,28 @@
   margin: 0;
   line-height: 1.15;
 
-  @media (max-width: 480px) { font-size: 1.6rem; }
+  @media (max-width: 480px) {
+    font-size: 1.6rem;
+  }
 
-  &.fs-title-login   { color: #2563eb; }
-  &.fs-title-success { color: #00d084; }
-  &.fs-title-error   { color: #ff3b30; }
-  &.fs-title-gold    { color: #ff9500; }
-  &.fs-title-warning { color: #f59e0b; }
-  &.fs-title-info    { color: #3b82f6; }
+  &.fs-title-login {
+    color: #2563eb;
+  }
+  &.fs-title-success {
+    color: #00d084;
+  }
+  &.fs-title-error {
+    color: #ff3b30;
+  }
+  &.fs-title-gold {
+    color: #ff9500;
+  }
+  &.fs-title-warning {
+    color: #f59e0b;
+  }
+  &.fs-title-info {
+    color: #3b82f6;
+  }
 }
 
 .fs-message {
@@ -144,7 +201,9 @@
   line-height: 1.6;
   max-width: 380px;
 
-  @media (max-width: 480px) { font-size: 1rem; }
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 }
 
 // ── Redirection ───────────────────────────────────────────────────────────────
@@ -157,24 +216,34 @@
   font-size: 0.88rem;
   font-weight: 600;
 
-  &.fs-redirect--login .css-spinner { border-top-color: #2563eb; }
+  &.fs-redirect--login .css-spinner {
+    border-top-color: #2563eb;
+  }
 }
 
 // ── CSS Spinner (no Material dep) ─────────────────────────────────────────────
 .css-spinner {
   width: 22px;
   height: 22px;
-  border: 2.5px solid rgba(0,0,0,.08);
+  border: 2.5px solid rgba(0, 0, 0, 0.08);
   border-top-color: #00d084;
   border-radius: 50%;
-  animation: spin .8s linear infinite;
+  animation: spin 0.8s linear infinite;
   flex-shrink: 0;
 
-  &.css-spinner--blue  { border-top-color: #2563eb; }
-  &.css-spinner--green { border-top-color: #00d084; }
+  &.css-spinner--blue {
+    border-top-color: #2563eb;
+  }
+  &.css-spinner--green {
+    border-top-color: #00d084;
+  }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 // ── Bouton fermer ─────────────────────────────────────────────────────────────
 .fs-close-btn {
@@ -190,13 +259,24 @@
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255,59,48,.3);
-  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
-  &:hover { background: #ff6b63; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,59,48,.4); }
-  &:active { transform: translateY(0); }
+  &:hover {
+    background: #ff6b63;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 59, 48, 0.4);
+  }
+  &:active {
+    transform: translateY(0);
+  }
 
-  &.fs-close-btn--warning { background: #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,.3); }
+  &.fs-close-btn--warning {
+    background: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  }
 }
 
 // ── Barre de progression ──────────────────────────────────────────────────────
@@ -214,24 +294,47 @@
   border-radius: 4px;
   animation: bar-shrink linear forwards;
 
-  &.fs-progress-login   { background: linear-gradient(90deg, #2563eb, #7c3aed); }
-  &.fs-progress-success { background: #00d084; }
-  &.fs-progress-gold    { background: #ff9500; }
-  &.fs-progress-info    { background: #3b82f6; }
+  &.fs-progress-login {
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+  }
+  &.fs-progress-success {
+    background: #00d084;
+  }
+  &.fs-progress-gold {
+    background: #ff9500;
+  }
+  &.fs-progress-info {
+    background: #3b82f6;
+  }
 }
 
 // ── Keyframes ─────────────────────────────────────────────────────────────────
 @keyframes bar-shrink {
-  from { width: 100%; }
-  to   { width: 0%; }
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
 
 @keyframes wave-hand {
-  0%   { transform: rotate(0deg);   }
-  15%  { transform: rotate(22deg);  }
-  35%  { transform: rotate(-14deg); }
-  55%  { transform: rotate(20deg);  }
-  75%  { transform: rotate(-8deg);  }
-  100% { transform: rotate(0deg);   }
+  0% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(22deg);
+  }
+  35% {
+    transform: rotate(-14deg);
+  }
+  55% {
+    transform: rotate(20deg);
+  }
+  75% {
+    transform: rotate(-8deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
-

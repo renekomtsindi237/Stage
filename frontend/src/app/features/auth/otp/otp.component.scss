@@ -29,7 +29,10 @@
     font-weight: 600;
     margin-top: 8px;
 
-    &:disabled { opacity: .5; cursor: not-allowed; }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   &__resend {
@@ -57,7 +60,7 @@
   color: var(--color-primary);
   background: var(--color-bg);
   outline: none;
-  transition: border-color .15s;
+  transition: border-color 0.15s;
 
   &:focus {
     border-color: var(--color-primary);
@@ -65,5 +68,11 @@
   }
 }
 
-.spin { animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

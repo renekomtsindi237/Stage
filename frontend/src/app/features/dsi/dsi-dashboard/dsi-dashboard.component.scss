@@ -13,7 +13,9 @@
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   cursor: pointer;
-  transition: box-shadow .15s, border-color .15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
   text-decoration: none;
   color: var(--color-text);
 
@@ -28,5 +30,11 @@
     flex-shrink: 0;
   }
 
-  > div { flex: 1; h4 { font-size: 15px; margin-bottom: 2px; } }
+  > div {
+    flex: 1;
+    h4 {
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+  }
 }

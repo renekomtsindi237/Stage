@@ -1,16 +1,24 @@
 <header class="topbar">
   <div class="topbar__left">
-    <div class="topbar__institution">{{ auth.currentUser()?.nomImf ?? 'MicroRecouv' }}</div>
+    <div class="topbar__institution">
+      {{ auth.currentUser()?.nomImf ?? "MicroRecouv" }}
+    </div>
     <div class="topbar__date">{{ today }}</div>
   </div>
 
   <div class="topbar__right">
     <!-- Notifications -->
-    <button class="topbar__notif" (click)="toggleNotif()" aria-label="Notifications">
+    <button
+      class="topbar__notif"
+      (click)="toggleNotif()"
+      aria-label="Notifications"
+    >
       <span class="material-icons-round">notifications</span>
       @if ((unreadCount$ | async) ?? 0; as count) {
         @if (count > 0) {
-          <span class="topbar__notif-badge">{{ count > 99 ? '99+' : count }}</span>
+          <span class="topbar__notif-badge">{{
+            count > 99 ? "99+" : count
+          }}</span>
         }
       }
     </button>
@@ -24,16 +32,27 @@
         <span class="topbar__user-name">{{ auth.fullName() }}</span>
         <span class="topbar__user-role">{{ roleLabel }}</span>
       </div>
-      <span class="material-icons-round topbar__chevron" [class.rotated]="showUserMenu()">expand_more</span>
+      <span
+        class="material-icons-round topbar__chevron"
+        [class.rotated]="showUserMenu()"
+        >expand_more</span
+      >
     </div>
 
     @if (showUserMenu()) {
       <div class="topbar__dropdown">
-        <a class="topbar__dropdown-item" routerLink="/profile" (click)="showUserMenu.set(false)">
+        <a
+          class="topbar__dropdown-item"
+          routerLink="/profile"
+          (click)="showUserMenu.set(false)"
+        >
           <span class="material-icons-round">person</span> Mon profil
         </a>
         <div class="topbar__dropdown-divider"></div>
-        <button class="topbar__dropdown-item topbar__dropdown-item--danger" (click)="logout()">
+        <button
+          class="topbar__dropdown-item topbar__dropdown-item--danger"
+          (click)="logout()"
+        >
           <span class="material-icons-round">logout</span> Déconnexion
         </button>
       </div>

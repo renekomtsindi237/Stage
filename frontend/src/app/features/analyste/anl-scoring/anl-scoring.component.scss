@@ -17,11 +17,21 @@
   height: 100%;
   border-radius: 3px;
 
-  &.badge-critique { background: var(--color-danger); }
-  &.badge-haute    { background: var(--color-warning); }
-  &.badge-moyenne  { background: var(--color-info); }
-  &.badge-basse    { background: var(--color-success); }
-  &.badge-success  { background: #1b2f4b; }
+  &.badge-critique {
+    background: var(--color-danger);
+  }
+  &.badge-haute {
+    background: var(--color-warning);
+  }
+  &.badge-moyenne {
+    background: var(--color-info);
+  }
+  &.badge-basse {
+    background: var(--color-success);
+  }
+  &.badge-success {
+    background: #1b2f4b;
+  }
 }
 
 .pagination {

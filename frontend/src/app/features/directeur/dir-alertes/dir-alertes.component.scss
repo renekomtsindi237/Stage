@@ -13,13 +13,32 @@
   border-radius: var(--radius-full);
 
   &__dot {
-    width: 8px; height: 8px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
   }
 
-  &--critique { background: #fef2f2; color: #ef4444; .counter__dot { background: #ef4444; } }
-  &--haute    { background: #fffbeb; color: #f59e0b; .counter__dot { background: #f59e0b; } }
-  &--moyenne  { background: #fefce8; color: #ca8a04; .counter__dot { background: #eab308; } }
+  &--critique {
+    background: #fef2f2;
+    color: #ef4444;
+    .counter__dot {
+      background: #ef4444;
+    }
+  }
+  &--haute {
+    background: #fffbeb;
+    color: #f59e0b;
+    .counter__dot {
+      background: #f59e0b;
+    }
+  }
+  &--moyenne {
+    background: #fefce8;
+    color: #ca8a04;
+    .counter__dot {
+      background: #eab308;
+    }
+  }
 }
 
 .alertes-toolbar {
@@ -38,11 +57,16 @@
   border-radius: var(--radius-md);
   padding: 14px 16px 14px 20px;
   margin-bottom: 10px;
-  transition: box-shadow .15s;
+  transition: box-shadow 0.15s;
 
-  &:hover { box-shadow: var(--shadow-md); }
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
 
-  &__body { flex: 1; min-width: 0; }
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
 
   &__header {
     display: flex;
@@ -65,7 +89,11 @@
     gap: 10px;
   }
 
-  &__action { flex-shrink: 0; }
+  &__action {
+    flex-shrink: 0;
+  }
 }
 
-.sep { color: var(--color-border); }
+.sep {
+  color: var(--color-border);
+}

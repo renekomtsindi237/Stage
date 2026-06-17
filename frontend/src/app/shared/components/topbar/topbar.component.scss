@@ -44,11 +44,15 @@
     align-items: center;
     justify-content: center;
     color: var(--color-text-muted);
-    transition: background .15s;
+    transition: background 0.15s;
 
-    &:hover { background: var(--color-bg); }
+    &:hover {
+      background: var(--color-bg);
+    }
 
-    .material-icons-round { font-size: 22px; }
+    .material-icons-round {
+      font-size: 22px;
+    }
   }
 
   &__notif-badge {
@@ -80,9 +84,11 @@
     cursor: pointer;
     padding: 4px 8px;
     border-radius: var(--radius-md);
-    transition: background .15s;
+    transition: background 0.15s;
 
-    &:hover { background: var(--color-bg); }
+    &:hover {
+      background: var(--color-bg);
+    }
   }
 
   &__avatar {
@@ -120,9 +126,11 @@
   &__chevron {
     font-size: 18px;
     color: var(--color-text-muted);
-    transition: transform .2s;
+    transition: transform 0.2s;
 
-    &.rotated { transform: rotate(180deg); }
+    &.rotated {
+      transform: rotate(180deg);
+    }
   }
 
   &__dropdown {
@@ -147,13 +155,23 @@
     color: var(--color-text);
     cursor: pointer;
     width: 100%;
-    transition: background .1s;
+    transition: background 0.1s;
 
-    &:hover { background: var(--color-bg); }
+    &:hover {
+      background: var(--color-bg);
+    }
 
-    .material-icons-round { font-size: 16px; color: var(--color-text-muted); }
+    .material-icons-round {
+      font-size: 16px;
+      color: var(--color-text-muted);
+    }
 
-    &--danger { color: var(--color-danger); .material-icons-round { color: var(--color-danger); } }
+    &--danger {
+      color: var(--color-danger);
+      .material-icons-round {
+        color: var(--color-danger);
+      }
+    }
   }
 
   &__dropdown-divider {

@@ -1,13 +1,29 @@
 <div class="page-content">
   <div class="page-header">
     <h2>Scoring MCRS</h2>
-    <p class="text-muted text-sm">Modèle de Crédit Risk Scoring — résultats par client</p>
+    <p class="text-muted text-sm">
+      Modèle de Crédit Risk Scoring — résultats par client
+    </p>
   </div>
 
   <!-- Filtres -->
-  <div class="card filter-bar" [formGroup]="filterForm" style="margin-bottom:16px">
-    <input class="form-control" formControlName="search" placeholder="Rechercher un client..." style="flex:1">
-    <select class="form-control" formControlName="classe" style="width:auto" (change)="load()">
+  <div
+    class="card filter-bar"
+    [formGroup]="filterForm"
+    style="margin-bottom: 16px"
+  >
+    <input
+      class="form-control"
+      formControlName="search"
+      placeholder="Rechercher un client..."
+      style="flex: 1"
+    />
+    <select
+      class="form-control"
+      formControlName="classe"
+      style="width: auto"
+      (change)="load()"
+    >
       <option value="">Toutes classes</option>
       <option value="TRES_FAIBLE">Très faible</option>
       <option value="FAIBLE">Faible</option>
@@ -31,10 +47,12 @@
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+          @for (_ of [1, 2, 3, 4, 5, 6, 7, 8]; track $index) {
             <tr>
-              @for (__ of [1,2,3,4,5]; track $index) {
-                <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+              @for (__ of [1, 2, 3, 4, 5]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
               }
             </tr>
           }
@@ -43,15 +61,25 @@
             <tr>
               <td class="font-semibold">{{ r.nom }}</td>
               <td>
-                <div style="display:flex;align-items:center;gap:8px">
+                <div style="display: flex; align-items: center; gap: 8px">
                   <div class="score-bar">
-                    <div class="score-fill" [style.width.%]="r.score" [class]="classeClass(r.classe)"></div>
+                    <div
+                      class="score-fill"
+                      [style.width.%]="r.score"
+                      [class]="classeClass(r.classe)"
+                    ></div>
                   </div>
-                  <span class="font-semibold">{{ r.score | number:'1.0-0' }}</span>
+                  <span class="font-semibold">{{
+                    r.score | number: "1.0-0"
+                  }}</span>
                 </div>
               </td>
-              <td><span class="badge" [class]="classeClass(r.classe)">{{ classeLabel(r.classe) }}</span></td>
-              <td>{{ r.probabiliteDefaut | number:'1.1-1' }}%</td>
+              <td>
+                <span class="badge" [class]="classeClass(r.classe)">{{
+                  classeLabel(r.classe)
+                }}</span>
+              </td>
+              <td>{{ r.probabiliteDefaut | number: "1.1-1" }}%</td>
               <td class="text-sm text-muted">{{ r.facteurs[0].nom }}</td>
             </tr>
           }
@@ -62,12 +90,21 @@
     <!-- Pagination -->
     @if (page() && (page()?.totalPages ?? 0) > 1) {
       <div class="pagination">
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === 0" (click)="goPage(currentPage()-1)">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm">Page {{ currentPage()+1 }} / {{ page()?.totalPages }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage() >= (page()?.totalPages ?? 1)-1"
-                (click)="goPage(currentPage()+1)">
+        <span class="text-sm"
+          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+        >
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+          (click)="goPage(currentPage() + 1)"
+        >
           <span class="material-icons-round">chevron_right</span>
         </button>
       </div>

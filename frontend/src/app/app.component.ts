@@ -1,11 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ToastComponent } from './shared/components/toast/toast.component';
-import { NotificationService } from './core/services/notification.service';
-import { AuthService } from './core/auth/auth.service';
+import { Component, OnInit, inject } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+import { ToastComponent } from "./shared/components/toast/toast.component";
+import { NotificationService } from "./core/services/notification.service";
+import { AuthService } from "./core/auth/auth.service";
 
 @Component({
-  selector: 'app-root',
+  selector: "app-root",
   standalone: true,
   imports: [RouterOutlet, ToastComponent],
   template: `
@@ -15,7 +15,7 @@ import { AuthService } from './core/auth/auth.service';
 })
 export class AppComponent implements OnInit {
   private readonly notifService = inject(NotificationService);
-  private readonly auth         = inject(AuthService);
+  private readonly auth = inject(AuthService);
 
   ngOnInit() {
     if (this.auth.isLoggedIn()) {

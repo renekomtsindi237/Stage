@@ -2,7 +2,9 @@
   <div class="page-header">
     <div>
       <h2>Gestion des contrats</h2>
-      <p class="text-muted text-sm">{{ page()?.totalElements ?? 0 | number }} contrats</p>
+      <p class="text-muted text-sm">
+        {{ page()?.totalElements ?? 0 | number }} contrats
+      </p>
     </div>
     <button class="btn btn-primary" (click)="showModal.set(true)">
       <span class="material-icons-round">add</span> Nouveau contrat
@@ -11,7 +13,13 @@
 
   <div class="tab-bar">
     @for (tab of tabs; track tab) {
-      <button class="tab-btn" [class.active]="activeTab()===tab" (click)="switchTab(tab)">{{ tab }}</button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === tab"
+        (click)="switchTab(tab)"
+      >
+        {{ tab }}
+      </button>
     }
   </div>
 
@@ -31,30 +39,58 @@
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5]; track $index) {
-            <tr>@for (__ of [1,2,3,4,5,6,7,8]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <tr>
+              @for (__ of [1, 2, 3, 4, 5, 6, 7, 8]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
+              }
+            </tr>
           }
         } @else {
           @for (c of page()?.content ?? []; track c.uid) {
             <tr>
-              <td class="font-semibold" style="font-family:monospace;font-size:12px">{{ c.numeroContrat }}</td>
+              <td
+                class="font-semibold"
+                style="font-family: monospace; font-size: 12px"
+              >
+                {{ c.numeroContrat }}
+              </td>
               <td>{{ c.clientPrenom }} {{ c.clientNom }}</td>
-              <td><span class="badge badge-info">{{ c.typeContrat }}</span></td>
-              <td class="text-right">{{ c.montant | number:'1.0-0' }} FCFA</td>
-              <td class="text-sm">{{ c.dateDebut | date:'dd/MM/yyyy' }}</td>
-              <td class="text-sm">{{ c.dateFin | date:'dd/MM/yyyy' }}</td>
-              <td><span class="badge" [ngClass]="statutClass(c.statut)">{{ c.statut }}</span></td>
               <td>
-                @if (c.statut === 'BROUILLON') {
-                  <button class="btn btn-ghost btn-sm" (click)="soumettre(c.uid)" title="Soumettre pour validation">
+                <span class="badge badge-info">{{ c.typeContrat }}</span>
+              </td>
+              <td class="text-right">{{ c.montant | number: "1.0-0" }} FCFA</td>
+              <td class="text-sm">{{ c.dateDebut | date: "dd/MM/yyyy" }}</td>
+              <td class="text-sm">{{ c.dateFin | date: "dd/MM/yyyy" }}</td>
+              <td>
+                <span class="badge" [ngClass]="statutClass(c.statut)">{{
+                  c.statut
+                }}</span>
+              </td>
+              <td>
+                @if (c.statut === "BROUILLON") {
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    (click)="soumettre(c.uid)"
+                    title="Soumettre pour validation"
+                  >
                     <span class="material-icons-round">send</span>
                   </button>
                 }
               </td>
             </tr>
-          }
-          @empty {
-            <tr><td colspan="8" class="text-center text-muted" style="padding:32px">Aucun contrat</td></tr>
+          } @empty {
+            <tr>
+              <td
+                colspan="8"
+                class="text-center text-muted"
+                style="padding: 32px"
+              >
+                Aucun contrat
+              </td>
+            </tr>
           }
         }
       </tbody>
@@ -62,12 +98,21 @@
 
     @if (page() && (page()?.totalPages ?? 0) > 1) {
       <div class="pagination">
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()===0" (click)="goPage(currentPage()-1)">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm">Page {{ currentPage()+1 }} / {{ page()?.totalPages }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()>=(page()?.totalPages??1)-1"
-                (click)="goPage(currentPage()+1)">
+        <span class="text-sm"
+          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+        >
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+          (click)="goPage(currentPage() + 1)"
+        >
           <span class="material-icons-round">chevron_right</span>
         </button>
       </div>
@@ -77,45 +122,76 @@
 
 @if (showModal()) {
   <div class="modal-overlay" (click)="showModal.set(false)">
-    <div class="modal-card" (click)="$event.stopPropagation()" [formGroup]="createForm">
+    <div
+      class="modal-card"
+      (click)="$event.stopPropagation()"
+      [formGroup]="createForm"
+    >
       <div class="modal-header">
         <h3>Nouveau contrat</h3>
-        <button class="btn-icon" (click)="showModal.set(false)"><span class="material-icons-round">close</span></button>
+        <button class="btn-icon" (click)="showModal.set(false)">
+          <span class="material-icons-round">close</span>
+        </button>
       </div>
 
       <div class="form-grid">
-        <div class="form-group" style="grid-column:1/-1">
+        <div class="form-group" style="grid-column: 1/-1">
           <label>ID Client *</label>
-          <input class="form-control" formControlName="clientId" placeholder="Saisir l'identifiant du client">
+          <input
+            class="form-control"
+            formControlName="clientId"
+            placeholder="Saisir l'identifiant du client"
+          />
         </div>
         <div class="form-group">
           <label>Type de contrat *</label>
           <select class="form-select" formControlName="typeContrat">
-            @for (t of types; track t) { <option [value]="t">{{ t }}</option> }
+            @for (t of types; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
           </select>
         </div>
         <div class="form-group">
           <label>Montant (FCFA) *</label>
-          <input class="form-control" type="number" formControlName="montant" placeholder="0">
+          <input
+            class="form-control"
+            type="number"
+            formControlName="montant"
+            placeholder="0"
+          />
         </div>
         <div class="form-group">
           <label>Date de début *</label>
-          <input class="form-control" type="date" formControlName="dateDebut">
+          <input class="form-control" type="date" formControlName="dateDebut" />
         </div>
         <div class="form-group">
           <label>Date de fin *</label>
-          <input class="form-control" type="date" formControlName="dateFin">
+          <input class="form-control" type="date" formControlName="dateFin" />
         </div>
-        <div class="form-group" style="grid-column:1/-1">
+        <div class="form-group" style="grid-column: 1/-1">
           <label>Observations</label>
-          <textarea class="form-control" formControlName="observations" rows="3"></textarea>
+          <textarea
+            class="form-control"
+            formControlName="observations"
+            rows="3"
+          ></textarea>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-ghost" (click)="showModal.set(false)">Annuler</button>
-        <button class="btn btn-primary" [disabled]="createForm.invalid || submitting()" (click)="submit()">
-          @if (submitting()) { <span class="css-spinner-sm"></span> } @else { Enregistrer }
+        <button class="btn btn-ghost" (click)="showModal.set(false)">
+          Annuler
+        </button>
+        <button
+          class="btn btn-primary"
+          [disabled]="createForm.invalid || submitting()"
+          (click)="submit()"
+        >
+          @if (submitting()) {
+            <span class="css-spinner-sm"></span>
+          } @else {
+            Enregistrer
+          }
         </button>
       </div>
     </div>

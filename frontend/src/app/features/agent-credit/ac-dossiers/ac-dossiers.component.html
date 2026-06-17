@@ -2,7 +2,9 @@
   <div class="page-header">
     <div>
       <h2>Dossiers de crédit</h2>
-      <p class="text-muted text-sm">{{ page()?.totalElements ?? 0 | number }} dossiers</p>
+      <p class="text-muted text-sm">
+        {{ page()?.totalElements ?? 0 | number }} dossiers
+      </p>
     </div>
     <a class="btn btn-primary" routerLink="/credit/nouveau-dossier">
       <span class="material-icons-round">add</span> Nouveau dossier
@@ -11,7 +13,13 @@
 
   <div class="tab-bar">
     @for (tab of tabs; track tab) {
-      <button class="tab-btn" [class.active]="activeTab()===tab" (click)="switchTab(tab)">{{ tab }}</button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === tab"
+        (click)="switchTab(tab)"
+      >
+        {{ tab }}
+      </button>
     }
   </div>
 
@@ -30,27 +38,54 @@
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5]; track $index) {
-            <tr>@for (__ of [1,2,3,4,5,6,7]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <tr>
+              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
+              }
+            </tr>
           }
         } @else {
           @for (d of page()?.content ?? []; track d.uid) {
             <tr>
               <td class="mono text-sm">{{ d.numeroReference }}</td>
-              <td class="font-semibold">{{ d.clientPrenom }} {{ d.clientNom }}</td>
-              <td class="text-right">{{ d.montant | number:'1.0-0' }} F</td>
+              <td class="font-semibold">
+                {{ d.clientPrenom }} {{ d.clientNom }}
+              </td>
+              <td class="text-right">{{ d.montant | number: "1.0-0" }} F</td>
               <td class="text-sm">{{ d.duree }} mois</td>
               <td>
                 @if (d.scoreCredit) {
-                  <span class="score-badge" [ngClass]="scoreClass(d.scoreCredit)">{{ d.scoreCredit }}</span>
-                } @else { <span class="text-muted">—</span> }
+                  <span
+                    class="score-badge"
+                    [ngClass]="scoreClass(d.scoreCredit)"
+                    >{{ d.scoreCredit }}</span
+                  >
+                } @else {
+                  <span class="text-muted">—</span>
+                }
               </td>
-              <td><span class="badge" [ngClass]="statutClass(d.statut)">{{ d.statut }}</span></td>
-              <td class="text-sm text-muted">{{ d.createdAt | date:'dd/MM/yy' }}</td>
+              <td>
+                <span class="badge" [ngClass]="statutClass(d.statut)">{{
+                  d.statut
+                }}</span>
+              </td>
+              <td class="text-sm text-muted">
+                {{ d.createdAt | date: "dd/MM/yy" }}
+              </td>
             </tr>
-          }
-          @empty {
-            <tr><td colspan="7" class="text-center text-muted" style="padding:32px">Aucun dossier</td></tr>
+          } @empty {
+            <tr>
+              <td
+                colspan="7"
+                class="text-center text-muted"
+                style="padding: 32px"
+              >
+                Aucun dossier
+              </td>
+            </tr>
           }
         }
       </tbody>
@@ -58,12 +93,21 @@
 
     @if (page() && (page()?.totalPages ?? 0) > 1) {
       <div class="pagination">
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()===0" (click)="goPage(currentPage()-1)">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm">Page {{ currentPage()+1 }} / {{ page()?.totalPages }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()>=(page()?.totalPages??1)-1"
-                (click)="goPage(currentPage()+1)">
+        <span class="text-sm"
+          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+        >
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+          (click)="goPage(currentPage() + 1)"
+        >
           <span class="material-icons-round">chevron_right</span>
         </button>
       </div>

@@ -11,8 +11,8 @@
 
   <div class="agences-grid">
     @if (loading()) {
-      @for (_ of [1,2,3,4,5,6]; track $index) {
-        <div class="card skeleton" style="height:160px"></div>
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+        <div class="card skeleton" style="height: 160px"></div>
       }
     } @else {
       @for (a of agences(); track a.id) {
@@ -35,7 +35,9 @@
             </div>
             <div>
               <p class="text-sm text-muted">PAR30</p>
-              <p class="font-semibold" [class]="a.par30 > 10 ? 'danger' : ''">{{ a.par30 | number:'1.1-1' }}%</p>
+              <p class="font-semibold" [class]="a.par30 > 10 ? 'danger' : ''">
+                {{ a.par30 | number: "1.1-1" }}%
+              </p>
             </div>
           </div>
         </div>

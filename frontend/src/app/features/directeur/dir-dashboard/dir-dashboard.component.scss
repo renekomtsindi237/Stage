@@ -3,9 +3,11 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   margin-bottom: 10px;
-  transition: background .1s;
+  transition: background 0.1s;
 
-  &:hover { background: var(--color-bg); }
+  &:hover {
+    background: var(--color-bg);
+  }
 
   &__header {
     display: flex;
@@ -38,7 +40,9 @@
   padding: 8px 0;
   border-bottom: 1px solid var(--color-border-light);
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 
   &__icon {
     width: 32px;
@@ -50,7 +54,10 @@
     justify-content: center;
     flex-shrink: 0;
 
-    .material-icons-round { font-size: 16px; color: var(--color-primary); }
+    .material-icons-round {
+      font-size: 16px;
+      color: var(--color-primary);
+    }
   }
 
   &__content {

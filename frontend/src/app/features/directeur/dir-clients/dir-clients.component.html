@@ -2,16 +2,27 @@
   <div class="page-header">
     <div>
       <h2>Gestion Clients</h2>
-      <p class="text-muted text-sm">{{ page()?.totalElements ?? 0 | number }} clients au total</p>
+      <p class="text-muted text-sm">
+        {{ page()?.totalElements ?? 0 | number }} clients au total
+      </p>
     </div>
     <button class="btn btn-primary">
       <span class="material-icons-round">person_add</span> Nouveau client
     </button>
   </div>
 
-  <div class="card filter-bar" [formGroup]="filterForm" style="margin-bottom:16px">
-    <input class="form-control" formControlName="search" placeholder="Nom, code ou téléphone..." style="flex:1">
-    <select class="form-control" formControlName="statut" style="width:auto">
+  <div
+    class="card filter-bar"
+    [formGroup]="filterForm"
+    style="margin-bottom: 16px"
+  >
+    <input
+      class="form-control"
+      formControlName="search"
+      placeholder="Nom, code ou téléphone..."
+      style="flex: 1"
+    />
+    <select class="form-control" formControlName="statut" style="width: auto">
       <option value="">Tous statuts</option>
       <option value="ACTIF">Actif</option>
       <option value="EN_RETARD">En retard</option>
@@ -35,8 +46,14 @@
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5]; track $index) {
-            <tr>@for (__ of [1,2,3,4,5,6,7]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <tr>
+              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
+              }
+            </tr>
           }
         } @else {
           @for (c of page()?.content ?? []; track c.id) {
@@ -48,8 +65,16 @@
               <td class="text-muted">{{ c.code }}</td>
               <td>{{ c.encours | fcfa }}</td>
               <td>
-                <span class="badge" [class]="c.statut === 'ACTIF' ? 'badge-basse' :
-                  c.statut === 'EN_RETARD' ? 'badge-moyenne' : 'badge-critique'">
+                <span
+                  class="badge"
+                  [class]="
+                    c.statut === 'ACTIF'
+                      ? 'badge-basse'
+                      : c.statut === 'EN_RETARD'
+                        ? 'badge-moyenne'
+                        : 'badge-critique'
+                  "
+                >
                   {{ c.statut }}
                 </span>
               </td>
@@ -68,12 +93,21 @@
 
     @if (page() && (page()?.totalPages ?? 0) > 1) {
       <div class="pagination">
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()===0" (click)="goPage(currentPage()-1)">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm">Page {{ currentPage()+1 }} / {{ page()?.totalPages }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="currentPage()>=(page()?.totalPages??1)-1"
-                (click)="goPage(currentPage()+1)">
+        <span class="text-sm"
+          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+        >
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+          (click)="goPage(currentPage() + 1)"
+        >
           <span class="material-icons-round">chevron_right</span>
         </button>
       </div>

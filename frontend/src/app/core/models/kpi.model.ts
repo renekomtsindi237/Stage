@@ -25,7 +25,7 @@ export interface AlerteResume {
 
 export interface ActiviteItem {
   id: string;
-  type: 'COLLECTE' | 'ALERTE' | 'KYC' | 'DOSSIER';
+  type: "COLLECTE" | "ALERTE" | "KYC" | "DOSSIER";
   description: string;
   montant?: number;
   auteur: string;
@@ -37,8 +37,18 @@ export interface KpiPortefeuille {
   par30: number;
   par90Cobac: number;
   tauxRecouvrement30j: number;
-  variations: { encours: number; par30: number; par90: number; recouvrement: number };
-  evolutionPar: { date: string; par30: number; par90: number; objectif: number }[];
+  variations: {
+    encours: number;
+    par30: number;
+    par90: number;
+    recouvrement: number;
+  };
+  evolutionPar: {
+    date: string;
+    par30: number;
+    par90: number;
+    objectif: number;
+  }[];
   repartitionCobacParAgence: AgenceCobac[];
   provisionsCobac: ProvisionDetail[];
 }

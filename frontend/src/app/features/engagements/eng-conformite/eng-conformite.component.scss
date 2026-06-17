@@ -11,12 +11,24 @@
   border-left: 6px solid transparent;
   padding: 24px;
 
-  &.score--success { border-color: var(--color-success); }
-  &.score--warning { border-color: var(--color-warning); }
-  &.score--danger  { border-color: var(--color-danger); }
+  &.score--success {
+    border-color: var(--color-success);
+  }
+  &.score--warning {
+    border-color: var(--color-warning);
+  }
+  &.score--danger {
+    border-color: var(--color-danger);
+  }
 
-  h3 { font-size: 18px; margin-bottom: 4px; }
-  p  { font-size: 13px; color: var(--color-text-muted); }
+  h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  p {
+    font-size: 13px;
+    color: var(--color-text-muted);
+  }
 }
 
 .score-circle {
@@ -25,8 +37,15 @@
   align-items: center;
   min-width: 80px;
 }
-.score-value { font-size: 40px; font-weight: 700; line-height: 1; }
-.score-unit  { font-size: 12px; color: var(--color-text-muted); }
+.score-value {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-unit {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
 
 .section-header {
   display: flex;
@@ -40,9 +59,18 @@
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 999px;
-  &.score--success { background: rgba(34,197,94,.1); color: var(--color-success); }
-  &.score--warning { background: rgba(234,179,8,.1);  color: var(--color-warning); }
-  &.score--danger  { background: rgba(239,68,68,.1);  color: var(--color-danger); }
+  &.score--success {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--color-success);
+  }
+  &.score--warning {
+    background: rgba(234, 179, 8, 0.1);
+    color: var(--color-warning);
+  }
+  &.score--danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+  }
 }
 
 .check-item {
@@ -52,19 +80,29 @@
   padding: 8px 0;
   border-bottom: 1px solid var(--color-border);
   font-size: 13px;
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .check-icon {
   font-size: 18px;
   flex-shrink: 0;
-  &.ok { color: var(--color-success); }
-  &.ko { color: var(--color-danger); }
+  &.ok {
+    color: var(--color-success);
+  }
+  &.ko {
+    color: var(--color-danger);
+  }
 }
 
-.check-label { flex: 1; }
+.check-label {
+  flex: 1;
+}
 
-.text-danger { color: var(--color-danger); }
+.text-danger {
+  color: var(--color-danger);
+}
 
 .empty-state {
   display: flex;

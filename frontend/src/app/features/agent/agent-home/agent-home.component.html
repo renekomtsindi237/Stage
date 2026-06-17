@@ -7,7 +7,11 @@
       <span class="agent-header__imf">{{ auth.currentUser()?.nomImf }}</span>
     </div>
     <div class="agent-header__actions">
-      <button class="agent-header__btn" (click)="sync()" [class.spin]="syncing()">
+      <button
+        class="agent-header__btn"
+        (click)="sync()"
+        [class.spin]="syncing()"
+      >
         <span class="material-icons-round">sync</span>
       </button>
       <button class="agent-header__btn">
@@ -31,22 +35,31 @@
       <p class="objectif-card__label">Objectif du jour</p>
       <div class="objectif-card__amount">
         @if (loading()) {
-          <span class="skeleton" style="height:36px;width:200px;display:inline-block"></span>
+          <span
+            class="skeleton"
+            style="height: 36px; width: 200px; display: inline-block"
+          ></span>
         } @else {
-          {{ data()?.objectifJour | number:'1.0-0' }}
+          {{ data()?.objectifJour | number: "1.0-0" }}
           <span class="objectif-card__unit">FCFA</span>
         }
       </div>
-      <div class="progress" style="margin:12px 0">
+      <div class="progress" style="margin: 12px 0">
         <div class="progress-bar accent" [style.width.%]="progressPct"></div>
       </div>
       <div class="objectif-card__stats">
         <div>
-          <p class="text-sm" style="color:rgba(255,255,255,.7)">Clients visités</p>
-          <p class="font-semibold">{{ data()?.clientsVisites ?? 0 }} / {{ data()?.clientsTotal ?? 0 }}</p>
+          <p class="text-sm" style="color: rgba(255, 255, 255, 0.7)">
+            Clients visités
+          </p>
+          <p class="font-semibold">
+            {{ data()?.clientsVisites ?? 0 }} / {{ data()?.clientsTotal ?? 0 }}
+          </p>
         </div>
         <div>
-          <p class="text-sm" style="color:rgba(255,255,255,.7)">Collectes</p>
+          <p class="text-sm" style="color: rgba(255, 255, 255, 0.7)">
+            Collectes
+          </p>
           <p class="font-semibold">{{ data()?.collectesCount ?? 0 }}</p>
         </div>
       </div>
@@ -67,7 +80,12 @@
     <!-- Alertes clients -->
     <div class="section-header">
       <h4>Alertes sur vos clients</h4>
-      <a routerLink="/directeur/alertes" class="text-sm" style="color:var(--color-primary)">Voir tout</a>
+      <a
+        routerLink="/directeur/alertes"
+        class="text-sm"
+        style="color: var(--color-primary)"
+        >Voir tout</a
+      >
     </div>
 
     @for (a of data()?.alertesClients ?? []; track a.clientId) {
@@ -84,18 +102,31 @@
 
   <!-- Bottom nav -->
   <nav class="agent-nav">
-    <a routerLink="/agent" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="agent-nav__item">
+    <a
+      routerLink="/agent"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="agent-nav__item"
+    >
       <span class="material-icons-round">home</span>
       <span>Accueil</span>
     </a>
-    <a routerLink="/agent/clients" routerLinkActive="active" class="agent-nav__item">
+    <a
+      routerLink="/agent/clients"
+      routerLinkActive="active"
+      class="agent-nav__item"
+    >
       <span class="material-icons-round">group</span>
       <span>Clients</span>
     </a>
     <a routerLink="/agent/collecte" class="agent-nav__fab">
       <span class="material-icons-round">add</span>
     </a>
-    <a routerLink="/agent/historique" routerLinkActive="active" class="agent-nav__item">
+    <a
+      routerLink="/agent/historique"
+      routerLinkActive="active"
+      class="agent-nav__item"
+    >
       <span class="material-icons-round">history</span>
       <span>Historique</span>
     </a>

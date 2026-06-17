@@ -1,6 +1,12 @@
-import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/http/api.service';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ApiService } from "../../../core/http/api.service";
 
 interface Agence {
   id: string;
@@ -14,12 +20,12 @@ interface Agence {
 }
 
 @Component({
-  selector: 'app-dir-agences',
+  selector: "app-dir-agences",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
-  templateUrl: './dir-agences.component.html',
-  styleUrls: ['./dir-agences.component.scss']
+  templateUrl: "./dir-agences.component.html",
+  styleUrls: ["./dir-agences.component.scss"],
 })
 export class DirAgencesComponent implements OnInit {
   private readonly api = inject(ApiService);
@@ -28,9 +34,12 @@ export class DirAgencesComponent implements OnInit {
   agences = signal<Agence[]>([]);
 
   ngOnInit() {
-    this.api.get<Agence[]>('/api/v1/agences').subscribe({
-      next: (a: Agence[]) => { this.agences.set(a); this.loading.set(false); },
-      error: () => this.loading.set(false)
+    this.api.get<Agence[]>("/api/v1/agences").subscribe({
+      next: (a: Agence[]) => {
+        this.agences.set(a);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
   }
 }

@@ -5,7 +5,7 @@
   </p>
 
   @if (error()) {
-    <div class="alert alert-danger" style="margin-bottom:16px">
+    <div class="alert alert-danger" style="margin-bottom: 16px">
       <span class="material-icons-round">error_outline</span>
       <span>{{ error() }}</span>
     </div>
@@ -22,13 +22,19 @@
         formControlName="email"
         placeholder="votre@institution.cm"
         autocomplete="email"
-      >
+      />
       @if (emailCtrl.invalid && emailCtrl.touched) {
-        <span class="login-card__error">Veuillez saisir une adresse email valide.</span>
+        <span class="login-card__error"
+          >Veuillez saisir une adresse email valide.</span
+        >
       }
     </div>
 
-    <button type="submit" class="btn btn-primary login-card__submit" [disabled]="loading()">
+    <button
+      type="submit"
+      class="btn btn-primary login-card__submit"
+      [disabled]="loading()"
+    >
       @if (loading()) {
         <span class="material-icons-round spin">refresh</span>
       } @else {

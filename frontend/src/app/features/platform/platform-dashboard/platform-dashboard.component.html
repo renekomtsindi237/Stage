@@ -7,25 +7,41 @@
   </div>
 
   <!-- KPI globaux -->
-  <div class="stats-grid" style="margin-bottom:24px">
-    <app-stat-card label="Institutions actives"
-                   [value]="data()?.imfsActives ?? 0"
-                   [loading]="loading()" />
-    <app-stat-card label="Utilisateurs total"
-                   [value]="data()?.utilisateursTotal ?? 0"
-                   [loading]="loading()" />
-    <app-stat-card label="Collectes (30j)"
-                   [value]="data()?.collectes30j ?? 0"
-                   [loading]="loading()" />
-    <app-stat-card label="Encours total"
-                   [value]="data()?.encoursTotalFcfa ?? 0"
-                   [isCurrency]="true"
-                   [loading]="loading()" />
+  <div class="stats-grid" style="margin-bottom: 24px">
+    <app-stat-card
+      label="Institutions actives"
+      [value]="data()?.imfsActives ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Utilisateurs total"
+      [value]="data()?.utilisateursTotal ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Collectes (30j)"
+      [value]="data()?.collectes30j ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Encours total"
+      [value]="data()?.encoursTotalFcfa ?? 0"
+      [isCurrency]="true"
+      [loading]="loading()"
+    />
   </div>
 
   <!-- Liste IMF -->
-  <div class="card" style="margin-bottom:24px">
-    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <div class="card" style="margin-bottom: 24px">
+    <div
+      class="card-header"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      "
+    >
       <h4>Institutions financières</h4>
       <button class="btn btn-primary btn-sm">
         <span class="material-icons-round">add</span> Ajouter une IMF
@@ -45,10 +61,12 @@
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4]; track $index) {
+          @for (_ of [1, 2, 3, 4]; track $index) {
             <tr>
-              @for (__ of [1,2,3,4,5,6,7]; track $index) {
-                <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
               }
             </tr>
           }
@@ -60,14 +78,19 @@
                 <p class="text-sm text-muted">{{ imf.ville }}</p>
               </td>
               <td>
-                <span class="badge" [class]="imf.actif ? 'badge-success' : 'badge-muted'">
-                  {{ imf.actif ? 'Actif' : 'Suspendu' }}
+                <span
+                  class="badge"
+                  [class]="imf.actif ? 'badge-success' : 'badge-muted'"
+                >
+                  {{ imf.actif ? "Actif" : "Suspendu" }}
                 </span>
               </td>
               <td>{{ imf.agencesCount }}</td>
               <td>{{ imf.utilisateursCount }}</td>
               <td>{{ imf.encoursFcfa | fcfa }}</td>
-              <td [class]="imf.par30 > 10 ? 'danger' : ''">{{ imf.par30 | number:'1.1-1' }}%</td>
+              <td [class]="imf.par30 > 10 ? 'danger' : ''">
+                {{ imf.par30 | number: "1.1-1" }}%
+              </td>
               <td>
                 <button class="btn btn-ghost btn-sm">
                   <span class="material-icons-round">settings</span>
@@ -82,20 +105,26 @@
 
   <!-- Audit global récent -->
   <div class="card">
-    <h4 style="margin-bottom:16px">Dernières actions d'audit</h4>
+    <h4 style="margin-bottom: 16px">Dernières actions d'audit</h4>
     @if (loading()) {
-      @for (_ of [1,2,3]; track $index) {
-        <div class="skeleton" style="height:48px;margin-bottom:8px"></div>
+      @for (_ of [1, 2, 3]; track $index) {
+        <div class="skeleton" style="height: 48px; margin-bottom: 8px"></div>
       }
     } @else {
       @for (log of data()?.auditLogs ?? []; track log.id) {
         <div class="audit-row">
-          <span class="material-icons-round text-muted" style="font-size:18px">info</span>
+          <span class="material-icons-round text-muted" style="font-size: 18px"
+            >info</span
+          >
           <div class="flex-1">
             <p class="text-sm font-semibold">{{ log.action }}</p>
-            <p class="text-sm text-muted">{{ log.imf }} · {{ log.utilisateur }}</p>
+            <p class="text-sm text-muted">
+              {{ log.imf }} · {{ log.utilisateur }}
+            </p>
           </div>
-          <span class="text-sm text-muted">{{ log.date | date:'dd/MM HH:mm' }}</span>
+          <span class="text-sm text-muted">{{
+            log.date | date: "dd/MM HH:mm"
+          }}</span>
         </div>
       }
     }

@@ -11,7 +11,10 @@
     gap: 10px;
     margin-bottom: 16px;
 
-    .material-icons-round { font-size: 28px; color: var(--color-primary); }
+    .material-icons-round {
+      font-size: 28px;
+      color: var(--color-primary);
+    }
   }
 
   &__stats {
@@ -20,4 +23,6 @@
   }
 }
 
-.danger { color: var(--color-danger); }
+.danger {
+  color: var(--color-danger);
+}

@@ -1,7 +1,9 @@
 <div class="page-content">
   <div class="page-header">
     <h2>Rapports</h2>
-    <p class="text-muted text-sm">Génération et téléchargement des rapports réglementaires</p>
+    <p class="text-muted text-sm">
+      Génération et téléchargement des rapports réglementaires
+    </p>
   </div>
 
   <div class="rapports-list">
@@ -10,18 +12,31 @@
         <span class="material-icons-round rapport-icon">description</span>
         <div class="rapport-card__info">
           <p class="font-semibold">{{ r.titre }}</p>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-top: 4px;
+            "
+          >
             <span class="badge" [class]="typeClass(r.type)">{{ r.type }}</span>
             @if (r.dateDernier) {
-              <span class="text-sm text-muted">Dernier: {{ r.dateDernier | date:'dd/MM/yyyy' }}</span>
+              <span class="text-sm text-muted"
+                >Dernier: {{ r.dateDernier | date: "dd/MM/yyyy" }}</span
+              >
             }
           </div>
         </div>
-        <button class="btn btn-primary" (click)="generate(r)" [disabled]="generating() === r.id">
+        <button
+          class="btn btn-primary"
+          (click)="generate(r)"
+          [disabled]="generating() === r.id"
+        >
           <span class="material-icons-round">
-            {{ generating() === r.id ? 'hourglass_empty' : 'download' }}
+            {{ generating() === r.id ? "hourglass_empty" : "download" }}
           </span>
-          {{ generating() === r.id ? 'Génération...' : 'Générer' }}
+          {{ generating() === r.id ? "Génération..." : "Générer" }}
         </button>
       </div>
     }

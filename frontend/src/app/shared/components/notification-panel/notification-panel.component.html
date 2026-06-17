@@ -1,6 +1,5 @@
 <div class="notif-overlay" [@fadeOverlay] (click)="close()">
   <div class="notif-panel" [@slideIn] (click)="$event.stopPropagation()">
-
     <div class="notif-header">
       <div class="notif-header__left">
         <h3>Notifications</h3>
@@ -8,10 +7,12 @@
           <span class="notif-count-badge">{{ unreadCount }}</span>
         }
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display: flex; gap: 8px; align-items: center">
         @if (unreadCount > 0) {
           <button class="btn btn-ghost btn-sm" (click)="markAllRead()">
-            <span class="material-icons-round" style="font-size:15px">done_all</span>
+            <span class="material-icons-round" style="font-size: 15px"
+              >done_all</span
+            >
             Tout lire
           </button>
         }
@@ -32,7 +33,9 @@
             <p class="notif-msg">{{ n.message }}</p>
             <p class="notif-time">{{ timeAgo(n.createdAt) }}</p>
           </div>
-          @if (!n.lu) { <span class="unread-dot"></span> }
+          @if (!n.lu) {
+            <span class="unread-dot"></span>
+          }
         </div>
       } @empty {
         <div class="notif-empty">
@@ -41,6 +44,5 @@
         </div>
       }
     </div>
-
   </div>
 </div>

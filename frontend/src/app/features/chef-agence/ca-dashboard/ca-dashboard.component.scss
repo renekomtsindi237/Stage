@@ -6,7 +6,12 @@
   padding: 40px;
   color: var(--color-text-muted);
 
-  .material-icons-round { font-size: 48px; color: var(--color-success); }
+  .material-icons-round {
+    font-size: 48px;
+    color: var(--color-success);
+  }
 }
 
-.btn.danger { color: var(--color-danger); }
+.btn.danger {
+  color: var(--color-danger);
+}

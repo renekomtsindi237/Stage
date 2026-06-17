@@ -2,24 +2,56 @@
   <div class="page-header">
     <div>
       <h2>Recouvrement</h2>
-      <p class="text-muted text-sm">Suivi des créances et actions de recouvrement</p>
+      <p class="text-muted text-sm">
+        Suivi des créances et actions de recouvrement
+      </p>
     </div>
     <a routerLink="/recouvrement/actions" class="btn btn-primary">
       <span class="material-icons-round">add</span> Nouvelle action
     </a>
   </div>
 
-  <div class="stats-grid" style="margin-bottom:24px">
-    <app-stat-card label="Créances actives"     [value]="data()?.creancesActives ?? 0"    [loading]="loading()" />
-    <app-stat-card label="Montant en retard"    [value]="data()?.montantEnRetard ?? 0"    [loading]="loading()" [isCurrency]="true" />
-    <app-stat-card label="Actions ce mois"      [value]="data()?.actionsDuMois ?? 0"      [loading]="loading()" />
-    <app-stat-card label="Taux recouvrement"    [value]="data()?.tauxRecouvrement ?? 0"   [loading]="loading()" [isPercent]="true" />
+  <div class="stats-grid" style="margin-bottom: 24px">
+    <app-stat-card
+      label="Créances actives"
+      [value]="data()?.creancesActives ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Montant en retard"
+      [value]="data()?.montantEnRetard ?? 0"
+      [loading]="loading()"
+      [isCurrency]="true"
+    />
+    <app-stat-card
+      label="Actions ce mois"
+      [value]="data()?.actionsDuMois ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Taux recouvrement"
+      [value]="data()?.tauxRecouvrement ?? 0"
+      [loading]="loading()"
+      [isPercent]="true"
+    />
   </div>
 
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      "
+    >
       <h4>Créances en retard</h4>
-      <a routerLink="/recouvrement/creances" class="text-sm" style="color:var(--color-primary)">Voir tout</a>
+      <a
+        routerLink="/recouvrement/creances"
+        class="text-sm"
+        style="color: var(--color-primary)"
+        >Voir tout</a
+      >
     </div>
     <table class="data-table">
       <thead>
@@ -33,8 +65,14 @@
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5]; track $index) {
-            <tr>@for (__ of [1,2,3,4,5]; track $index) { <td><div class="skeleton" style="height:14px;width:80%"></div></td> }</tr>
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <tr>
+              @for (__ of [1, 2, 3, 4, 5]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
+              }
+            </tr>
           }
         } @else {
           @for (c of data()?.creances ?? []; track c.id) {
@@ -42,11 +80,23 @@
               <td class="font-semibold">{{ c.clientNom }}</td>
               <td>{{ c.montant | fcfa }}</td>
               <td>
-                <span [class]="c.joursRetard > 90 ? 'danger' : c.joursRetard > 30 ? 'warning' : ''">
+                <span
+                  [class]="
+                    c.joursRetard > 90
+                      ? 'danger'
+                      : c.joursRetard > 30
+                        ? 'warning'
+                        : ''
+                  "
+                >
                   {{ c.joursRetard }}j
                 </span>
               </td>
-              <td><span class="badge" [class]="phaseClass(c.phase)">{{ c.phase }}</span></td>
+              <td>
+                <span class="badge" [class]="phaseClass(c.phase)">{{
+                  c.phase
+                }}</span>
+              </td>
               <td>
                 <button class="btn btn-primary btn-sm">Agir</button>
               </td>

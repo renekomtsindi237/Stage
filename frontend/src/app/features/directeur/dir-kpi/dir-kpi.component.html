@@ -2,7 +2,9 @@
   <div>
     <p class="text-muted text-sm">KPI Portefeuille &amp; PAR COBAC</p>
     <h2 class="page-title">Analyse du Portefeuille</h2>
-    <p class="page-subtitle">Bilan de tous les employés en phase de remboursement</p>
+    <p class="page-subtitle">
+      Bilan de tous les employés en phase de remboursement
+    </p>
   </div>
   <button class="btn btn-outline">
     <span class="material-icons-round">description</span> Rapport COBAC
@@ -10,18 +12,43 @@
 </div>
 
 <div class="stats-grid">
-  <app-stat-card label="Encours Total"     [value]="data()?.encoursTotalFcfa ?? 0" [isCurrency]="true" [loading]="loading()" />
-  <app-stat-card label="PAR 30"            [value]="data()?.par30 ?? 0" [isPercent]="true" [loading]="loading()" />
-  <app-stat-card label="PAR 90 (COBAC)"   [value]="data()?.par90Cobac ?? 0" [isPercent]="true" [loading]="loading()" />
-  <app-stat-card label="Taux Recouvrement" [value]="data()?.tauxRecouvrement30j ?? 0" [isPercent]="true" [loading]="loading()" />
+  <app-stat-card
+    label="Encours Total"
+    [value]="data()?.encoursTotalFcfa ?? 0"
+    [isCurrency]="true"
+    [loading]="loading()"
+  />
+  <app-stat-card
+    label="PAR 30"
+    [value]="data()?.par30 ?? 0"
+    [isPercent]="true"
+    [loading]="loading()"
+  />
+  <app-stat-card
+    label="PAR 90 (COBAC)"
+    [value]="data()?.par90Cobac ?? 0"
+    [isPercent]="true"
+    [loading]="loading()"
+  />
+  <app-stat-card
+    label="Taux Recouvrement"
+    [value]="data()?.tauxRecouvrement30j ?? 0"
+    [isPercent]="true"
+    [loading]="loading()"
+  />
 </div>
 
 <!-- Chart PAR -->
-<div class="card chart-card" style="margin-bottom:20px">
+<div class="card chart-card" style="margin-bottom: 20px">
   <div class="card-header"><h4>Évolution du PAR (30 derniers jours)</h4></div>
-  <div style="height:250px;position:relative">
+  <div style="height: 250px; position: relative">
     @if (!loading()) {
-      <canvas baseChart [data]="parChartData" [options]="parChartOptions" type="line"></canvas>
+      <canvas
+        baseChart
+        [data]="parChartData"
+        [options]="parChartOptions"
+        type="line"
+      ></canvas>
     }
   </div>
 </div>
@@ -31,7 +58,7 @@
   <div class="card">
     <div class="card-header"><h4>Répartition COBAC par Agence</h4></div>
     @if (loading()) {
-      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height: 200px"></div>
     } @else {
       <table class="data-table">
         <thead>
@@ -44,15 +71,20 @@
           </tr>
         </thead>
         <tbody>
-          @for (ag of data()?.repartitionCobacParAgence ?? []; track ag.agence) {
+          @for (
+            ag of data()?.repartitionCobacParAgence ?? [];
+            track ag.agence
+          ) {
             <tr>
               <td class="font-semibold">{{ ag.agence }}</td>
-              <td>{{ ag.encours | fcfa:false }}</td>
-              <td class="text-danger font-semibold">{{ ag.enSouffrance | fcfa:false }}</td>
-              <td class="text-success">{{ ag.rembourse | fcfa:false }}</td>
+              <td>{{ ag.encours | fcfa: false }}</td>
+              <td class="text-danger font-semibold">
+                {{ ag.enSouffrance | fcfa: false }}
+              </td>
+              <td class="text-success">{{ ag.rembourse | fcfa: false }}</td>
               <td>
                 <span class="par-value" [class]="parClass(ag.pourcentage)">
-                  {{ ag.pourcentage | number:'1.1-1' }}%
+                  {{ ag.pourcentage | number: "1.1-1" }}%
                 </span>
               </td>
             </tr>
@@ -66,7 +98,7 @@
   <div class="card">
     <div class="card-header"><h4>Détail des Provisions Réglementaires</h4></div>
     @if (loading()) {
-      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height: 200px"></div>
     } @else {
       <table class="data-table">
         <thead>
@@ -83,9 +115,9 @@
             <tr>
               <td class="font-semibold">{{ p.categorieCobac }}</td>
               <td>{{ p.nbEntrees }}</td>
-              <td>{{ p.encours | fcfa:false }}</td>
+              <td>{{ p.encours | fcfa: false }}</td>
               <td>{{ p.typeProv }}%</td>
-              <td class="font-semibold">{{ p.provRequise | fcfa:false }}</td>
+              <td class="font-semibold">{{ p.provRequise | fcfa: false }}</td>
             </tr>
           }
         </tbody>

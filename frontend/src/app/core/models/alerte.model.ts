@@ -1,5 +1,5 @@
-export type Severite = 'CRITIQUE' | 'HAUTE' | 'MOYENNE' | 'BASSE';
-export type StatutAlerte = 'NON_TRAITEE' | 'EN_TRAITEMENT' | 'RESOLUE';
+export type Severite = "CRITIQUE" | "HAUTE" | "MOYENNE" | "BASSE";
+export type StatutAlerte = "NON_TRAITEE" | "EN_TRAITEMENT" | "RESOLUE";
 
 export interface Alerte {
   id: string;

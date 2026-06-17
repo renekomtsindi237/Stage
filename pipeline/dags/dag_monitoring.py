@@ -14,7 +14,7 @@ import shutil
 import smtplib
 import socket
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -208,7 +208,7 @@ def collect_issues() -> list[dict]:
     # RAM
     try:
         with open("/proc/meminfo") as f:
-            info = {l.split(":")[0]: int(l.split()[1]) for l in f if ":" in l}
+            info = {line.split(":")[0]: int(line.split()[1]) for line in f if ":" in line}
         total = info.get("MemTotal", 1)
         avail = info.get("MemAvailable", total)
         pct = int((1 - avail / total) * 100)

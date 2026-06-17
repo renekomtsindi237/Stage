@@ -6,11 +6,28 @@
     </div>
   </div>
 
-  <div class="stats-grid" style="margin-bottom:24px">
-    <app-stat-card label="Utilisateurs actifs"  [value]="data()?.utilisateursActifs ?? 0" [loading]="loading()" />
-    <app-stat-card label="Alertes système"       [value]="data()?.alertesSysteme ?? 0"    [loading]="loading()" />
-    <app-stat-card label="Score RGPD"            [value]="data()?.rgpdScore ?? 0"          [loading]="loading()" [isPercent]="true" />
-    <app-stat-card label="Violations ouvertes"   [value]="data()?.violationsOuvertes ?? 0"[loading]="loading()" />
+  <div class="stats-grid" style="margin-bottom: 24px">
+    <app-stat-card
+      label="Utilisateurs actifs"
+      [value]="data()?.utilisateursActifs ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Alertes système"
+      [value]="data()?.alertesSysteme ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Score RGPD"
+      [value]="data()?.rgpdScore ?? 0"
+      [loading]="loading()"
+      [isPercent]="true"
+    />
+    <app-stat-card
+      label="Violations ouvertes"
+      [value]="data()?.violationsOuvertes ?? 0"
+      [loading]="loading()"
+    />
   </div>
 
   <div class="quick-links">
@@ -26,7 +43,9 @@
       <span class="material-icons-round">history_edu</span>
       <div>
         <h4>Audit Trail</h4>
-        <p class="text-sm text-muted">Dernière consultation: {{ data()?.dernierAudit | date:'dd/MM/yyyy' }}</p>
+        <p class="text-sm text-muted">
+          Dernière consultation: {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
+        </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
     </a>
@@ -34,7 +53,9 @@
       <span class="material-icons-round">security</span>
       <div>
         <h4>Conformité RGPD</h4>
-        <p class="text-sm text-muted">{{ data()?.demandesDroits ?? 0 }} demandes en attente</p>
+        <p class="text-sm text-muted">
+          {{ data()?.demandesDroits ?? 0 }} demandes en attente
+        </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
     </a>

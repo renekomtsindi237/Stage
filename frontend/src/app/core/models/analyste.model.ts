@@ -1,13 +1,13 @@
 export interface PipelineStatus {
   derniereExecution: string;
-  statutGlobal: 'RUNNING' | 'SUCCESS' | 'FAILED' | 'IDLE';
+  statutGlobal: "RUNNING" | "SUCCESS" | "FAILED" | "IDLE";
   dags: DagStatus[];
 }
 
 export interface DagStatus {
   id: string;
   nom: string;
-  statut: 'SUCCESS' | 'RUNNING' | 'FAILED' | 'PENDING';
+  statut: "SUCCESS" | "RUNNING" | "FAILED" | "PENDING";
   duree?: string;
   lignesLues?: number;
   lignesEcrites?: number;
@@ -34,5 +34,10 @@ export interface FeatureContrib {
 export interface ScoringMcrs {
   scoresMoyens: number;
   distribution: { bucket: string; count: number }[];
-  topClientsRisque: { clientId: string; nom: string; score: number; variation: number }[];
+  topClientsRisque: {
+    clientId: string;
+    nom: string;
+    score: number;
+    variation: number;
+  }[];
 }

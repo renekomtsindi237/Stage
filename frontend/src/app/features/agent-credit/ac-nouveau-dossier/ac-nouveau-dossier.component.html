@@ -5,45 +5,66 @@
 
   <!-- Steps indicator -->
   <div class="steps">
-    @for (s of [1,2,3,4]; track s) {
+    @for (s of [1, 2, 3, 4]; track s) {
       <div class="step" [class.active]="step() === s" [class.done]="step() > s">
         <div class="step__circle">
-          @if (step() > s) { <span class="material-icons-round" style="font-size:16px">check</span> }
-          @else { {{ s }} }
+          @if (step() > s) {
+            <span class="material-icons-round" style="font-size: 16px"
+              >check</span
+            >
+          } @else {
+            {{ s }}
+          }
         </div>
-        <span class="step__label">{{ ['Client','Montant','Garantie','Confirmation'][s-1] }}</span>
+        <span class="step__label">{{
+          ["Client", "Montant", "Garantie", "Confirmation"][s - 1]
+        }}</span>
       </div>
     }
   </div>
 
   <div class="card step-card">
-
     <!-- ÉTAPE 1 : Client -->
     @if (step() === 1) {
       <h3>Sélectionner le client</h3>
       @if (!selectedClient()) {
-        <div class="search-bar" style="margin:16px 0">
+        <div class="search-bar" style="margin: 16px 0">
           <span class="material-icons-round">search</span>
-          <input type="text" placeholder="Nom, code ou téléphone..." (input)="search($any($event.target).value)">
+          <input
+            type="text"
+            placeholder="Nom, code ou téléphone..."
+            (input)="search($any($event.target).value)"
+          />
         </div>
         @if (searchResults().length) {
           <div class="client-results">
             @for (c of searchResults(); track c.id) {
               <div class="client-result" (click)="selectClient(c)">
                 <p class="font-semibold">{{ c.nom }} {{ c.prenom }}</p>
-                <p class="text-sm text-muted">{{ c.code }} · Encours: {{ c.encours | number }} FCFA</p>
+                <p class="text-sm text-muted">
+                  {{ c.code }} · Encours: {{ c.encours | number }} FCFA
+                </p>
               </div>
             }
           </div>
         }
       } @else {
         <div class="selected-client">
-          <span class="material-icons-round" style="color:var(--color-success)">check_circle</span>
+          <span class="material-icons-round" style="color: var(--color-success)"
+            >check_circle</span
+          >
           <div>
-            <p class="font-semibold">{{ selectedClient()!.nom }} {{ selectedClient()!.prenom }}</p>
+            <p class="font-semibold">
+              {{ selectedClient()!.nom }} {{ selectedClient()!.prenom }}
+            </p>
             <p class="text-sm text-muted">{{ selectedClient()!.code }}</p>
           </div>
-          <button class="btn btn-ghost btn-sm" (click)="selectedClient.set(null)">Changer</button>
+          <button
+            class="btn btn-ghost btn-sm"
+            (click)="selectedClient.set(null)"
+          >
+            Changer
+          </button>
         </div>
       }
     }
@@ -51,15 +72,25 @@
     <!-- ÉTAPE 2 : Montant -->
     @if (step() === 2) {
       <h3>Montant et conditions</h3>
-      <form [formGroup]="montantForm" style="margin-top:16px">
+      <form [formGroup]="montantForm" style="margin-top: 16px">
         <div class="form-row">
           <div class="form-group">
             <label>Montant demandé (FCFA)</label>
-            <input type="number" class="form-control" formControlName="montant" placeholder="Ex: 500000">
+            <input
+              type="number"
+              class="form-control"
+              formControlName="montant"
+              placeholder="Ex: 500000"
+            />
           </div>
           <div class="form-group">
             <label>Durée (mois)</label>
-            <input type="number" class="form-control" formControlName="duree" placeholder="Ex: 24">
+            <input
+              type="number"
+              class="form-control"
+              formControlName="duree"
+              placeholder="Ex: 24"
+            />
           </div>
         </div>
         <div class="form-group">
@@ -76,7 +107,7 @@
     <!-- ÉTAPE 3 : Garantie -->
     @if (step() === 3) {
       <h3>Garanties</h3>
-      <form [formGroup]="garantieForm" style="margin-top:16px">
+      <form [formGroup]="garantieForm" style="margin-top: 16px">
         <div class="form-group">
           <label>Type de garantie</label>
           <select class="form-control" formControlName="typeGarantie">
@@ -88,12 +119,21 @@
         </div>
         <div class="form-group">
           <label>Valeur estimée (FCFA)</label>
-          <input type="number" class="form-control" formControlName="valeur" placeholder="Ex: 1000000">
+          <input
+            type="number"
+            class="form-control"
+            formControlName="valeur"
+            placeholder="Ex: 1000000"
+          />
         </div>
         <div class="form-group">
           <label>Description</label>
-          <textarea class="form-control" formControlName="description" rows="3"
-                    placeholder="Description de la garantie..."></textarea>
+          <textarea
+            class="form-control"
+            formControlName="description"
+            rows="3"
+            placeholder="Description de la garantie..."
+          ></textarea>
         </div>
       </form>
     }
@@ -102,12 +142,30 @@
     @if (step() === 4) {
       <h3>Confirmation</h3>
       <div class="summary">
-        <div class="summary-row"><span>Client</span><strong>{{ selectedClient()?.nom }} {{ selectedClient()?.prenom }}</strong></div>
-        <div class="summary-row"><span>Montant</span><strong>{{ montantForm.value.montant | number }} FCFA</strong></div>
-        <div class="summary-row"><span>Durée</span><strong>{{ montantForm.value.duree }} mois</strong></div>
-        <div class="summary-row"><span>Objet</span><strong>{{ objectifLabel }}</strong></div>
-        <div class="summary-row"><span>Garantie</span><strong>{{ garantieForm.value.typeGarantie }}</strong></div>
-        <div class="summary-row"><span>Valeur garantie</span><strong>{{ garantieForm.value.valeur | number }} FCFA</strong></div>
+        <div class="summary-row">
+          <span>Client</span
+          ><strong
+            >{{ selectedClient()?.nom }} {{ selectedClient()?.prenom }}</strong
+          >
+        </div>
+        <div class="summary-row">
+          <span>Montant</span
+          ><strong>{{ montantForm.value.montant | number }} FCFA</strong>
+        </div>
+        <div class="summary-row">
+          <span>Durée</span><strong>{{ montantForm.value.duree }} mois</strong>
+        </div>
+        <div class="summary-row">
+          <span>Objet</span><strong>{{ objectifLabel }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Garantie</span
+          ><strong>{{ garantieForm.value.typeGarantie }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Valeur garantie</span
+          ><strong>{{ garantieForm.value.valeur | number }} FCFA</strong>
+        </div>
       </div>
     }
 
@@ -121,14 +179,24 @@
         <span></span>
       }
       @if (step() < 4) {
-        <button class="btn btn-primary" (click)="nextStep()"
-                [disabled]="step() === 1 && !selectedClient()">
+        <button
+          class="btn btn-primary"
+          (click)="nextStep()"
+          [disabled]="step() === 1 && !selectedClient()"
+        >
           Suivant <span class="material-icons-round">arrow_forward</span>
         </button>
       } @else {
-        <button class="btn btn-primary" (click)="submit()" [disabled]="loading()">
-          @if (loading()) { <span class="material-icons-round spin">refresh</span> }
-          @else { <span class="material-icons-round">send</span> }
+        <button
+          class="btn btn-primary"
+          (click)="submit()"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+            <span class="material-icons-round spin">refresh</span>
+          } @else {
+            <span class="material-icons-round">send</span>
+          }
           Soumettre le dossier
         </button>
       }

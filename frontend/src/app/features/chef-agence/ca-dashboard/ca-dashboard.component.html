@@ -1,24 +1,43 @@
 <div class="page-content">
   <div class="page-header">
     <h2>Dashboard Agence</h2>
-    <p class="text-muted text-sm">Supervision et validation des dossiers crédit</p>
+    <p class="text-muted text-sm">
+      Supervision et validation des dossiers crédit
+    </p>
   </div>
 
-  <div class="stats-grid" style="margin-bottom:24px">
-    <app-stat-card label="Agents"            [value]="data()?.agentsCount ?? 0"  [loading]="loading()" />
-    <app-stat-card label="Clients actifs"    [value]="data()?.clientsCount ?? 0" [loading]="loading()" />
-    <app-stat-card label="Collectes du jour" [value]="data()?.collectesJour ?? 0"[loading]="loading()" />
-    <app-stat-card label="PAR 30 jours"      [value]="data()?.par30 ?? 0"        [loading]="loading()" [isPercent]="true" />
+  <div class="stats-grid" style="margin-bottom: 24px">
+    <app-stat-card
+      label="Agents"
+      [value]="data()?.agentsCount ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Clients actifs"
+      [value]="data()?.clientsCount ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="Collectes du jour"
+      [value]="data()?.collectesJour ?? 0"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      label="PAR 30 jours"
+      [value]="data()?.par30 ?? 0"
+      [loading]="loading()"
+      [isPercent]="true"
+    />
   </div>
 
   <div class="card">
-    <h4 style="margin-bottom:16px">Dossiers en attente de validation</h4>
+    <h4 style="margin-bottom: 16px">Dossiers en attente de validation</h4>
 
     @if (loading()) {
-      @for (_ of [1,2,3]; track $index) {
-        <div class="skeleton" style="height:60px;margin-bottom:8px"></div>
+      @for (_ of [1, 2, 3]; track $index) {
+        <div class="skeleton" style="height: 60px; margin-bottom: 8px"></div>
       }
-    } @else if (!(data()?.dossiers?.length)) {
+    } @else if (!data()?.dossiers?.length) {
       <div class="empty-state">
         <span class="material-icons-round">check_circle</span>
         <p>Aucun dossier en attente</p>
@@ -38,23 +57,35 @@
         <tbody>
           @for (d of data()?.dossiers ?? []; track d.uid) {
             <tr>
-              <td class="font-semibold" style="color:var(--color-primary)">{{ d.reference }}</td>
+              <td class="font-semibold" style="color: var(--color-primary)">
+                {{ d.reference }}
+              </td>
               <td>{{ d.clientNom }}</td>
               <td>{{ d.montant | fcfa }}</td>
               <td class="text-sm text-muted">{{ d.agentNom }}</td>
-              <td class="text-sm text-muted">{{ d.dateDepot | date:'dd/MM/yyyy' }}</td>
+              <td class="text-sm text-muted">
+                {{ d.dateDepot | date: "dd/MM/yyyy" }}
+              </td>
               <td>
-                <div style="display:flex;gap:8px">
-                  <button class="btn btn-primary btn-sm"
-                          [disabled]="validating() === d.uid"
-                          (click)="valider(d.uid, 'VALIDE')">
-                    <span class="material-icons-round" style="font-size:14px">check</span>
+                <div style="display: flex; gap: 8px">
+                  <button
+                    class="btn btn-primary btn-sm"
+                    [disabled]="validating() === d.uid"
+                    (click)="valider(d.uid, 'VALIDE')"
+                  >
+                    <span class="material-icons-round" style="font-size: 14px"
+                      >check</span
+                    >
                     Valider
                   </button>
-                  <button class="btn btn-ghost btn-sm danger"
-                          [disabled]="validating() === d.uid"
-                          (click)="valider(d.uid, 'REJETE')">
-                    <span class="material-icons-round" style="font-size:14px">close</span>
+                  <button
+                    class="btn btn-ghost btn-sm danger"
+                    [disabled]="validating() === d.uid"
+                    (click)="valider(d.uid, 'REJETE')"
+                  >
+                    <span class="material-icons-round" style="font-size: 14px"
+                      >close</span
+                    >
                     Rejeter
                   </button>
                 </div>

@@ -46,22 +46,22 @@ export interface ViolationRgpd {
   titre: string;
   description: string;
   personnesConcernees: number;
-  severite: 'HAUTE' | 'MOYENNE';
+  severite: "HAUTE" | "MOYENNE";
   delaiRestantSeconds: number;
   createdAt: string;
 }
 
 export interface DemandeDroit {
   id: string;
-  type: 'SUPPRESSION' | 'ACCES' | 'RECTIFICATION' | 'PORTABILITE';
+  type: "SUPPRESSION" | "ACCES" | "RECTIFICATION" | "PORTABILITE";
   sujetId: string;
   delaiRestantJours: number;
-  statut: 'EN_COURS' | 'TRAITE';
+  statut: "EN_COURS" | "TRAITE";
 }
 
 export interface Consentement {
   utilisateur: string;
   finalite: string;
-  statut: 'ACCORDE' | 'REVOQUE';
+  statut: "ACCORDE" | "REVOQUE";
   updatedAt: string;
 }

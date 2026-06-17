@@ -7,7 +7,9 @@
   font-weight: 500;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: color .15s, border-color .15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
   &.active {
     color: var(--color-primary);

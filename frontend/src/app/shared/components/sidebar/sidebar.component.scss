@@ -16,7 +16,7 @@
     flex-direction: column;
     align-items: center;
     padding: 20px 16px 16px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     gap: 8px;
   }
 
@@ -27,7 +27,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   &__logo-img {
@@ -39,14 +39,14 @@
   &__institution {
     font-size: 11px;
     font-weight: 600;
-    color: rgba(255,255,255,.55);
+    color: rgba(255, 255, 255, 0.55);
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 180px;
     text-transform: uppercase;
-    letter-spacing: .5px;
+    letter-spacing: 0.5px;
   }
 
   &__nav {
@@ -65,29 +65,31 @@
     gap: 10px;
     padding: 9px 12px;
     border-radius: var(--radius-md);
-    color: rgba(255,255,255,.65);
+    color: rgba(255, 255, 255, 0.65);
     font-size: 13px;
     font-weight: 500;
-    transition: all .15s ease;
+    transition: all 0.15s ease;
     cursor: pointer;
 
     &:hover {
-      background: rgba(255,255,255,.08);
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
     }
 
     &--active {
-      background: rgba(255,255,255,.15);
+      background: rgba(255, 255, 255, 0.15);
       color: #fff;
 
-      .sidebar__item-icon { color: var(--color-accent); }
+      .sidebar__item-icon {
+        color: var(--color-accent);
+      }
     }
   }
 
   &__item-icon {
     font-size: 18px;
     flex-shrink: 0;
-    color: rgba(255,255,255,.5);
+    color: rgba(255, 255, 255, 0.5);
   }
 
   &__item--active &__item-icon {
@@ -96,6 +98,6 @@
 
   &__footer {
     padding: 8px 8px 16px;
-    border-top: 1px solid rgba(255,255,255,.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
