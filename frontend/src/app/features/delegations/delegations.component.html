@@ -1,6 +1,5 @@
 <div class="page-content">
   <div class="del-page">
-
     <!-- ── En-tête ── -->
     <div class="del-header">
       <div class="del-header__left">
@@ -9,12 +8,16 @@
           Délégations & Réassignations
         </h1>
         <p class="del-header__sub">
-          Gérez les réassignations de dossiers et les délégations d'autorité au sein de votre IMF.
+          Gérez les réassignations de dossiers et les délégations d'autorité au
+          sein de votre IMF.
         </p>
       </div>
 
       @if (isDirecteur()) {
-        <button class="btn btn-primary del-header__btn" (click)="openAutoriteModal()">
+        <button
+          class="btn btn-primary del-header__btn"
+          (click)="openAutoriteModal()"
+        >
           <span class="material-icons-round">person_add</span>
           Déléguer une autorité
         </button>
@@ -48,7 +51,7 @@
     </div>
 
     <!-- ── Tab : Délégations ── -->
-    @if (activeTab() === 'delegations') {
+    @if (activeTab() === "delegations") {
       @if (loadingDelegations()) {
         <div class="del-loading">
           <span class="material-icons-round del-spin">refresh</span>
@@ -69,41 +72,70 @@
           @for (d of delegations(); track d.uid) {
             <div class="del-card" [class.del-card--inactive]="!d.actif">
               <div class="del-card__top">
-                <span class="del-badge" [class.del-badge--reassign]="d.typeDelegation === 'REASSIGNATION_DOSSIER'"
-                      [class.del-badge--autorite]="d.typeDelegation === 'DELEGATION_AUTORITE'">
+                <span
+                  class="del-badge"
+                  [class.del-badge--reassign]="
+                    d.typeDelegation === 'REASSIGNATION_DOSSIER'
+                  "
+                  [class.del-badge--autorite]="
+                    d.typeDelegation === 'DELEGATION_AUTORITE'
+                  "
+                >
                   <span class="material-icons-round">
-                    {{ d.typeDelegation === 'REASSIGNATION_DOSSIER' ? 'folder_shared' : 'supervisor_account' }}
+                    {{
+                      d.typeDelegation === "REASSIGNATION_DOSSIER"
+                        ? "folder_shared"
+                        : "supervisor_account"
+                    }}
                   </span>
                   {{ typeLabel(d.typeDelegation) }}
                 </span>
-                <span class="del-status" [class.del-status--active]="d.actif" [class.del-status--inactive]="!d.actif">
-                  {{ d.actif ? 'Active' : 'Révoquée' }}
+                <span
+                  class="del-status"
+                  [class.del-status--active]="d.actif"
+                  [class.del-status--inactive]="!d.actif"
+                >
+                  {{ d.actif ? "Active" : "Révoquée" }}
                 </span>
               </div>
 
               <div class="del-card__body">
                 <div class="del-card__row">
-                  <span class="material-icons-round del-card__row-icon">person</span>
+                  <span class="material-icons-round del-card__row-icon"
+                    >person</span
+                  >
                   <span class="del-card__row-label">Délégant</span>
-                  <span class="del-card__row-value">Agent #{{ d.delegantId }}</span>
+                  <span class="del-card__row-value"
+                    >Agent #{{ d.delegantId }}</span
+                  >
                 </div>
                 <div class="del-card__row">
-                  <span class="material-icons-round del-card__row-icon">person_outline</span>
+                  <span class="material-icons-round del-card__row-icon"
+                    >person_outline</span
+                  >
                   <span class="del-card__row-label">Délégataire</span>
-                  <span class="del-card__row-value">Agent #{{ d.delegataireId }}</span>
+                  <span class="del-card__row-value"
+                    >Agent #{{ d.delegataireId }}</span
+                  >
                 </div>
                 @if (d.roleDelegue) {
                   <div class="del-card__row">
-                    <span class="material-icons-round del-card__row-icon">badge</span>
+                    <span class="material-icons-round del-card__row-icon"
+                      >badge</span
+                    >
                     <span class="del-card__row-label">Rôle délégué</span>
                     <span class="del-card__row-value">{{ d.roleDelegue }}</span>
                   </div>
                 }
                 @if (d.montantSeuil) {
                   <div class="del-card__row">
-                    <span class="material-icons-round del-card__row-icon">payments</span>
+                    <span class="material-icons-round del-card__row-icon"
+                      >payments</span
+                    >
                     <span class="del-card__row-label">Plafond</span>
-                    <span class="del-card__row-value del-card__row-value--amount">
+                    <span
+                      class="del-card__row-value del-card__row-value--amount"
+                    >
                       {{ formatMontant(d.montantSeuil) }}
                     </span>
                   </div>
@@ -120,10 +152,16 @@
                 <span class="del-card__dates">
                   <span class="material-icons-round">event</span>
                   {{ formatDate(d.dateDebut) }}
-                  @if (d.dateFin) { → {{ formatDate(d.dateFin) }} }
+                  @if (d.dateFin) {
+                    → {{ formatDate(d.dateFin) }}
+                  }
                 </span>
                 @if (d.actif) {
-                  <button class="btn btn-danger-sm" (click)="revoquer(d)" title="Révoquer">
+                  <button
+                    class="btn btn-danger-sm"
+                    (click)="revoquer(d)"
+                    title="Révoquer"
+                  >
                     <span class="material-icons-round">block</span>
                     Révoquer
                   </button>
@@ -136,7 +174,7 @@
     }
 
     <!-- ── Tab : Dossiers crédit ── -->
-    @if (activeTab() === 'dossiers') {
+    @if (activeTab() === "dossiers") {
       @if (loadingDossiers()) {
         <div class="del-loading">
           <span class="material-icons-round del-spin">refresh</span>
@@ -166,23 +204,40 @@
                 <tr>
                   <td>
                     <div class="del-table__client">
-                      <span class="del-table__client-name">{{ d.clientNom }}</span>
+                      <span class="del-table__client-name">{{
+                        d.clientNom
+                      }}</span>
                       <span class="del-table__client-id">{{ d.clientId }}</span>
                     </div>
                   </td>
                   <td>
-                    <span class="del-table__objet">{{ d.objetFinancement }}</span>
-                    <span class="del-table__secteur">{{ d.secteurActivite }}</span>
+                    <span class="del-table__objet">{{
+                      d.objetFinancement
+                    }}</span>
+                    <span class="del-table__secteur">{{
+                      d.secteurActivite
+                    }}</span>
                   </td>
-                  <td class="del-table__montant">{{ formatMontant(d.montantDemande) }}</td>
+                  <td class="del-table__montant">
+                    {{ formatMontant(d.montantDemande) }}
+                  </td>
                   <td>{{ d.dureeMois }} mois</td>
                   <td>
-                    <span class="badge" [class]="statutColor(d.statut)">{{ statutLabel(d.statut) }}</span>
+                    <span class="badge" [class]="statutColor(d.statut)">{{
+                      statutLabel(d.statut)
+                    }}</span>
                   </td>
-                  <td class="del-table__date">{{ formatDate(d.dateSoumission) }}</td>
+                  <td class="del-table__date">
+                    {{ formatDate(d.dateSoumission) }}
+                  </td>
                   <td>
-                    @if (['INSTRUCTION','EN_ANALYSE','COMITE'].includes(d.statut)) {
-                      <button class="btn btn-outline-sm" (click)="openReassignModal(d)">
+                    @if (
+                      ["INSTRUCTION", "EN_ANALYSE", "COMITE"].includes(d.statut)
+                    ) {
+                      <button
+                        class="btn btn-outline-sm"
+                        (click)="openReassignModal(d)"
+                      >
                         <span class="material-icons-round">swap_horiz</span>
                         Réassigner
                       </button>
@@ -195,7 +250,6 @@
         </div>
       }
     }
-
   </div>
 </div>
 
@@ -223,13 +277,19 @@
         </div>
       }
 
-      <form [formGroup]="reassignForm" (ngSubmit)="submitReassign()" class="modal__form">
+      <form
+        [formGroup]="reassignForm"
+        (ngSubmit)="submitReassign()"
+        class="modal__form"
+      >
         <div class="form-group">
           <label class="form-label">Nouvel agent responsable *</label>
           @if (loadingAgents()) {
             <div class="form-loading">Chargement des agents…</div>
           } @else if (agents().length === 0) {
-            <div class="form-empty">Aucun agent crédit disponible dans cette IMF.</div>
+            <div class="form-empty">
+              Aucun agent crédit disponible dans cette IMF.
+            </div>
           } @else {
             <select class="form-control" formControlName="nouvelAgentUid">
               <option value="">— Sélectionner un agent —</option>
@@ -242,13 +302,27 @@
 
         <div class="form-group">
           <label class="form-label">Motif de réassignation</label>
-          <textarea class="form-control" formControlName="motif" rows="3"
-                    placeholder="Ex : Agent en congé, surcharge de travail…"></textarea>
+          <textarea
+            class="form-control"
+            formControlName="motif"
+            rows="3"
+            placeholder="Ex : Agent en congé, surcharge de travail…"
+          ></textarea>
         </div>
 
         <div class="modal__actions">
-          <button type="button" class="btn btn-ghost" (click)="closeReassignModal()">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="reassignForm.invalid || submitting()">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="closeReassignModal()"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="reassignForm.invalid || submitting()"
+          >
             @if (submitting()) {
               <span class="material-icons-round del-spin">refresh</span>
             }
@@ -274,7 +348,11 @@
         </button>
       </div>
 
-      <form [formGroup]="autoriteForm" (ngSubmit)="submitAutorite()" class="modal__form">
+      <form
+        [formGroup]="autoriteForm"
+        (ngSubmit)="submitAutorite()"
+        class="modal__form"
+      >
         <div class="form-group">
           <label class="form-label">Délégataire (utilisateur) *</label>
           @if (loadingAgents()) {
@@ -303,8 +381,13 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Plafond FCFA (optionnel)</label>
-            <input type="number" class="form-control" formControlName="montantSeuil"
-                   placeholder="Ex : 2 500 000" min="0" />
+            <input
+              type="number"
+              class="form-control"
+              formControlName="montantSeuil"
+              placeholder="Ex : 2 500 000"
+              min="0"
+            />
           </div>
           <div class="form-group">
             <label class="form-label">Date de fin (optionnel)</label>
@@ -314,13 +397,27 @@
 
         <div class="form-group">
           <label class="form-label">Motif *</label>
-          <textarea class="form-control" formControlName="motif" rows="3"
-                    placeholder="Motif de la délégation d'autorité…"></textarea>
+          <textarea
+            class="form-control"
+            formControlName="motif"
+            rows="3"
+            placeholder="Motif de la délégation d'autorité…"
+          ></textarea>
         </div>
 
         <div class="modal__actions">
-          <button type="button" class="btn btn-ghost" (click)="closeAutoriteModal()">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="autoriteForm.invalid || submitting()">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="closeAutoriteModal()"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="autoriteForm.invalid || submitting()"
+          >
             @if (submitting()) {
               <span class="material-icons-round del-spin">refresh</span>
             }

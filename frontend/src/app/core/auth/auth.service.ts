@@ -20,9 +20,7 @@ export class AuthService {
   readonly avatarDataUrl = computed(
     () => this.currentUser()?.avatarDataUrl ?? null,
   );
-  readonly imfLogoUrl = computed(
-    () => this.currentUser()?.imfLogoUrl ?? null,
-  );
+  readonly imfLogoUrl = computed(() => this.currentUser()?.imfLogoUrl ?? null);
   readonly initials = computed(() => {
     const name = this.currentUser()?.username;
     if (!name) return "?";

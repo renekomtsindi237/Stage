@@ -33,7 +33,7 @@ class AuthControllerTest {
     @DisplayName("POST /api/auth/login — identifiants valides → 200 + accessToken")
     void login_valide_retourne_200() throws Exception {
         AuthResponse response = new AuthResponse("access_token", "refresh_token",
-                "ANALYSTE", "jkamga", null, null, null, false, 900L);
+                "ANALYSTE", "jkamga", null, null, null, null, false, 900L);
         when(authService.login(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/auth/login")
@@ -71,7 +71,7 @@ class AuthControllerTest {
     @DisplayName("POST /api/auth/refresh — token valide → 200 + nouveau accessToken")
     void refresh_token_valide() throws Exception {
         AuthResponse response = new AuthResponse("new_access", "same_refresh",
-                "ANALYSTE", "jkamga", null, null, null, false, 900L);
+                "ANALYSTE", "jkamga", null, null, null, null, false, 900L);
         when(authService.refresh(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/auth/refresh")

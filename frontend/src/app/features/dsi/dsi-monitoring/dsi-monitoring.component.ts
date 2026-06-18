@@ -69,7 +69,9 @@ export class DsiMonitoringComponent implements OnInit {
       });
 
     this.api
-      .get<{ data: RecentLogin[] }>("/api/v1/dsi/monitoring/connexions-recentes")
+      .get<{ data: RecentLogin[] }>(
+        "/api/v1/dsi/monitoring/connexions-recentes",
+      )
       .pipe(map((r) => r.data))
       .subscribe({
         next: (list: RecentLogin[]) => {

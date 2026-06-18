@@ -42,6 +42,11 @@ export class SidebarComponent {
         route: "/analyste/pipeline",
       },
       { label: "Drift ML", icon: "trending_up", route: "/analyste/drift" },
+      {
+        label: "Démo MCRS",
+        icon: "model_training",
+        route: "/analyste/mcrs-demo",
+      },
     ],
     DIRECTEUR: [
       { label: "Dashboard", icon: "dashboard", route: "/directeur/dashboard" },

@@ -1,0 +1,552 @@
+<div class="page-content">
+  @if (loading()) {
+    <div class="demo-loading">
+      <span class="material-icons-round demo-spin">autorenew</span>
+      <p>Chargement des résultats MCRS…</p>
+    </div>
+  } @else if (!rapport()) {
+    <div class="demo-empty">
+      <span class="material-icons-round">error_outline</span>
+      <p>Rapport MCRS introuvable.</p>
+    </div>
+  } @else {
+    <div class="demo-page">
+      <!-- ── En-tête ─────────────────────────────────────────────────── -->
+      <div class="demo-header">
+        <div>
+          <h1 class="demo-header__title">
+            <span class="material-icons-round demo-header__icon"
+              >model_training</span
+            >
+            Démonstration MCRS — {{ rapport()!.meta.imf }}
+          </h1>
+          <p class="demo-header__sub">
+            {{ rapport()!.meta.modele }} · Entraîné le
+            {{ formatDate(rapport()!.meta.entrainement) }} ·
+            {{ rapport()!.meta.devise }}
+          </p>
+        </div>
+        <span class="demo-badge-live">
+          <span class="demo-badge-live__dot"></span>
+          Données réelles
+        </span>
+      </div>
+
+      <!-- ── KPI Banner ────────────────────────────────────────────────── -->
+      <div class="demo-kpis">
+        <div class="demo-kpi demo-kpi--primary">
+          <span class="demo-kpi__icon material-icons-round">insights</span>
+          <span class="demo-kpi__val">{{
+            rapport()!.performances.cross_validation.auc_roc_moyen
+              | number: "1.4-4"
+          }}</span>
+          <span class="demo-kpi__lbl">AUC-ROC moyen</span>
+        </div>
+        <div class="demo-kpi demo-kpi--green">
+          <span class="demo-kpi__icon material-icons-round">trending_up</span>
+          <span class="demo-kpi__val">{{
+            rapport()!.performances.cross_validation.gini_moyen
+              | number: "1.4-4"
+          }}</span>
+          <span class="demo-kpi__lbl">Coefficient Gini</span>
+        </div>
+        <div class="demo-kpi demo-kpi--amber">
+          <span class="demo-kpi__icon material-icons-round"
+            >compare_arrows</span
+          >
+          <span class="demo-kpi__val">{{
+            rapport()!.performances.cross_validation.ks_moyen | number: "1.4-4"
+          }}</span>
+          <span class="demo-kpi__lbl">KS Statistic</span>
+        </div>
+        <div class="demo-kpi demo-kpi--violet">
+          <span class="demo-kpi__icon material-icons-round">people</span>
+          <span class="demo-kpi__val">{{ rapport()!.meta.n_clients }}</span>
+          <span class="demo-kpi__lbl">Clients (train+synth)</span>
+        </div>
+        <div class="demo-kpi demo-kpi--red">
+          <span class="demo-kpi__icon material-icons-round">warning_amber</span>
+          <span class="demo-kpi__val"
+            >{{ rapport()!.meta.taux_defaut_pct }}%</span
+          >
+          <span class="demo-kpi__lbl">Taux de défaut</span>
+        </div>
+      </div>
+
+      <!-- ── Formule MCRS ───────────────────────────────────────────── -->
+      <div class="demo-formula">
+        <h3 class="demo-formula__title">
+          <span class="material-icons-round">functions</span>
+          Formule MCRS (Multi-Criteria Recovery Scoring)
+        </h3>
+        <div class="demo-formula__eq">
+          <span class="demo-formula__eq-text">
+            <strong>MCRS</strong> = 0.35 × <span class="crs">CRS</span> + 0.45 ×
+            <span class="rps">RPS</span> + 0.20 × <span class="csi">CSI</span>
+          </span>
+        </div>
+        <div class="demo-formula__legend">
+          <span class="demo-formula__pill crs-pill"
+            >CRS — Régularité collectes terrain</span
+          >
+          <span class="demo-formula__pill rps-pill"
+            >RPS — Probabilité défaut 90j (XGBoost calibré)</span
+          >
+          <span class="demo-formula__pill csi-pill"
+            >CSI — Solvabilité client &amp; macro</span
+          >
+        </div>
+      </div>
+
+      <!-- ── Onglets ────────────────────────────────────────────────── -->
+      <div class="demo-tabs">
+        <button
+          class="demo-tab"
+          [class.demo-tab--active]="activeTab() === 'overview'"
+          (click)="activeTab.set('overview')"
+        >
+          <span class="material-icons-round">bar_chart</span> Vue d'ensemble
+        </button>
+        <button
+          class="demo-tab"
+          [class.demo-tab--active]="activeTab() === 'scoring'"
+          (click)="activeTab.set('scoring')"
+        >
+          <span class="material-icons-round">score</span> Scoring clients
+        </button>
+        <button
+          class="demo-tab"
+          [class.demo-tab--active]="activeTab() === 'clustering'"
+          (click)="activeTab.set('clustering')"
+        >
+          <span class="material-icons-round">bubble_chart</span> Clustering
+        </button>
+        <button
+          class="demo-tab"
+          [class.demo-tab--active]="activeTab() === 'folds'"
+          (click)="activeTab.set('folds')"
+        >
+          <span class="material-icons-round">assessment</span> Validation
+          croisée
+        </button>
+      </div>
+
+      <!-- ══ TAB : VUE D'ENSEMBLE ══════════════════════════════════════ -->
+      @if (activeTab() === "overview") {
+        <div class="demo-grid-2">
+          <!-- Distribution risque -->
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">pie_chart</span>
+              Distribution des classes de risque
+            </h3>
+            <div class="demo-dist">
+              @for (entry of distRisque() | keyvalue; track entry.key) {
+                <div class="demo-dist__row">
+                  <div class="demo-dist__bar-wrap">
+                    <span class="demo-dist__label">{{ entry.key }}</span>
+                    <div class="demo-dist__bar">
+                      <div
+                        class="demo-dist__bar-fill"
+                        [style.width.%]="distPct(entry.value.n)"
+                        [style.background]="distColor(entry.key)"
+                      ></div>
+                    </div>
+                    <span class="demo-dist__count">{{ entry.value.n }}</span>
+                  </div>
+                  <span class="demo-dist__desc">{{
+                    entry.value.description
+                  }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Courbe ROC -->
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">show_chart</span>
+              Courbe ROC — AUC =
+              {{
+                rapport()!.performances.modele_final.auc_roc | number: "1.4-4"
+              }}
+            </h3>
+            <img
+              src="assets/mcrs_roc_curve.png"
+              alt="Courbe ROC"
+              class="demo-img"
+            />
+          </div>
+
+          <!-- SHAP Feature importance -->
+          <div class="demo-card demo-card--wide">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">psychology</span>
+              Top 10 Features — Importance SHAP (explicabilité)
+            </h3>
+            <div class="demo-shap">
+              @for (f of shapTop10(); track f.name) {
+                <div class="demo-shap__row">
+                  <span class="demo-shap__name">{{ f.name }}</span>
+                  <div class="demo-shap__bar">
+                    <div
+                      class="demo-shap__bar-fill"
+                      [style.width.%]="f.pct"
+                    ></div>
+                  </div>
+                  <span class="demo-shap__val">{{
+                    f.value | number: "1.4-4"
+                  }}</span>
+                </div>
+              }
+            </div>
+            <img
+              src="assets/mcrs_shap_importance.png"
+              alt="SHAP"
+              class="demo-img demo-img--mt"
+            />
+          </div>
+
+          <!-- Distribution graphique -->
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">donut_large</span>
+              Distribution MCRS — 25 clients FINTECH SARL
+            </h3>
+            <img
+              src="assets/mcrs_distribution.png"
+              alt="Distribution MCRS"
+              class="demo-img"
+            />
+          </div>
+
+          <!-- Recommandation -->
+          <div class="demo-card demo-card--highlight">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">lightbulb</span>
+              Interprétation &amp; Recommandation opérationnelle
+            </h3>
+            <p class="demo-reco">
+              {{ rapport()!.interpretation.recommandation }}
+            </p>
+            <div class="demo-top-features">
+              <span class="demo-top-features__label"
+                >Top 5 features explicatives :</span
+              >
+              <div class="demo-top-features__list">
+                @for (
+                  f of rapport()!.interpretation.top_features_explicatives;
+                  track f
+                ) {
+                  <span class="demo-chip">{{ f }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ══ TAB : SCORING CLIENTS ══════════════════════════════════════ -->
+      @if (activeTab() === "scoring") {
+        <div class="demo-card">
+          <h3 class="demo-card__title">
+            <span class="material-icons-round">score</span>
+            Scoring MCRS — 25 clients réels FINTECH SARL
+          </h3>
+          <div class="demo-table-wrap">
+            <table class="demo-table">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>CRS</th>
+                  <th>RPS</th>
+                  <th>CSI</th>
+                  <th>MCRS</th>
+                  <th>Classe</th>
+                  <th>P(défaut 90j)</th>
+                  <th>Priorité</th>
+                  <th>Feature clé</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (s of rapport()!.scoring_clients; track s.client_id) {
+                  <tr [class.demo-table__tr--defaut]="s.label_reel === 1">
+                    <td class="demo-table__client">{{ s.client_id }}</td>
+                    <td>
+                      <div class="demo-score-bar">
+                        <div
+                          class="demo-score-bar__fill demo-score-bar__fill--crs"
+                          [style.width.%]="s.score_crs * 100"
+                        ></div>
+                      </div>
+                      <span>{{ s.score_crs | number: "1.3-3" }}</span>
+                    </td>
+                    <td>
+                      <div class="demo-score-bar">
+                        <div
+                          class="demo-score-bar__fill demo-score-bar__fill--rps"
+                          [style.width.%]="s.score_rps * 100"
+                        ></div>
+                      </div>
+                      <span>{{ s.score_rps | number: "1.3-3" }}</span>
+                    </td>
+                    <td>
+                      <div class="demo-score-bar">
+                        <div
+                          class="demo-score-bar__fill demo-score-bar__fill--csi"
+                          [style.width.%]="s.score_csi * 100"
+                        ></div>
+                      </div>
+                      <span>{{ s.score_csi | number: "1.3-3" }}</span>
+                    </td>
+                    <td class="demo-table__mcrs">
+                      {{ s.score_mcrs | number: "1.3-3" }}
+                    </td>
+                    <td>
+                      <span
+                        class="badge"
+                        [class]="classeColor(s.classe_risque)"
+                      >
+                        {{ s.classe_risque }}
+                      </span>
+                    </td>
+                    <td class="demo-table__proba">
+                      {{ s.proba_defaut_90j * 100 | number: "1.1-1" }}%
+                    </td>
+                    <td
+                      class="demo-table__stars"
+                      title="Priorité {{ s.priorite }}/5"
+                    >
+                      {{ prioriteStars(s.priorite) }}
+                    </td>
+                    <td class="demo-table__feat">{{ s.top_feature }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="demo-note">
+            <span class="material-icons-round">info</span>
+            Les lignes surlignées indiquent les clients avec un défaut constaté
+            (jours retard ≥ 90).
+          </p>
+        </div>
+      }
+
+      <!-- ══ TAB : CLUSTERING ═══════════════════════════════════════════ -->
+      @if (activeTab() === "clustering") {
+        <div class="demo-grid-2">
+          <div class="demo-card demo-card--wide">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">bubble_chart</span>
+              K-Means K=4 — Projection PCA 2D
+            </h3>
+            <img
+              src="assets/mcrs_clustering_pca.png"
+              alt="Clustering PCA"
+              class="demo-img"
+            />
+          </div>
+
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">group</span>
+              Profils des 4 clusters
+            </h3>
+            <div class="demo-clusters">
+              @for (p of rapport()!.clustering.profils; track p.cluster) {
+                <div
+                  class="demo-cluster"
+                  [style.border-left-color]="clusterColor(p.cluster)"
+                >
+                  <div class="demo-cluster__header">
+                    <span
+                      class="demo-cluster__dot"
+                      [style.background]="clusterColor(p.cluster)"
+                    ></span>
+                    <strong>Cluster {{ p.cluster }} — {{ p.nom }}</strong>
+                    <span class="demo-cluster__count"
+                      >{{ p.n_clients }} clients</span
+                    >
+                  </div>
+                  <div class="demo-cluster__stats">
+                    <span
+                      >Régularité :
+                      <strong>{{ p.regularite_moy }}%</strong></span
+                    >
+                    <span
+                      >Retard max :
+                      <strong>{{ p.retard_max_moy }}j</strong></span
+                    >
+                    <span
+                      >Remboursement :
+                      <strong>{{ p.taux_remboursement_moy }}%</strong></span
+                    >
+                    <span
+                      >Revenu moy. :
+                      <strong>{{ formatMontant(p.revenu_moy) }}</strong></span
+                    >
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">pest_control</span>
+              Anomalies — Isolation Forest (contamination 12%)
+            </h3>
+            <div class="demo-anomalies">
+              <p class="demo-anomalies__count">
+                <strong>{{
+                  rapport()!.clustering.anomalies.n_detectees
+                }}</strong>
+                client(s) anormaux détectés
+              </p>
+              <div class="demo-anomalies__list">
+                @for (c of rapport()!.clustering.anomalies.clients; track c) {
+                  <span class="demo-chip demo-chip--danger">
+                    <span class="material-icons-round">warning</span>
+                    {{ c }}
+                  </span>
+                }
+              </div>
+              <p class="demo-note">
+                Ces clients ont un comportement hors-normes (retards, montants
+                aberrants).
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ══ TAB : VALIDATION CROISÉE ════════════════════════════════ -->
+      @if (activeTab() === "folds") {
+        <div class="demo-grid-2">
+          <div class="demo-card demo-card--wide">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">assessment</span>
+              Métriques par fold — StratifiedKFold ({{
+                rapport()!.performances.cross_validation.n_folds
+              }}
+              plis)
+            </h3>
+            <img
+              src="assets/mcrs_fold_metrics.png"
+              alt="Métriques folds"
+              class="demo-img"
+            />
+          </div>
+
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">table_chart</span>
+              Détail par fold
+            </h3>
+            <div class="demo-table-wrap">
+              <table class="demo-table">
+                <thead>
+                  <tr>
+                    <th>Fold</th>
+                    <th>AUC-ROC</th>
+                    <th>Gini</th>
+                    <th>KS</th>
+                    <th>F1</th>
+                    <th>Brier</th>
+                    <th>Seuil</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (
+                    m of rapport()!.performances.cross_validation.detail_folds;
+                    track m.fold
+                  ) {
+                    <tr>
+                      <td>
+                        <strong>Fold {{ m.fold }}</strong>
+                      </td>
+                      <td>{{ m.auc_roc | number: "1.4-4" }}</td>
+                      <td>{{ m.gini | number: "1.4-4" }}</td>
+                      <td>{{ m.ks | number: "1.4-4" }}</td>
+                      <td>{{ m.f1 | number: "1.4-4" }}</td>
+                      <td>{{ m.brier | number: "1.4-4" }}</td>
+                      <td>{{ m.seuil_optimal | number: "1.2-2" }}</td>
+                    </tr>
+                  }
+                  <tr class="demo-table__avg">
+                    <td><strong>Moyenne</strong></td>
+                    <td>
+                      <strong>{{
+                        rapport()!.performances.cross_validation.auc_roc_moyen
+                          | number: "1.4-4"
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        rapport()!.performances.cross_validation.gini_moyen
+                          | number: "1.4-4"
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        rapport()!.performances.cross_validation.ks_moyen
+                          | number: "1.4-4"
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        rapport()!.performances.cross_validation.f1_moyen
+                          | number: "1.4-4"
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        rapport()!.performances.cross_validation.brier_moyen
+                          | number: "1.4-4"
+                      }}</strong>
+                    </td>
+                    <td>—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="demo-card">
+            <h3 class="demo-card__title">
+              <span class="material-icons-round">info</span>
+              Protocole d'entraînement
+            </h3>
+            <ul class="demo-protocol">
+              <li><strong>Algorithme</strong> : XGBoost (tree_method=hist)</li>
+              <li>
+                <strong>Calibration</strong> : Platt isotonique
+                (CalibratedClassifierCV)
+              </li>
+              <li>
+                <strong>Validation</strong> :
+                {{ rapport()!.performances.cross_validation.strategie }}
+              </li>
+              <li>
+                <strong>Augmentation</strong> : 150 clients synthétiques (taux
+                défaut 18% — médiane IMF Cameroun)
+              </li>
+              <li>
+                <strong>Explicabilité</strong> : SHAP TreeExplainer (top 10
+                features)
+              </li>
+              <li>
+                <strong>Anti-drift</strong> : PSI (Population Stability Index)
+              </li>
+              <li>
+                <strong>Cluster</strong> : K-Means K=4 + Isolation Forest
+                (anomalies)
+              </li>
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

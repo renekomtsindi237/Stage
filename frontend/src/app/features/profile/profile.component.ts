@@ -139,7 +139,9 @@ export class ProfileComponent {
     this.uploadingImfLogo.set(true);
     const token = this.auth.getToken();
     this.http
-      .post<{ data: { logoUrl: string } }>(
+      .post<{
+        data: { logoUrl: string };
+      }>(
         `${environment.apiUrl}/api/v1/admin/imf/logo`,
         formData,
         token ? { headers: { Authorization: `Bearer ${token}` } } : {},
