@@ -3,8 +3,8 @@
 # Prérequis : cp .env.dev .env
 
 x-kafka-env: &kafka-env
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+  SCHEMA_REGISTRY_URL: http://localhost:8081
 
 x-airflow-common: &airflow-common
   build:
@@ -113,8 +113,9 @@ services:
       SMTP_USER: ${SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       FIREBASE_ENABLED: "false"
-      # Kafka désactivé — pas de broker en dev (voir KafkaConfig @ConditionalOnProperty)
+      # Kafka désactivé en dev — double protection ancienne et nouvelle image
       KAFKA_ENABLED: "false"
+      SPRING_KAFKA_LISTENER_AUTO_STARTUP: "false"
     volumes:
       - backend_uploads:/uploads
     ports:
