@@ -118,7 +118,7 @@ BEGIN
         (v_imf_id,'CLT006','Pierre MBARGA ONANA','+237 690 21 43 65','DLA-AKWA',v_ag_dla,'1972-12-01','M','COMMERCE','Commerce général',15,280000,'Marché Nkoulou','QUOTIDIEN','SECONDAIRE','MARIE',7, 4.050000, 9.700000,'Marché Nkoulou, Douala'),
         (v_imf_id,'CLT007','Cécile BELLO NGONO','+237 677 65 43 21','DLA-AKWA',v_ag_dla,'1993-04-25','F','AGRICOLE','Aviculture',3, 145000,'Marché Sandaga','HEBDOMADAIRE','PRIMAIRE','CELIBATAIRE',1, 4.055000, 9.720000,'Bassa, Douala'),
         (v_imf_id,'CLT008','Richard TABI MONGO','+237 699 87 65 43','DLA-BONABERI',v_ag_dla,'1980-08-17','M','PECHE','Pêche artisanale',10,195000,'Wouri','QUOTIDIEN','PRIMAIRE','MARIE',5, 4.070000, 9.680000,'Bonabéri, Douala'),
-        (v_imf_id,'CLT009','Anastasie ETOUNDI OWONO','+237 655 34 56 78','YDE-NORD',v_ag_yde,'1988-02-28','F','ARTISANAT','Tissage raphia',6, 130000,'Marché central Yaoundé','BIMENSUEL','SECONDAIRE','MARIEE',4, 3.890000,11.505000,'Briqueterie, Yaoundé'),
+        (v_imf_id,'CLT009','Anastasie ETOUNDI OWONO','+237 655 34 56 78','YDE-NORD',v_ag_yde,'1988-02-28','F','ARTISANAT','Tissage raphia',6, 130000,'Marché central Yaoundé','BIMENSUEL','SECONDAIRE','MARIE',4, 3.890000,11.505000,'Briqueterie, Yaoundé'),
         (v_imf_id,'CLT010','Théophile ESSANG ETOUNDI','+237 670 56 78 90','YDE-CENTRE',v_ag_yde,'1970-06-10','M','SERVICES','Réparation électroménager',18,240000,'Rue Nachtigal','QUOTIDIEN','SECONDAIRE','MARIE',6, 3.865000,11.514000,'Messa, Yaoundé'),
         (v_imf_id,'CLT011','Flavienne KOUMBA BEKONO','+237 698 23 45 67','DLA-AKWA',v_ag_dla,'1985-10-20','F','COMMERCE','Prêt-à-porter',9, 210000,'Marché Central Douala','QUOTIDIEN','SECONDAIRE','MARIE',3, 4.048000, 9.700000,'Akwa, Douala'),
         (v_imf_id,'CLT012','Alphonse NDZANA MABINA','+237 675 43 21 09','YDE-CENTRE',v_ag_yde,'1965-03-05','M','ELEVAGE','Porciculture',14,320000,'Ferme Nkolbisson','MENSUEL','PRIMAIRE','MARIE',8, 3.845000,11.490000,'Nkolbisson, Yaoundé'),
@@ -149,7 +149,7 @@ BEGIN
 
     -- ── 6. Collectes épargne (données ML — 12 derniers mois) ─────────────────
     -- Clients bons payeurs (CLT001–CLT010) : collectes régulières
-    INSERT INTO app.collectes_epargne (uuid_mobile, v_imf_id, agence_id, cycle_id, agent_id,
+    INSERT INTO app.collectes_epargne (uuid_mobile, imf_id, agence_id, cycle_id, agent_id,
          client_id_externe, montant_collecte, date_collecte, canal_paiement, statut)
     SELECT
         gen_random_uuid(),
@@ -163,8 +163,8 @@ BEGIN
             ELSE                          (10000 + (n * 3412 % 55000))::NUMERIC
         END,
         (CURRENT_DATE - (((n / 10) * 7) || ' days')::INTERVAL)::DATE,
-        CASE WHEN (n % 4) = 0 THEN 'MTN_MOBILE_MONEY'
-             WHEN (n % 4) = 1 THEN 'ORANGE_MONEY'
+        CASE WHEN (n % 4) = 0 THEN 'MTN'
+             WHEN (n % 4) = 1 THEN 'ORANGE'
              WHEN (n % 4) = 2 THEN 'ESPECES'
              ELSE                   'VIREMENT' END,
         'VALIDEE'
@@ -173,7 +173,7 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- Clients à risque (CLT011–CLT020) : collectes irrégulières (gaps)
-    INSERT INTO app.collectes_epargne (uuid_mobile, v_imf_id, agence_id, cycle_id, agent_id,
+    INSERT INTO app.collectes_epargne (uuid_mobile, imf_id, agence_id, cycle_id, agent_id,
          client_id_externe, montant_collecte, date_collecte, canal_paiement, statut)
     SELECT
         gen_random_uuid(),
@@ -182,9 +182,9 @@ BEGIN
         'CLT' || LPAD(((n % 10) + 11)::TEXT, 3, '0'),
         (8000 + (n * 4123 % 42000))::NUMERIC,
         (CURRENT_DATE - (((n / 6) * 14 + (n % 3) * 3) || ' days')::INTERVAL)::DATE,
-        CASE WHEN (n % 3) = 0 THEN 'MTN_MOBILE_MONEY'
+        CASE WHEN (n % 3) = 0 THEN 'MTN'
              WHEN (n % 3) = 1 THEN 'ESPECES'
-             ELSE                   'ORANGE_MONEY' END,
+             ELSE                   'ORANGE' END,
         CASE WHEN (n % 7) = 0 THEN 'REJETEE' ELSE 'VALIDEE' END
     FROM generate_series(0, 89) AS n
     WHERE (CURRENT_DATE - (((n / 6) * 14 + (n % 3) * 3) || ' days')::INTERVAL)::DATE >= (CURRENT_DATE - INTERVAL '12 months')
@@ -192,25 +192,25 @@ BEGIN
 
     -- ── 7. Collectes terrain (app mobile) ────────────────────────────────────
     INSERT INTO app.collectes_terrain
-        (id_collecte_mobile, agent_id, v_imf_id, client_id, pret_id,
+        (id_collecte_mobile, agent_id, imf_id, client_id, pret_id,
          date_collecte, montant_collecte, canal_paiement,
          reference_transaction, observation, statut, latitude, longitude)
     VALUES
-        ('MOB-YDE-2025-001',v_ag1,v_imf_id,'CLT001','PRE001','2025-09-15',  50000,'MTN_MOBILE_MONEY','MTN20250915001','RAS','CONFIRMEE',3.866667,11.516667),
-        ('MOB-YDE-2025-002',v_ag1,v_imf_id,'CLT003','PRE003','2025-09-15',  25000,'ESPECES',NULL,'Client présent','CONFIRMEE',3.840000,11.500000),
-        ('MOB-YDE-2025-003',v_ag2,v_imf_id,'CLT002','PRE002','2025-09-16',  75000,'ORANGE_MONEY','OM20250916001','Paiement partiel','CONFIRMEE',3.862000,11.512000),
-        ('MOB-YDE-2025-004',v_ag1,v_imf_id,'CLT005','PRE005','2025-09-18',  40000,'MTN_MOBILE_MONEY','MTN20250918001','RAS','CONFIRMEE',3.880000,11.530000),
-        ('MOB-DLA-2025-001',v_ag2,v_imf_id,'CLT006','PRE006','2025-09-20', 100000,'ESPECES',NULL,'Règlement mensuel','CONFIRMEE',4.050000,9.700000),
-        ('MOB-DLA-2025-002',v_ag1,v_imf_id,'CLT008','PRE008','2025-09-22',  60000,'MTN_MOBILE_MONEY','MTN20250922001','RAS','CONFIRMEE',4.070000,9.680000),
-        ('MOB-YDE-2025-005',v_ag2,v_imf_id,'CLT004','PRE004','2025-09-25',  80000,'ORANGE_MONEY','OM20250925001','RAS','CONFIRMEE',3.870000,11.520000),
-        ('MOB-YDE-2025-006',v_ag1,v_imf_id,'CLT009',NULL,'2025-09-26',      30000,'ESPECES',NULL,'Épargne libre','CONFIRMEE',3.890000,11.505000),
-        ('MOB-DLA-2025-003',v_ag2,v_imf_id,'CLT007',NULL,'2025-09-27',      20000,'MTN_MOBILE_MONEY','MTN20250927001','RAS','CONFIRMEE',4.055000,9.720000),
-        ('MOB-YDE-2025-007',v_ag1,v_imf_id,'CLT013','PRE013','2025-10-01',  35000,'ESPECES',NULL,'RAS','CONFIRMEE',3.875000,11.522000),
-        ('MOB-YDE-2025-008',v_ag2,v_imf_id,'CLT015',NULL,'2025-10-03',      15000,'MTN_MOBILE_MONEY','MTN20251003001','Retard signalé','SOUMISE',3.835000,11.498000),
-        ('MOB-DLA-2025-004',v_ag1,v_imf_id,'CLT011','PRE011','2025-10-05',  55000,'ORANGE_MONEY','OM20251005001','RAS','CONFIRMEE',4.048000,9.700000),
-        ('MOB-YDE-2025-009',v_ag2,v_imf_id,'CLT020','PRE020','2025-10-08',  90000,'ESPECES',NULL,'Paiement complet','CONFIRMEE',3.895000,11.510000),
-        ('MOB-DLA-2025-005',v_ag1,v_imf_id,'CLT022',NULL,'2025-10-10',      45000,'MTN_MOBILE_MONEY','MTN20251010001','RAS','CONFIRMEE',4.047000,9.705000),
-        ('MOB-YDE-2025-010',v_ag2,v_imf_id,'CLT010','PRE010','2025-10-12', 120000,'ORANGE_MONEY','OM20251012001','RAS','CONFIRMEE',3.865000,11.514000)
+        ('MOB-YDE-2025-001',v_ag1,v_imf_id,'CLT001','PRE001','2025-09-15',  50000,'MTN',   'MTN20250915001','RAS','CONFIRMEE',3.866667,11.516667),
+        ('MOB-YDE-2025-002',v_ag1,v_imf_id,'CLT003','PRE003','2025-09-15',  25000,'ESPECES',NULL,           'Client présent','CONFIRMEE',3.840000,11.500000),
+        ('MOB-YDE-2025-003',v_ag2,v_imf_id,'CLT002','PRE002','2025-09-16',  75000,'ORANGE','OM20250916001', 'Paiement partiel','CONFIRMEE',3.862000,11.512000),
+        ('MOB-YDE-2025-004',v_ag1,v_imf_id,'CLT005','PRE005','2025-09-18',  40000,'MTN',   'MTN20250918001','RAS','CONFIRMEE',3.880000,11.530000),
+        ('MOB-DLA-2025-001',v_ag2,v_imf_id,'CLT006','PRE006','2025-09-20', 100000,'ESPECES',NULL,           'Règlement mensuel','CONFIRMEE',4.050000,9.700000),
+        ('MOB-DLA-2025-002',v_ag1,v_imf_id,'CLT008','PRE008','2025-09-22',  60000,'MTN',   'MTN20250922001','RAS','CONFIRMEE',4.070000,9.680000),
+        ('MOB-YDE-2025-005',v_ag2,v_imf_id,'CLT004','PRE004','2025-09-25',  80000,'ORANGE','OM20250925001', 'RAS','CONFIRMEE',3.870000,11.520000),
+        ('MOB-YDE-2025-006',v_ag1,v_imf_id,'CLT009','EPG-YDE-006','2025-09-26',30000,'ESPECES',NULL,'Épargne libre','CONFIRMEE',3.890000,11.505000),
+        ('MOB-DLA-2025-003',v_ag2,v_imf_id,'CLT007','EPG-DLA-003','2025-09-27',20000,'MTN',   'MTN20250927001','RAS','CONFIRMEE',4.055000,9.720000),
+        ('MOB-YDE-2025-007',v_ag1,v_imf_id,'CLT013','PRE013','2025-10-01',  35000,'ESPECES',NULL,           'RAS','CONFIRMEE',3.875000,11.522000),
+        ('MOB-YDE-2025-008',v_ag2,v_imf_id,'CLT015','EPG-YDE-008','2025-10-03',15000,'MTN', 'MTN20251003001','Retard signalé','SOUMISE',3.835000,11.498000),
+        ('MOB-DLA-2025-004',v_ag1,v_imf_id,'CLT011','PRE011','2025-10-05',  55000,'ORANGE','OM20251005001', 'RAS','CONFIRMEE',4.048000,9.700000),
+        ('MOB-YDE-2025-009',v_ag2,v_imf_id,'CLT020','PRE020','2025-10-08',  90000,'ESPECES',NULL,           'Paiement complet','CONFIRMEE',3.895000,11.510000),
+        ('MOB-DLA-2025-005',v_ag1,v_imf_id,'CLT022','EPG-DLA-005','2025-10-10',45000,'MTN', 'MTN20251010001','RAS','CONFIRMEE',4.047000,9.705000),
+        ('MOB-YDE-2025-010',v_ag2,v_imf_id,'CLT010','PRE010','2025-10-12', 120000,'ORANGE','OM20251012001', 'RAS','CONFIRMEE',3.865000,11.514000)
     ON CONFLICT (id_collecte_mobile) DO NOTHING;
 
     -- ── 8. Dossiers crédit ───────────────────────────────────────────────────
@@ -327,7 +327,7 @@ BEGIN
             )
             SELECT
                 dc_id,
-                'CTR-FINTECH-' || TO_CHAR(date_soumission, 'YYYY') || '-' || LPAD(id::TEXT, 4, '0'),
+                'CTR-FINTECH-' || TO_CHAR(date_soumission, 'YYYY') || '-' || LPAD(dc_id::TEXT, 4, '0'),
                 (date_soumission + INTERVAL '20 days')::DATE,
                 montant_demande,
                 0.1800, -- 18% annuel
@@ -352,8 +352,8 @@ BEGIN
     SELECT
         v_imf_id,
         v_ag_yde,
-        'PRE' || LPAD(id::TEXT,3,'0'),
-        client_id,
+        'PRE' || LPAD(dc.id::TEXT,3,'0'),
+        dc.client_id,
         ci.id,
         montant_demande,
         -- capital restant ~60% pour les anciens, ~85% pour les récents
@@ -384,31 +384,31 @@ BEGIN
         taux_provision_cobac, montant_provision, type_garantie, valeur_garantie
     ) VALUES
         (v_imf_id,v_ag_dla,'PRE-RET-001','CLT008',
-         (SELECT id FROM app.clients_informels WHERE client_id_externe='CLT008' AND v_imf_id=v_imf_id),
+         (SELECT id FROM app.clients_informels WHERE client_id_externe='CLT008' AND imf_id=v_imf_id),
          1000000, 450000, 430000, 22500, 9000,
          CURRENT_DATE-INTERVAL '8 months',
          CURRENT_DATE-INTERVAL '7 months 15 days',
          CURRENT_DATE-INTERVAL '45 days',
          CURRENT_DATE-INTERVAL '45 days',
-         45,'B','B',10.00,43000,'NANTISSEMENT_PIROGUE',750000),
+         45,'PAR30','B',10.00,43000,'NANTISSEMENT_PIROGUE',750000),
 
         (v_imf_id,v_ag_yde,'PRE-RET-002','CLT015',
-         (SELECT id FROM app.clients_informels WHERE client_id_externe='CLT015' AND v_imf_id=v_imf_id),
+         (SELECT id FROM app.clients_informels WHERE client_id_externe='CLT015' AND imf_id=v_imf_id),
          750000, 680000, 670000, 51000, 20400,
          CURRENT_DATE-INTERVAL '5 months',
          CURRENT_DATE-INTERVAL '4 months 15 days',
          CURRENT_DATE-INTERVAL '68 days',
          CURRENT_DATE-INTERVAL '68 days',
-         68,'C','C',20.00,136000,'CAUTION_SOLIDAIRE',400000),
+         68,'PAR60','C',20.00,136000,'CAUTION_SOLIDAIRE',400000),
 
         (v_imf_id,v_ag_dla,'PRE-RET-003','CLT017',
-         (SELECT id FROM app.clients_informels WHERE client_id_externe='CLT017' AND v_imf_id=v_imf_id),
+         (SELECT id FROM app.clients_informels WHERE client_id_externe='CLT017' AND imf_id=v_imf_id),
          500000, 500000, 498000, 42000, 16800,
          CURRENT_DATE-INTERVAL '4 months',
          CURRENT_DATE-INTERVAL '3 months 15 days',
          CURRENT_DATE-INTERVAL '92 days',
          CURRENT_DATE-INTERVAL '92 days',
-         92,'D','D',50.00,250000,'AUCUNE',0)
+         92,'PAR90','D',50.00,250000,'AUCUNE',0)
     ON CONFLICT DO NOTHING;
 
     -- ── 11. Dossiers de recouvrement ─────────────────────────────────────────
@@ -524,7 +524,7 @@ BEGIN
     INSERT INTO staging.stg_creances (
         imf_code, id_pret, id_client, nom_client, agence_code,
         montant_initial, montant_rembourse, solde_restant, montant_impaye,
-        interets_retard, date_deblocage, date_echeance, jours_retard
+        interets_retard, date_deblocage, date_echeance, jours_retard, statut_pret
     )
     SELECT
         'FINTECH',
@@ -539,7 +539,14 @@ BEGIN
         cr.interets_retard,
         cr.date_deblocage,
         cr.date_premiere_echeance,
-        cr.jours_retard
+        cr.jours_retard,
+        CASE cr.categorie_par
+            WHEN 'COURANT' THEN 'EN_COURS'
+            WHEN 'PAR30'   THEN 'EN_RETARD'
+            WHEN 'PAR60'   THEN 'EN_RETARD'
+            WHEN 'PAR90'   THEN 'EN_CONTENTIEUX'
+            ELSE 'EN_RETARD'
+        END
     FROM app.creances cr
     LEFT JOIN app.clients_informels ci ON ci.client_id_externe = cr.client_id_externe AND ci.imf_id = cr.imf_id
     WHERE cr.imf_id = v_imf_id
@@ -594,8 +601,8 @@ BEGIN
         ROUND(COUNT(CASE WHEN statut = 'REJETEE' THEN 1 END)::NUMERIC / COUNT(*), 4),
         0::INT,
         SUM(CASE WHEN canal_paiement = 'ESPECES'          THEN montant_collecte ELSE 0 END),
-        SUM(CASE WHEN canal_paiement = 'MTN_MOBILE_MONEY' THEN montant_collecte ELSE 0 END),
-        SUM(CASE WHEN canal_paiement = 'ORANGE_MONEY'     THEN montant_collecte ELSE 0 END),
+        SUM(CASE WHEN canal_paiement = 'MTN' THEN montant_collecte ELSE 0 END),
+        SUM(CASE WHEN canal_paiement = 'ORANGE'     THEN montant_collecte ELSE 0 END),
         0, 0
     FROM app.collectes_epargne
     WHERE imf_id = v_imf_id
