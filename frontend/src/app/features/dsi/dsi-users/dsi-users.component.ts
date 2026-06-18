@@ -131,7 +131,10 @@ export class DsiUsersComponent implements OnInit {
     if (this.editForm.invalid || !this.selectedUser()) return;
     this.saving.set(true);
     this.api
-      .put(`/api/v1/admin/users/${this.selectedUser()!.uid}`, this.editForm.value)
+      .put(
+        `/api/v1/admin/users/${this.selectedUser()!.uid}`,
+        this.editForm.value,
+      )
       .subscribe({
         next: () => {
           this.saving.set(false);
@@ -141,7 +144,10 @@ export class DsiUsersComponent implements OnInit {
         },
         error: () => {
           this.saving.set(false);
-          this.toast.showError("Erreur", "Impossible de mettre à jour le profil.");
+          this.toast.showError(
+            "Erreur",
+            "Impossible de mettre à jour le profil.",
+          );
         },
       });
   }
@@ -168,7 +174,10 @@ export class DsiUsersComponent implements OnInit {
         },
         error: () => {
           this.deleting.set(false);
-          this.toast.showError("Erreur", "Impossible de supprimer l'utilisateur.");
+          this.toast.showError(
+            "Erreur",
+            "Impossible de supprimer l'utilisateur.",
+          );
         },
       });
   }
