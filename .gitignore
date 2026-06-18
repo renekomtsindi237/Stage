@@ -112,6 +112,10 @@ ml/models/
 *.joblib
 *.h5
 *.onnx
+# Exceptions : artefacts de résultats lisibles (graphiques, rapports, features)
+!pipeline/models/fintech/*.png
+!pipeline/models/fintech/*.json
+!pipeline/models/fintech/features_fintech.csv
 
 # ── Airflow ───────────────────────────────
 pipeline/dags/__pycache__/

@@ -1,0 +1,510 @@
+{
+  "meta": {
+    "imf": "FINTECH SARL",
+    "imf_code": "FINTECH",
+    "devise": "XAF (FCFA)",
+    "modele": "MCRS v2 — XGBoost + Calibration Platt + SHAP",
+    "entrainement": "2026-06-18T06:59:20.904091Z",
+    "n_clients": 175,
+    "n_defaut": 28,
+    "taux_defaut_pct": 16.0,
+    "composantes": {
+      "CRS_weight": "35% — Collection Reliability Score",
+      "RPS_weight": "45% — Recovery Prediction Score (XGBoost calibré)",
+      "CSI_weight": "35% — Client Solvency Index"
+    }
+  },
+  "performances": {
+    "cross_validation": {
+      "n_folds": 5,
+      "strategie": "StratifiedKFold (3 plis)",
+      "auc_roc_moyen": 0.9954,
+      "gini_moyen": 0.9908,
+      "ks_moyen": 0.9724,
+      "f1_moyen": 0.9667,
+      "brier_moyen": 0.0114,
+      "detail_folds": [
+        {
+          "fold": 0,
+          "auc_roc": 1.0,
+          "gini": 1.0,
+          "ks": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "brier": 0.0001,
+          "seuil_optimal": 0.1,
+          "n_defaut_test": 5
+        },
+        {
+          "fold": 1,
+          "auc_roc": 1.0,
+          "gini": 1.0,
+          "ks": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "brier": 0.0004,
+          "seuil_optimal": 0.12,
+          "n_defaut_test": 5
+        },
+        {
+          "fold": 2,
+          "auc_roc": 1.0,
+          "gini": 1.0,
+          "ks": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "brier": 0.0001,
+          "seuil_optimal": 0.1,
+          "n_defaut_test": 6
+        },
+        {
+          "fold": 3,
+          "auc_roc": 0.977,
+          "gini": 0.954,
+          "ks": 0.8621,
+          "precision": 0.8333,
+          "recall": 0.8333,
+          "f1": 0.8333,
+          "brier": 0.0544,
+          "seuil_optimal": 0.1,
+          "n_defaut_test": 6
+        },
+        {
+          "fold": 4,
+          "auc_roc": 1.0,
+          "gini": 1.0,
+          "ks": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "brier": 0.0019,
+          "seuil_optimal": 0.26,
+          "n_defaut_test": 6
+        }
+      ]
+    },
+    "modele_final": {
+      "auc_roc": 1.0,
+      "gini": 1.0
+    }
+  },
+  "feature_importances": {
+    "xgboost_top10": {
+      "jours_retard_moyen": 0.313458,
+      "capacite_remboursement": 0.230159,
+      "jours_retard_max": 0.192644,
+      "classe_risque_cobac_encode": 0.153409,
+      "nb_incidents_paiement": 0.077831,
+      "tendance_collecte_3m": 0.028576,
+      "nb_collectes_12m": 0.003827,
+      "prix_lag_90j": 9.6e-05,
+      "regularite_collecte_pct": 0.0,
+      "montant_moy_collecte": 0.0
+    },
+    "shap_top10": {
+      "jours_retard_max": 3.46752,
+      "classe_risque_cobac_encode": 0.508327,
+      "jours_retard_moyen": 0.479234,
+      "nb_incidents_paiement": 0.190093,
+      "capacite_remboursement": 0.157654,
+      "tendance_collecte_3m": 0.125475,
+      "nb_collectes_12m": 0.011178,
+      "prix_lag_90j": 0.003731,
+      "regularite_collecte_pct": 0.0,
+      "montant_moy_collecte": 0.0
+    }
+  },
+  "clustering": {
+    "algorithme": "K-Means (K=4)",
+    "profils": [
+      {
+        "cluster": 0,
+        "nom": "Excellent",
+        "n_clients": 11,
+        "regularite_moy": 20.6,
+        "montant_moy": 34507.0,
+        "taux_remboursement_moy": 71.3,
+        "retard_max_moy": 0.0,
+        "revenu_moy": 281818.0
+      },
+      {
+        "cluster": 1,
+        "nom": "Régulier",
+        "n_clients": 6,
+        "regularite_moy": 30.8,
+        "montant_moy": 38383.0,
+        "taux_remboursement_moy": 86.5,
+        "retard_max_moy": 7.5,
+        "revenu_moy": 155000.0
+      },
+      {
+        "cluster": 2,
+        "nom": "Irrégulier",
+        "n_clients": 6,
+        "regularite_moy": 2.6,
+        "montant_moy": 2194.0,
+        "taux_remboursement_moy": 100.0,
+        "retard_max_moy": 0.0,
+        "revenu_moy": 199667.0
+      },
+      {
+        "cluster": 3,
+        "nom": "Risqué",
+        "n_clients": 2,
+        "regularite_moy": 14.4,
+        "montant_moy": 25638.0,
+        "taux_remboursement_moy": 5.5,
+        "retard_max_moy": 80.0,
+        "revenu_moy": 157500.0
+      }
+    ],
+    "anomalies": {
+      "algorithme": "Isolation Forest (contamination=12%)",
+      "n_detectees": 3,
+      "clients": [
+        "CLT015",
+        "CLT017",
+        "CLT023"
+      ]
+    }
+  },
+  "scoring_clients": [
+    {
+      "client_id": "CLT001",
+      "score_crs": 0.7846,
+      "score_rps": 0.0196,
+      "score_csi": 0.3809,
+      "score_mcrs": 0.4168,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT002",
+      "score_crs": 0.7846,
+      "score_rps": 0.0196,
+      "score_csi": 0.3493,
+      "score_mcrs": 0.4057,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT003",
+      "score_crs": 0.7846,
+      "score_rps": 0.0196,
+      "score_csi": 0.3598,
+      "score_mcrs": 0.4094,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT004",
+      "score_crs": 0.4851,
+      "score_rps": 0.0196,
+      "score_csi": 0.5244,
+      "score_mcrs": 0.3621,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT005",
+      "score_crs": 0.4851,
+      "score_rps": 0.0196,
+      "score_csi": 0.335,
+      "score_mcrs": 0.2959,
+      "classe_risque": "FAIBLE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT006",
+      "score_crs": 0.7846,
+      "score_rps": 0.0196,
+      "score_csi": 0.3735,
+      "score_mcrs": 0.4142,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT007",
+      "score_crs": 0.4846,
+      "score_rps": 0.0,
+      "score_csi": 0.3429,
+      "score_mcrs": 0.2896,
+      "classe_risque": "FAIBLE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT008",
+      "score_crs": 0.7846,
+      "score_rps": 0.0261,
+      "score_csi": 0.3333,
+      "score_mcrs": 0.403,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0261,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT009",
+      "score_crs": 0.7846,
+      "score_rps": 0.0196,
+      "score_csi": 0.5395,
+      "score_mcrs": 0.4723,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT010",
+      "score_crs": 0.7846,
+      "score_rps": 0.0196,
+      "score_csi": 0.5407,
+      "score_mcrs": 0.4727,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT011",
+      "score_crs": 0.6058,
+      "score_rps": 0.0,
+      "score_csi": 0.409,
+      "score_mcrs": 0.3552,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT012",
+      "score_crs": 0.8923,
+      "score_rps": 0.0207,
+      "score_csi": 0.4989,
+      "score_mcrs": 0.4962,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0207,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT013",
+      "score_crs": 0.5923,
+      "score_rps": 0.0,
+      "score_csi": 0.3445,
+      "score_mcrs": 0.3279,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT014",
+      "score_crs": 0.5923,
+      "score_rps": 0.0,
+      "score_csi": 0.5375,
+      "score_mcrs": 0.3954,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT015",
+      "score_crs": 0.6058,
+      "score_rps": 0.082,
+      "score_csi": 0.5137,
+      "score_mcrs": 0.4287,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.082,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT016",
+      "score_crs": 0.5923,
+      "score_rps": 0.0,
+      "score_csi": 0.3401,
+      "score_mcrs": 0.3263,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT017",
+      "score_crs": 0.5923,
+      "score_rps": 0.6767,
+      "score_csi": 0.3598,
+      "score_mcrs": 0.6378,
+      "classe_risque": "ELEVE",
+      "priorite": 4,
+      "proba_defaut_90j": 0.6767,
+      "label_reel": 1,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT018",
+      "score_crs": 0.6058,
+      "score_rps": 0.0,
+      "score_csi": 0.3302,
+      "score_mcrs": 0.3276,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT019",
+      "score_crs": 0.5923,
+      "score_rps": 0.0,
+      "score_csi": 0.5517,
+      "score_mcrs": 0.4004,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT020",
+      "score_crs": 0.5923,
+      "score_rps": 0.0,
+      "score_csi": 0.4959,
+      "score_mcrs": 0.3809,
+      "classe_risque": "MODERE",
+      "priorite": 2,
+      "proba_defaut_90j": 0.0,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT021",
+      "score_crs": 0.85,
+      "score_rps": 0.0196,
+      "score_csi": 0.5239,
+      "score_mcrs": 0.4897,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT022",
+      "score_crs": 0.85,
+      "score_rps": 0.0196,
+      "score_csi": 0.5084,
+      "score_mcrs": 0.4843,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT023",
+      "score_crs": 0.85,
+      "score_rps": 0.0196,
+      "score_csi": 0.5142,
+      "score_mcrs": 0.4863,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT024",
+      "score_crs": 0.85,
+      "score_rps": 0.0196,
+      "score_csi": 0.5316,
+      "score_mcrs": 0.4924,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    },
+    {
+      "client_id": "CLT025",
+      "score_crs": 0.85,
+      "score_rps": 0.0196,
+      "score_csi": 0.5024,
+      "score_mcrs": 0.4822,
+      "classe_risque": "MODERE",
+      "priorite": 3,
+      "proba_defaut_90j": 0.0196,
+      "label_reel": 0,
+      "top_feature": "jours_retard_max"
+    }
+  ],
+  "distribution_risque": {
+    "FAIBLE": {
+      "n": 2,
+      "description": "Pas d'action requise"
+    },
+    "MODERE": {
+      "n": 22,
+      "description": "Relance préventive"
+    },
+    "ELEVE": {
+      "n": 1,
+      "description": "Visite terrain requise"
+    },
+    "CRITIQUE": {
+      "n": 0,
+      "description": "Mise en demeure"
+    }
+  },
+  "interpretation": {
+    "seuils": {
+      "FAIBLE": "[0.00, 0.30[",
+      "MODERE": "[0.30, 0.55[",
+      "ELEVE": "[0.55, 0.75[",
+      "CRITIQUE": "[0.75, 1.00]"
+    },
+    "top_features_explicatives": [
+      "jours_retard_max",
+      "classe_risque_cobac_encode",
+      "jours_retard_moyen",
+      "nb_incidents_paiement",
+      "capacite_remboursement"
+    ],
+    "recommandation": "Le modèle MCRS identifie les clients à risque PAR90+ avec une AUC de 1.000. Les agents terrain doivent prioriser les clients CRITIQUE et ELEVÉ pour des visites de recouvrement proactif."
+  }
+}
