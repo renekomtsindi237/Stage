@@ -33,4 +33,7 @@ public interface IImfService {
 
     /** Supprime définitivement le DSI d'une IMF — permet d'en créer un nouveau. */
     ImfResponse deleteAdmin(UUID imfUid);
+
+    /** Met à jour le username/email du DSI existant d'une IMF. */
+    ImfResponse updateAdmin(UUID imfUid, CreateImfAdminRequest request);
 }

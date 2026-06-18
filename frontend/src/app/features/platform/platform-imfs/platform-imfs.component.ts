@@ -32,12 +32,11 @@ export class PlatformImfsComponent implements OnInit {
   step = signal(1);
   submitting = signal(false);
   showDsiForm = signal(false);
+  showDsiEditForm = signal(false);
   showDeleteConfirm = signal(false);
-
-  // ── Formulaire création IMF (4 étapes) ────────────────────────────────────
+  showDsiDeleteConfirm = signal(false);
 
   createForm = this.fb.group({
-    // Étape 1 — Identité
     code: ["", [Validators.required, Validators.pattern(/^[A-Z0-9]{2,20}$/)]],
     nom: ["", [Validators.required, Validators.minLength(3)]],
     denominationSociale: ["", [Validators.required, Validators.minLength(3)]],
@@ -47,14 +46,12 @@ export class PlatformImfsComponent implements OnInit {
     numAgrement: [""],
     telephone: [""],
     email: ["", Validators.email],
-    // Étape 2 — Capital & segmentation
     capitalSocial: [
       null as number | null,
       [Validators.required, Validators.min(0.01)],
     ],
     segmentsClients: [""],
     typesGaranties: [""],
-    // Étape 3 — Paramètres métier
     tauxInteretAnnuel: [
       null as number | null,
       [Validators.required, Validators.min(0), Validators.max(100)],
@@ -74,13 +71,20 @@ export class PlatformImfsComponent implements OnInit {
     tauxEpargne: [null as number | null],
     soldeMinEpargne: [null as number | null],
     fraisTenueCompte: [null as number | null],
-    // Étape 4 — Paramètres opérationnels
     maxDocumentKycOctets: [null as number | null],
     niveauKycMinimal: ["NIVEAU_1"],
     maxTentativesConnexion: [5, [Validators.min(1), Validators.max(20)]],
   });
 
   dsiForm = this.fb.group({
+    username: [
+      "",
+      [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
+    ],
+    email: ["", [Validators.required, Validators.email]],
+  });
+
+  dsiEditForm = this.fb.group({
     username: [
       "",
       [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
@@ -107,8 +111,6 @@ export class PlatformImfsComponent implements OnInit {
     "Paramètres métier",
     "Paramètres opérationnels",
   ];
-
-  // ── Champs requis par étape (pour validation partielle) ──────────────────
 
   private readonly stepFields: Record<number, string[]> = {
     1: ["code", "nom", "denominationSociale", "formeJuridique", "adresseSiege"],
@@ -140,19 +142,26 @@ export class PlatformImfsComponent implements OnInit {
       });
   }
 
-  // ── Sélection d'une IMF ───────────────────────────────────────────────────
-
   select(imf: ImfDetail) {
     this.selected.set(imf);
     this.showDsiForm.set(false);
+    this.showDsiEditForm.set(false);
     this.showDeleteConfirm.set(false);
+    this.showDsiDeleteConfirm.set(false);
   }
 
   closeDetail() {
     this.selected.set(null);
   }
 
-  // ── Création IMF ─────────────────────────────────────────────────────────
+  imfInitials(nom: string): string {
+    return nom
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase();
+  }
 
   openCreate() {
     this.createForm.reset({
@@ -171,8 +180,7 @@ export class PlatformImfsComponent implements OnInit {
   nextStep() {
     const fields = this.stepFields[this.step()];
     fields.forEach((f) => this.createForm.get(f)?.markAsTouched());
-    const stepInvalid = fields.some((f) => this.createForm.get(f)?.invalid);
-    if (stepInvalid) return;
+    if (fields.some((f) => this.createForm.get(f)?.invalid)) return;
     if (this.step() < 4) this.step.update((s) => s + 1);
   }
 
@@ -215,13 +223,13 @@ export class PlatformImfsComponent implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          const msg = err?.error?.message ?? "Erreur lors de la création";
-          this.toast.showError("Erreur", msg);
+          this.toast.showError(
+            "Erreur",
+            err?.error?.message ?? "Erreur lors de la création",
+          );
         },
       });
   }
-
-  // ── Activer / Désactiver ──────────────────────────────────────────────────
 
   toggleActif(imf: ImfDetail) {
     const path = imf.actif
@@ -234,10 +242,9 @@ export class PlatformImfsComponent implements OnInit {
         next: (updated) => {
           this.updateInList(updated);
           this.selected.set(updated);
-          const label = updated.actif ? "activée" : "désactivée";
           this.toast.showSuccess(
             "IMF mise à jour",
-            `L'institution a été ${label}.`,
+            `L'institution a été ${updated.actif ? "activée" : "désactivée"}.`,
           );
         },
         error: () =>
@@ -245,12 +252,9 @@ export class PlatformImfsComponent implements OnInit {
       });
   }
 
-  // ── Supprimer ─────────────────────────────────────────────────────────────
-
   confirmDelete() {
     this.showDeleteConfirm.set(true);
   }
-
   cancelDelete() {
     this.showDeleteConfirm.set(false);
   }
@@ -275,11 +279,10 @@ export class PlatformImfsComponent implements OnInit {
       });
   }
 
-  // ── Compte DSI ────────────────────────────────────────────────────────────
-
   openDsiForm() {
     this.dsiForm.reset();
     this.showDsiForm.set(true);
+    this.showDsiEditForm.set(false);
   }
 
   closeDsiForm() {
@@ -313,9 +316,55 @@ export class PlatformImfsComponent implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          const msg =
-            err?.error?.message ?? "Erreur lors de la création du DSI";
-          this.toast.showError("Erreur", msg);
+          this.toast.showError(
+            "Erreur",
+            err?.error?.message ?? "Erreur lors de la création du DSI",
+          );
+        },
+      });
+  }
+
+  openDsiEditForm() {
+    this.dsiEditForm.reset();
+    this.showDsiEditForm.set(true);
+    this.showDsiForm.set(false);
+  }
+
+  closeDsiEditForm() {
+    this.showDsiEditForm.set(false);
+  }
+
+  submitDsiEdit() {
+    if (this.dsiEditForm.invalid) {
+      this.dsiEditForm.markAllAsTouched();
+      return;
+    }
+    const imf = this.selected();
+    if (!imf) return;
+    this.submitting.set(true);
+    this.api
+      .patch<ApiResp<ImfDetail>>(
+        `/api/v1/platform/imf/${imf.uid}/admin`,
+        this.dsiEditForm.value,
+      )
+      .pipe(map((r) => r.data))
+      .subscribe({
+        next: (updated) => {
+          this.submitting.set(false);
+          this.updateInList(updated);
+          this.selected.set(updated);
+          this.showDsiEditForm.set(false);
+          this.toast.showSuccess(
+            "DSI mis à jour",
+            "Les informations du compte DSI ont été modifiées.",
+          );
+        },
+        error: (err) => {
+          this.submitting.set(false);
+          this.toast.showError(
+            "Erreur",
+            err?.error?.message ?? "Erreur lors de la mise à jour du DSI",
+          );
         },
       });
   }
@@ -343,6 +392,13 @@ export class PlatformImfsComponent implements OnInit {
       });
   }
 
+  confirmDsiDelete() {
+    this.showDsiDeleteConfirm.set(true);
+  }
+  cancelDsiDelete() {
+    this.showDsiDeleteConfirm.set(false);
+  }
+
   deleteDsi() {
     const imf = this.selected();
     if (!imf) return;
@@ -353,17 +409,16 @@ export class PlatformImfsComponent implements OnInit {
         next: (updated) => {
           this.updateInList(updated);
           this.selected.set(updated);
+          this.showDsiDeleteConfirm.set(false);
           this.toast.showSuccess(
             "DSI supprimé",
-            "Le compte DSI a été supprimé.",
+            "Le compte DSI a été supprimé. Vous pouvez en créer un nouveau.",
           );
         },
         error: () =>
           this.toast.showError("Erreur", "Impossible de supprimer le DSI."),
       });
   }
-
-  // ── Utilitaires ───────────────────────────────────────────────────────────
 
   private updateInList(updated: ImfDetail) {
     this.imfs.update((list) =>
@@ -380,5 +435,10 @@ export class PlatformImfsComponent implements OnInit {
   formatBytes(bytes?: number | null): string {
     if (!bytes) return "5 Mo (défaut)";
     return `${(bytes / 1_048_576).toFixed(0)} Mo`;
+  }
+
+  formatCapital(v?: number | null): string {
+    if (!v) return "—";
+    return new Intl.NumberFormat("fr-FR").format(v) + " FCFA";
   }
 }

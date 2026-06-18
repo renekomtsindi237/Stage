@@ -7,7 +7,7 @@
   min-height: calc(100vh - 140px);
 
   &--split {
-    grid-template-columns: 340px 1fr;
+    grid-template-columns: 360px 1fr;
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr;
@@ -22,7 +22,7 @@
   overflow: hidden;
 
   &__skeleton {
-    height: 64px;
+    height: 72px;
     margin: 4px 12px;
     border-radius: var(--radius-md);
   }
@@ -31,8 +31,8 @@
 .imf-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
+  gap: 12px;
+  padding: 14px 16px;
   cursor: pointer;
   border-bottom: 1px solid var(--color-border);
   transition: background 0.12s;
@@ -46,43 +46,77 @@
   }
 
   &--active {
-    background: var(--color-primary-light, #eef2ff);
+    background: rgba(79, 70, 229, 0.06);
     border-left: 3px solid var(--color-primary);
+    padding-left: 13px;
   }
 
-  &__left {
+  &__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+    color: #fff;
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
   }
 
   &__code {
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-weight: 800;
+    letter-spacing: 1px;
     color: var(--color-primary);
-    background: var(--color-primary-light, #eef2ff);
-    padding: 3px 8px;
+    background: rgba(79, 70, 229, 0.1);
+    padding: 2px 8px;
     border-radius: var(--radius-sm);
-    min-width: 60px;
-    text-align: center;
+    text-transform: uppercase;
   }
 
   &__nom {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__pays {
     margin-top: 2px;
-  }
-
-  &__right {
+    font-size: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 2px;
   }
+
+  &__chevron {
+    font-size: 18px;
+    color: var(--color-text-muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+}
+
+.badge-sm {
+  font-size: 10px;
+  padding: 2px 7px;
 }
 
 // ── Détail IMF ────────────────────────────────────────────────────────────────
@@ -90,135 +124,219 @@
 .imf-detail {
   overflow-y: auto;
   max-height: calc(100vh - 140px);
+  padding: 0;
 
   &__header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
+    padding: 20px 20px 16px;
     border-bottom: 1px solid var(--color-border);
-
-    h3 {
-      margin: 0;
-      font-size: 18px;
-    }
+    background: linear-gradient(
+      135deg,
+      rgba(79, 70, 229, 0.04),
+      rgba(124, 58, 237, 0.03)
+    );
   }
 
-  &__status {
+  &__header-left {
     display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
   }
 
-  &__section {
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--color-border);
-
-    &:last-child {
-      border-bottom: none;
-    }
+  &__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
   }
 
-  &__section-title {
+  &__title {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  &__subtitle {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--color-text-muted);
-    margin-bottom: 14px;
-
-    .material-icons-round {
-      font-size: 18px;
-    }
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-
-    @media (max-width: 600px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &__field {
-    label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: var(--color-text-muted);
-      margin-bottom: 3px;
-    }
-
-    p {
-      font-size: 14px;
-      color: var(--color-text);
-      font-weight: 500;
-    }
+  &__badges {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
   }
 
   &__actions {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    padding-top: 4px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
   }
 }
 
-// ── Badges supplémentaires ────────────────────────────────────────────────────
+.imf-code-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+  background: rgba(79, 70, 229, 0.1);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
 
-.badge-lg {
-  display: inline-flex;
+// ── Sections détail ───────────────────────────────────────────────────────────
+
+.detail-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--color-text-muted);
+    margin-bottom: 14px;
+  }
+
+  &__icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-icons-round {
+      font-size: 15px;
+      color: #fff;
+    }
+  }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail-field {
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--color-text-muted);
+    margin-bottom: 3px;
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--color-text);
+    font-weight: 500;
+  }
+
+  &__value--money {
+    color: #059669;
+    font-weight: 700;
+  }
+
+  &__value--rate {
+    color: #0891b2;
+    font-weight: 700;
+  }
+}
+
+// ── DSI ───────────────────────────────────────────────────────────────────────
+
+.dsi-status {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  font-size: 12px;
-  border-radius: var(--radius-full);
+  gap: 8px;
+  margin-bottom: 12px;
 
   .material-icons-round {
-    font-size: 16px;
+    font-size: 20px;
   }
 }
 
-.badge-info {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
+.dsi-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
-
-.badge-warning {
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
-}
-
-// ── Formulaire DSI ────────────────────────────────────────────────────────────
 
 .dsi-form {
   background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 16px;
-  border: 1px solid var(--color-border);
+  margin-top: 8px;
+
+  &__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 14px;
+  }
 }
 
-// ── Confirmation suppression ──────────────────────────────────────────────────
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 
-.delete-confirm {
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Confirmation danger ───────────────────────────────────────────────────────
+
+.confirm-danger {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: var(--radius-md);
-  padding: 12px 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
 
-  p {
-    margin-bottom: 10px;
-    color: var(--color-danger);
+  .material-icons-round {
+    flex-shrink: 0;
   }
 }
 
@@ -252,7 +370,6 @@
     justify-content: space-between;
     padding: 20px 24px 16px;
     border-bottom: 1px solid var(--color-border);
-
     h3 {
       margin: 0;
     }
@@ -309,16 +426,13 @@
       background: var(--color-success);
       color: #fff;
     }
-
     &--done::after {
       background: var(--color-success);
     }
-
     &--active .steps__dot {
       background: var(--color-primary);
       color: #fff;
     }
-
     &--active .steps__label {
       color: var(--color-primary);
       font-weight: 600;
@@ -359,7 +473,7 @@
   }
 }
 
-// ── Grille de formulaire ──────────────────────────────────────────────────────
+// ── Grille formulaire ─────────────────────────────────────────────────────────
 
 .form-grid {
   display: grid;
@@ -403,16 +517,42 @@
     font-size: 48px;
     opacity: 0.35;
   }
-
   p {
     font-size: 15px;
   }
 }
 
+.badge-lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-full);
+
+  .material-icons-round {
+    font-size: 16px;
+  }
+}
+
+.badge-neutral {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.badge-info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+.badge-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
 .req {
   color: var(--color-danger);
 }
-
 .spin {
   animation: spin 0.8s linear infinite;
 }
@@ -421,4 +561,17 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+// ── Dashboard IMF code badge ──────────────────────────────────────────────────
+
+.imf-code-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+  background: rgba(79, 70, 229, 0.1);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
 }

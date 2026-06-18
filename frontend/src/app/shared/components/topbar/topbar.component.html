@@ -10,10 +10,10 @@
     <!-- Contact support -->
     <button
       class="topbar__support-btn"
-      (click)="contactSupport()"
-      title="Contacter le support par email"
+      (click)="openSupportModal()"
+      title="Contacter le support"
     >
-      <span class="material-icons-round">mail</span>
+      <span class="material-icons-round">support_agent</span>
       <span class="topbar__support-label">Support</span>
     </button>
 
@@ -73,4 +73,108 @@
 <!-- Notification Panel -->
 @if (showNotifPanel()) {
   <app-notification-panel (closed)="closeNotif()" />
+}
+
+<!-- ── Modale Support ── -->
+@if (showSupportModal()) {
+  <div class="support-overlay" (click)="closeSupportModal()">
+    <div class="support-modal" (click)="$event.stopPropagation()">
+      <div class="support-modal__header">
+        <div class="support-modal__header-left">
+          <div class="support-modal__icon">
+            <span class="material-icons-round">support_agent</span>
+          </div>
+          <div>
+            <h3>Contacter le support</h3>
+            <p class="text-muted text-sm">
+              Votre demande sera traitée dans les meilleurs délais
+            </p>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="closeSupportModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <form
+        [formGroup]="supportForm"
+        (ngSubmit)="submitSupport()"
+        class="support-modal__body"
+      >
+        <div class="form-group">
+          <label>Objet de la demande <span class="req">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="titre"
+            placeholder="Décrivez brièvement votre problème..."
+          />
+          @if (
+            supportForm.get("titre")?.invalid &&
+            supportForm.get("titre")?.touched
+          ) {
+            <span class="field-error">Objet requis (5-120 caractères)</span>
+          }
+        </div>
+
+        <div class="support-modal__row">
+          <div class="form-group">
+            <label>Catégorie</label>
+            <select class="form-control" formControlName="categorie">
+              @for (opt of categorieOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priorité</label>
+            <select class="form-control" formControlName="priorite">
+              @for (opt of prioriteOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description détaillée <span class="req">*</span></label>
+          <textarea
+            class="form-control support-modal__textarea"
+            formControlName="description"
+            placeholder="Décrivez votre problème en détail : étapes pour le reproduire, messages d'erreur, contexte..."
+            rows="6"
+          ></textarea>
+          @if (
+            supportForm.get("description")?.invalid &&
+            supportForm.get("description")?.touched
+          ) {
+            <span class="field-error"
+              >Description requise (min. 20 caractères)</span
+            >
+          }
+          <span class="field-hint"
+            >{{ supportForm.get("description")?.value?.length ?? 0 }} /
+            2000</span
+          >
+        </div>
+      </form>
+
+      <div class="support-modal__footer">
+        <button class="btn btn-ghost" (click)="closeSupportModal()">
+          Annuler
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="submitSupport()"
+          [disabled]="sendingTicket()"
+        >
+          @if (sendingTicket()) {
+            <span class="material-icons-round spin">refresh</span> Envoi...
+          } @else {
+            <span class="material-icons-round">send</span> Envoyer le ticket
+          }
+        </button>
+      </div>
+    </div>
+  </div>
 }

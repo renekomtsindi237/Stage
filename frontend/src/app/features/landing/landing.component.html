@@ -1,33 +1,48 @@
 <div class="landing">
-  <!-- Barre de navigation -->
+  <!-- ── Navigation ── -->
   <nav class="landing__nav">
     <div class="landing__nav-brand">
-      <img src="assets/logo.png" alt="MicroRecouv" height="40" />
+      <span class="landing__nav-logo">
+        <span class="material-icons-round">account_balance</span>
+      </span>
+      <span class="landing__nav-name">MicroRecouv</span>
     </div>
     <div class="landing__nav-actions">
-      <a routerLink="/login" class="landing__nav-link">
+      <a routerLink="/login" class="landing__nav-link landing__nav-link--ghost">
         <span class="material-icons-round">login</span>
-        Se connecter
+        <span class="landing__nav-label">Connexion</span>
+      </a>
+      <a
+        routerLink="/admin/login"
+        class="landing__nav-link landing__nav-link--outline"
+      >
+        <span class="material-icons-round">admin_panel_settings</span>
+        <span class="landing__nav-label">Admin</span>
       </a>
     </div>
   </nav>
 
-  <!-- Section principale -->
+  <!-- ── Hero ── -->
   <section class="landing__hero">
     <div class="landing__hero-inner">
+      <div class="landing__hero-badge">
+        <span class="material-icons-round">verified</span>
+        Plateforme de microfinance — Cameroun
+      </div>
+
       <h1 class="landing__hero-title">
-        Bienvenue sur <span class="landing__hero-accent">MicroRecouv</span>
+        Gérez vos crédits<br class="landing__hero-br" />
+        <span class="landing__hero-accent">simplement et en sécurité</span>
       </h1>
 
       <p class="landing__hero-subtitle">
-        La plateforme qui aide votre institution de microfinance à gérer et
-        recouvrer les crédits accordés à vos clients, simplement et en toute
-        sécurité.
+        MicroRecouv est une plateforme numérique qui aide les institutions de
+        microfinance à suivre leurs clients, gérer les remboursements et
+        recouvrer les crédits en retard, sans effort et en toute conformité.
       </p>
 
-      <!-- Deux boutons de connexion bien visibles -->
+      <!-- Deux boutons principaux -->
       <div class="landing__login-cards">
-        <!-- Connexion utilisateur -->
         <a
           routerLink="/login"
           class="landing__login-card landing__login-card--user"
@@ -38,9 +53,19 @@
           <div class="landing__login-card__body">
             <h3>Accès personnel</h3>
             <p>
-              Agent, Directeur, Analyste, Caissier, Responsable… Connectez-vous
-              avec le code envoyé sur votre adresse email.
+              Pour les agents, directeurs, caissiers et toute l'équipe de
+              l'institution.
             </p>
+            <ul class="landing__login-card__list">
+              <li>
+                <span class="material-icons-round">check</span> Connexion par
+                code email
+              </li>
+              <li>
+                <span class="material-icons-round">check</span> Aucun mot de
+                passe à retenir
+              </li>
+            </ul>
           </div>
           <div class="landing__login-card__cta">
             Se connecter
@@ -48,7 +73,6 @@
           </div>
         </a>
 
-        <!-- Connexion administrateur -->
         <a
           routerLink="/admin/login"
           class="landing__login-card landing__login-card--admin"
@@ -58,10 +82,17 @@
           </div>
           <div class="landing__login-card__body">
             <h3>Espace administrateur</h3>
-            <p>
-              Super Administrateur de la plateforme uniquement. Connexion avec
-              identifiant et mot de passe.
-            </p>
+            <p>Réservé au Super Administrateur de la plateforme.</p>
+            <ul class="landing__login-card__list">
+              <li>
+                <span class="material-icons-round">check</span> Gestion des
+                institutions
+              </li>
+              <li>
+                <span class="material-icons-round">check</span> Audit et
+                supervision globale
+              </li>
+            </ul>
           </div>
           <div class="landing__login-card__cta">
             Accès administration
@@ -71,28 +102,44 @@
       </div>
 
       <!-- Aide rapide -->
-      <p class="landing__help-text">
+      <div class="landing__help-text">
         <span class="material-icons-round">help_outline</span>
-        Vous ne savez pas quel bouton choisir ? Si vous êtes un employé de
-        l'institution (agent, caissier, directeur…), utilisez
-        <strong>«&nbsp;Accès personnel&nbsp;»</strong>. L'espace administrateur
-        est réservé à l'équipe technique de la plateforme.
-      </p>
+        <span>
+          Vous êtes un <strong>employé de l'IMF</strong> (agent, caissier,
+          directeur…) ? Utilisez <strong>« Accès personnel »</strong>. L'espace
+          administrateur est réservé à l'équipe technique de la plateforme.
+        </span>
+      </div>
     </div>
   </section>
 
-  <!-- Ce que fait la plateforme -->
+  <!-- ── Bande statistiques ── -->
+  <section class="landing__stats">
+    @for (s of stats; track s.value) {
+      <div class="landing__stat">
+        <span class="material-icons-round landing__stat__icon">{{
+          s.icon
+        }}</span>
+        <div>
+          <p class="landing__stat__value">{{ s.value }}</p>
+          <p class="landing__stat__label">{{ s.label }}</p>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ── Fonctionnalités ── -->
   <section class="landing__features">
-    <div class="landing__features-inner">
-      <h2 class="landing__section-title">Tout ce dont vous avez besoin</h2>
+    <div class="landing__section-inner">
+      <h2 class="landing__section-title">Tout ce dont votre IMF a besoin</h2>
       <p class="landing__section-sub">
-        MicroRecouv centralise toutes les informations de votre institution en
-        un seul endroit, accessible depuis n'importe quel ordinateur.
+        Une seule plateforme pour centraliser toutes les opérations de crédit et
+        de recouvrement.
       </p>
       <div class="landing__features-grid">
         @for (f of features; track f.title) {
           <div class="landing__feature-card">
-            <div class="landing__feature-icon">
+            <div class="landing__feature-icon" [style.background]="f.color">
               <span class="material-icons-round">{{ f.icon }}</span>
             </div>
             <h3>{{ f.title }}</h3>
@@ -103,11 +150,37 @@
     </div>
   </section>
 
-  <!-- Section connexion en bas -->
+  <!-- ── Comment ça marche ── -->
+  <section class="landing__steps">
+    <div class="landing__section-inner">
+      <h2 class="landing__section-title">Comment ça marche ?</h2>
+      <p class="landing__section-sub">
+        Prendre en main MicroRecouv est simple et rapide, même sans expérience
+        informatique.
+      </p>
+      <div class="landing__steps-grid">
+        @for (s of steps; track s.num) {
+          <div class="landing__step">
+            <div class="landing__step__num">{{ s.num }}</div>
+            <div class="landing__step__icon">
+              <span class="material-icons-round">{{ s.icon }}</span>
+            </div>
+            <h3>{{ s.title }}</h3>
+            <p>{{ s.desc }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA finale ── -->
   <section class="landing__bottom-cta">
     <div class="landing__bottom-cta-inner">
+      <span class="material-icons-round landing__bottom-cta__icon"
+        >rocket_launch</span
+      >
       <h2>Prêt à commencer ?</h2>
-      <p>Choisissez votre type d'accès ci-dessous.</p>
+      <p>Choisissez votre type d'accès pour vous connecter à la plateforme.</p>
       <div class="landing__bottom-btns">
         <a routerLink="/login" class="landing__btn-user">
           <span class="material-icons-round">login</span>
@@ -121,11 +194,17 @@
     </div>
   </section>
 
-  <!-- Pied de page -->
+  <!-- ── Footer ── -->
   <footer class="landing__footer">
-    <p>
-      © 2025 MicroRecouv · Plateforme de recouvrement pour institutions de
-      microfinance · Stage IUSJ
-    </p>
+    <div class="landing__footer-inner">
+      <div class="landing__footer-brand">
+        <span class="material-icons-round">account_balance</span>
+        MicroRecouv
+      </div>
+      <p class="landing__footer-copy">
+        © 2025 MicroRecouv · Plateforme de recouvrement pour institutions de
+        microfinance · Stage IUSJ
+      </p>
+    </div>
   </footer>
 </div>

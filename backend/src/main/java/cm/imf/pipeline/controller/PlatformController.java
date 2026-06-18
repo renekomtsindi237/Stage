@@ -94,4 +94,12 @@ public class PlatformController {
     public ResponseEntity<ApiResponse<ImfResponse>> deleteImfAdmin(@PathVariable UUID imfUid) {
         return ResponseEntity.ok(ApiResponse.ok("Compte DSI supprimé", imfService.deleteAdmin(imfUid)));
     }
+
+    @Operation(summary = "Mettre à jour le username/email du DSI d'une IMF")
+    @PatchMapping("/imf/{imfUid}/admin")
+    public ResponseEntity<ApiResponse<ImfResponse>> updateImfAdmin(
+            @PathVariable UUID imfUid,
+            @Valid @RequestBody CreateImfAdminRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("Compte DSI mis à jour", imfService.updateAdmin(imfUid, request)));
+    }
 }

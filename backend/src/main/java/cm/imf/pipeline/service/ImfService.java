@@ -206,4 +206,24 @@ public class ImfService implements IImfService {
         log.info("DSI supprimé pour IMF {}", imf.getCode());
         return ImfResponse.of(imf, false);
     }
+
+    /**
+     * Met à jour le username et l'email du DSI existant d'une IMF.
+     */
+    @Transactional
+    public ImfResponse updateAdmin(UUID imfUid, CreateImfAdminRequest request) {
+        Imf imf = imfRepository.findByUid(imfUid)
+                .orElseThrow(() -> new ResourceNotFoundException("IMF", imfUid));
+        User dsi = userRepository.findByImfIdAndRole(imf.getId(), Role.DSI)
+                .orElseThrow(() -> new ResourceNotFoundException("DSI pour l'IMF", imfUid));
+        if (!dsi.getUsername().equals(request.username())
+                && userRepository.existsByUsername(request.username())) {
+            throw new DuplicateResourceException("Utilisateur", "username", request.username());
+        }
+        dsi.setUsername(request.username());
+        dsi.setEmail(request.email());
+        userRepository.save(dsi);
+        log.info("DSI mis à jour pour IMF {} — nouveau username : {}", imf.getCode(), request.username());
+        return ImfResponse.of(imf, true);
+    }
 }

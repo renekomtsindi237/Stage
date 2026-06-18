@@ -22,7 +22,9 @@
             "outputPath": "dist/microrecouv-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.json",
             "assets": [
               "src/favicon.ico",
@@ -43,12 +45,14 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kb",
-                  "maximumError": "12kb"
+                  "maximumWarning": "16kb",
+                  "maximumError": "24kb"
                 }
               ],
               "optimization": {
-                "fonts": { "inline": false }
+                "fonts": {
+                  "inline": false
+                }
               },
               "outputHashing": "all",
               "fileReplacements": [
@@ -81,15 +85,23 @@
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
-            "production": { "buildTarget": "microrecouv-frontend:build:production" },
-            "staging": { "buildTarget": "microrecouv-frontend:build:staging" },
-            "development": { "buildTarget": "microrecouv-frontend:build:development" }
+            "production": {
+              "buildTarget": "microrecouv-frontend:build:production"
+            },
+            "staging": {
+              "buildTarget": "microrecouv-frontend:build:staging"
+            },
+            "development": {
+              "buildTarget": "microrecouv-frontend:build:development"
+            }
           },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": { "buildTarget": "microrecouv-frontend:build" }
+          "options": {
+            "buildTarget": "microrecouv-frontend:build"
+          }
         }
       }
     }

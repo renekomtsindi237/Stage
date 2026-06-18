@@ -15,7 +15,7 @@
 
   <!-- Layout : liste + panneau détail -->
   <div class="imf-layout" [class.imf-layout--split]="selected()">
-    <!-- Liste -->
+    <!-- ── Liste ── -->
     <div class="imf-list card">
       @if (loading()) {
         @for (_ of [1, 2, 3, 4]; track $index) {
@@ -36,47 +36,71 @@
             [class.imf-row--active]="selected()?.uid === imf.uid"
             (click)="select(imf)"
           >
-            <div class="imf-row__left">
-              <span class="imf-row__code">{{ imf.code }}</span>
-              <div>
-                <p class="imf-row__nom">{{ imf.nom }}</p>
-                <p class="imf-row__pays text-muted text-sm">{{ imf.pays }}</p>
+            <div class="imf-row__avatar">{{ imfInitials(imf.nom) }}</div>
+            <div class="imf-row__body">
+              <div class="imf-row__top">
+                <span class="imf-row__code">{{ imf.code }}</span>
+                <span
+                  class="badge badge-sm"
+                  [class]="imf.actif ? 'badge-success' : 'badge-muted'"
+                >
+                  {{ imf.actif ? "Actif" : "Suspendu" }}
+                </span>
               </div>
+              <p class="imf-row__nom">{{ imf.nom }}</p>
+              <p class="imf-row__pays text-muted text-sm">
+                <span
+                  class="material-icons-round"
+                  style="font-size: 12px; vertical-align: middle"
+                  >place</span
+                >
+                {{ imf.pays }}
+                @if (imf.hasDsi) {
+                  &nbsp;·&nbsp;
+                  <span
+                    class="text-success"
+                    style="font-size: 11px; font-weight: 600"
+                  >
+                    <span
+                      class="material-icons-round"
+                      style="font-size: 12px; vertical-align: middle"
+                      >verified_user</span
+                    >
+                    DSI configuré
+                  </span>
+                }
+              </p>
             </div>
-            <div class="imf-row__right">
-              <span
-                class="badge"
-                [class]="imf.actif ? 'badge-success' : 'badge-muted'"
-              >
-                {{ imf.actif ? "Actif" : "Suspendu" }}
-              </span>
-              <span
-                class="material-icons-round text-sm"
-                [class]="imf.hasDsi ? 'text-success' : 'text-muted'"
-                [title]="imf.hasDsi ? 'DSI configuré' : 'Aucun DSI'"
-                >{{ imf.hasDsi ? "verified_user" : "person_off" }}</span
-              >
-            </div>
+            <span class="material-icons-round imf-row__chevron"
+              >chevron_right</span
+            >
           </div>
         }
       }
     </div>
 
-    <!-- Panneau détail -->
+    <!-- ── Panneau détail ── -->
     @if (selected(); as imf) {
       <div class="imf-detail card">
+        <!-- En-tête détail -->
         <div class="imf-detail__header">
-          <div>
-            <h3>{{ imf.nom }}</h3>
-            <p class="text-muted text-sm">{{ imf.code }} · {{ imf.pays }}</p>
+          <div class="imf-detail__header-left">
+            <div class="imf-detail__avatar">{{ imfInitials(imf.nom) }}</div>
+            <div>
+              <h3 class="imf-detail__title">{{ imf.nom }}</h3>
+              <div class="imf-detail__subtitle">
+                <span class="imf-code-pill">{{ imf.code }}</span>
+                <span class="text-muted text-sm">{{ imf.pays }}</span>
+              </div>
+            </div>
           </div>
           <button class="btn btn-ghost btn-sm" (click)="closeDetail()">
             <span class="material-icons-round">close</span>
           </button>
         </div>
 
-        <!-- Statut -->
-        <div class="imf-detail__status">
+        <!-- Badges statut -->
+        <div class="imf-detail__badges">
           <span
             class="badge badge-lg"
             [class]="imf.actif ? 'badge-success' : 'badge-muted'"
@@ -95,44 +119,53 @@
             }}</span>
             {{ imf.hasDsi ? "DSI configuré" : "Sans DSI" }}
           </span>
+          <span class="badge badge-lg badge-neutral">
+            <span class="material-icons-round">calendar_today</span>
+            {{ imf.createdAt | date: "dd/MM/yyyy" }}
+          </span>
         </div>
 
-        <!-- Section constitution -->
-        <div class="imf-detail__section">
-          <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">apartment</span> Constitution
-          </h4>
-          <div class="imf-detail__grid">
-            <div class="imf-detail__field">
+        <!-- Constitution -->
+        <div class="detail-section">
+          <div class="detail-section__title">
+            <span class="detail-section__icon" style="background: #4f46e5">
+              <span class="material-icons-round">apartment</span>
+            </span>
+            Constitution
+          </div>
+          <div class="detail-grid">
+            <div class="detail-field">
               <label>Dénomination sociale</label>
               <p>{{ imf.denominationSociale }}</p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Forme juridique</label>
               <p>{{ imf.formeJuridique }}</p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Adresse du siège</label>
               <p>{{ imf.adresseSiege }}</p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Capital social</label>
-              <p>{{ imf.capitalSocial | number }} FCFA</p>
+              <p class="detail-field__value--money">
+                {{ formatCapital(imf.capitalSocial) }}
+              </p>
             </div>
             @if (imf.numAgrement) {
-              <div class="imf-detail__field">
+              <div class="detail-field">
                 <label>N° agrément</label>
                 <p>{{ imf.numAgrement }}</p>
               </div>
             }
             @if (imf.telephone) {
-              <div class="imf-detail__field">
+              <div class="detail-field">
                 <label>Téléphone</label>
                 <p>{{ imf.telephone }}</p>
               </div>
             }
             @if (imf.email) {
-              <div class="imf-detail__field">
+              <div class="detail-field">
                 <label>Email</label>
                 <p>{{ imf.email }}</p>
               </div>
@@ -140,64 +173,71 @@
           </div>
         </div>
 
-        <!-- Section paramètres crédit -->
-        <div class="imf-detail__section">
-          <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">account_balance</span> Paramètres
-            crédit
-          </h4>
-          <div class="imf-detail__grid">
-            <div class="imf-detail__field">
+        <!-- Paramètres crédit -->
+        <div class="detail-section">
+          <div class="detail-section__title">
+            <span class="detail-section__icon" style="background: #0891b2">
+              <span class="material-icons-round">account_balance</span>
+            </span>
+            Paramètres crédit
+          </div>
+          <div class="detail-grid">
+            <div class="detail-field">
               <label>Taux d'intérêt annuel</label>
-              <p>{{ imf.tauxInteretAnnuel }}%</p>
+              <p class="detail-field__value--rate">
+                {{ imf.tauxInteretAnnuel }}%
+              </p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Durée max crédit</label>
               <p>{{ imf.dureeMaxCreditMois }} mois</p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Taux pénalité retard</label>
-              <p>{{ imf.tauxPenaliteRetard }}%</p>
+              <p class="detail-field__value--rate">
+                {{ imf.tauxPenaliteRetard }}%
+              </p>
             </div>
-            <div class="imf-detail__field">
-              <label>Seuil relance</label>
+            <div class="detail-field">
+              <label>Seuil de relance</label>
               <p>{{ imf.seuilRelanceJours }} jours</p>
             </div>
           </div>
         </div>
 
-        <!-- Section paramètres opérationnels -->
-        <div class="imf-detail__section">
-          <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">settings</span> Paramètres
-            opérationnels
-          </h4>
-          <div class="imf-detail__grid">
-            <div class="imf-detail__field">
+        <!-- Paramètres opérationnels -->
+        <div class="detail-section">
+          <div class="detail-section__title">
+            <span class="detail-section__icon" style="background: #059669">
+              <span class="material-icons-round">settings</span>
+            </span>
+            Paramètres opérationnels
+          </div>
+          <div class="detail-grid">
+            <div class="detail-field">
               <label>Taille max KYC</label>
               <p>{{ formatBytes(imf.maxDocumentKycOctets) }}</p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Niveau KYC minimal</label>
               <p>{{ imf.niveauKycMinimal ?? "NIVEAU_1" }}</p>
             </div>
-            <div class="imf-detail__field">
+            <div class="detail-field">
               <label>Max tentatives connexion</label>
               <p>{{ imf.maxTentativesConnexion ?? 5 }}</p>
-            </div>
-            <div class="imf-detail__field">
-              <label>Créée le</label>
-              <p>{{ imf.createdAt | date: "dd/MM/yyyy" }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Gestion DSI -->
-        <div class="imf-detail__section">
-          <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">manage_accounts</span>
+        <!-- Administrateur DSI -->
+        <div class="detail-section">
+          <div class="detail-section__title">
+            <span class="detail-section__icon" style="background: #7c3aed">
+              <span class="material-icons-round">manage_accounts</span>
+            </span>
             Administrateur DSI
-          </h4>
+          </div>
+
           @if (!imf.hasDsi) {
             <p class="text-muted text-sm" style="margin-bottom: 12px">
               Aucun compte DSI associé. Créez-en un pour permettre
@@ -214,37 +254,40 @@
                 (ngSubmit)="submitDsi()"
                 class="dsi-form"
               >
-                <div class="form-group">
-                  <label>Nom d'utilisateur</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    formControlName="username"
-                    placeholder="dsi_cameroun"
-                  />
-                  @if (
-                    dsiForm.get("username")?.invalid &&
-                    dsiForm.get("username")?.touched
-                  ) {
-                    <span class="field-error"
-                      >Nom requis (3-50 caractères)</span
-                    >
-                  }
-                </div>
-                <div class="form-group">
-                  <label>Email du DSI</label>
-                  <input
-                    type="email"
-                    class="form-control"
-                    formControlName="email"
-                    placeholder="dsi@imf.cm"
-                  />
-                  @if (
-                    dsiForm.get("email")?.invalid &&
-                    dsiForm.get("email")?.touched
-                  ) {
-                    <span class="field-error">Email valide requis</span>
-                  }
+                <div class="dsi-form__title">Nouveau compte DSI</div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label>Nom d'utilisateur <span class="req">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="username"
+                      placeholder="dsi_cameroun"
+                    />
+                    @if (
+                      dsiForm.get("username")?.invalid &&
+                      dsiForm.get("username")?.touched
+                    ) {
+                      <span class="field-error"
+                        >Nom requis (3-50 caractères)</span
+                      >
+                    }
+                  </div>
+                  <div class="form-group">
+                    <label>Email du DSI <span class="req">*</span></label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      formControlName="email"
+                      placeholder="dsi@imf.cm"
+                    />
+                    @if (
+                      dsiForm.get("email")?.invalid &&
+                      dsiForm.get("email")?.touched
+                    ) {
+                      <span class="field-error">Email valide requis</span>
+                    }
+                  </div>
                 </div>
                 <div class="form-actions">
                   <button
@@ -262,33 +305,147 @@
                     @if (submitting()) {
                       <span class="material-icons-round spin">refresh</span>
                     } @else {
-                      Créer & envoyer OTP
+                      <span class="material-icons-round">send</span> Créer &
+                      envoyer OTP
                     }
                   </button>
                 </div>
               </form>
             }
           } @else {
-            <p class="text-sm text-success" style="margin-bottom: 12px">
-              <span
-                class="material-icons-round"
-                style="font-size: 16px; vertical-align: middle"
-                >check_circle</span
+            <div class="dsi-status">
+              <span class="material-icons-round text-success"
+                >verified_user</span
               >
-              Compte DSI actif.
-            </p>
-            <div class="form-actions">
-              <button class="btn btn-ghost btn-sm" (click)="suspendDsi()">
-                <span class="material-icons-round">pause</span> Suspendre
-              </button>
-              <button class="btn btn-danger btn-sm" (click)="deleteDsi()">
-                <span class="material-icons-round">delete</span> Supprimer DSI
-              </button>
+              <span class="text-sm" style="font-weight: 600"
+                >Compte DSI actif</span
+              >
             </div>
+
+            @if (!showDsiEditForm() && !showDsiDeleteConfirm()) {
+              <div class="dsi-actions">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="openDsiEditForm()"
+                >
+                  <span class="material-icons-round">edit</span> Modifier
+                </button>
+                <button class="btn btn-ghost btn-sm" (click)="suspendDsi()">
+                  <span class="material-icons-round">pause</span> Suspendre
+                </button>
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="confirmDsiDelete()"
+                >
+                  <span class="material-icons-round">delete</span> Supprimer DSI
+                </button>
+              </div>
+            }
+
+            @if (showDsiEditForm()) {
+              <form
+                [formGroup]="dsiEditForm"
+                (ngSubmit)="submitDsiEdit()"
+                class="dsi-form"
+              >
+                <div class="dsi-form__title">Modifier le compte DSI</div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label
+                      >Nouveau nom d'utilisateur
+                      <span class="req">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="username"
+                      placeholder="dsi_cameroun"
+                    />
+                    @if (
+                      dsiEditForm.get("username")?.invalid &&
+                      dsiEditForm.get("username")?.touched
+                    ) {
+                      <span class="field-error"
+                        >Nom requis (3-50 caractères)</span
+                      >
+                    }
+                  </div>
+                  <div class="form-group">
+                    <label>Nouvel email <span class="req">*</span></label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      formControlName="email"
+                      placeholder="dsi@imf.cm"
+                    />
+                    @if (
+                      dsiEditForm.get("email")?.invalid &&
+                      dsiEditForm.get("email")?.touched
+                    ) {
+                      <span class="field-error">Email valide requis</span>
+                    }
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    (click)="closeDsiEditForm()"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="submitting()"
+                  >
+                    @if (submitting()) {
+                      <span class="material-icons-round spin">refresh</span>
+                    } @else {
+                      <span class="material-icons-round">save</span> Enregistrer
+                    }
+                  </button>
+                </div>
+              </form>
+            }
+
+            @if (showDsiDeleteConfirm()) {
+              <div class="confirm-danger">
+                <span
+                  class="material-icons-round"
+                  style="color: var(--color-danger); font-size: 20px"
+                  >warning</span
+                >
+                <div>
+                  <p
+                    class="text-sm"
+                    style="font-weight: 600; color: var(--color-danger)"
+                  >
+                    Supprimer le compte DSI ?
+                  </p>
+                  <p class="text-sm text-muted">
+                    Cette action est irréversible. Vous pourrez créer un nouveau
+                    DSI ensuite.
+                  </p>
+                </div>
+                <div class="form-actions" style="margin-top: 8px">
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    (click)="cancelDsiDelete()"
+                  >
+                    Annuler
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="deleteDsi()">
+                    <span class="material-icons-round">delete_forever</span>
+                    Confirmer
+                  </button>
+                </div>
+              </div>
+            }
           }
         </div>
 
-        <!-- Actions principales -->
+        <!-- Actions IMF -->
         <div class="imf-detail__actions">
           <button
             class="btn btn-sm"
@@ -304,18 +461,32 @@
           @if (!showDeleteConfirm()) {
             <button class="btn btn-danger btn-sm" (click)="confirmDelete()">
               <span class="material-icons-round">delete_forever</span> Supprimer
+              l'IMF
             </button>
           } @else {
-            <div class="delete-confirm">
-              <p class="text-sm">
-                Suppression irréversible de <strong>{{ imf.nom }}</strong
-                >. Confirmer ?
-              </p>
-              <div class="form-actions">
+            <div class="confirm-danger">
+              <span
+                class="material-icons-round"
+                style="color: var(--color-danger); font-size: 20px"
+                >warning</span
+              >
+              <div>
+                <p
+                  class="text-sm"
+                  style="font-weight: 600; color: var(--color-danger)"
+                >
+                  Supprimer définitivement <strong>{{ imf.nom }}</strong> ?
+                </p>
+                <p class="text-sm text-muted">
+                  Tous les utilisateurs et données de cette IMF seront perdus.
+                </p>
+              </div>
+              <div class="form-actions" style="margin-top: 8px">
                 <button class="btn btn-ghost btn-sm" (click)="cancelDelete()">
                   Annuler
                 </button>
                 <button class="btn btn-danger btn-sm" (click)="deleteImf()">
+                  <span class="material-icons-round">delete_forever</span>
                   Confirmer la suppression
                 </button>
               </div>
@@ -327,7 +498,7 @@
   </div>
 </div>
 
-<!-- Modale création IMF -->
+<!-- ── Modale création IMF ── -->
 @if (showCreate()) {
   <div class="modal-overlay" (click)="closeCreate()">
     <div class="modal" (click)="$event.stopPropagation()">
@@ -338,7 +509,6 @@
         </button>
       </div>
 
-      <!-- Indicateur d'étapes -->
       <div class="steps">
         @for (label of stepLabels; track $index) {
           <div
@@ -355,7 +525,6 @@
       </div>
 
       <form [formGroup]="createForm" class="modal__body">
-        <!-- Étape 1 : Identité -->
         @if (step() === 1) {
           <div class="form-grid">
             <div class="form-group">
@@ -454,7 +623,6 @@
           </div>
         }
 
-        <!-- Étape 2 : Capital & segmentation -->
         @if (step() === 2) {
           <div class="form-grid">
             <div class="form-group form-group--full">
@@ -493,7 +661,6 @@
           </div>
         }
 
-        <!-- Étape 3 : Paramètres métier -->
         @if (step() === 3) {
           <div class="form-grid">
             <div class="form-group">
@@ -588,7 +755,6 @@
           </div>
         }
 
-        <!-- Étape 4 : Paramètres opérationnels -->
         @if (step() === 4) {
           <div class="form-grid">
             <div class="form-group">
