@@ -37,6 +37,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /** Liste paginée des utilisateurs d'une IMF en excluant un rôle donné (ex: DSI). */
     Page<User> findByImfIdAndRoleNot(Long imfId, Role role, Pageable pageable);
 
+    /** Liste paginée excluant le rôle DSI et les comptes soft-deletés. */
+    Page<User> findByImfIdAndRoleNotAndSupprimeFalse(Long imfId, Role role, Pageable pageable);
+
     Optional<User> findByIdAndImfId(Long id, Long imfId);
 
     List<User> findByImfIdAndRoleIn(Long imfId, List<Role> roles);

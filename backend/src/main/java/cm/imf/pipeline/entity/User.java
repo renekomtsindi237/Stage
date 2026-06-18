@@ -107,6 +107,10 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private boolean actif = true;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean supprime = false;
+
     @Column(name = "last_login")
     private OffsetDateTime lastLogin;
 

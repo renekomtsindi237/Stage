@@ -86,7 +86,7 @@ public class AdminService implements IAdminService {
     public Page<UserResponse> listUsers(int page, int size) {
         Long imfId = TenantContext.currentImfId();
         var pageable = PageRequest.of(page, size, Sort.by("username"));
-        return userRepository.findByImfIdAndRoleNot(imfId, Role.DSI, pageable).map(UserResponse::from);
+        return userRepository.findByImfIdAndRoleNotAndSupprimeFalse(imfId, Role.DSI, pageable).map(UserResponse::from);
     }
 
     @Transactional(readOnly = true)
@@ -144,8 +144,21 @@ public class AdminService implements IAdminService {
         if (currentUser != null && currentUser.getUsername().equals(user.getUsername())) {
             throw new BusinessException("Le DSI ne peut pas supprimer son propre compte.", HttpStatus.FORBIDDEN);
         }
-        userRepository.delete(user);
-        log.info("Utilisateur supprimé : {} [{}]", user.getUsername(), user.getRole());
+        // Soft-delete : anonymisation plutôt que suppression physique.
+        // Les nombreuses FK (audit_trail avec RULE NO UPDATE, collectes, recouvrement...)
+        // rendent la suppression physique impossible sans casser l'historique métier.
+        String anon = "s_" + uid;
+        user.setActif(false);
+        user.setSupprime(true);
+        user.setEmail("supprime_" + uid + "@deleted.imf");
+        user.setUsername(anon);
+        user.setAvatarUrl(null);
+        user.setFcmToken(null);
+        user.setZoneId(null);
+        user.setLatitude(null);
+        user.setLongitude(null);
+        userRepository.save(user);
+        log.info("Utilisateur anonymisé (soft-delete) : {} [{}]", uid, user.getRole());
     }
 
     @Transactional
