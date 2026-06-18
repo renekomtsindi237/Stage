@@ -33,12 +33,12 @@ public interface AuditTrailRepository extends JpaRepository<AuditTrail, Long> {
     @Query("""
             SELECT a FROM AuditTrail a
             WHERE a.imfId = :imfId
-              AND (:entiteType IS NULL OR a.entiteType = :entiteType)
-              AND (:entiteId IS NULL OR a.entiteId = :entiteId)
-              AND (:action IS NULL OR a.action = :action)
-              AND (:username IS NULL OR a.acteurUsername = :username)
+              AND (cast(:entiteType as string) IS NULL OR a.entiteType = :entiteType)
+              AND (cast(:entiteId   as string) IS NULL OR a.entiteId   = :entiteId)
+              AND (cast(:action     as string) IS NULL OR a.action     = :action)
+              AND (cast(:username   as string) IS NULL OR a.acteurUsername = :username)
               AND (:debut IS NULL OR a.createdAt >= :debut)
-              AND (:fin IS NULL OR a.createdAt <= :fin)
+              AND (:fin   IS NULL OR a.createdAt <= :fin)
             ORDER BY a.createdAt DESC
             """)
     Page<AuditTrail> rechercher(
