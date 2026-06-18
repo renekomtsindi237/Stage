@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { map } from "rxjs";
 import { ApiService } from "../../../core/http/api.service";
 
 interface RgpdStatus {
@@ -32,13 +33,16 @@ export class DsiRgpdComponent implements OnInit {
   exporting = signal(false);
 
   ngOnInit() {
-    this.api.get<RgpdStatus>("/api/v1/dsi/rgpd/status").subscribe({
-      next: (d: RgpdStatus) => {
-        this.data.set(d);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.api
+      .get<{ data: RgpdStatus }>("/api/v1/dsi/rgpd/status")
+      .pipe(map((r) => r.data))
+      .subscribe({
+        next: (d: RgpdStatus) => {
+          this.data.set(d);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
   exportRapport() {

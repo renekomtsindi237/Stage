@@ -56,6 +56,13 @@ export const routes: Routes = [
     children: [
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
       {
+        path: "profile",
+        loadComponent: () =>
+          import("./features/profile/profile.component").then(
+            (m) => m.ProfileComponent,
+          ),
+      },
+      {
         path: "dashboard",
         loadComponent: () =>
           import("./features/dashboard/dashboard.component").then(
@@ -160,6 +167,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import("./features/directeur/dir-users/dir-users.component").then(
                 (m) => m.DirUsersComponent,
+              ),
+          },
+          {
+            path: "delegations",
+            loadComponent: () =>
+              import("./features/delegations/delegations.component").then(
+                (m) => m.DelegationsComponent,
               ),
           },
         ],
@@ -417,6 +431,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import("./features/dsi/dsi-monitoring/dsi-monitoring.component").then(
                 (m) => m.DsiMonitoringComponent,
+              ),
+          },
+          {
+            path: "delegations",
+            loadComponent: () =>
+              import("./features/delegations/delegations.component").then(
+                (m) => m.DelegationsComponent,
               ),
           },
         ],

@@ -12,6 +12,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthService } from "../../../core/auth/auth.service";
+import { ToastService } from "../../../core/services/toast.service";
 
 @Component({
   selector: "app-otp",
@@ -24,6 +25,7 @@ import { AuthService } from "../../../core/auth/auth.service";
 export class OtpComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   @ViewChildren("digitInput") digitInputs!: QueryList<
     ElementRef<HTMLInputElement>
@@ -78,6 +80,10 @@ export class OtpComponent implements OnInit, OnDestroy {
     this.auth.verifyOtp(this.email, code).subscribe({
       next: () => {
         this.loading.set(false);
+        this.toast.showSuccess(
+          "Connexion réussie",
+          `Bienvenue, ${this.auth.fullName()} !`,
+        );
         this.router.navigate([this.auth.defaultRouteForRole()]);
       },
       error: () => {

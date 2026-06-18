@@ -1,7 +1,17 @@
 <header class="topbar">
   <div class="topbar__left">
-    <div class="topbar__institution">
-      {{ auth.currentUser()?.imfNom ?? "MicroRecouv" }}
+    <div class="topbar__institution-row">
+      @if (auth.currentUser()?.imfNom) {
+        <img
+          class="topbar__imf-logo"
+          [src]="auth.imfLogoUrl() ?? 'assets/bank.png'"
+          alt="Logo IMF"
+          (error)="$any($event.target).src = 'assets/bank.png'"
+        />
+      }
+      <div class="topbar__institution">
+        {{ auth.currentUser()?.imfNom ?? "MicroRecouv" }}
+      </div>
     </div>
     <div class="topbar__date">{{ today }}</div>
   </div>
@@ -13,7 +23,7 @@
       (click)="openSupportModal()"
       title="Contacter le support"
     >
-      <span class="material-icons-round">support_agent</span>
+      <img src="assets/support.png" alt="Support" class="topbar__support-icon" />
       <span class="topbar__support-label">Support</span>
     </button>
 
@@ -35,9 +45,25 @@
 
     <div class="topbar__divider"></div>
 
+    <!-- Logout button — visible en permanence -->
+    <button
+      class="topbar__logout-btn"
+      (click)="logout()"
+      title="Se déconnecter"
+    >
+      <span class="material-icons-round">logout</span>
+      <span class="topbar__logout-label">Déconnexion</span>
+    </button>
+
     <!-- User menu -->
     <div class="topbar__user" (click)="toggleMenu()">
-      <div class="topbar__avatar">{{ auth.initials() }}</div>
+      @if (auth.avatarDataUrl()) {
+        <div class="topbar__avatar topbar__avatar--img">
+          <img [src]="auth.avatarDataUrl()!" alt="avatar" />
+        </div>
+      } @else {
+        <div class="topbar__avatar">{{ auth.initials() }}</div>
+      }
       <div class="topbar__user-info">
         <span class="topbar__user-name">{{ auth.fullName() }}</span>
         <span class="topbar__user-role">{{ roleLabel }}</span>

@@ -61,6 +61,11 @@ export class SidebarComponent {
         route: "/directeur/equipe",
       },
       { label: "Rapports", icon: "description", route: "/directeur/rapports" },
+      {
+        label: "Délégations",
+        icon: "swap_horiz",
+        route: "/directeur/delegations",
+      },
     ],
     DSI: [
       { label: "Dashboard", icon: "dashboard", route: "/dsi/dashboard" },
@@ -68,6 +73,11 @@ export class SidebarComponent {
       { label: "Audit Trail", icon: "history_edu", route: "/dsi/audit" },
       { label: "Violations RGPD", icon: "security", route: "/dsi/rgpd" },
       { label: "Monitoring", icon: "monitor_heart", route: "/dsi/monitoring" },
+      {
+        label: "Délégations",
+        icon: "swap_horiz",
+        route: "/dsi/delegations",
+      },
     ],
     SUPER_ADMIN: [
       {
@@ -171,6 +181,10 @@ export class SidebarComponent {
 
   get institutionLabel(): string {
     return this.auth.currentUser()?.imfNom ?? "MicroRecouv";
+  }
+
+  get imfLogoSrc(): string {
+    return this.auth.currentUser()?.imfLogoUrl ?? "assets/bank.png";
   }
 
   get isAgent(): boolean {

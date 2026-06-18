@@ -95,6 +95,7 @@ public class AuthService implements IAuthService {
                 user.getImf() != null && user.getImf().getUid() != null ? user.getImf().getUid().toString() : null,
                 user.getImf() != null ? user.getImf().getCode() : null,
                 user.getImf() != null ? user.getImf().getNom()  : null,
+                user.getImf() != null ? user.getImf().getLogoUrl() : null,
                 user.isMustChangePassword(),
                 jwtTokenProvider.getAccessTokenExpiryMs()
         );
@@ -208,6 +209,7 @@ public class AuthService implements IAuthService {
                 user.getImf() != null && user.getImf().getUid() != null ? user.getImf().getUid().toString() : null,
                 user.getImf() != null ? user.getImf().getCode() : null,
                 user.getImf() != null ? user.getImf().getNom()  : null,
+                user.getImf() != null ? user.getImf().getLogoUrl() : null,
                 user.isMustChangePassword(),
                 jwtTokenProvider.getAccessTokenExpiryMs()
         );

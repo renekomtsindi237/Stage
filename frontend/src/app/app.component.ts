@@ -18,6 +18,11 @@ export class AppComponent implements OnInit {
   private readonly auth = inject(AuthService);
 
   ngOnInit() {
+    const splash = document.getElementById("splash");
+    if (splash) {
+      splash.classList.add("fade-out");
+      setTimeout(() => splash.remove(), 450);
+    }
     if (this.auth.isLoggedIn()) {
       this.notifService.init();
     }

@@ -125,19 +125,20 @@
 
       <div class="form-grid">
         <div class="form-group">
-          <label>Prénom *</label>
+          <label>Nom d'utilisateur *</label>
           <input
             class="form-control"
-            formControlName="prenom"
-            placeholder="Jean"
+            formControlName="username"
+            placeholder="jean.dupont"
           />
         </div>
         <div class="form-group">
-          <label>Nom *</label>
+          <label>Mot de passe initial *</label>
           <input
             class="form-control"
-            formControlName="nom"
-            placeholder="DUPONT"
+            type="password"
+            formControlName="password"
+            placeholder="Min. 8 caractères"
           />
         </div>
         <div class="form-group" style="grid-column: 1/-1">
@@ -149,21 +150,13 @@
             placeholder="jean.dupont@imf.cm"
           />
         </div>
-        <div class="form-group">
+        <div class="form-group" style="grid-column: 1/-1">
           <label>Rôle *</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
               <option [value]="r">{{ r }}</option>
             }
           </select>
-        </div>
-        <div class="form-group">
-          <label>ID Agence</label>
-          <input
-            class="form-control"
-            formControlName="agenceId"
-            placeholder="Optionnel"
-          />
         </div>
       </div>
 

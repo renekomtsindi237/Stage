@@ -17,6 +17,12 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
   readonly fullName = computed(() => this.currentUser()?.username ?? "");
+  readonly avatarDataUrl = computed(
+    () => this.currentUser()?.avatarDataUrl ?? null,
+  );
+  readonly imfLogoUrl = computed(
+    () => this.currentUser()?.imfLogoUrl ?? null,
+  );
   readonly initials = computed(() => {
     const name = this.currentUser()?.username;
     if (!name) return "?";
@@ -62,7 +68,23 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUser.set(null);
-    this.router.navigate(["/login"]);
+    this.router.navigate(["/"]);
+  }
+
+  updateAvatar(dataUrl: string | null) {
+    const user = this.currentUser();
+    if (!user) return;
+    const updated: User = { ...user, avatarDataUrl: dataUrl };
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    this.currentUser.set(updated);
+  }
+
+  updateImfLogoUrl(url: string | null) {
+    const user = this.currentUser();
+    if (!user) return;
+    const updated: User = { ...user, imfLogoUrl: url };
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    this.currentUser.set(updated);
   }
 
   hasRole(...roles: Role[]): boolean {
@@ -109,6 +131,7 @@ export class AuthService {
       imfUid: res.imfUid ?? null,
       imfCode: res.imfCode ?? null,
       imfNom: res.imfNom ?? null,
+      imfLogoUrl: res.imfLogoUrl ?? null,
       mustChangePassword: res.mustChangePassword ?? false,
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));

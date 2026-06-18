@@ -1,0 +1,165 @@
+<div class="page-content">
+  <div class="profile-page">
+    <!-- ── Header card ── -->
+    <div class="profile-card profile-card--header">
+      <div class="profile-avatar-wrap">
+        @if (auth.avatarDataUrl()) {
+          <div class="profile-avatar profile-avatar--img">
+            <img [src]="auth.avatarDataUrl()!" alt="avatar" />
+          </div>
+        } @else {
+          <div class="profile-avatar profile-avatar--initials">
+            {{ auth.initials() }}
+          </div>
+        }
+        <button
+          class="profile-avatar-edit"
+          (click)="triggerUpload()"
+          [disabled]="uploading()"
+          title="Changer la photo"
+        >
+          @if (uploading()) {
+            <span class="material-icons-round spin">refresh</span>
+          } @else {
+            <span class="material-icons-round">photo_camera</span>
+          }
+        </button>
+      </div>
+
+      <div class="profile-header-info">
+        <h2 class="profile-name">{{ user?.username }}</h2>
+        <span class="profile-role-badge">{{ roleLabel }}</span>
+        @if (user?.imfNom) {
+          <p class="profile-imf">
+            <span class="material-icons-round">domain</span>
+            {{ user?.imfNom }}
+          </p>
+        }
+      </div>
+    </div>
+
+    <!-- ── Photo section ── -->
+    <div class="profile-card">
+      <h3 class="profile-section-title">
+        <span class="material-icons-round">photo_camera</span>
+        Photo de profil
+      </h3>
+      <p class="profile-section-desc">
+        Votre photo est affichée dans la barre de navigation sur toute la
+        plateforme. Formats acceptés : JPG, PNG, WebP. Taille max : 2 Mo.
+      </p>
+      <div class="profile-photo-actions">
+        <button
+          class="btn btn-primary"
+          (click)="triggerUpload()"
+          [disabled]="uploading()"
+        >
+          <span class="material-icons-round">upload</span>
+          {{ uploading() ? "Chargement..." : "Choisir une photo" }}
+        </button>
+        @if (auth.avatarDataUrl()) {
+          <button class="btn btn-danger-outline" (click)="removeAvatar()">
+            <span class="material-icons-round">delete</span>
+            Supprimer la photo
+          </button>
+        }
+      </div>
+      <input
+        #fileInput
+        type="file"
+        accept="image/*"
+        style="display: none"
+        (change)="onFileSelected($event)"
+      />
+    </div>
+
+    <!-- ── Logo IMF (DSI uniquement) ── -->
+    @if (isDsi) {
+      <div class="profile-card">
+        <h3 class="profile-section-title">
+          <span class="material-icons-round">domain</span>
+          Logo de l'institution
+        </h3>
+        <p class="profile-section-desc">
+          Le logo s'affiche dans la barre de navigation et la sidebar pour tous
+          les utilisateurs de votre IMF. Formats : JPG, PNG, WebP. Taille max :
+          2 Mo.
+        </p>
+        <div class="profile-imf-logo-preview">
+          <img
+            [src]="auth.imfLogoUrl() ?? 'assets/bank.png'"
+            alt="Logo IMF"
+            class="profile-imf-logo-img"
+            (error)="$any($event.target).src = 'assets/bank.png'"
+          />
+          <span class="profile-imf-logo-name">{{ user?.imfNom }}</span>
+        </div>
+        <div class="profile-photo-actions">
+          <button
+            class="btn btn-primary"
+            (click)="triggerImfLogoUpload()"
+            [disabled]="uploadingImfLogo()"
+          >
+            <span class="material-icons-round">upload</span>
+            {{ uploadingImfLogo() ? "Téléversement..." : "Choisir un logo" }}
+          </button>
+        </div>
+        <input
+          #imfLogoInput
+          type="file"
+          accept="image/*"
+          style="display: none"
+          (change)="onImfLogoSelected($event)"
+        />
+      </div>
+    }
+
+    <!-- ── Infos ── -->
+    <div class="profile-card">
+      <h3 class="profile-section-title">
+        <span class="material-icons-round">person</span>
+        Informations du compte
+      </h3>
+      <div class="profile-info-grid">
+        <div class="profile-info-item">
+          <span class="profile-info-label">Nom d'utilisateur</span>
+          <span class="profile-info-value">{{ user?.username }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Rôle</span>
+          <span class="profile-info-value">{{ roleLabel }}</span>
+        </div>
+        @if (user?.imfCode) {
+          <div class="profile-info-item">
+            <span class="profile-info-label">Code IMF</span>
+            <span class="profile-info-value profile-info-value--badge">{{
+              user?.imfCode
+            }}</span>
+          </div>
+        }
+        @if (user?.imfNom) {
+          <div class="profile-info-item">
+            <span class="profile-info-label">Institution</span>
+            <span class="profile-info-value">{{ user?.imfNom }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Déconnexion ── -->
+    <div class="profile-card profile-card--danger">
+      <h3 class="profile-section-title profile-section-title--danger">
+        <span class="material-icons-round">logout</span>
+        Déconnexion
+      </h3>
+      <p class="profile-section-desc">
+        Vous serez redirigé vers la page d'accueil. Toutes vos sessions actives
+        seront fermées.
+      </p>
+      <button class="btn btn-danger" (click)="logout()">
+        <span class="material-icons-round">logout</span>
+        Se déconnecter maintenant
+      </button>
+    </div>
+  </div>
+</div>

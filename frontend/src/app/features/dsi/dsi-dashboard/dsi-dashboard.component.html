@@ -6,6 +6,7 @@
     </div>
   </div>
 
+  <!-- ── KPI cards ── -->
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card
       label="Utilisateurs actifs"
@@ -30,6 +31,95 @@
     />
   </div>
 
+  <!-- ── Charts row ── -->
+  <div class="charts-row">
+    <!-- RGPD Gauge -->
+    <div class="chart-card">
+      <h3 class="chart-title">
+        <span class="material-icons-round">security</span>
+        Score de conformité RGPD
+      </h3>
+      @if (loading()) {
+        <div class="chart-skeleton"></div>
+      } @else {
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 128 128">
+            <circle
+              cx="64"
+              cy="64"
+              r="54"
+              fill="none"
+              stroke="var(--color-border)"
+              stroke-width="10"
+            />
+            <circle
+              cx="64"
+              cy="64"
+              r="54"
+              fill="none"
+              [attr.stroke]="rgpdColor()"
+              stroke-width="10"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="rgpdDash() + ' ' + ringCirc"
+              stroke-dashoffset="0"
+              transform="rotate(-90 64 64)"
+              class="gauge-arc"
+            />
+          </svg>
+          <div class="gauge-center">
+            <span class="gauge-value" [style.color]="rgpdColor()">
+              {{ data()?.rgpdScore ?? 0 }}%
+            </span>
+            <span class="gauge-label">conformité</span>
+          </div>
+        </div>
+        <div class="gauge-meta">
+          Dernier audit :
+          <strong>{{ data()?.dernierAudit | date: "dd/MM/yyyy" }}</strong>
+        </div>
+      }
+    </div>
+
+    <!-- Indicateurs bar chart -->
+    <div class="chart-card chart-card--bars">
+      <h3 class="chart-title">
+        <span class="material-icons-round">bar_chart</span>
+        Indicateurs mesurables
+      </h3>
+      @if (loading()) {
+        <div class="chart-skeleton"></div>
+      } @else {
+        <div class="bar-chart">
+          @for (ind of indicators(); track ind.label) {
+            <div class="bar-row">
+              <div class="bar-row__header">
+                <div class="bar-row__label">
+                  <span
+                    class="material-icons-round"
+                    [style.color]="ind.color"
+                    >{{ ind.icon }}</span
+                  >
+                  {{ ind.label }}
+                </div>
+                <span class="bar-row__value" [style.color]="ind.color">{{
+                  ind.value
+                }}</span>
+              </div>
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [style.width.%]="ind.pct"
+                  [style.background]="ind.color"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Navigation rapide ── -->
   <div class="quick-links">
     <a routerLink="/dsi/users" class="quick-link-card">
       <span class="material-icons-round">manage_accounts</span>
@@ -44,7 +134,8 @@
       <div>
         <h4>Audit Trail</h4>
         <p class="text-sm text-muted">
-          Dernière consultation: {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
+          Dernière consultation :
+          {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
         </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
@@ -63,7 +154,9 @@
       <span class="material-icons-round">monitor_heart</span>
       <div>
         <h4>Monitoring</h4>
-        <p class="text-sm text-muted">Grafana · Prometheus</p>
+        <p class="text-sm text-muted">
+          Santé des services et connexions récentes
+        </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
     </a>

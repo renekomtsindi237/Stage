@@ -9,6 +9,7 @@ import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../core/auth/auth.service";
+import { ToastService } from "../../../core/services/toast.service";
 
 @Component({
   selector: "app-login-admin",
@@ -22,6 +23,7 @@ export class LoginAdminComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   loading = signal(false);
   error = signal("");
@@ -47,6 +49,10 @@ export class LoginAdminComponent {
     this.auth.login(email!, motDePasse!).subscribe({
       next: () => {
         this.loading.set(false);
+        this.toast.showSuccess(
+          "Connexion réussie",
+          `Bienvenue, ${this.auth.fullName()} !`,
+        );
         this.router.navigate([this.auth.defaultRouteForRole()]);
       },
       error: () => {

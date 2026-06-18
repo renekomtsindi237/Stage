@@ -18,7 +18,9 @@ export interface User {
   imfUid?: string | null;
   imfCode?: string | null;
   imfNom?: string | null;
+  imfLogoUrl?: string | null;
   mustChangePassword?: boolean;
+  avatarDataUrl?: string | null;
 }
 
 export interface AuthResponse {
@@ -29,6 +31,7 @@ export interface AuthResponse {
   imfUid?: string | null;
   imfCode?: string | null;
   imfNom?: string | null;
+  imfLogoUrl?: string | null;
   mustChangePassword?: boolean;
   expiresIn: number;
   status?: string;

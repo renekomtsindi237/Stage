@@ -10,7 +10,20 @@
         height="130"
       />
     </div>
-    <span class="sidebar__institution">{{ institutionLabel }}</span>
+    <span class="sidebar__username">{{ auth.currentUser()?.username }}</span>
+    @if (auth.currentUser()?.imfNom) {
+      <div class="sidebar__imf-row">
+        <img
+          class="sidebar__imf-logo"
+          [src]="imfLogoSrc"
+          alt="Logo IMF"
+          (error)="$any($event.target).src = 'assets/bank.png'"
+        />
+        <span class="sidebar__institution">{{ institutionLabel }}</span>
+      </div>
+    } @else {
+      <span class="sidebar__institution">{{ institutionLabel }}</span>
+    }
   </div>
 
   <!-- Navigation -->

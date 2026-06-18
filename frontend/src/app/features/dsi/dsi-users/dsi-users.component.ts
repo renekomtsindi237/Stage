@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { map } from "rxjs";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 
@@ -48,11 +49,13 @@ export class DsiUsersComponent implements OnInit {
   roleFilter = signal("");
 
   createForm = this.fb.group({
-    prenom: ["", Validators.required],
-    nom: ["", Validators.required],
+    username: [
+      "",
+      [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
+    ],
+    password: ["", [Validators.required, Validators.minLength(8)]],
     email: ["", [Validators.required, Validators.email]],
     role: ["AGENT", Validators.required],
-    agenceId: [""],
   });
 
   readonly roles = [
@@ -75,11 +78,12 @@ export class DsiUsersComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.api
-      .get<UserPage>("/api/v1/admin/users", {
+      .get<{ data: UserPage }>("/api/v1/admin/users", {
         page: this.currentPage(),
         size: 20,
         role: this.roleFilter() || undefined,
       })
+      .pipe(map((r) => r.data))
       .subscribe({
         next: (p: UserPage) => {
           this.page.set(p);
@@ -116,7 +120,7 @@ export class DsiUsersComponent implements OnInit {
         this.showModal.set(false);
         this.toast.showSuccess(
           "Utilisateur créé",
-          `${this.createForm.value.prenom} ${this.createForm.value.nom}`,
+          this.createForm.value.username ?? "",
         );
         this.createForm.reset({ role: "AGENT" });
         this.load();

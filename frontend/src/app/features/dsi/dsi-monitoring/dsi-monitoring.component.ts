@@ -7,6 +7,7 @@ import {
   ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { map } from "rxjs";
 import { ApiService } from "../../../core/http/api.service";
 
 interface ImfHealth {
@@ -52,20 +53,24 @@ export class DsiMonitoringComponent implements OnInit {
     this.loadingHealth.set(true);
     this.loadingLogins.set(true);
 
-    this.api.get<ImfHealth>("/api/v1/dsi/monitoring/health").subscribe({
-      next: (h: ImfHealth) => {
-        this.imfHealth.set(h);
-        this.loadingHealth.set(false);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loadingHealth.set(false);
-        this.cdr.markForCheck();
-      },
-    });
+    this.api
+      .get<{ data: ImfHealth }>("/api/v1/dsi/monitoring/health")
+      .pipe(map((r) => r.data))
+      .subscribe({
+        next: (h: ImfHealth) => {
+          this.imfHealth.set(h);
+          this.loadingHealth.set(false);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingHealth.set(false);
+          this.cdr.markForCheck();
+        },
+      });
 
     this.api
-      .get<RecentLogin[]>("/api/v1/dsi/monitoring/connexions-recentes")
+      .get<{ data: RecentLogin[] }>("/api/v1/dsi/monitoring/connexions-recentes")
+      .pipe(map((r) => r.data))
       .subscribe({
         next: (list: RecentLogin[]) => {
           this.recentLogins.set(list);

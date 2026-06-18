@@ -1,0 +1,333 @@
+<div class="page-content">
+  <div class="del-page">
+
+    <!-- ── En-tête ── -->
+    <div class="del-header">
+      <div class="del-header__left">
+        <h1 class="del-header__title">
+          <span class="material-icons-round del-header__icon">swap_horiz</span>
+          Délégations & Réassignations
+        </h1>
+        <p class="del-header__sub">
+          Gérez les réassignations de dossiers et les délégations d'autorité au sein de votre IMF.
+        </p>
+      </div>
+
+      @if (isDirecteur()) {
+        <button class="btn btn-primary del-header__btn" (click)="openAutoriteModal()">
+          <span class="material-icons-round">person_add</span>
+          Déléguer une autorité
+        </button>
+      }
+    </div>
+
+    <!-- ── Onglets ── -->
+    <div class="del-tabs">
+      <button
+        class="del-tab"
+        [class.del-tab--active]="activeTab() === 'delegations'"
+        (click)="activeTab.set('delegations')"
+      >
+        <span class="material-icons-round">assignment_ind</span>
+        Délégations actives
+        @if (totalDelegations() > 0) {
+          <span class="del-tab__badge">{{ totalDelegations() }}</span>
+        }
+      </button>
+      <button
+        class="del-tab"
+        [class.del-tab--active]="activeTab() === 'dossiers'"
+        (click)="activeTab.set('dossiers')"
+      >
+        <span class="material-icons-round">folder_open</span>
+        Dossiers crédit
+        @if (totalDossiers() > 0) {
+          <span class="del-tab__badge">{{ totalDossiers() }}</span>
+        }
+      </button>
+    </div>
+
+    <!-- ── Tab : Délégations ── -->
+    @if (activeTab() === 'delegations') {
+      @if (loadingDelegations()) {
+        <div class="del-loading">
+          <span class="material-icons-round del-spin">refresh</span>
+          Chargement des délégations…
+        </div>
+      } @else if (delegations().length === 0) {
+        <div class="del-empty">
+          <span class="material-icons-round del-empty__icon">swap_horiz</span>
+          <p>Aucune délégation enregistrée pour cette IMF.</p>
+          @if (isDirecteur()) {
+            <button class="btn btn-primary" (click)="openAutoriteModal()">
+              Créer une délégation
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="del-cards">
+          @for (d of delegations(); track d.uid) {
+            <div class="del-card" [class.del-card--inactive]="!d.actif">
+              <div class="del-card__top">
+                <span class="del-badge" [class.del-badge--reassign]="d.typeDelegation === 'REASSIGNATION_DOSSIER'"
+                      [class.del-badge--autorite]="d.typeDelegation === 'DELEGATION_AUTORITE'">
+                  <span class="material-icons-round">
+                    {{ d.typeDelegation === 'REASSIGNATION_DOSSIER' ? 'folder_shared' : 'supervisor_account' }}
+                  </span>
+                  {{ typeLabel(d.typeDelegation) }}
+                </span>
+                <span class="del-status" [class.del-status--active]="d.actif" [class.del-status--inactive]="!d.actif">
+                  {{ d.actif ? 'Active' : 'Révoquée' }}
+                </span>
+              </div>
+
+              <div class="del-card__body">
+                <div class="del-card__row">
+                  <span class="material-icons-round del-card__row-icon">person</span>
+                  <span class="del-card__row-label">Délégant</span>
+                  <span class="del-card__row-value">Agent #{{ d.delegantId }}</span>
+                </div>
+                <div class="del-card__row">
+                  <span class="material-icons-round del-card__row-icon">person_outline</span>
+                  <span class="del-card__row-label">Délégataire</span>
+                  <span class="del-card__row-value">Agent #{{ d.delegataireId }}</span>
+                </div>
+                @if (d.roleDelegue) {
+                  <div class="del-card__row">
+                    <span class="material-icons-round del-card__row-icon">badge</span>
+                    <span class="del-card__row-label">Rôle délégué</span>
+                    <span class="del-card__row-value">{{ d.roleDelegue }}</span>
+                  </div>
+                }
+                @if (d.montantSeuil) {
+                  <div class="del-card__row">
+                    <span class="material-icons-round del-card__row-icon">payments</span>
+                    <span class="del-card__row-label">Plafond</span>
+                    <span class="del-card__row-value del-card__row-value--amount">
+                      {{ formatMontant(d.montantSeuil) }}
+                    </span>
+                  </div>
+                }
+                @if (d.motif) {
+                  <div class="del-card__motif">
+                    <span class="material-icons-round">notes</span>
+                    {{ d.motif }}
+                  </div>
+                }
+              </div>
+
+              <div class="del-card__footer">
+                <span class="del-card__dates">
+                  <span class="material-icons-round">event</span>
+                  {{ formatDate(d.dateDebut) }}
+                  @if (d.dateFin) { → {{ formatDate(d.dateFin) }} }
+                </span>
+                @if (d.actif) {
+                  <button class="btn btn-danger-sm" (click)="revoquer(d)" title="Révoquer">
+                    <span class="material-icons-round">block</span>
+                    Révoquer
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ── Tab : Dossiers crédit ── -->
+    @if (activeTab() === 'dossiers') {
+      @if (loadingDossiers()) {
+        <div class="del-loading">
+          <span class="material-icons-round del-spin">refresh</span>
+          Chargement des dossiers…
+        </div>
+      } @else if (dossiers().length === 0) {
+        <div class="del-empty">
+          <span class="material-icons-round del-empty__icon">folder_open</span>
+          <p>Aucun dossier crédit trouvé pour cette IMF.</p>
+        </div>
+      } @else {
+        <div class="del-table-wrap">
+          <table class="del-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Objet financement</th>
+                <th>Montant</th>
+                <th>Durée</th>
+                <th>Statut</th>
+                <th>Soumis le</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of dossiers(); track d.uid) {
+                <tr>
+                  <td>
+                    <div class="del-table__client">
+                      <span class="del-table__client-name">{{ d.clientNom }}</span>
+                      <span class="del-table__client-id">{{ d.clientId }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="del-table__objet">{{ d.objetFinancement }}</span>
+                    <span class="del-table__secteur">{{ d.secteurActivite }}</span>
+                  </td>
+                  <td class="del-table__montant">{{ formatMontant(d.montantDemande) }}</td>
+                  <td>{{ d.dureeMois }} mois</td>
+                  <td>
+                    <span class="badge" [class]="statutColor(d.statut)">{{ statutLabel(d.statut) }}</span>
+                  </td>
+                  <td class="del-table__date">{{ formatDate(d.dateSoumission) }}</td>
+                  <td>
+                    @if (['INSTRUCTION','EN_ANALYSE','COMITE'].includes(d.statut)) {
+                      <button class="btn btn-outline-sm" (click)="openReassignModal(d)">
+                        <span class="material-icons-round">swap_horiz</span>
+                        Réassigner
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+  </div>
+</div>
+
+<!-- ── Modal : Réassigner un dossier ── -->
+@if (showReassignModal()) {
+  <div class="modal-backdrop" (click)="closeReassignModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">
+          <span class="material-icons-round">folder_shared</span>
+          Réassigner le dossier
+        </h3>
+        <button class="modal__close" (click)="closeReassignModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      @if (selectedDossier()) {
+        <div class="modal__info-box">
+          <strong>{{ selectedDossier()!.clientNom }}</strong>
+          <span>{{ selectedDossier()!.objetFinancement }}</span>
+          <span class="badge" [class]="statutColor(selectedDossier()!.statut)">
+            {{ statutLabel(selectedDossier()!.statut) }}
+          </span>
+        </div>
+      }
+
+      <form [formGroup]="reassignForm" (ngSubmit)="submitReassign()" class="modal__form">
+        <div class="form-group">
+          <label class="form-label">Nouvel agent responsable *</label>
+          @if (loadingAgents()) {
+            <div class="form-loading">Chargement des agents…</div>
+          } @else if (agents().length === 0) {
+            <div class="form-empty">Aucun agent crédit disponible dans cette IMF.</div>
+          } @else {
+            <select class="form-control" formControlName="nouvelAgentUid">
+              <option value="">— Sélectionner un agent —</option>
+              @for (a of agents(); track a.uid) {
+                <option [value]="a.uid">{{ a.username }} ({{ a.role }})</option>
+              }
+            </select>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Motif de réassignation</label>
+          <textarea class="form-control" formControlName="motif" rows="3"
+                    placeholder="Ex : Agent en congé, surcharge de travail…"></textarea>
+        </div>
+
+        <div class="modal__actions">
+          <button type="button" class="btn btn-ghost" (click)="closeReassignModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="reassignForm.invalid || submitting()">
+            @if (submitting()) {
+              <span class="material-icons-round del-spin">refresh</span>
+            }
+            Confirmer la réassignation
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ── Modal : Déléguer autorité ── -->
+@if (showAutoriteModal()) {
+  <div class="modal-backdrop" (click)="closeAutoriteModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">
+          <span class="material-icons-round">supervisor_account</span>
+          Déléguer une autorité
+        </h3>
+        <button class="modal__close" (click)="closeAutoriteModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="autoriteForm" (ngSubmit)="submitAutorite()" class="modal__form">
+        <div class="form-group">
+          <label class="form-label">Délégataire (utilisateur) *</label>
+          @if (loadingAgents()) {
+            <div class="form-loading">Chargement des utilisateurs…</div>
+          } @else if (agents().length === 0) {
+            <div class="form-empty">Aucun utilisateur trouvé.</div>
+          } @else {
+            <select class="form-control" formControlName="delegataireUid">
+              <option value="">— Sélectionner un utilisateur —</option>
+              @for (a of agents(); track a.uid) {
+                <option [value]="a.uid">{{ a.username }} — {{ a.role }}</option>
+              }
+            </select>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rôle délégué</label>
+          <select class="form-control" formControlName="roleDelegue">
+            @for (r of rolesAutorites; track r) {
+              <option [value]="r">{{ r }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Plafond FCFA (optionnel)</label>
+            <input type="number" class="form-control" formControlName="montantSeuil"
+                   placeholder="Ex : 2 500 000" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de fin (optionnel)</label>
+            <input type="date" class="form-control" formControlName="dateFin" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Motif *</label>
+          <textarea class="form-control" formControlName="motif" rows="3"
+                    placeholder="Motif de la délégation d'autorité…"></textarea>
+        </div>
+
+        <div class="modal__actions">
+          <button type="button" class="btn btn-ghost" (click)="closeAutoriteModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="autoriteForm.invalid || submitting()">
+            @if (submitting()) {
+              <span class="material-icons-round del-spin">refresh</span>
+            }
+            Créer la délégation
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
