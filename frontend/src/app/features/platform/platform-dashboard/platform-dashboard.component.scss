@@ -14,7 +14,9 @@
   border-radius: var(--radius-xl);
   text-decoration: none;
   color: var(--color-text);
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
   cursor: pointer;
 
   &:hover {

@@ -1,10 +1,11 @@
 <div class="page-content">
-
   <!-- En-tête -->
   <div class="page-header">
     <div>
       <h2>Gestion des IMF</h2>
-      <p class="text-muted text-sm">{{ imfs().length }} institution(s) enregistrée(s)</p>
+      <p class="text-muted text-sm">
+        {{ imfs().length }} institution(s) enregistrée(s)
+      </p>
     </div>
     <button class="btn btn-primary" (click)="openCreate()">
       <span class="material-icons-round">add</span>
@@ -14,18 +15,19 @@
 
   <!-- Layout : liste + panneau détail -->
   <div class="imf-layout" [class.imf-layout--split]="selected()">
-
     <!-- Liste -->
     <div class="imf-list card">
       @if (loading()) {
-        @for (_ of [1,2,3,4]; track $index) {
+        @for (_ of [1, 2, 3, 4]; track $index) {
           <div class="skeleton imf-list__skeleton"></div>
         }
       } @else if (imfs().length === 0) {
         <div class="empty-state">
           <span class="material-icons-round">domain_disabled</span>
           <p>Aucune institution enregistrée</p>
-          <button class="btn btn-primary btn-sm" (click)="openCreate()">Créer la première IMF</button>
+          <button class="btn btn-primary btn-sm" (click)="openCreate()">
+            Créer la première IMF
+          </button>
         </div>
       } @else {
         @for (imf of imfs(); track imf.uid) {
@@ -42,14 +44,18 @@
               </div>
             </div>
             <div class="imf-row__right">
-              <span class="badge" [class]="imf.actif ? 'badge-success' : 'badge-muted'">
-                {{ imf.actif ? 'Actif' : 'Suspendu' }}
+              <span
+                class="badge"
+                [class]="imf.actif ? 'badge-success' : 'badge-muted'"
+              >
+                {{ imf.actif ? "Actif" : "Suspendu" }}
               </span>
               <span
                 class="material-icons-round text-sm"
                 [class]="imf.hasDsi ? 'text-success' : 'text-muted'"
                 [title]="imf.hasDsi ? 'DSI configuré' : 'Aucun DSI'"
-              >{{ imf.hasDsi ? 'verified_user' : 'person_off' }}</span>
+                >{{ imf.hasDsi ? "verified_user" : "person_off" }}</span
+              >
             </div>
           </div>
         }
@@ -71,13 +77,23 @@
 
         <!-- Statut -->
         <div class="imf-detail__status">
-          <span class="badge badge-lg" [class]="imf.actif ? 'badge-success' : 'badge-muted'">
-            <span class="material-icons-round">{{ imf.actif ? 'check_circle' : 'pause_circle' }}</span>
-            {{ imf.actif ? 'Active' : 'Suspendue' }}
+          <span
+            class="badge badge-lg"
+            [class]="imf.actif ? 'badge-success' : 'badge-muted'"
+          >
+            <span class="material-icons-round">{{
+              imf.actif ? "check_circle" : "pause_circle"
+            }}</span>
+            {{ imf.actif ? "Active" : "Suspendue" }}
           </span>
-          <span class="badge badge-lg" [class]="imf.hasDsi ? 'badge-info' : 'badge-warning'">
-            <span class="material-icons-round">{{ imf.hasDsi ? 'verified_user' : 'person_off' }}</span>
-            {{ imf.hasDsi ? 'DSI configuré' : 'Sans DSI' }}
+          <span
+            class="badge badge-lg"
+            [class]="imf.hasDsi ? 'badge-info' : 'badge-warning'"
+          >
+            <span class="material-icons-round">{{
+              imf.hasDsi ? "verified_user" : "person_off"
+            }}</span>
+            {{ imf.hasDsi ? "DSI configuré" : "Sans DSI" }}
           </span>
         </div>
 
@@ -127,7 +143,8 @@
         <!-- Section paramètres crédit -->
         <div class="imf-detail__section">
           <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">account_balance</span> Paramètres crédit
+            <span class="material-icons-round">account_balance</span> Paramètres
+            crédit
           </h4>
           <div class="imf-detail__grid">
             <div class="imf-detail__field">
@@ -152,7 +169,8 @@
         <!-- Section paramètres opérationnels -->
         <div class="imf-detail__section">
           <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">settings</span> Paramètres opérationnels
+            <span class="material-icons-round">settings</span> Paramètres
+            opérationnels
           </h4>
           <div class="imf-detail__grid">
             <div class="imf-detail__field">
@@ -161,7 +179,7 @@
             </div>
             <div class="imf-detail__field">
               <label>Niveau KYC minimal</label>
-              <p>{{ imf.niveauKycMinimal ?? 'NIVEAU_1' }}</p>
+              <p>{{ imf.niveauKycMinimal ?? "NIVEAU_1" }}</p>
             </div>
             <div class="imf-detail__field">
               <label>Max tentatives connexion</label>
@@ -169,7 +187,7 @@
             </div>
             <div class="imf-detail__field">
               <label>Créée le</label>
-              <p>{{ imf.createdAt | date:'dd/MM/yyyy' }}</p>
+              <p>{{ imf.createdAt | date: "dd/MM/yyyy" }}</p>
             </div>
           </div>
         </div>
@@ -177,44 +195,86 @@
         <!-- Gestion DSI -->
         <div class="imf-detail__section">
           <h4 class="imf-detail__section-title">
-            <span class="material-icons-round">manage_accounts</span> Administrateur DSI
+            <span class="material-icons-round">manage_accounts</span>
+            Administrateur DSI
           </h4>
           @if (!imf.hasDsi) {
-            <p class="text-muted text-sm" style="margin-bottom:12px">
-              Aucun compte DSI associé. Créez-en un pour permettre l'administration de cette IMF.
+            <p class="text-muted text-sm" style="margin-bottom: 12px">
+              Aucun compte DSI associé. Créez-en un pour permettre
+              l'administration de cette IMF.
             </p>
             @if (!showDsiForm()) {
               <button class="btn btn-secondary btn-sm" (click)="openDsiForm()">
-                <span class="material-icons-round">person_add</span> Créer le compte DSI
+                <span class="material-icons-round">person_add</span> Créer le
+                compte DSI
               </button>
             } @else {
-              <form [formGroup]="dsiForm" (ngSubmit)="submitDsi()" class="dsi-form">
+              <form
+                [formGroup]="dsiForm"
+                (ngSubmit)="submitDsi()"
+                class="dsi-form"
+              >
                 <div class="form-group">
                   <label>Nom d'utilisateur</label>
-                  <input type="text" class="form-control" formControlName="username" placeholder="dsi_cameroun" />
-                  @if (dsiForm.get('username')?.invalid && dsiForm.get('username')?.touched) {
-                    <span class="field-error">Nom requis (3-50 caractères)</span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="username"
+                    placeholder="dsi_cameroun"
+                  />
+                  @if (
+                    dsiForm.get("username")?.invalid &&
+                    dsiForm.get("username")?.touched
+                  ) {
+                    <span class="field-error"
+                      >Nom requis (3-50 caractères)</span
+                    >
                   }
                 </div>
                 <div class="form-group">
                   <label>Email du DSI</label>
-                  <input type="email" class="form-control" formControlName="email" placeholder="dsi@imf.cm" />
-                  @if (dsiForm.get('email')?.invalid && dsiForm.get('email')?.touched) {
+                  <input
+                    type="email"
+                    class="form-control"
+                    formControlName="email"
+                    placeholder="dsi@imf.cm"
+                  />
+                  @if (
+                    dsiForm.get("email")?.invalid &&
+                    dsiForm.get("email")?.touched
+                  ) {
                     <span class="field-error">Email valide requis</span>
                   }
                 </div>
                 <div class="form-actions">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="closeDsiForm()">Annuler</button>
-                  <button type="submit" class="btn btn-primary btn-sm" [disabled]="submitting()">
-                    @if (submitting()) { <span class="material-icons-round spin">refresh</span> }
-                    @else { Créer & envoyer OTP }
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    (click)="closeDsiForm()"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="submitting()"
+                  >
+                    @if (submitting()) {
+                      <span class="material-icons-round spin">refresh</span>
+                    } @else {
+                      Créer & envoyer OTP
+                    }
                   </button>
                 </div>
               </form>
             }
           } @else {
-            <p class="text-sm text-success" style="margin-bottom:12px">
-              <span class="material-icons-round" style="font-size:16px;vertical-align:middle">check_circle</span>
+            <p class="text-sm text-success" style="margin-bottom: 12px">
+              <span
+                class="material-icons-round"
+                style="font-size: 16px; vertical-align: middle"
+                >check_circle</span
+              >
               Compte DSI actif.
             </p>
             <div class="form-actions">
@@ -235,8 +295,10 @@
             [class]="imf.actif ? 'btn-warning' : 'btn-success'"
             (click)="toggleActif(imf)"
           >
-            <span class="material-icons-round">{{ imf.actif ? 'pause_circle' : 'play_circle' }}</span>
-            {{ imf.actif ? 'Suspendre l\'IMF' : 'Réactiver l\'IMF' }}
+            <span class="material-icons-round">{{
+              imf.actif ? "pause_circle" : "play_circle"
+            }}</span>
+            {{ imf.actif ? "Suspendre l'IMF" : "Réactiver l'IMF" }}
           </button>
 
           @if (!showDeleteConfirm()) {
@@ -245,10 +307,17 @@
             </button>
           } @else {
             <div class="delete-confirm">
-              <p class="text-sm">Suppression irréversible de <strong>{{ imf.nom }}</strong>. Confirmer ?</p>
+              <p class="text-sm">
+                Suppression irréversible de <strong>{{ imf.nom }}</strong
+                >. Confirmer ?
+              </p>
               <div class="form-actions">
-                <button class="btn btn-ghost btn-sm" (click)="cancelDelete()">Annuler</button>
-                <button class="btn btn-danger btn-sm" (click)="deleteImf()">Confirmer la suppression</button>
+                <button class="btn btn-ghost btn-sm" (click)="cancelDelete()">
+                  Annuler
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="deleteImf()">
+                  Confirmer la suppression
+                </button>
               </div>
             </div>
           }
@@ -272,39 +341,60 @@
       <!-- Indicateur d'étapes -->
       <div class="steps">
         @for (label of stepLabels; track $index) {
-          <div class="steps__item" [class.steps__item--active]="step() === $index + 1" [class.steps__item--done]="step() > $index + 1">
-            <div class="steps__dot">{{ step() > $index + 1 ? '✓' : $index + 1 }}</div>
+          <div
+            class="steps__item"
+            [class.steps__item--active]="step() === $index + 1"
+            [class.steps__item--done]="step() > $index + 1"
+          >
+            <div class="steps__dot">
+              {{ step() > $index + 1 ? "✓" : $index + 1 }}
+            </div>
             <span class="steps__label">{{ label }}</span>
           </div>
         }
       </div>
 
       <form [formGroup]="createForm" class="modal__body">
-
         <!-- Étape 1 : Identité -->
         @if (step() === 1) {
           <div class="form-grid">
             <div class="form-group">
               <label>Code IMF <span class="req">*</span></label>
-              <input type="text" class="form-control" formControlName="code"
-                placeholder="Ex: CAMCCUL" style="text-transform:uppercase"
-                (input)="uppercaseCode($event)" />
-              @if (isStepFieldInvalid('code')) {
-                <span class="field-error">Code requis (2-20 lettres majuscules/chiffres)</span>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="code"
+                placeholder="Ex: CAMCCUL"
+                style="text-transform: uppercase"
+                (input)="uppercaseCode($event)"
+              />
+              @if (isStepFieldInvalid("code")) {
+                <span class="field-error"
+                  >Code requis (2-20 lettres majuscules/chiffres)</span
+                >
               }
             </div>
             <div class="form-group">
               <label>Nom de l'IMF <span class="req">*</span></label>
-              <input type="text" class="form-control" formControlName="nom" placeholder="Crédit Communautaire" />
-              @if (isStepFieldInvalid('nom')) {
+              <input
+                type="text"
+                class="form-control"
+                formControlName="nom"
+                placeholder="Crédit Communautaire"
+              />
+              @if (isStepFieldInvalid("nom")) {
                 <span class="field-error">Nom requis (min. 3 caractères)</span>
               }
             </div>
             <div class="form-group form-group--full">
               <label>Dénomination sociale <span class="req">*</span></label>
-              <input type="text" class="form-control" formControlName="denominationSociale"
-                placeholder="Société Coopérative de Crédit..." />
-              @if (isStepFieldInvalid('denominationSociale')) {
+              <input
+                type="text"
+                class="form-control"
+                formControlName="denominationSociale"
+                placeholder="Société Coopérative de Crédit..."
+              />
+              @if (isStepFieldInvalid("denominationSociale")) {
                 <span class="field-error">Dénomination requise</span>
               }
             </div>
@@ -316,7 +406,7 @@
                   <option [value]="fj">{{ fj }}</option>
                 }
               </select>
-              @if (isStepFieldInvalid('formeJuridique')) {
+              @if (isStepFieldInvalid("formeJuridique")) {
                 <span class="field-error">Forme juridique requise</span>
               }
             </div>
@@ -326,23 +416,40 @@
             </div>
             <div class="form-group form-group--full">
               <label>Adresse du siège <span class="req">*</span></label>
-              <input type="text" class="form-control" formControlName="adresseSiege"
-                placeholder="Rue, quartier, ville" />
-              @if (isStepFieldInvalid('adresseSiege')) {
+              <input
+                type="text"
+                class="form-control"
+                formControlName="adresseSiege"
+                placeholder="Rue, quartier, ville"
+              />
+              @if (isStepFieldInvalid("adresseSiege")) {
                 <span class="field-error">Adresse requise</span>
               }
             </div>
             <div class="form-group">
               <label>N° agrément</label>
-              <input type="text" class="form-control" formControlName="numAgrement" />
+              <input
+                type="text"
+                class="form-control"
+                formControlName="numAgrement"
+              />
             </div>
             <div class="form-group">
               <label>Téléphone</label>
-              <input type="tel" class="form-control" formControlName="telephone" placeholder="+237 6XX XXX XXX" />
+              <input
+                type="tel"
+                class="form-control"
+                formControlName="telephone"
+                placeholder="+237 6XX XXX XXX"
+              />
             </div>
             <div class="form-group form-group--full">
               <label>Email institutionnel</label>
-              <input type="email" class="form-control" formControlName="email" />
+              <input
+                type="email"
+                class="form-control"
+                formControlName="email"
+              />
             </div>
           </div>
         }
@@ -352,20 +459,36 @@
           <div class="form-grid">
             <div class="form-group form-group--full">
               <label>Capital social (FCFA) <span class="req">*</span></label>
-              <input type="number" class="form-control" formControlName="capitalSocial" placeholder="50000000" min="1" />
-              @if (isStepFieldInvalid('capitalSocial')) {
-                <span class="field-error">Capital social requis (valeur positive)</span>
+              <input
+                type="number"
+                class="form-control"
+                formControlName="capitalSocial"
+                placeholder="50000000"
+                min="1"
+              />
+              @if (isStepFieldInvalid("capitalSocial")) {
+                <span class="field-error"
+                  >Capital social requis (valeur positive)</span
+                >
               }
             </div>
             <div class="form-group form-group--full">
               <label>Segments de clients</label>
-              <input type="text" class="form-control" formControlName="segmentsClients"
-                placeholder="Agriculteurs, Commerçants, PME..." />
+              <input
+                type="text"
+                class="form-control"
+                formControlName="segmentsClients"
+                placeholder="Agriculteurs, Commerçants, PME..."
+              />
             </div>
             <div class="form-group form-group--full">
               <label>Types de garanties acceptées</label>
-              <input type="text" class="form-control" formControlName="typesGaranties"
-                placeholder="Hypothèque, Caution, Nantissement..." />
+              <input
+                type="text"
+                class="form-control"
+                formControlName="typesGaranties"
+                placeholder="Hypothèque, Caution, Nantissement..."
+              />
             </div>
           </div>
         }
@@ -374,51 +497,93 @@
         @if (step() === 3) {
           <div class="form-grid">
             <div class="form-group">
-              <label>Taux d'intérêt annuel (%) <span class="req">*</span></label>
-              <input type="number" class="form-control" formControlName="tauxInteretAnnuel"
-                placeholder="18" min="0" max="100" step="0.1" />
-              @if (isStepFieldInvalid('tauxInteretAnnuel')) {
+              <label
+                >Taux d'intérêt annuel (%) <span class="req">*</span></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                formControlName="tauxInteretAnnuel"
+                placeholder="18"
+                min="0"
+                max="100"
+                step="0.1"
+              />
+              @if (isStepFieldInvalid("tauxInteretAnnuel")) {
                 <span class="field-error">Taux requis (0-100%)</span>
               }
             </div>
             <div class="form-group">
               <label>Durée max crédit (mois) <span class="req">*</span></label>
-              <input type="number" class="form-control" formControlName="dureeMaxCreditMois"
-                placeholder="60" min="1" max="360" />
-              @if (isStepFieldInvalid('dureeMaxCreditMois')) {
+              <input
+                type="number"
+                class="form-control"
+                formControlName="dureeMaxCreditMois"
+                placeholder="60"
+                min="1"
+                max="360"
+              />
+              @if (isStepFieldInvalid("dureeMaxCreditMois")) {
                 <span class="field-error">Durée requise (1-360 mois)</span>
               }
             </div>
             <div class="form-group">
               <label>Taux pénalité retard (%) <span class="req">*</span></label>
-              <input type="number" class="form-control" formControlName="tauxPenaliteRetard"
-                placeholder="2" min="0" step="0.1" />
-              @if (isStepFieldInvalid('tauxPenaliteRetard')) {
+              <input
+                type="number"
+                class="form-control"
+                formControlName="tauxPenaliteRetard"
+                placeholder="2"
+                min="0"
+                step="0.1"
+              />
+              @if (isStepFieldInvalid("tauxPenaliteRetard")) {
                 <span class="field-error">Taux requis (≥ 0)</span>
               }
             </div>
             <div class="form-group">
               <label>Seuil de relance (jours) <span class="req">*</span></label>
-              <input type="number" class="form-control" formControlName="seuilRelanceJours"
-                placeholder="30" min="1" />
-              @if (isStepFieldInvalid('seuilRelanceJours')) {
+              <input
+                type="number"
+                class="form-control"
+                formControlName="seuilRelanceJours"
+                placeholder="30"
+                min="1"
+              />
+              @if (isStepFieldInvalid("seuilRelanceJours")) {
                 <span class="field-error">Seuil requis (≥ 1 jour)</span>
               }
             </div>
             <div class="form-group">
               <label>Taux épargne (%)</label>
-              <input type="number" class="form-control" formControlName="tauxEpargne"
-                placeholder="5" min="0" step="0.1" />
+              <input
+                type="number"
+                class="form-control"
+                formControlName="tauxEpargne"
+                placeholder="5"
+                min="0"
+                step="0.1"
+              />
             </div>
             <div class="form-group">
               <label>Solde minimum épargne (FCFA)</label>
-              <input type="number" class="form-control" formControlName="soldeMinEpargne"
-                placeholder="5000" min="0" />
+              <input
+                type="number"
+                class="form-control"
+                formControlName="soldeMinEpargne"
+                placeholder="5000"
+                min="0"
+              />
             </div>
             <div class="form-group">
               <label>Frais tenue de compte (FCFA/mois)</label>
-              <input type="number" class="form-control" formControlName="fraisTenueCompte"
-                placeholder="500" min="0" />
+              <input
+                type="number"
+                class="form-control"
+                formControlName="fraisTenueCompte"
+                placeholder="500"
+                min="0"
+              />
             </div>
           </div>
         }
@@ -428,8 +593,14 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Taille max documents KYC (Mo)</label>
-              <input type="number" class="form-control" formControlName="maxDocumentKycOctets"
-                placeholder="5 (défaut)" min="1" max="20" />
+              <input
+                type="number"
+                class="form-control"
+                formControlName="maxDocumentKycOctets"
+                placeholder="5 (défaut)"
+                min="1"
+                max="20"
+              />
               <span class="field-hint">1 à 20 Mo — laisser vide pour 5 Mo</span>
             </div>
             <div class="form-group">
@@ -442,16 +613,24 @@
             </div>
             <div class="form-group">
               <label>Max tentatives connexion</label>
-              <input type="number" class="form-control" formControlName="maxTentativesConnexion"
-                min="1" max="20" />
+              <input
+                type="number"
+                class="form-control"
+                formControlName="maxTentativesConnexion"
+                min="1"
+                max="20"
+              />
             </div>
           </div>
         }
-
       </form>
 
       <div class="modal__footer">
-        <button class="btn btn-ghost" (click)="prevStep()" [disabled]="step() === 1">
+        <button
+          class="btn btn-ghost"
+          (click)="prevStep()"
+          [disabled]="step() === 1"
+        >
           <span class="material-icons-round">arrow_back</span> Précédent
         </button>
         <span class="steps__counter">Étape {{ step() }} / 4</span>
@@ -460,9 +639,16 @@
             Suivant <span class="material-icons-round">arrow_forward</span>
           </button>
         } @else {
-          <button class="btn btn-primary" (click)="submitCreate()" [disabled]="submitting()">
-            @if (submitting()) { <span class="material-icons-round spin">refresh</span> }
-            @else { <span class="material-icons-round">check</span> Créer l'IMF }
+          <button
+            class="btn btn-primary"
+            (click)="submitCreate()"
+            [disabled]="submitting()"
+          >
+            @if (submitting()) {
+              <span class="material-icons-round spin">refresh</span>
+            } @else {
+              <span class="material-icons-round">check</span> Créer l'IMF
+            }
           </button>
         }
       </div>

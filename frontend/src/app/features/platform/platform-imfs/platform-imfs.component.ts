@@ -48,14 +48,29 @@ export class PlatformImfsComponent implements OnInit {
     telephone: [""],
     email: ["", Validators.email],
     // Étape 2 — Capital & segmentation
-    capitalSocial: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    capitalSocial: [
+      null as number | null,
+      [Validators.required, Validators.min(0.01)],
+    ],
     segmentsClients: [""],
     typesGaranties: [""],
     // Étape 3 — Paramètres métier
-    tauxInteretAnnuel: [null as number | null, [Validators.required, Validators.min(0), Validators.max(100)]],
-    dureeMaxCreditMois: [null as number | null, [Validators.required, Validators.min(1), Validators.max(360)]],
-    tauxPenaliteRetard: [null as number | null, [Validators.required, Validators.min(0)]],
-    seuilRelanceJours: [null as number | null, [Validators.required, Validators.min(1)]],
+    tauxInteretAnnuel: [
+      null as number | null,
+      [Validators.required, Validators.min(0), Validators.max(100)],
+    ],
+    dureeMaxCreditMois: [
+      null as number | null,
+      [Validators.required, Validators.min(1), Validators.max(360)],
+    ],
+    tauxPenaliteRetard: [
+      null as number | null,
+      [Validators.required, Validators.min(0)],
+    ],
+    seuilRelanceJours: [
+      null as number | null,
+      [Validators.required, Validators.min(1)],
+    ],
     tauxEpargne: [null as number | null],
     soldeMinEpargne: [null as number | null],
     fraisTenueCompte: [null as number | null],
@@ -66,12 +81,22 @@ export class PlatformImfsComponent implements OnInit {
   });
 
   dsiForm = this.fb.group({
-    username: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
+    username: [
+      "",
+      [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
+    ],
     email: ["", [Validators.required, Validators.email]],
   });
 
   readonly formeJuridiqueOptions = [
-    "SA", "SARL", "SCI", "Coopérative", "Association", "GIC", "Mutuelle", "Autre",
+    "SA",
+    "SARL",
+    "SCI",
+    "Coopérative",
+    "Association",
+    "GIC",
+    "Mutuelle",
+    "Autre",
   ];
 
   readonly niveauKycOptions = ["NIVEAU_1", "NIVEAU_2", "NIVEAU_3"];
@@ -88,7 +113,12 @@ export class PlatformImfsComponent implements OnInit {
   private readonly stepFields: Record<number, string[]> = {
     1: ["code", "nom", "denominationSociale", "formeJuridique", "adresseSiege"],
     2: ["capitalSocial"],
-    3: ["tauxInteretAnnuel", "dureeMaxCreditMois", "tauxPenaliteRetard", "seuilRelanceJours"],
+    3: [
+      "tauxInteretAnnuel",
+      "dureeMaxCreditMois",
+      "tauxPenaliteRetard",
+      "seuilRelanceJours",
+    ],
     4: [],
   };
 
@@ -125,7 +155,11 @@ export class PlatformImfsComponent implements OnInit {
   // ── Création IMF ─────────────────────────────────────────────────────────
 
   openCreate() {
-    this.createForm.reset({ pays: "Cameroun", niveauKycMinimal: "NIVEAU_1", maxTentativesConnexion: 5 });
+    this.createForm.reset({
+      pays: "Cameroun",
+      niveauKycMinimal: "NIVEAU_1",
+      maxTentativesConnexion: 5,
+    });
     this.step.set(1);
     this.showCreate.set(true);
   }
@@ -174,7 +208,10 @@ export class PlatformImfsComponent implements OnInit {
           this.showCreate.set(false);
           this.imfs.update((list) => [imf, ...list]);
           this.select(imf);
-          this.toast.showSuccess("IMF créée", "L'institution a été enregistrée avec succès.");
+          this.toast.showSuccess(
+            "IMF créée",
+            "L'institution a été enregistrée avec succès.",
+          );
         },
         error: (err) => {
           this.submitting.set(false);
@@ -198,9 +235,13 @@ export class PlatformImfsComponent implements OnInit {
           this.updateInList(updated);
           this.selected.set(updated);
           const label = updated.actif ? "activée" : "désactivée";
-          this.toast.showSuccess("IMF mise à jour", `L'institution a été ${label}.`);
+          this.toast.showSuccess(
+            "IMF mise à jour",
+            `L'institution a été ${label}.`,
+          );
         },
-        error: () => this.toast.showError("Erreur", "Impossible de mettre à jour l'IMF."),
+        error: () =>
+          this.toast.showError("Erreur", "Impossible de mettre à jour l'IMF."),
       });
   }
 
@@ -217,15 +258,21 @@ export class PlatformImfsComponent implements OnInit {
   deleteImf() {
     const imf = this.selected();
     if (!imf) return;
-    this.api.delete<ApiResp<void>>(`/api/v1/platform/imf/${imf.uid}`).subscribe({
-      next: () => {
-        this.imfs.update((list) => list.filter((i) => i.uid !== imf.uid));
-        this.selected.set(null);
-        this.showDeleteConfirm.set(false);
-        this.toast.showSuccess("IMF supprimée", "L'institution a été supprimée définitivement.");
-      },
-      error: () => this.toast.showError("Erreur", "Impossible de supprimer l'IMF."),
-    });
+    this.api
+      .delete<ApiResp<void>>(`/api/v1/platform/imf/${imf.uid}`)
+      .subscribe({
+        next: () => {
+          this.imfs.update((list) => list.filter((i) => i.uid !== imf.uid));
+          this.selected.set(null);
+          this.showDeleteConfirm.set(false);
+          this.toast.showSuccess(
+            "IMF supprimée",
+            "L'institution a été supprimée définitivement.",
+          );
+        },
+        error: () =>
+          this.toast.showError("Erreur", "Impossible de supprimer l'IMF."),
+      });
   }
 
   // ── Compte DSI ────────────────────────────────────────────────────────────
@@ -248,7 +295,10 @@ export class PlatformImfsComponent implements OnInit {
     if (!imf) return;
     this.submitting.set(true);
     this.api
-      .post<ApiResp<ImfDetail>>(`/api/v1/platform/imf/${imf.uid}/admin`, this.dsiForm.value)
+      .post<ApiResp<ImfDetail>>(
+        `/api/v1/platform/imf/${imf.uid}/admin`,
+        this.dsiForm.value,
+      )
       .pipe(map((r) => r.data))
       .subscribe({
         next: (updated) => {
@@ -256,11 +306,15 @@ export class PlatformImfsComponent implements OnInit {
           this.updateInList(updated);
           this.selected.set(updated);
           this.showDsiForm.set(false);
-          this.toast.showSuccess("Compte DSI créé", "Un email OTP a été envoyé au DSI.");
+          this.toast.showSuccess(
+            "Compte DSI créé",
+            "Un email OTP a été envoyé au DSI.",
+          );
         },
         error: (err) => {
           this.submitting.set(false);
-          const msg = err?.error?.message ?? "Erreur lors de la création du DSI";
+          const msg =
+            err?.error?.message ?? "Erreur lors de la création du DSI";
           this.toast.showError("Erreur", msg);
         },
       });
@@ -270,15 +324,22 @@ export class PlatformImfsComponent implements OnInit {
     const imf = this.selected();
     if (!imf) return;
     this.api
-      .patch<ApiResp<ImfDetail>>(`/api/v1/platform/imf/${imf.uid}/admin/suspend`, {})
+      .patch<ApiResp<ImfDetail>>(
+        `/api/v1/platform/imf/${imf.uid}/admin/suspend`,
+        {},
+      )
       .pipe(map((r) => r.data))
       .subscribe({
         next: (updated) => {
           this.updateInList(updated);
           this.selected.set(updated);
-          this.toast.showWarning("DSI suspendu", "Le compte DSI a été désactivé.");
+          this.toast.showWarning(
+            "DSI suspendu",
+            "Le compte DSI a été désactivé.",
+          );
         },
-        error: () => this.toast.showError("Erreur", "Impossible de suspendre le DSI."),
+        error: () =>
+          this.toast.showError("Erreur", "Impossible de suspendre le DSI."),
       });
   }
 
@@ -292,9 +353,13 @@ export class PlatformImfsComponent implements OnInit {
         next: (updated) => {
           this.updateInList(updated);
           this.selected.set(updated);
-          this.toast.showSuccess("DSI supprimé", "Le compte DSI a été supprimé.");
+          this.toast.showSuccess(
+            "DSI supprimé",
+            "Le compte DSI a été supprimé.",
+          );
         },
-        error: () => this.toast.showError("Erreur", "Impossible de supprimer le DSI."),
+        error: () =>
+          this.toast.showError("Erreur", "Impossible de supprimer le DSI."),
       });
   }
 

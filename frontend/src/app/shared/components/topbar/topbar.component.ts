@@ -78,7 +78,10 @@ export class TopbarComponent implements OnInit {
     const body = encodeURIComponent(
       `Bonjour,\n\nJe suis ${this.auth.fullName()} (${this.roleLabel}).\n\nMon problème :\n\n`,
     );
-    window.open(`mailto:support@microrecouv.cm?subject=${subject}&body=${body}`, "_blank");
+    window.open(
+      `mailto:support@microrecouv.cm?subject=${subject}&body=${body}`,
+      "_blank",
+    );
   }
 
   logout() {

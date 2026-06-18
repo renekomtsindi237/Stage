@@ -9,7 +9,11 @@ import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { map } from "rxjs/operators";
 import { ApiService } from "../../../core/http/api.service";
-import { AuditEntry, ApiResp, PagedResult } from "../../../core/models/platform.model";
+import {
+  AuditEntry,
+  ApiResp,
+  PagedResult,
+} from "../../../core/models/platform.model";
 
 @Component({
   selector: "app-platform-audit",
@@ -34,21 +38,39 @@ export class PlatformAuditComponent implements OnInit {
 
   filterForm = this.fb.group({
     entiteType: [""],
-    action:     [""],
-    username:   [""],
-    debut:      [""],
-    fin:        [""],
+    action: [""],
+    username: [""],
+    debut: [""],
+    fin: [""],
   });
 
   readonly entiteTypes = [
-    "DOSSIER", "CLIENT", "COLLECTE", "ALERTE", "UTILISATEUR",
-    "CREANCE", "ECHEANCE", "AUTH", "EXPORT", "CONSENTEMENT", "VIOLATION_DONNEES",
+    "DOSSIER",
+    "CLIENT",
+    "COLLECTE",
+    "ALERTE",
+    "UTILISATEUR",
+    "CREANCE",
+    "ECHEANCE",
+    "AUTH",
+    "EXPORT",
+    "CONSENTEMENT",
+    "VIOLATION_DONNEES",
   ];
 
   readonly actions = [
-    "CREATION", "MODIFICATION", "SUPPRESSION", "CONSULTATION",
-    "EXPORT", "CONNEXION", "DECONNEXION", "CHANGEMENT_STATUT",
-    "ACCES_REFUSE", "MASQUAGE_DONNEES", "DEMANDE_RGPD", "CONSENTEMENT",
+    "CREATION",
+    "MODIFICATION",
+    "SUPPRESSION",
+    "CONSULTATION",
+    "EXPORT",
+    "CONNEXION",
+    "DECONNEXION",
+    "CHANGEMENT_STATUT",
+    "ACCES_REFUSE",
+    "MASQUAGE_DONNEES",
+    "DEMANDE_RGPD",
+    "CONSENTEMENT",
   ];
 
   ngOnInit() {
@@ -64,14 +86,17 @@ export class PlatformAuditComponent implements OnInit {
       page,
       size: this.pageSize,
       entiteType: f.entiteType || undefined,
-      action:     f.action     || undefined,
-      username:   f.username   || undefined,
-      debut:      f.debut      ? new Date(f.debut).toISOString() : undefined,
-      fin:        f.fin        ? new Date(f.fin).toISOString()   : undefined,
+      action: f.action || undefined,
+      username: f.username || undefined,
+      debut: f.debut ? new Date(f.debut).toISOString() : undefined,
+      fin: f.fin ? new Date(f.fin).toISOString() : undefined,
     };
 
     this.api
-      .get<ApiResp<PagedResult<AuditEntry>>>("/api/v1/admin/audit/trail", params)
+      .get<ApiResp<PagedResult<AuditEntry>>>(
+        "/api/v1/admin/audit/trail",
+        params,
+      )
       .pipe(map((r) => r.data))
       .subscribe({
         next: (page_) => {
@@ -105,14 +130,19 @@ export class PlatformAuditComponent implements OnInit {
 
   actionBadgeClass(action: string): string {
     switch (action) {
-      case "CREATION":          return "badge-success";
+      case "CREATION":
+        return "badge-success";
       case "SUPPRESSION":
-      case "ACCES_REFUSE":      return "badge-danger";
+      case "ACCES_REFUSE":
+        return "badge-danger";
       case "MODIFICATION":
-      case "CHANGEMENT_STATUT": return "badge-warning";
+      case "CHANGEMENT_STATUT":
+        return "badge-warning";
       case "CONNEXION":
-      case "DECONNEXION":       return "badge-info";
-      default:                  return "badge-muted";
+      case "DECONNEXION":
+        return "badge-info";
+      default:
+        return "badge-muted";
     }
   }
 
@@ -130,7 +160,7 @@ export class PlatformAuditComponent implements OnInit {
     const cur = this.currentPage();
     const range: number[] = [];
     const start = Math.max(0, cur - 2);
-    const end   = Math.min(total - 1, cur + 2);
+    const end = Math.min(total - 1, cur + 2);
     for (let i = start; i <= end; i++) range.push(i);
     return range;
   }

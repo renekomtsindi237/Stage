@@ -1,5 +1,4 @@
 <div class="page-content">
-
   <!-- En-tête -->
   <div class="page-header">
     <div>
@@ -11,7 +10,11 @@
   </div>
 
   <!-- Filtres -->
-  <form [formGroup]="filterForm" (ngSubmit)="search()" class="card audit-filters">
+  <form
+    [formGroup]="filterForm"
+    (ngSubmit)="search()"
+    class="card audit-filters"
+  >
     <div class="audit-filters__grid">
       <div class="form-group">
         <label>Type d'entité</label>
@@ -35,7 +38,12 @@
 
       <div class="form-group">
         <label>Utilisateur</label>
-        <input type="text" class="form-control" formControlName="username" placeholder="nom d'utilisateur" />
+        <input
+          type="text"
+          class="form-control"
+          formControlName="username"
+          placeholder="nom d'utilisateur"
+        />
       </div>
 
       <div class="form-group">
@@ -61,9 +69,8 @@
 
   <!-- Résultats -->
   <div class="audit-layout" [class.audit-layout--split]="selected()">
-
     <!-- Table -->
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="card" style="padding: 0; overflow: hidden">
       <table class="data-table">
         <thead>
           <tr>
@@ -78,10 +85,15 @@
         </thead>
         <tbody>
           @if (loading()) {
-            @for (_ of [1,2,3,4,5,6]; track $index) {
+            @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
               <tr>
-                @for (__ of [1,2,3,4,5,6,7]; track $index) {
-                  <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+                @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+                  <td>
+                    <div
+                      class="skeleton"
+                      style="height: 14px; width: 80%"
+                    ></div>
+                  </td>
                 }
               </tr>
             }
@@ -99,26 +111,48 @@
                 [class.audit-row--selected]="selected()?.id === entry.id"
                 (click)="select(entry)"
               >
-                <td class="text-sm text-muted">{{ entry.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="text-sm text-muted">
+                  {{ entry.createdAt | date: "dd/MM/yyyy HH:mm" }}
+                </td>
                 <td class="font-semibold">{{ entry.acteurUsername }}</td>
                 <td class="text-sm text-muted">{{ entry.acteurRole }}</td>
                 <td>
-                  <span class="badge" [class]="actionBadgeClass(entry.action)">{{ entry.action }}</span>
+                  <span
+                    class="badge"
+                    [class]="actionBadgeClass(entry.action)"
+                    >{{ entry.action }}</span
+                  >
                 </td>
                 <td>
                   <span class="audit-entite">{{ entry.entiteType }}</span>
                   @if (entry.entiteId) {
-                    <span class="text-sm text-muted">#{{ entry.entiteId }}</span>
+                    <span class="text-sm text-muted"
+                      >#{{ entry.entiteId }}</span
+                    >
                   }
                 </td>
                 <td>
-                  <span class="badge" [class]="entry.statut === 'SUCCES' ? 'badge-success' : 'badge-danger'">
+                  <span
+                    class="badge"
+                    [class]="
+                      entry.statut === 'SUCCES'
+                        ? 'badge-success'
+                        : 'badge-danger'
+                    "
+                  >
                     {{ entry.statut }}
                   </span>
                 </td>
                 <td>
-                  <span class="material-icons-round text-muted" style="font-size:18px">
-                    {{ selected()?.id === entry.id ? 'expand_less' : 'expand_more' }}
+                  <span
+                    class="material-icons-round text-muted"
+                    style="font-size: 18px"
+                  >
+                    {{
+                      selected()?.id === entry.id
+                        ? "expand_less"
+                        : "expand_more"
+                    }}
                   </span>
                 </td>
               </tr>
@@ -146,15 +180,23 @@
                         </div>
                       }
                       @if (entry.ancienneValeur) {
-                        <div class="audit-detail__item audit-detail__item--full">
+                        <div
+                          class="audit-detail__item audit-detail__item--full"
+                        >
                           <label>Ancienne valeur</label>
-                          <pre class="audit-json">{{ jsonPreview(entry.ancienneValeur) }}</pre>
+                          <pre class="audit-json">{{
+                            jsonPreview(entry.ancienneValeur)
+                          }}</pre>
                         </div>
                       }
                       @if (entry.nouvelleValeur) {
-                        <div class="audit-detail__item audit-detail__item--full">
+                        <div
+                          class="audit-detail__item audit-detail__item--full"
+                        >
                           <label>Nouvelle valeur</label>
-                          <pre class="audit-json">{{ jsonPreview(entry.nouvelleValeur) }}</pre>
+                          <pre class="audit-json">{{
+                            jsonPreview(entry.nouvelleValeur)
+                          }}</pre>
                         </div>
                       }
                     </div>
@@ -169,7 +211,11 @@
       <!-- Pagination -->
       @if (!loading() && totalPages() > 1) {
         <div class="audit-pagination">
-          <button class="btn btn-ghost btn-sm" (click)="goPage(currentPage() - 1)" [disabled]="currentPage() === 0">
+          <button
+            class="btn btn-ghost btn-sm"
+            (click)="goPage(currentPage() - 1)"
+            [disabled]="currentPage() === 0"
+          >
             <span class="material-icons-round">chevron_left</span>
           </button>
           @for (p of pages(); track p) {
@@ -177,17 +223,23 @@
               class="btn btn-sm"
               [class]="p === currentPage() ? 'btn-primary' : 'btn-ghost'"
               (click)="goPage(p)"
-            >{{ p + 1 }}</button>
+            >
+              {{ p + 1 }}
+            </button>
           }
-          <button class="btn btn-ghost btn-sm" (click)="goPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">
+          <button
+            class="btn btn-ghost btn-sm"
+            (click)="goPage(currentPage() + 1)"
+            [disabled]="currentPage() >= totalPages() - 1"
+          >
             <span class="material-icons-round">chevron_right</span>
           </button>
           <span class="audit-pagination__info">
-            Page {{ currentPage() + 1 }} / {{ totalPages() }} · {{ totalElements() | number }} résultats
+            Page {{ currentPage() + 1 }} / {{ totalPages() }} ·
+            {{ totalElements() | number }} résultats
           </span>
         </div>
       }
     </div>
-
   </div>
 </div>

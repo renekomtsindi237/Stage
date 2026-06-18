@@ -41,7 +41,9 @@
     padding: 7px 16px;
     border-radius: var(--radius-full);
     border: 1.5px solid var(--color-primary);
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
 
     &:hover {
       background: var(--color-primary);
@@ -110,7 +112,9 @@
   border-radius: var(--radius-xl);
   border: 2px solid transparent;
   text-decoration: none;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   cursor: pointer;
 
   &:hover {
@@ -126,8 +130,12 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
-    h3 { color: #fff; }
-    p  { color: rgba(255, 255, 255, 0.85); }
+    h3 {
+      color: #fff;
+    }
+    p {
+      color: rgba(255, 255, 255, 0.85);
+    }
 
     .landing__login-card__cta {
       color: #fff;
@@ -145,8 +153,12 @@
       color: var(--color-primary);
     }
 
-    h3 { color: var(--color-text); }
-    p  { color: var(--color-text-muted); }
+    h3 {
+      color: var(--color-text);
+    }
+    p {
+      color: var(--color-text-muted);
+    }
 
     .landing__login-card__cta {
       color: var(--color-primary);
@@ -268,7 +280,9 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: 24px 22px;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
 
   &:hover {
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
@@ -349,9 +363,13 @@
   transition: opacity 0.15s;
   text-decoration: none;
 
-  &:hover { opacity: 0.88; }
+  &:hover {
+    opacity: 0.88;
+  }
 
-  .material-icons-round { font-size: 20px; }
+  .material-icons-round {
+    font-size: 20px;
+  }
 }
 
 .landing__btn-admin {
@@ -365,7 +383,9 @@
   font-weight: 500;
   border-radius: var(--radius-lg);
   border: 1.5px solid var(--color-border);
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
   text-decoration: none;
 
   &:hover {
@@ -373,7 +393,9 @@
     color: var(--color-primary);
   }
 
-  .material-icons-round { font-size: 20px; }
+  .material-icons-round {
+    font-size: 20px;
+  }
 }
 
 // ── Pied de page ─────────────────────────────────────────────────────────────
