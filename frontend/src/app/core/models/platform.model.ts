@@ -26,6 +26,79 @@ export interface PlatformStats {
   auditLogs: AuditLogEntry[];
 }
 
+// Enveloppe standard retournée par le backend (ApiResponse<T>)
+export interface ApiResp<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+// Stats réelles de la plateforme (PlatformStatsResponse backend)
+export interface PlatformActualStats {
+  totalImfs: number;
+  activeImfs: number;
+  inactiveImfs: number;
+  totalUsers: number;
+  newImfsThisMonth: number;
+}
+
+// Détail complet d'une IMF (ImfResponse backend)
+export interface ImfDetail {
+  uid: string;
+  code: string;
+  nom: string;
+  pays: string;
+  actif: boolean;
+  createdAt: string;
+  denominationSociale: string;
+  adresseSiege: string;
+  formeJuridique: string;
+  capitalSocial: number;
+  numAgrement?: string;
+  telephone?: string;
+  email?: string;
+  tauxInteretAnnuel: number;
+  dureeMaxCreditMois: number;
+  tauxPenaliteRetard: number;
+  seuilRelanceJours: number;
+  tauxEpargne?: number;
+  soldeMinEpargne?: number;
+  fraisTenueCompte?: number;
+  segmentsClients?: string;
+  typesGaranties?: string;
+  maxDocumentKycOctets?: number;
+  niveauKycMinimal?: string;
+  maxTentativesConnexion?: number;
+  logoUrl?: string;
+  hasDsi: boolean;
+}
+
+// Entrée de la piste d'audit immuable (AuditTrailResponse backend)
+export interface AuditEntry {
+  id: number;
+  imfId?: number;
+  acteurUsername: string;
+  acteurRole: string;
+  action: string;
+  entiteType: string;
+  entiteId?: string;
+  ancienneValeur?: Record<string, unknown>;
+  nouvelleValeur?: Record<string, unknown>;
+  motif?: string;
+  ipClient?: string;
+  statut: string;
+  createdAt: string;
+}
+
+// Wrapper pagination Spring (Page<T>)
+export interface PagedResult<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 export interface PlatformDashboard {
   imfActives: number;
   imfTotal: number;

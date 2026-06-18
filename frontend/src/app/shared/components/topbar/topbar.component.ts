@@ -4,7 +4,6 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule, AsyncPipe } from "@angular/common";
 import { RouterLink } from "@angular/router";
@@ -72,6 +71,14 @@ export class TopbarComponent implements OnInit {
   }
   closeNotif() {
     this.showNotifPanel.set(false);
+  }
+
+  contactSupport() {
+    const subject = encodeURIComponent("Demande de support — MicroRecouv");
+    const body = encodeURIComponent(
+      `Bonjour,\n\nJe suis ${this.auth.fullName()} (${this.roleLabel}).\n\nMon problème :\n\n`,
+    );
+    window.open(`mailto:support@microrecouv.cm?subject=${subject}&body=${body}`, "_blank");
   }
 
   logout() {

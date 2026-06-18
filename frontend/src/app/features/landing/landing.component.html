@@ -1,0 +1,127 @@
+<div class="landing">
+
+  <!-- Barre de navigation -->
+  <nav class="landing__nav">
+    <div class="landing__nav-brand">
+      <img src="assets/logo.png" alt="MicroRecouv" height="40" />
+    </div>
+    <div class="landing__nav-actions">
+      <a routerLink="/login" class="landing__nav-link">
+        <span class="material-icons-round">login</span>
+        Se connecter
+      </a>
+    </div>
+  </nav>
+
+  <!-- Section principale -->
+  <section class="landing__hero">
+    <div class="landing__hero-inner">
+
+      <h1 class="landing__hero-title">
+        Bienvenue sur <span class="landing__hero-accent">MicroRecouv</span>
+      </h1>
+
+      <p class="landing__hero-subtitle">
+        La plateforme qui aide votre institution de microfinance à gérer
+        et recouvrer les crédits accordés à vos clients, simplement et en toute sécurité.
+      </p>
+
+      <!-- Deux boutons de connexion bien visibles -->
+      <div class="landing__login-cards">
+
+        <!-- Connexion utilisateur -->
+        <a routerLink="/login" class="landing__login-card landing__login-card--user">
+          <div class="landing__login-card__icon">
+            <span class="material-icons-round">badge</span>
+          </div>
+          <div class="landing__login-card__body">
+            <h3>Accès personnel</h3>
+            <p>
+              Agent, Directeur, Analyste, Caissier, Responsable…
+              Connectez-vous avec le code envoyé sur votre adresse email.
+            </p>
+          </div>
+          <div class="landing__login-card__cta">
+            Se connecter
+            <span class="material-icons-round">arrow_forward</span>
+          </div>
+        </a>
+
+        <!-- Connexion administrateur -->
+        <a routerLink="/admin/login" class="landing__login-card landing__login-card--admin">
+          <div class="landing__login-card__icon">
+            <span class="material-icons-round">admin_panel_settings</span>
+          </div>
+          <div class="landing__login-card__body">
+            <h3>Espace administrateur</h3>
+            <p>
+              Super Administrateur de la plateforme uniquement.
+              Connexion avec identifiant et mot de passe.
+            </p>
+          </div>
+          <div class="landing__login-card__cta">
+            Accès administration
+            <span class="material-icons-round">arrow_forward</span>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Aide rapide -->
+      <p class="landing__help-text">
+        <span class="material-icons-round">help_outline</span>
+        Vous ne savez pas quel bouton choisir ?
+        Si vous êtes un employé de l'institution (agent, caissier, directeur…),
+        utilisez <strong>«&nbsp;Accès personnel&nbsp;»</strong>.
+        L'espace administrateur est réservé à l'équipe technique de la plateforme.
+      </p>
+
+    </div>
+  </section>
+
+  <!-- Ce que fait la plateforme -->
+  <section class="landing__features">
+    <div class="landing__features-inner">
+      <h2 class="landing__section-title">Tout ce dont vous avez besoin</h2>
+      <p class="landing__section-sub">
+        MicroRecouv centralise toutes les informations de votre institution en un seul endroit,
+        accessible depuis n'importe quel ordinateur.
+      </p>
+      <div class="landing__features-grid">
+        @for (f of features; track f.title) {
+          <div class="landing__feature-card">
+            <div class="landing__feature-icon">
+              <span class="material-icons-round">{{ f.icon }}</span>
+            </div>
+            <h3>{{ f.title }}</h3>
+            <p>{{ f.desc }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Section connexion en bas -->
+  <section class="landing__bottom-cta">
+    <div class="landing__bottom-cta-inner">
+      <h2>Prêt à commencer ?</h2>
+      <p>Choisissez votre type d'accès ci-dessous.</p>
+      <div class="landing__bottom-btns">
+        <a routerLink="/login" class="landing__btn-user">
+          <span class="material-icons-round">login</span>
+          Accès personnel
+        </a>
+        <a routerLink="/admin/login" class="landing__btn-admin">
+          <span class="material-icons-round">admin_panel_settings</span>
+          Espace administrateur
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pied de page -->
+  <footer class="landing__footer">
+    <p>© 2025 MicroRecouv · Plateforme de recouvrement pour institutions de microfinance · Stage IUSJ</p>
+  </footer>
+
+</div>

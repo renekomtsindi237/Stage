@@ -77,7 +77,6 @@ export class SidebarComponent {
       },
       { label: "Gestion IMF", icon: "business", route: "/platform/imfs" },
       { label: "Audit Global", icon: "history_edu", route: "/platform/audit" },
-      { label: "Support", icon: "support_agent", route: "/support/tickets" },
     ],
     RESPONSABLE_RECOUVREMENT: [
       {

@@ -3,6 +3,16 @@ import { authGuard } from "./core/auth/auth.guard";
 import { roleGuard } from "./core/auth/role.guard";
 
 export const routes: Routes = [
+  // Landing page publique
+  {
+    path: "",
+    pathMatch: "full",
+    loadComponent: () =>
+      import("./features/landing/landing.component").then(
+        (m) => m.LandingComponent,
+      ),
+  },
+
   // Auth shell (no sidebar)
   {
     path: "login",
@@ -64,6 +74,20 @@ export const routes: Routes = [
             loadComponent: () =>
               import("./features/platform/platform-dashboard/platform-dashboard.component").then(
                 (m) => m.PlatformDashboardComponent,
+              ),
+          },
+          {
+            path: "imfs",
+            loadComponent: () =>
+              import("./features/platform/platform-imfs/platform-imfs.component").then(
+                (m) => m.PlatformImfsComponent,
+              ),
+          },
+          {
+            path: "audit",
+            loadComponent: () =>
+              import("./features/platform/platform-audit/platform-audit.component").then(
+                (m) => m.PlatformAuditComponent,
               ),
           },
         ],

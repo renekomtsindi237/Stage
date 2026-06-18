@@ -9,124 +9,121 @@
   <!-- KPI globaux -->
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card
-      label="Institutions actives"
-      [value]="data()?.imfsActives ?? 0"
+      label="IMF actives"
+      [value]="stats()?.activeImfs ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Utilisateurs total"
-      [value]="data()?.utilisateursTotal ?? 0"
+      label="IMF total"
+      [value]="stats()?.totalImfs ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Collectes (30j)"
-      [value]="data()?.collectes30j ?? 0"
+      label="Utilisateurs"
+      [value]="stats()?.totalUsers ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Encours total"
-      [value]="data()?.encoursTotalFcfa ?? 0"
-      [isCurrency]="true"
+      label="Nouvelles IMF (mois)"
+      [value]="stats()?.newImfsThisMonth ?? 0"
       [loading]="loading()"
     />
   </div>
 
-  <!-- Liste IMF -->
-  <div class="card" style="margin-bottom: 24px">
-    <div
-      class="card-header"
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-      "
-    >
+  <!-- Actions rapides -->
+  <div class="dash-actions" style="margin-bottom: 24px">
+    <a routerLink="/platform/imfs" class="dash-action-card">
+      <span class="material-icons-round dash-action-card__icon">business</span>
+      <div>
+        <p class="font-semibold">Gestion IMF</p>
+        <p class="text-sm text-muted">Créer, activer, configurer</p>
+      </div>
+      <span class="material-icons-round dash-action-card__arrow">arrow_forward</span>
+    </a>
+    <a routerLink="/platform/audit" class="dash-action-card">
+      <span class="material-icons-round dash-action-card__icon dash-action-card__icon--audit">history_edu</span>
+      <div>
+        <p class="font-semibold">Audit Global</p>
+        <p class="text-sm text-muted">Piste d'audit immuable COBAC</p>
+      </div>
+      <span class="material-icons-round dash-action-card__arrow">arrow_forward</span>
+    </a>
+  </div>
+
+  <!-- Liste IMF récente -->
+  <div class="card">
+    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <h4>Institutions financières</h4>
-      <button class="btn btn-primary btn-sm">
+      <a routerLink="/platform/imfs" class="btn btn-primary btn-sm">
         <span class="material-icons-round">add</span> Ajouter une IMF
-      </button>
+      </a>
     </div>
     <table class="data-table">
       <thead>
         <tr>
+          <th>Code</th>
           <th>Institution</th>
           <th>Statut</th>
-          <th>Agences</th>
-          <th>Utilisateurs</th>
-          <th>Encours</th>
-          <th>PAR30</th>
-          <th>Actions</th>
+          <th>DSI</th>
+          <th>Pays</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1, 2, 3, 4]; track $index) {
+          @for (_ of [1,2,3,4]; track $index) {
             <tr>
-              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
-                <td>
-                  <div class="skeleton" style="height: 14px; width: 80%"></div>
-                </td>
+              @for (__ of [1,2,3,4,5,6]; track $index) {
+                <td><div class="skeleton" style="height:14px;width:80%"></div></td>
               }
             </tr>
           }
+        } @else if (imfs().length === 0) {
+          <tr>
+            <td colspan="6" style="text-align:center;padding:32px;color:var(--color-text-muted)">
+              Aucune institution enregistrée —
+              <a routerLink="/platform/imfs" style="color:var(--color-primary)">créer la première</a>
+            </td>
+          </tr>
         } @else {
-          @for (imf of data()?.imfs ?? []; track imf.id) {
+          @for (imf of imfs(); track imf.uid) {
             <tr>
               <td>
-                <p class="font-semibold">{{ imf.nom }}</p>
-                <p class="text-sm text-muted">{{ imf.ville }}</p>
+                <span class="imf-code-badge">{{ imf.code }}</span>
               </td>
               <td>
-                <span
-                  class="badge"
-                  [class]="imf.actif ? 'badge-success' : 'badge-muted'"
-                >
-                  {{ imf.actif ? "Actif" : "Suspendu" }}
+                <p class="font-semibold">{{ imf.nom }}</p>
+                <p class="text-sm text-muted">{{ imf.denominationSociale }}</p>
+              </td>
+              <td>
+                <span class="badge" [class]="imf.actif ? 'badge-success' : 'badge-muted'">
+                  {{ imf.actif ? 'Actif' : 'Suspendu' }}
                 </span>
               </td>
-              <td>{{ imf.agencesCount }}</td>
-              <td>{{ imf.utilisateursCount }}</td>
-              <td>{{ imf.encoursFcfa | fcfa }}</td>
-              <td [class]="imf.par30 > 10 ? 'danger' : ''">
-                {{ imf.par30 | number: "1.1-1" }}%
-              </td>
               <td>
-                <button class="btn btn-ghost btn-sm">
+                <span class="material-icons-round" style="font-size:18px"
+                  [class]="imf.hasDsi ? 'text-success' : 'text-muted'"
+                  [title]="imf.hasDsi ? 'DSI configuré' : 'Aucun DSI'">
+                  {{ imf.hasDsi ? 'verified_user' : 'person_off' }}
+                </span>
+              </td>
+              <td class="text-sm text-muted">{{ imf.pays }}</td>
+              <td>
+                <a [routerLink]="['/platform/imfs']" class="btn btn-ghost btn-sm" title="Gérer">
                   <span class="material-icons-round">settings</span>
-                </button>
+                </a>
               </td>
             </tr>
           }
         }
       </tbody>
     </table>
-  </div>
-
-  <!-- Audit global récent -->
-  <div class="card">
-    <h4 style="margin-bottom: 16px">Dernières actions d'audit</h4>
-    @if (loading()) {
-      @for (_ of [1, 2, 3]; track $index) {
-        <div class="skeleton" style="height: 48px; margin-bottom: 8px"></div>
-      }
-    } @else {
-      @for (log of data()?.auditLogs ?? []; track log.id) {
-        <div class="audit-row">
-          <span class="material-icons-round text-muted" style="font-size: 18px"
-            >info</span
-          >
-          <div class="flex-1">
-            <p class="text-sm font-semibold">{{ log.action }}</p>
-            <p class="text-sm text-muted">
-              {{ log.imf }} · {{ log.utilisateur }}
-            </p>
-          </div>
-          <span class="text-sm text-muted">{{
-            log.date | date: "dd/MM HH:mm"
-          }}</span>
-        </div>
-      }
+    @if (!loading() && imfs().length > 0) {
+      <div style="padding:12px 16px;border-top:1px solid var(--color-border);text-align:right">
+        <a routerLink="/platform/imfs" class="text-sm" style="color:var(--color-primary);font-weight:600">
+          Voir toutes les IMF →
+        </a>
+      </div>
     }
   </div>
 </div>

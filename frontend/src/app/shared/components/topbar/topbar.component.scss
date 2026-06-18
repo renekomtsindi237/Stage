@@ -35,6 +35,34 @@
     position: relative;
   }
 
+  &__support-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    transition: opacity 0.15s;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.88;
+    }
+
+    .material-icons-round {
+      font-size: 18px;
+    }
+  }
+
+  &__support-label {
+    @media (max-width: 640px) {
+      display: none;
+    }
+  }
+
   &__notif {
     position: relative;
     width: 36px;

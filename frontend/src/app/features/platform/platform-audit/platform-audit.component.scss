@@ -1,0 +1,136 @@
+// ── Filtres ───────────────────────────────────────────────────────────────────
+
+.audit-filters {
+  margin-bottom: 20px;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    align-items: end;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding-bottom: 1px;
+  }
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+
+.audit-layout {
+  display: block;
+}
+
+// ── Table audit ───────────────────────────────────────────────────────────────
+
+.audit-row {
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--color-bg);
+  }
+
+  &--selected {
+    background: var(--color-primary-light, #eef2ff);
+  }
+}
+
+.audit-entite {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-right: 4px;
+}
+
+.audit-empty {
+  text-align: center;
+  padding: 48px 24px !important;
+  color: var(--color-text-muted);
+
+  .material-icons-round {
+    font-size: 40px;
+    opacity: 0.3;
+    display: block;
+    margin-bottom: 8px;
+  }
+}
+
+// ── Détail expandé ────────────────────────────────────────────────────────────
+
+.audit-detail-row td {
+  padding: 0 !important;
+  border-bottom: 2px solid var(--color-primary) !important;
+}
+
+.audit-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--color-bg);
+
+  &__item {
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--color-text-muted);
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--color-text);
+    }
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.audit-json {
+  font-size: 12px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  overflow-x: auto;
+  max-height: 180px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: "Fira Code", "Cascadia Code", monospace;
+  line-height: 1.5;
+}
+
+// ── Badges danger ─────────────────────────────────────────────────────────────
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+.audit-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+
+  &__info {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+}

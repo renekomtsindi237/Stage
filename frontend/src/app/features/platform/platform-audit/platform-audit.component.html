@@ -1,0 +1,193 @@
+<div class="page-content">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h2>Audit Global</h2>
+      <p class="text-muted text-sm">
+        Piste d'audit immuable · {{ totalElements() | number }} entrée(s)
+      </p>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <form [formGroup]="filterForm" (ngSubmit)="search()" class="card audit-filters">
+    <div class="audit-filters__grid">
+      <div class="form-group">
+        <label>Type d'entité</label>
+        <select class="form-control" formControlName="entiteType">
+          <option value="">Tous</option>
+          @for (t of entiteTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Action</label>
+        <select class="form-control" formControlName="action">
+          <option value="">Toutes</option>
+          @for (a of actions; track a) {
+            <option [value]="a">{{ a }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Utilisateur</label>
+        <input type="text" class="form-control" formControlName="username" placeholder="nom d'utilisateur" />
+      </div>
+
+      <div class="form-group">
+        <label>Date début</label>
+        <input type="date" class="form-control" formControlName="debut" />
+      </div>
+
+      <div class="form-group">
+        <label>Date fin</label>
+        <input type="date" class="form-control" formControlName="fin" />
+      </div>
+
+      <div class="audit-filters__actions">
+        <button type="submit" class="btn btn-primary">
+          <span class="material-icons-round">search</span> Rechercher
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="reset()">
+          <span class="material-icons-round">clear</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Résultats -->
+  <div class="audit-layout" [class.audit-layout--split]="selected()">
+
+    <!-- Table -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Utilisateur</th>
+            <th>Rôle</th>
+            <th>Action</th>
+            <th>Entité</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            @for (_ of [1,2,3,4,5,6]; track $index) {
+              <tr>
+                @for (__ of [1,2,3,4,5,6,7]; track $index) {
+                  <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+                }
+              </tr>
+            }
+          } @else if (entries().length === 0) {
+            <tr>
+              <td colspan="7" class="audit-empty">
+                <span class="material-icons-round">manage_search</span>
+                <p>Aucune entrée d'audit pour ces critères</p>
+              </td>
+            </tr>
+          } @else {
+            @for (entry of entries(); track entry.id) {
+              <tr
+                class="audit-row"
+                [class.audit-row--selected]="selected()?.id === entry.id"
+                (click)="select(entry)"
+              >
+                <td class="text-sm text-muted">{{ entry.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="font-semibold">{{ entry.acteurUsername }}</td>
+                <td class="text-sm text-muted">{{ entry.acteurRole }}</td>
+                <td>
+                  <span class="badge" [class]="actionBadgeClass(entry.action)">{{ entry.action }}</span>
+                </td>
+                <td>
+                  <span class="audit-entite">{{ entry.entiteType }}</span>
+                  @if (entry.entiteId) {
+                    <span class="text-sm text-muted">#{{ entry.entiteId }}</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge" [class]="entry.statut === 'SUCCES' ? 'badge-success' : 'badge-danger'">
+                    {{ entry.statut }}
+                  </span>
+                </td>
+                <td>
+                  <span class="material-icons-round text-muted" style="font-size:18px">
+                    {{ selected()?.id === entry.id ? 'expand_less' : 'expand_more' }}
+                  </span>
+                </td>
+              </tr>
+              <!-- Ligne détail expandée -->
+              @if (selected()?.id === entry.id) {
+                <tr class="audit-detail-row">
+                  <td colspan="7">
+                    <div class="audit-detail">
+                      @if (entry.motif) {
+                        <div class="audit-detail__item">
+                          <label>Motif</label>
+                          <p>{{ entry.motif }}</p>
+                        </div>
+                      }
+                      @if (entry.ipClient) {
+                        <div class="audit-detail__item">
+                          <label>IP client</label>
+                          <p>{{ entry.ipClient }}</p>
+                        </div>
+                      }
+                      @if (entry.imfId) {
+                        <div class="audit-detail__item">
+                          <label>IMF ID</label>
+                          <p>{{ entry.imfId }}</p>
+                        </div>
+                      }
+                      @if (entry.ancienneValeur) {
+                        <div class="audit-detail__item audit-detail__item--full">
+                          <label>Ancienne valeur</label>
+                          <pre class="audit-json">{{ jsonPreview(entry.ancienneValeur) }}</pre>
+                        </div>
+                      }
+                      @if (entry.nouvelleValeur) {
+                        <div class="audit-detail__item audit-detail__item--full">
+                          <label>Nouvelle valeur</label>
+                          <pre class="audit-json">{{ jsonPreview(entry.nouvelleValeur) }}</pre>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      @if (!loading() && totalPages() > 1) {
+        <div class="audit-pagination">
+          <button class="btn btn-ghost btn-sm" (click)="goPage(currentPage() - 1)" [disabled]="currentPage() === 0">
+            <span class="material-icons-round">chevron_left</span>
+          </button>
+          @for (p of pages(); track p) {
+            <button
+              class="btn btn-sm"
+              [class]="p === currentPage() ? 'btn-primary' : 'btn-ghost'"
+              (click)="goPage(p)"
+            >{{ p + 1 }}</button>
+          }
+          <button class="btn btn-ghost btn-sm" (click)="goPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">
+            <span class="material-icons-round">chevron_right</span>
+          </button>
+          <span class="audit-pagination__info">
+            Page {{ currentPage() + 1 }} / {{ totalPages() }} · {{ totalElements() | number }} résultats
+          </span>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

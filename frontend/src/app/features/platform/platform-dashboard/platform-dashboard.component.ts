@@ -7,16 +7,20 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
+import { map, forkJoin } from "rxjs";
 import { ApiService } from "../../../core/http/api.service";
-import { PlatformStats } from "../../../core/models/platform.model";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
-import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import {
+  ApiResp,
+  PlatformActualStats,
+  ImfDetail,
+} from "../../../core/models/platform.model";
 
 @Component({
   selector: "app-platform-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe],
+  imports: [CommonModule, RouterLink, StatCardComponent],
   templateUrl: "./platform-dashboard.component.html",
   styleUrls: ["./platform-dashboard.component.scss"],
 })
@@ -24,12 +28,21 @@ export class PlatformDashboardComponent implements OnInit {
   private readonly api = inject(ApiService);
 
   loading = signal(true);
-  data = signal<PlatformStats | null>(null);
+  stats = signal<PlatformActualStats | null>(null);
+  imfs = signal<ImfDetail[]>([]);
 
   ngOnInit() {
-    this.api.get<PlatformStats>("/api/v1/platform/stats").subscribe({
-      next: (d: PlatformStats) => {
-        this.data.set(d);
+    forkJoin({
+      stats: this.api
+        .get<ApiResp<PlatformActualStats>>("/api/v1/platform/stats")
+        .pipe(map((r) => r.data)),
+      imfs: this.api
+        .get<ApiResp<ImfDetail[]>>("/api/v1/platform/imf")
+        .pipe(map((r) => r.data ?? [])),
+    }).subscribe({
+      next: ({ stats, imfs }) => {
+        this.stats.set(stats);
+        this.imfs.set(imfs.slice(0, 8));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
