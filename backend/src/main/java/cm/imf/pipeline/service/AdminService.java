@@ -2,6 +2,7 @@ package cm.imf.pipeline.service;
 
 import cm.imf.pipeline.dto.request.CreateAgenceRequest;
 import cm.imf.pipeline.dto.request.CreateUserRequest;
+import cm.imf.pipeline.dto.request.UpdateUserRequest;
 import cm.imf.pipeline.dto.response.AgenceResponse;
 import cm.imf.pipeline.dto.response.ImfResponse;
 import cm.imf.pipeline.dto.response.UserResponse;
@@ -119,19 +120,47 @@ public class AdminService implements IAdminService {
         User user = User.builder()
                 .username(request.username())
                 .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
+                .passwordHash(request.password() != null && !request.password().isBlank()
+                        ? passwordEncoder.encode(request.password())
+                        : passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
                 .role(request.role())
                 .zoneId(request.zoneId())
                 .imf(imf)
                 .latitude(request.latitude())
                 .longitude(request.longitude())
                 .actif(true)
-                .mustChangePassword(true)
+                .mustChangePassword(false)
                 .build();
 
         User saved = userRepository.save(user);
         log.info("Utilisateur créé : {} [{}] — IMF : {}", saved.getUsername(), saved.getRole(), imf.getCode());
         return UserResponse.from(saved);
+    }
+
+    @Transactional
+    public void deleteUser(UUID uid) {
+        User user = findInCurrentImf(uid);
+        User currentUser = TenantContext.currentUser();
+        if (currentUser != null && currentUser.getUsername().equals(user.getUsername())) {
+            throw new BusinessException("Le DSI ne peut pas supprimer son propre compte.", HttpStatus.FORBIDDEN);
+        }
+        userRepository.delete(user);
+        log.info("Utilisateur supprimé : {} [{}]", user.getUsername(), user.getRole());
+    }
+
+    @Transactional
+    public UserResponse updateUser(UUID uid, UpdateUserRequest request) {
+        User user = findInCurrentImf(uid);
+        if (request.role() != null && !ROLES_DSI_ALLOWED.contains(request.role())) {
+            throw new BusinessException(
+                "Le rôle '" + request.role().name() + "' ne peut pas être assigné par un DSI.",
+                HttpStatus.FORBIDDEN);
+        }
+        if (request.email() != null && !request.email().isBlank()) user.setEmail(request.email());
+        if (request.role() != null) user.setRole(request.role());
+        if (request.zoneId() != null) user.setZoneId(request.zoneId());
+        log.info("Utilisateur modifié : {} → email={}, role={}", user.getUsername(), request.email(), request.role());
+        return UserResponse.from(userRepository.save(user));
     }
 
     @Transactional

@@ -3,6 +3,7 @@ package cm.imf.pipeline.controller;
 import cm.imf.pipeline.dto.request.CreateAgenceRequest;
 import cm.imf.pipeline.dto.request.CreateUserRequest;
 import cm.imf.pipeline.dto.request.ResetPasswordRequest;
+import cm.imf.pipeline.dto.request.UpdateUserRequest;
 import cm.imf.pipeline.dto.response.AgenceResponse;
 import cm.imf.pipeline.dto.response.ApiResponse;
 import cm.imf.pipeline.dto.response.ImfResponse;
@@ -103,6 +104,21 @@ public class AdminController {
         UserResponse created = adminService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Utilisateur créé", created));
+    }
+
+    @Operation(summary = "Modifier email / rôle d'un utilisateur de l'IMF")
+    @PutMapping("/users/{uid}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+            @PathVariable UUID uid,
+            @Valid @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("Utilisateur mis à jour", adminService.updateUser(uid, request)));
+    }
+
+    @Operation(summary = "Supprimer définitivement un compte utilisateur de l'IMF")
+    @DeleteMapping("/users/{uid}/delete")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID uid) {
+        adminService.deleteUser(uid);
+        return ResponseEntity.ok(ApiResponse.ok("Utilisateur supprimé"));
     }
 
     @Operation(summary = "Désactiver un compte utilisateur de l'IMF")

@@ -30,7 +30,7 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Nom</th>
+          <th>Nom d'utilisateur</th>
           <th>Email</th>
           <th>Rôle</th>
           <th>Agence</th>
@@ -52,7 +52,7 @@
         } @else {
           @for (u of page()?.content ?? []; track u.uid) {
             <tr>
-              <td class="font-semibold">{{ u.prenom }} {{ u.nom }}</td>
+              <td class="font-semibold">{{ u.username }}</td>
               <td class="text-sm text-muted">{{ u.email }}</td>
               <td>
                 <span class="badge badge-info">{{ u.role }}</span>
@@ -67,7 +67,14 @@
                   {{ u.actif ? "Actif" : "Inactif" }}
                 </span>
               </td>
-              <td>
+              <td class="actions-cell">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="openEdit(u)"
+                  title="Modifier le profil"
+                >
+                  <span class="material-icons-round">edit</span>
+                </button>
                 <button
                   class="btn btn-ghost btn-sm"
                   (click)="toggle(u.uid, !u.actif)"
@@ -76,6 +83,13 @@
                   <span class="material-icons-round">{{
                     u.actif ? "block" : "check_circle"
                   }}</span>
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm text-danger"
+                  (click)="openDelete(u)"
+                  title="Supprimer l'utilisateur"
+                >
+                  <span class="material-icons-round">delete</span>
                 </button>
               </td>
             </tr>
@@ -123,6 +137,10 @@
         </button>
       </div>
 
+      <p class="text-muted text-sm" style="margin-bottom: 12px">
+        L'utilisateur recevra un code OTP par email à sa première connexion.
+      </p>
+
       <div class="form-grid">
         <div class="form-group">
           <label>Nom d'utilisateur *</label>
@@ -133,15 +151,6 @@
           />
         </div>
         <div class="form-group">
-          <label>Mot de passe initial *</label>
-          <input
-            class="form-control"
-            type="password"
-            formControlName="password"
-            placeholder="Min. 8 caractères"
-          />
-        </div>
-        <div class="form-group" style="grid-column: 1/-1">
           <label>Email *</label>
           <input
             class="form-control"
@@ -173,6 +182,106 @@
             <span class="css-spinner-sm"></span>
           } @else {
             Créer
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit modal -->
+@if (showEditModal()) {
+  <div class="modal-overlay" (click)="showEditModal.set(false)">
+    <div
+      class="modal-card"
+      (click)="$event.stopPropagation()"
+      [formGroup]="editForm"
+    >
+      <div class="modal-header">
+        <h3>Modifier — {{ selectedUser()?.username }}</h3>
+        <button class="btn-icon" (click)="showEditModal.set(false)">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group" style="grid-column: 1/-1">
+          <label>Email</label>
+          <input
+            class="form-control"
+            type="email"
+            formControlName="email"
+            placeholder="jean.dupont@imf.cm"
+          />
+        </div>
+        <div class="form-group" style="grid-column: 1/-1">
+          <label>Rôle</label>
+          <select class="form-select" formControlName="role">
+            @for (r of roles; track r) {
+              <option [value]="r">{{ r }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group" style="grid-column: 1/-1">
+          <label>Zone / Agence</label>
+          <input
+            class="form-control"
+            formControlName="zoneId"
+            placeholder="Code agence (optionnel)"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showEditModal.set(false)">
+          Annuler
+        </button>
+        <button
+          class="btn btn-primary"
+          [disabled]="editForm.invalid || saving()"
+          (click)="saveEdit()"
+        >
+          @if (saving()) {
+            <span class="css-spinner-sm"></span>
+          } @else {
+            Enregistrer
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete confirm modal -->
+@if (showDeleteConfirm()) {
+  <div class="modal-overlay" (click)="showDeleteConfirm.set(false)">
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Supprimer l'utilisateur</h3>
+        <button class="btn-icon" (click)="showDeleteConfirm.set(false)">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <p>
+        Voulez-vous vraiment supprimer le compte
+        <strong>{{ selectedUser()?.username }}</strong> ? Cette action est
+        irréversible.
+      </p>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showDeleteConfirm.set(false)">
+          Annuler
+        </button>
+        <button
+          class="btn btn-danger"
+          [disabled]="deleting()"
+          (click)="confirmDelete()"
+        >
+          @if (deleting()) {
+            <span class="css-spinner-sm"></span>
+          } @else {
+            Supprimer
           }
         </button>
       </div>

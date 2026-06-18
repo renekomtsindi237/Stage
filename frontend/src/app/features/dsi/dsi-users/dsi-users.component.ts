@@ -13,6 +13,7 @@ import { ToastService } from "../../../core/services/toast.service";
 
 interface UserRow {
   uid: string;
+  username: string;
   prenom: string;
   nom: string;
   email: string;
@@ -45,17 +46,27 @@ export class DsiUsersComponent implements OnInit {
   page = signal<UserPage | null>(null);
   currentPage = signal(0);
   showModal = signal(false);
+  showEditModal = signal(false);
+  showDeleteConfirm = signal(false);
   creating = signal(false);
+  saving = signal(false);
+  deleting = signal(false);
   roleFilter = signal("");
+  selectedUser = signal<UserRow | null>(null);
 
   createForm = this.fb.group({
     username: [
       "",
       [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
     ],
-    password: ["", [Validators.required, Validators.minLength(8)]],
     email: ["", [Validators.required, Validators.email]],
     role: ["AGENT", Validators.required],
+  });
+
+  editForm = this.fb.group({
+    email: ["", [Validators.required, Validators.email]],
+    role: ["AGENT", Validators.required],
+    zoneId: [""],
   });
 
   readonly roles = [
@@ -67,7 +78,6 @@ export class DsiUsersComponent implements OnInit {
     "CHEF_AGENCE",
     "AGENT_SAISIE",
     "RESPONSABLE_RECOUVREMENT",
-    "DSI",
     "DIRECTEUR",
   ];
 
@@ -111,6 +121,58 @@ export class DsiUsersComponent implements OnInit {
     });
   }
 
+  openEdit(u: UserRow) {
+    this.selectedUser.set(u);
+    this.editForm.reset({ email: u.email, role: u.role, zoneId: "" });
+    this.showEditModal.set(true);
+  }
+
+  saveEdit() {
+    if (this.editForm.invalid || !this.selectedUser()) return;
+    this.saving.set(true);
+    this.api
+      .put(`/api/v1/admin/users/${this.selectedUser()!.uid}`, this.editForm.value)
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.showEditModal.set(false);
+          this.toast.showSuccess("Succès", "Profil mis à jour.");
+          this.load();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.toast.showError("Erreur", "Impossible de mettre à jour le profil.");
+        },
+      });
+  }
+
+  openDelete(u: UserRow) {
+    this.selectedUser.set(u);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDelete() {
+    if (!this.selectedUser()) return;
+    this.deleting.set(true);
+    this.api
+      .delete(`/api/v1/admin/users/${this.selectedUser()!.uid}/delete`)
+      .subscribe({
+        next: () => {
+          this.deleting.set(false);
+          this.showDeleteConfirm.set(false);
+          this.toast.showSuccess(
+            "Supprimé",
+            `${this.selectedUser()!.username} a été supprimé.`,
+          );
+          this.load();
+        },
+        error: () => {
+          this.deleting.set(false);
+          this.toast.showError("Erreur", "Impossible de supprimer l'utilisateur.");
+        },
+      });
+  }
+
   create() {
     if (this.createForm.invalid) return;
     this.creating.set(true);
@@ -120,7 +182,7 @@ export class DsiUsersComponent implements OnInit {
         this.showModal.set(false);
         this.toast.showSuccess(
           "Utilisateur créé",
-          this.createForm.value.username ?? "",
+          `${this.createForm.value.username} — un OTP lui sera envoyé à sa première connexion.`,
         );
         this.createForm.reset({ role: "AGENT" });
         this.load();

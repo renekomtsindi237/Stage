@@ -8,6 +8,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -20,16 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Configuration Apache Kafka pour Spring Boot.
- *
- * Producteurs : CollecteKafkaProducer, AlerteKafkaProducer
- * Consommateurs : ScoringResultConsumer (reçoit les scores du service ML Python)
- *
- * Sérialisation : Apache Avro via Confluent Schema Registry
- * Topics : définis dans KafkaTopics.java
+ * Configuration Apache Kafka — active uniquement si kafka.enabled=true.
+ * Par défaut désactivé en dev/staging où Kafka n'est pas déployé.
  */
 @Configuration
 @EnableKafka
+@ConditionalOnProperty(name = "kafka.enabled", havingValue = "true", matchIfMissing = false)
 public class KafkaConfig {
 
     @Value("${kafka.bootstrap-servers:localhost:9093}")

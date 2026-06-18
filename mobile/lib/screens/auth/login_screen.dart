@@ -210,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen>
                 color: _navy,
               ),
               decoration: InputDecoration(
-                hintText: 'votre@institution.cm',
+                hintText: 'votre@institution.cm ou exemple@gmail.com',
                 hintStyle: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
@@ -242,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Email requis';
-                final emailReg = RegExp(r'^[\w\.\-]+@[\w\-]+\.[a-z]{2,}$');
+                final emailReg = RegExp(r'^[\w\.\+\-]+@[\w\.\-]+\.[a-zA-Z]{2,}$');
                 if (!emailReg.hasMatch(v.trim())) return 'Email invalide';
                 return null;
               },

@@ -113,9 +113,8 @@ services:
       SMTP_USER: ${SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       FIREBASE_ENABLED: "false"
-      # Spring Kafka (maps to @Value("${kafka.bootstrap-servers}"))
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      KAFKA_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      # Kafka désactivé — pas de broker en dev (voir KafkaConfig @ConditionalOnProperty)
+      KAFKA_ENABLED: "false"
     volumes:
       - backend_uploads:/uploads
     ports:

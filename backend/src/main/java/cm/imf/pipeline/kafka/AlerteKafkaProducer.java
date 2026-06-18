@@ -6,6 +6,7 @@ import cm.imf.pipeline.events.ClasseCOBAC;
 import cm.imf.pipeline.events.NiveauRisque;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "kafka.enabled", havingValue = "true", matchIfMissing = false)
 @RequiredArgsConstructor
 public class AlerteKafkaProducer {
 

@@ -2,6 +2,7 @@ package cm.imf.pipeline.service;
 
 import cm.imf.pipeline.dto.request.CreateAgenceRequest;
 import cm.imf.pipeline.dto.request.CreateUserRequest;
+import cm.imf.pipeline.dto.request.UpdateUserRequest;
 import cm.imf.pipeline.dto.response.AgenceResponse;
 import cm.imf.pipeline.dto.response.ImfResponse;
 import cm.imf.pipeline.dto.response.UserResponse;
@@ -31,6 +32,12 @@ public interface IAdminService {
      * Rôles interdits : DSI, SUPER_ADMIN (prérogative de la plateforme).
      */
     UserResponse createUser(CreateUserRequest request);
+
+    /** Supprime définitivement un compte utilisateur de l'IMF (sauf le propre compte du DSI). */
+    void deleteUser(UUID uid);
+
+    /** Met à jour email et/ou rôle d'un utilisateur de l'IMF. */
+    UserResponse updateUser(UUID uid, UpdateUserRequest request);
 
     /** Désactive un compte utilisateur (actif → inactif). */
     UserResponse deactivate(UUID uid);
