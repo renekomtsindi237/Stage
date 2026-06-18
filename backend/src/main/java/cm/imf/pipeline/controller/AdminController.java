@@ -7,20 +7,15 @@ import cm.imf.pipeline.dto.response.AgenceResponse;
 import cm.imf.pipeline.dto.response.ApiResponse;
 import cm.imf.pipeline.dto.response.ImfResponse;
 import cm.imf.pipeline.dto.response.UserResponse;
-import cm.imf.pipeline.entity.AuditTrail;
-import cm.imf.pipeline.repository.AuditTrailRepository;
-import cm.imf.pipeline.security.TenantContext;
 import cm.imf.pipeline.service.IAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,8 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Administration IMF", description = "Gestion des utilisateurs — réservé DSI / SUPER_ADMIN")
 public class AdminController {
 
-    private final IAdminService        adminService;
-    private final AuditTrailRepository auditTrailRepository;
+    private final IAdminService adminService;
 
     // ── Contexte IMF ──────────────────────────────────────────────────────────
 
@@ -153,35 +147,4 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.ok(adminService.uploadImfLogo(file)));
     }
 
-    // ── Audit Trail ──────────────────────────────────────────────────────────
-
-    @Operation(summary = "Piste d'audit — DSI (scopé à son IMF) ou SUPER_ADMIN (toutes les IMF via la première disponible)")
-    @GetMapping("/audit/trail")
-    public ResponseEntity<ApiResponse<Page<AuditTrail>>> auditTrail(
-            @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String action,
-            @RequestParam(required = false) String utilisateur,
-            @RequestParam(required = false) String entiteType,
-            @RequestParam(required = false) String debut,
-            @RequestParam(required = false) String fin) {
-
-        Long imfId = TenantContext.currentImfId();
-        if (imfId == null) {
-            return ResponseEntity.ok(ApiResponse.ok(Page.empty(PageRequest.of(page, size))));
-        }
-
-        String act = (action      != null && !action.isBlank())      ? action      : null;
-        String usr = (utilisateur != null && !utilisateur.isBlank())  ? utilisateur : null;
-        String ent = (entiteType  != null && !entiteType.isBlank())   ? entiteType  : null;
-
-        OffsetDateTime from = null, to = null;
-        try { if (debut != null && !debut.isBlank()) from = OffsetDateTime.parse(debut); } catch (Exception ignored) {}
-        try { if (fin   != null && !fin.isBlank())   to   = OffsetDateTime.parse(fin);   } catch (Exception ignored) {}
-
-        Page<AuditTrail> trail = auditTrailRepository.rechercher(
-                imfId, ent, null, act, usr, from, to, PageRequest.of(page, size));
-
-        return ResponseEntity.ok(ApiResponse.ok(trail));
-    }
 }

@@ -55,9 +55,10 @@ class ImfIntegrationTest {
         registry.add("spring.datasource.url",      postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.cache.type",          () -> "simple");
-        registry.add("spring.data.redis.host",     () -> "localhost");
-        registry.add("spring.data.redis.port",     () -> "6399");
+        registry.add("spring.cache.type",                         () -> "simple");
+        registry.add("spring.data.redis.host",                    () -> "localhost");
+        registry.add("spring.data.redis.port",                    () -> "6399");
+        registry.add("spring.data.redis.repositories.enabled",    () -> "false");
     }
 
     @Autowired MockMvc          mockMvc;

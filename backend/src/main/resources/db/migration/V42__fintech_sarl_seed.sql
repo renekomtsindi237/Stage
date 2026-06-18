@@ -451,6 +451,93 @@ BEGIN
         ('INDICE_PRIX_CONSOMMATION',140.1,'2025-07-01','INS_CAMEROUN')
     ON CONFLICT (indicateur, date_observation) DO NOTHING;
 
+    -- ── Staging tables — CREATE IF NOT EXISTS (dbt crée ces tables en prod,
+    --    mais elles n'existent pas dans l'environnement de test Testcontainers)
+    CREATE TABLE IF NOT EXISTS staging.stg_clients (
+        id                            BIGSERIAL     PRIMARY KEY,
+        imf_code                      VARCHAR(20)   NOT NULL,
+        client_id_externe             TEXT          NOT NULL,
+        nom_complet                   TEXT,
+        telephone_principal           TEXT,
+        zone_id                       TEXT,
+        agence_code                   TEXT,
+        secteur_principal             TEXT,
+        revenu_mensuel_estime         NUMERIC(12,2),
+        latitude_activite             NUMERIC(10,7),
+        longitude_activite            NUMERIC(10,7),
+        date_premiere_collecte        DATE,
+        date_premier_pret             DATE,
+        anciennete_jours              INT,
+        nb_collectes_total            INT           NOT NULL DEFAULT 0,
+        montant_total_collectes       NUMERIC(15,2) NOT NULL DEFAULT 0,
+        nb_prets_total                INT           NOT NULL DEFAULT 0,
+        taux_remboursement_historique NUMERIC(5,4),
+        _dbt_loaded_at                TIMESTAMPTZ   DEFAULT NOW(),
+        _dbt_updated_at               TIMESTAMPTZ   DEFAULT NOW(),
+        CONSTRAINT stg_clients_imf_client_uq UNIQUE (imf_code, client_id_externe)
+    );
+
+    CREATE TABLE IF NOT EXISTS staging.stg_collectes_epargne (
+        id                    BIGSERIAL     PRIMARY KEY,
+        uuid_mobile           UUID          NOT NULL DEFAULT gen_random_uuid(),
+        imf_code              VARCHAR(20)   NOT NULL,
+        agence_code           VARCHAR(20),
+        agent_username        VARCHAR(50)   NOT NULL DEFAULT '',
+        client_id_externe     VARCHAR(50)   NOT NULL,
+        cycle_ref             VARCHAR(50),
+        montant_collecte      NUMERIC(15,2) NOT NULL,
+        date_collecte         DATE          NOT NULL,
+        heure_collecte        TIME,
+        canal_paiement        VARCHAR(20)   NOT NULL DEFAULT 'ESPECES',
+        reference_transaction VARCHAR(100),
+        latitude              NUMERIC(10,7),
+        longitude             NUMERIC(10,7),
+        precision_gps_metres  NUMERIC(6,1),
+        observation           TEXT,
+        statut_validation     VARCHAR(20)   NOT NULL DEFAULT 'VALIDE',
+        est_doublon           BOOLEAN       NOT NULL DEFAULT FALSE,
+        est_hors_zone         BOOLEAN       NOT NULL DEFAULT FALSE,
+        est_montant_aberrant  BOOLEAN       NOT NULL DEFAULT FALSE,
+        hash_sha256           VARCHAR(64)   NOT NULL DEFAULT '',
+        _source_raw_id        BIGINT,
+        _dbt_loaded_at        TIMESTAMPTZ   DEFAULT NOW(),
+        _dbt_updated_at       TIMESTAMPTZ   DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS staging.stg_creances (
+        id                             BIGSERIAL     PRIMARY KEY,
+        imf_code                       VARCHAR(20)   NOT NULL,
+        id_pret                        TEXT          NOT NULL,
+        id_client                      TEXT          NOT NULL,
+        nom_client                     TEXT,
+        telephone_client               TEXT,
+        agence_code                    TEXT,
+        produit_code                   TEXT,
+        montant_initial                NUMERIC(15,2),
+        montant_rembourse              NUMERIC(15,2) DEFAULT 0,
+        solde_restant                  NUMERIC(15,2),
+        montant_impaye                 NUMERIC(15,2) DEFAULT 0,
+        interets_retard                NUMERIC(15,2) DEFAULT 0,
+        date_deblocage                 DATE,
+        date_echeance                  DATE,
+        date_premiere_echeance_impayee DATE,
+        jours_retard                   INT           NOT NULL DEFAULT 0,
+        statut_pret                    TEXT          NOT NULL DEFAULT 'EN_COURS',
+        categorie_par                  TEXT          NOT NULL DEFAULT 'COURANT',
+        classe_risque_cobac            TEXT,
+        taux_provision_cobac           NUMERIC(5,2)  NOT NULL DEFAULT 0,
+        montant_provision              NUMERIC(15,2) NOT NULL DEFAULT 0,
+        type_garantie                  TEXT,
+        valeur_garantie                NUMERIC(15,2),
+        nom_caution                    TEXT,
+        agent_cbs_code                 TEXT,
+        est_donnee_incomplete          BOOLEAN       NOT NULL DEFAULT FALSE,
+        _source_raw_id                 BIGINT,
+        _dbt_loaded_at                 TIMESTAMPTZ   DEFAULT NOW(),
+        _dbt_updated_at                TIMESTAMPTZ   DEFAULT NOW(),
+        CONSTRAINT stg_creances_imf_pret_uq UNIQUE (imf_code, id_pret)
+    );
+
     -- ── 13. Staging ML — stg_clients ─────────────────────────────────────────
     INSERT INTO staging.stg_clients (
         imf_code, client_id_externe, nom_complet, telephone_principal,
