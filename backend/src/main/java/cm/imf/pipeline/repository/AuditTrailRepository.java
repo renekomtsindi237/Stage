@@ -37,8 +37,8 @@ public interface AuditTrailRepository extends JpaRepository<AuditTrail, Long> {
               AND (cast(:entiteId   as string) IS NULL OR a.entiteId   = :entiteId)
               AND (cast(:action     as string) IS NULL OR a.action     = :action)
               AND (cast(:username   as string) IS NULL OR a.acteurUsername = :username)
-              AND (:debut IS NULL OR a.createdAt >= :debut)
-              AND (:fin   IS NULL OR a.createdAt <= :fin)
+              AND (cast(:debut as Instant) IS NULL OR a.createdAt >= :debut)
+              AND (cast(:fin   as Instant) IS NULL OR a.createdAt <= :fin)
             ORDER BY a.createdAt DESC
             """)
     Page<AuditTrail> rechercher(
