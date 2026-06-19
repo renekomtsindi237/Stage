@@ -242,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Email requis';
-                final emailReg = RegExp(r'^[\w\.\+\-]+@[\w\.\-]+\.[a-zA-Z]{2,}$');
+                final emailReg = RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$');
                 if (!emailReg.hasMatch(v.trim())) return 'Email invalide';
                 return null;
               },
