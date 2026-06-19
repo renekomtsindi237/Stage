@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/comite")
+@RequestMapping("/comite")
 @RequiredArgsConstructor
 @Tag(name = "Comité de Crédit", description = "Workflow de vote collégial — approbation, rejet, ajournement")
 public class ComiteCreditController {

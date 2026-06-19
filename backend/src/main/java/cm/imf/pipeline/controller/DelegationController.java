@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/delegations")
+@RequestMapping("/delegations")
 @RequiredArgsConstructor
 @Tag(name = "Délégations", description = "Réassignation de dossiers et délégations d'autorité hiérarchiques")
 public class DelegationController {

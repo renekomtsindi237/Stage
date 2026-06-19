@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/plans-apurement")
+@RequestMapping("/plans-apurement")
 @RequiredArgsConstructor
 @Tag(name = "Plans d'Apurement", description = "Moratoires de remboursement — recouvrement amiable")
 public class PlanApurementController {

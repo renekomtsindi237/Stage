@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/contentieux")
+@RequestMapping("/contentieux")
 @RequiredArgsConstructor
 @Tag(name = "Contentieux OHADA", description = "Procédures judiciaires OHADA — RESPONSABLE_RECOUVREMENT")
 public class ContentieuxController {

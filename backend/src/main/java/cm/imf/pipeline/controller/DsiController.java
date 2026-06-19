@@ -43,7 +43,7 @@ import java.util.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/dsi")
+@RequestMapping("/dsi")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('DSI', 'SUPER_ADMIN')")
 @Tag(name = "DSI", description = "Administration technique et RGPD — tableau de bord DSI")

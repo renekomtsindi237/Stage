@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/dossiers-credit")
+@RequestMapping("/dossiers-credit")
 @RequiredArgsConstructor
 @Tag(name = "Dossiers Crédit", description = "Workflow d'octroi de crédit — instruction, comité, approbation")
 public class DossierCreditController {

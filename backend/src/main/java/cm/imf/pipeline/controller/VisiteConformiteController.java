@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/visites-conformite")
+@RequestMapping("/visites-conformite")
 @RequiredArgsConstructor
 @Tag(name = "Visites de Conformité", description = "Visite terrain J+15 post-déblocage — AGENT_CREDIT")
 public class VisiteConformiteController {

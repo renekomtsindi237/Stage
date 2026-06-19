@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/garanties")
+@RequestMapping("/garanties")
 @RequiredArgsConstructor
 @Tag(name = "Garanties Crédit", description = "Gestion des garanties liées aux dossiers de crédit")
 public class GarantieCreditController {

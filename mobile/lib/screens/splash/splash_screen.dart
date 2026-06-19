@@ -124,29 +124,28 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Logo icon
+                        // Logo application
                         Container(
-                          width: 88,
-                          height: 88,
+                          width: 100,
+                          height: 100,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppColors.gold, AppColors.goldLight],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(26),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.gold.withOpacity(0.4),
-                                blurRadius: 24,
-                                offset: const Offset(0, 8),
+                                color: AppColors.gold.withOpacity(0.35),
+                                blurRadius: 28,
+                                offset: const Offset(0, 10),
                               ),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.account_balance,
-                            size: 44,
-                            color: AppColors.navyDeep,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(26),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 28),

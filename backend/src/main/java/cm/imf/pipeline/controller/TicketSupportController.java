@@ -31,7 +31,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/tickets")
+@RequestMapping("/tickets")
 @RequiredArgsConstructor
 @Tag(name = "Tickets Support", description = "Création et suivi des tickets de support")
 public class TicketSupportController {

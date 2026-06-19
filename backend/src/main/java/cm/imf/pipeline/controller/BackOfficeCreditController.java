@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/back-office")
+@RequestMapping("/back-office")
 @RequiredArgsConstructor
 @Tag(name = "Back-Office Crédit", description = "Contrats, signatures — AGENT_SAISIE")
 public class BackOfficeCreditController {

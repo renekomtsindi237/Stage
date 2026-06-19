@@ -24,7 +24,7 @@ import java.util.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/analyste")
+@RequestMapping("/analyste")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ANALYSTE', 'ANALYSTE_ENGAGEMENTS', 'DSI', 'DIRECTEUR')")
 @Tag(name = "Analyste", description = "Scoring MCRS, pipeline Airflow, métriques dérive ML et Risk Manager PAR")
