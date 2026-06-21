@@ -59,20 +59,41 @@ BEGIN
     SELECT id INTO v_ag_dla FROM app.agences WHERE imf_id = v_imf_id AND nom = 'Agence Douala Bassa';
 
     -- ── 3. Utilisateurs ───────────────────────────────────────────────────────
+    -- ON CONFLICT (username) ne couvre pas l'index unique sur email :
+    -- on insère chaque utilisateur séparément en vérifiant username ET email.
     INSERT INTO app.utilisateurs
         (username, password_hash, role, email, imf_id, actif, must_change_password)
-    VALUES
-        ('rene.komtsindi',  '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
-         'AGENT',     'renekomtsindi99@gmail.com',  v_imf_id, TRUE, FALSE),
-        ('dsi.finance',     '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
-         'DSI',       'dsi@finance-mf.cm',          v_imf_id, TRUE, FALSE),
-        ('dir.finance',     '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
-         'DIRECTEUR', 'directeur@finance-mf.cm',    v_imf_id, TRUE, FALSE)
-    ON CONFLICT (username) DO NOTHING;
+    SELECT 'rene.komtsindi', '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
+           'AGENT', 'renekomtsindi99@gmail.com', v_imf_id, TRUE, FALSE
+    WHERE NOT EXISTS (
+        SELECT 1 FROM app.utilisateurs
+        WHERE username = 'rene.komtsindi' OR email = 'renekomtsindi99@gmail.com'
+    );
 
-    SELECT id INTO v_agent FROM app.utilisateurs WHERE username = 'rene.komtsindi' AND imf_id = v_imf_id;
-    SELECT id INTO v_dsi   FROM app.utilisateurs WHERE username = 'dsi.finance'    AND imf_id = v_imf_id;
-    SELECT id INTO v_dir   FROM app.utilisateurs WHERE username = 'dir.finance'    AND imf_id = v_imf_id;
+    INSERT INTO app.utilisateurs
+        (username, password_hash, role, email, imf_id, actif, must_change_password)
+    SELECT 'dsi.finance', '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
+           'DSI', 'dsi@finance-mf.cm', v_imf_id, TRUE, FALSE
+    WHERE NOT EXISTS (
+        SELECT 1 FROM app.utilisateurs
+        WHERE username = 'dsi.finance' OR email = 'dsi@finance-mf.cm'
+    );
+
+    INSERT INTO app.utilisateurs
+        (username, password_hash, role, email, imf_id, actif, must_change_password)
+    SELECT 'dir.finance', '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
+           'DIRECTEUR', 'directeur@finance-mf.cm', v_imf_id, TRUE, FALSE
+    WHERE NOT EXISTS (
+        SELECT 1 FROM app.utilisateurs
+        WHERE username = 'dir.finance' OR email = 'directeur@finance-mf.cm'
+    );
+
+    SELECT id INTO v_agent FROM app.utilisateurs
+    WHERE (username = 'rene.komtsindi' OR email = 'renekomtsindi99@gmail.com') LIMIT 1;
+    SELECT id INTO v_dsi   FROM app.utilisateurs
+    WHERE (username = 'dsi.finance'    OR email = 'dsi@finance-mf.cm')         LIMIT 1;
+    SELECT id INTO v_dir   FROM app.utilisateurs
+    WHERE (username = 'dir.finance'    OR email = 'directeur@finance-mf.cm')   LIMIT 1;
 
     -- ── 4. Cycle de collecte 2025 ─────────────────────────────────────────────
     INSERT INTO app.cycles_collecte (imf_id, agence_id, nom_cycle, periodicite,
