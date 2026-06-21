@@ -87,6 +87,11 @@ public class SecurityConfig {
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "ANALYSTE", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/agents/*/positions/historique", "/api/v1/agents/*/positions/historique")
                                 .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN")
+                        // Import/export CSV clients
+                        .requestMatchers(HttpMethod.GET, "/clients/template", "/api/v1/clients/template").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/clients/import", "/api/v1/clients/import")
+                                .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "DSI", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/clients/export", "/api/v1/clients/export").authenticated()
                         // Collectes terrain : rôle AGENT uniquement
                         .requestMatchers(HttpMethod.POST, "/collectes", "/api/v1/collectes").hasRole("AGENT")
                         .requestMatchers(HttpMethod.GET, "/collectes/mes-collectes", "/api/v1/collectes/mes-collectes").hasRole("AGENT")

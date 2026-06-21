@@ -17,5 +17,7 @@ public interface AgenceRepository extends JpaRepository<Agence, Long> {
 
     Optional<Agence> findByIdAndImfId(Long id, Long imfId);
 
+    Optional<Agence> findByImfIdAndNomIgnoreCase(Long imfId, String nom);
+
     boolean existsByImfIdAndNomIgnoreCase(Long imfId, String nom);
 }

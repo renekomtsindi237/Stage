@@ -72,6 +72,8 @@ public class TestSecurityConfig {
                         .requestMatchers("/api/v1/auth/**", "/api/v1/ping", "/api/v1/health", "/api/v1/internal/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/alertes/**")
                         .hasAnyRole("RESPONSABLE_RECOUVREMENT", "DSI")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/clients/import")
+                                .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "DSI", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/collectes").hasRole("AGENT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/collectes/mes-collectes").hasRole("AGENT")
                         .requestMatchers("/api/v1/kyc/**").hasAnyRole("DSI", "SUPER_ADMIN")
