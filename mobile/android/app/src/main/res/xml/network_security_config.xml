@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Autorise le HTTP en développement (émulateur → 10.0.2.2) -->
+    <!-- Autorise HTTP : développement + VPS de staging -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">10.0.2.2</domain>
         <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">84.247.128.40</domain>
     </domain-config>
-    <!-- Production : HTTPS uniquement -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system"/>

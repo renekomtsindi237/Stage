@@ -2,12 +2,13 @@ import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { SidebarComponent } from "../../shared/components/sidebar/sidebar.component";
 import { TopbarComponent } from "../../shared/components/topbar/topbar.component";
+import { ChatbotComponent } from "../../shared/components/chatbot/chatbot.component";
 
 @Component({
   selector: "app-shell",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, TopbarComponent],
+  imports: [RouterOutlet, SidebarComponent, TopbarComponent, ChatbotComponent],
   template: `
     <div class="shell">
       <app-sidebar />
@@ -18,6 +19,7 @@ import { TopbarComponent } from "../../shared/components/topbar/topbar.component
         </main>
       </div>
     </div>
+    <app-chatbot />
   `,
   styles: [
     `

@@ -1,86 +1,56 @@
 import {
   Component,
-  OnInit,
   inject,
   signal,
-  computed,
+  OnInit,
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HttpClient } from "@angular/common/http";
+import { ApiService } from "../../../core/http/api.service";
 
-interface FoldMetric {
-  fold: number;
-  auc_roc: number;
-  gini: number;
-  ks: number;
-  f1: number;
-  brier: number;
-  seuil_optimal: number;
-}
-
-interface ClusterProfil {
-  cluster: number;
-  nom: string;
-  n_clients: number;
-  regularite_moy: number;
-  montant_moy: number;
-  taux_remboursement_moy: number;
-  retard_max_moy: number;
-  revenu_moy: number;
-}
-
-interface ScoreClient {
-  client_id: string;
-  score_crs: number;
-  score_rps: number;
-  score_csi: number;
+interface ScoreRow {
+  id: number;
+  client_id: number;
+  imf_id: number;
   score_mcrs: number;
-  classe_risque: "FAIBLE" | "MODERE" | "ELEVE" | "CRITIQUE";
-  priorite: number;
-  proba_defaut_90j: number;
-  label_reel: number;
-  top_feature: string;
+  classe_risque: string;
+  niveau_risque: string;
+  probabilite_defaut: number;
+  modele_version: string;
+  calculated_at: string;
 }
 
-interface Rapport {
-  meta: {
-    imf: string;
-    imf_code: string;
-    devise: string;
-    modele: string;
-    entrainement: string;
-    n_clients: number;
-    n_defaut: number;
-    taux_defaut_pct: number;
-    composantes: { CRS_weight: string; RPS_weight: string; CSI_weight: string };
-  };
-  performances: {
-    cross_validation: {
-      n_folds: number;
-      strategie: string;
-      auc_roc_moyen: number;
-      gini_moyen: number;
-      ks_moyen: number;
-      f1_moyen: number;
-      brier_moyen: number;
-      detail_folds: FoldMetric[];
-    };
-    modele_final: { auc_roc: number; gini: number };
-  };
-  feature_importances: {
-    shap_top10: Record<string, number>;
-  };
-  clustering: {
-    profils: ClusterProfil[];
-    anomalies: { n_detectees: number; clients: string[] };
-  };
-  scoring_clients: ScoreClient[];
-  distribution_risque: Record<string, { n: number; description: string }>;
-  interpretation: {
-    top_features_explicatives: string[];
-    recommandation: string;
-  };
+interface ScorePage {
+  content: ScoreRow[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+interface DashboardData {
+  totalClients: number;
+  scoresMoyen: number;
+  alertesOuvertes: number;
+  driftPsi: number;
+  scoringDistribution: { label: string; count: number }[];
+  alertesRecentes: {
+    id: string;
+    nomClient: string;
+    severite: string;
+    message: string;
+    encours: number;
+    createdAt: string;
+  }[];
+}
+
+interface DriftInfo {
+  psiActuel: number;
+  seuilCritique: number;
+  driftDetecte: boolean;
+  modeleActif: string;
+  dernierEntrainement: string;
+  evolutionPsi: { date: string; psi: number }[];
+  contributionFeatures: { nom: string; psi: number; contribution: number }[];
 }
 
 @Component({
@@ -92,90 +62,68 @@ interface Rapport {
   styleUrls: ["./anl-mcrs-demo.component.scss"],
 })
 export class AnlMcrsDemoComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(ApiService);
 
-  readonly loading = signal(true);
-  readonly rapport = signal<Rapport | null>(null);
-  readonly activeTab = signal<"overview" | "scoring" | "clustering" | "folds">(
-    "overview",
-  );
+  loading     = signal(true);
+  dashboard   = signal<DashboardData | null>(null);
+  drift       = signal<DriftInfo | null>(null);
+  scores      = signal<ScorePage | null>(null);
+  currentPage = signal(0);
+  activeTab   = signal<"scores" | "distribution" | "drift" | "alertes">("scores");
 
-  readonly totalClients = computed(
-    () => this.rapport()?.scoring_clients.length ?? 0,
-  );
-  readonly distRisque = computed(
-    () => this.rapport()?.distribution_risque ?? {},
-  );
+  ngOnInit() { this.load(); }
 
-  readonly shapTop10 = computed(() => {
-    const fi = this.rapport()?.feature_importances?.shap_top10 ?? {};
-    const entries = Object.entries(fi).slice(0, 10);
-    const max = Math.max(...entries.map(([, v]) => v));
-    return entries.map(([k, v]) => ({
-      name: k,
-      value: v,
-      pct: max > 0 ? (v / max) * 100 : 0,
-    }));
-  });
-
-  ngOnInit(): void {
-    this.http.get<Rapport>("assets/mcrs_fintech_rapport.json").subscribe({
-      next: (r) => {
-        this.rapport.set(r);
+  load() {
+    this.loading.set(true);
+    Promise.all([
+      this.api.get<{ data: DashboardData }>("/api/v1/analyste/dashboard").toPromise(),
+      this.api.get<{ data: DriftInfo }>("/api/v1/analyste/ml/drift").toPromise(),
+      this.loadScores(0),
+    ])
+      .then(([dash, dr]) => {
+        const d = dash as { data: DashboardData };
+        const dv = dr as { data: DriftInfo };
+        this.dashboard.set(d?.data ?? (d as unknown as DashboardData));
+        this.drift.set(dv?.data ?? (dv as unknown as DriftInfo));
         this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+      })
+      .catch(() => this.loading.set(false));
   }
 
-  classeColor(c: string): string {
-    const m: Record<string, string> = {
-      FAIBLE: "badge--success",
-      MODERE: "badge--warning",
-      ELEVE: "badge--orange",
-      CRITIQUE: "badge--danger",
-    };
-    return m[c] ?? "badge--neutral";
+  async loadScores(page: number) {
+    this.currentPage.set(page);
+    const r = await this.api
+      .get<{ data: ScorePage }>("/api/v1/analyste/scoring", { page, size: 15 })
+      .toPromise();
+    const p = (r as { data: ScorePage })?.data ?? (r as unknown as ScorePage);
+    this.scores.set(p);
   }
 
-  distColor(c: string): string {
-    const m: Record<string, string> = {
-      FAIBLE: "#10b981",
-      MODERE: "#f59e0b",
-      ELEVE: "#f97316",
-      CRITIQUE: "#ef4444",
-    };
-    return m[c] ?? "#6b7280";
+  goPage(n: number) { this.loadScores(n); }
+
+  niveauClass(n: string): string {
+    return {
+      FAIBLE: "badge-green", MODERE: "badge-moyenne",
+      ELEVE: "badge-haute",  TRES_ELEVE: "badge-haute",
+      CRITIQUE: "badge-critique",
+    }[n] ?? "badge-moyenne";
   }
 
-  distPct(n: number): number {
-    const total = this.totalClients();
-    return total > 0 ? Math.round((n / total) * 100) : 0;
+  psiClass(psi: number): string {
+    if (psi < 0.1) return "text-green";
+    if (psi < 0.2) return "text-warning";
+    return "text-danger";
   }
 
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  psiLabel(psi: number): string {
+    if (psi < 0.1) return "Stable";
+    if (psi < 0.2) return "Légère dérive";
+    return "Dérive significative";
   }
 
-  formatMontant(n: number): string {
-    return new Intl.NumberFormat("fr-CM", {
-      style: "currency",
-      currency: "XAF",
-      maximumFractionDigits: 0,
-    }).format(n);
-  }
-
-  clusterColor(k: number): string {
-    return ["#6366f1", "#10b981", "#f59e0b", "#ef4444"][k] ?? "#6b7280";
-  }
-
-  prioriteStars(p: number): string {
-    return "★".repeat(p) + "☆".repeat(5 - p);
+  barWidth(count: number): number {
+    const dist = this.dashboard()?.scoringDistribution ?? [];
+    const max  = Math.max(...dist.map((d) => Number(d.count)), 1);
+    return (Number(count) / max) * 100;
   }
 }

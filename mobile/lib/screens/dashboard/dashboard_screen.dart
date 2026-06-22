@@ -10,6 +10,8 @@ import '../../core/providers/sync_provider.dart';
 import '../../core/services/alerte_service.dart';
 import '../../core/services/kpi_service.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/chatbot_fab.dart';
+import '../../core/services/api_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -103,6 +105,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 0),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 56),
+        child: ChatbotFab(api: context.read<ApiService>()),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

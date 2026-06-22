@@ -1,90 +1,429 @@
-<div class="page-content">
-  <div class="page-header">
-    <div>
-      <h2>KYC — Conformité clients</h2>
-      <p class="text-muted text-sm">
-        Know Your Customer — vérification des pièces d'identité
-      </p>
+<div class="kyc-layout" [class.has-detail]="selected()">
+
+  <!-- ═══════════════════════ LISTE ══════════════════════════ -->
+  <div class="kyc-list">
+    <div class="page-header">
+      <div>
+        <h2>KYC — Conformité clients</h2>
+        <p class="text-muted text-sm">Règlement COBAC R-2005/01 · Loi N°2003/008 · Directives BEAC</p>
+      </div>
     </div>
-  </div>
 
-  <div class="tabs" style="margin-bottom: 16px">
-    <button
-      class="tab-btn"
-      [class.active]="tab() === 'EN_ATTENTE'"
-      (click)="setTab('EN_ATTENTE')"
-    >
-      En attente
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="tab() === 'EXPIRE'"
-      (click)="setTab('EXPIRE')"
-    >
-      Expirés
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="tab() === 'TOUS'"
-      (click)="setTab('TOUS')"
-    >
-      Tous
-    </button>
-  </div>
-
-  <div class="card">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Client</th>
-          <th>Statut KYC</th>
-          <th>Documents</th>
-          <th>Date de validité</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading()) {
-          @for (_ of [1, 2, 3, 4, 5]; track $index) {
-            <tr>
-              @for (__ of [1, 2, 3, 4, 5]; track $index) {
-                <td>
-                  <div class="skeleton" style="height: 14px; width: 80%"></div>
-                </td>
-              }
-            </tr>
+    <!-- Filtres -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <label class="filter-label">Statut</label>
+        <select class="filter-select"
+          [ngModel]="filterStatut()"
+          (ngModelChange)="filterStatut.set($event); load(0)">
+          <option value="TOUS">Tous les statuts</option>
+          @for (s of statuts; track s) {
+            <option [value]="s">{{ statutLabel(s) }}</option>
           }
-        } @else {
-          @for (k of page()?.content ?? []; track k.clientId) {
-            <tr>
-              <td class="font-semibold">{{ k.nomClient }}</td>
-              <td>
-                <span class="badge" [class]="statutClass(k.statut)">{{
-                  k.statut
-                }}</span>
-              </td>
-              <td>
-                <div style="display: flex; gap: 4px; flex-wrap: wrap">
-                  @for (doc of k.documents; track doc.type) {
-                    <span
-                      class="badge"
-                      [class]="statutClass(doc.statut)"
-                      style="font-size: 10px"
-                      >{{ doc.type }}</span
-                    >
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Niveau KYC</label>
+        <select class="filter-select"
+          [ngModel]="filterNiveau()"
+          (ngModelChange)="filterNiveau.set($event); load(0)">
+          <option value="TOUS">Tous les niveaux</option>
+          @for (n of niveaux; track n) {
+            <option [value]="n">{{ niveauLabel(n) }}</option>
+          }
+        </select>
+      </div>
+      @if (page()) {
+        <div class="filter-summary">{{ page()!.totalElements }} dossier(s)</div>
+      }
+    </div>
+
+    <!-- Tableau -->
+    <div class="card table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Niveau actuel</th>
+            <th>Niveau demandé</th>
+            <th>Statut</th>
+            <th>Risque</th>
+            <th>Expiration KYC</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            @for (_ of [1,2,3,4,5,6]; track $index) {
+              <tr>
+                @for (__ of [1,2,3,4,5,6,7]; track $index) {
+                  <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+                }
+              </tr>
+            }
+          } @else {
+            @for (d of page()?.content ?? []; track d.uid) {
+              <tr [class.selected-row]="selected()?.uid === d.uid"
+                  (click)="selectDossier(d)" style="cursor:pointer">
+                <td>
+                  <div class="client-cell">
+                    <div class="client-avatar">{{ (d.nomClient || '?')[0].toUpperCase() }}</div>
+                    <div>
+                      <div class="font-semibold">{{ d.nomClient }}</div>
+                      <div class="text-xs text-muted">{{ d.clientId }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="niveau-tag" [attr.data-n]="d.niveauActuel">{{ niveauShort(d.niveauActuel) }}</span>
+                </td>
+                <td>
+                  <span class="niveau-tag" [attr.data-n]="d.niveauDemande">{{ niveauShort(d.niveauDemande) }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class]="statutBadge(d.statut)">{{ statutLabel(d.statut) }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class]="risqueBadge(d.niveauRisque)">{{ d.niveauRisque }}</span>
+                </td>
+                <td class="text-sm text-muted">
+                  {{ d.dateExpirationKyc ? (d.dateExpirationKyc | date:'dd/MM/yyyy') : '—' }}
+                </td>
+                <td>
+                  <button class="btn btn-ghost btn-sm"
+                    (click)="selectDossier(d); $event.stopPropagation()">
+                    Détail →
+                  </button>
+                </td>
+              </tr>
+            }
+            @if ((page()?.content ?? []).length === 0) {
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--color-text-muted)">
+                Aucun dossier trouvé
+              </td></tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (page() && page()!.totalPages > 1) {
+      <div class="pagination">
+        <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === 0" (click)="prevPage()">← Préc.</button>
+        <span class="page-info">Page {{ currentPage() + 1 }} / {{ page()!.totalPages }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="currentPage() >= page()!.totalPages - 1" (click)="nextPage()">Suiv. →</button>
+      </div>
+    }
+  </div>
+
+  <!-- ══════════════════════ DÉTAIL ══════════════════════════ -->
+  @if (selected()) {
+    <div class="kyc-detail">
+      <div class="detail-header">
+        <div>
+          <h3>{{ selected()!.nomClient }} {{ selected()!.prenomClient }}</h3>
+          <p class="text-muted text-sm">{{ selected()!.clientId }}</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" (click)="closeDetail()">✕ Fermer</button>
+      </div>
+
+      <!-- ── Progression KYC ─────────────────────────────── -->
+      <div class="niveau-stepper">
+        @for (n of niveaux; track n; let i = $index) {
+          <div class="step-wrap">
+            <div class="step-item" [class]="niveauStep(n)">
+              <div class="step-circle">
+                @if (niveauStep(n) === 'done') { ✓ } @else { {{ i + 1 }} }
+              </div>
+              <div class="step-label">
+                <div class="step-name text-sm font-semibold">Niveau {{ i + 1 }}</div>
+                <div class="step-desc text-xs">
+                  @switch (n) {
+                    @case ('NIVEAU_1') { Identité de base }
+                    @case ('NIVEAU_2') { Identité renforcée }
+                    @case ('NIVEAU_3') { Diligence renforcée }
                   }
                 </div>
-              </td>
-              <td class="text-sm text-muted">
-                {{ k.dateValidite | date: "dd/MM/yyyy" }}
-              </td>
-              <td>
-                <button class="btn btn-primary btn-sm">Valider</button>
-              </td>
-            </tr>
-          }
+              </div>
+            </div>
+            @if (i < 2) { <div class="step-connector" [class]="niveauStep(n) === 'done' ? 'done' : ''"></div> }
+          </div>
         }
-      </tbody>
-    </table>
-  </div>
+      </div>
+
+      <!-- ── Badges statut/risque ────────────────────────── -->
+      <div class="detail-chips">
+        <span class="badge" [class]="statutBadge(selected()!.statut)">{{ statutLabel(selected()!.statut) }}</span>
+        <span class="badge" [class]="risqueBadge(selected()!.niveauRisque)">
+          Risque {{ selected()!.niveauRisque }}
+        </span>
+        @if (selected()!.estPep) { <span class="badge badge-critique">⚠ PPE</span> }
+        @if (selected()!.verifSanctions) { <span class="badge badge-green">Sanctions ✓</span> }
+        @if (selected()!.verifListesNoires) { <span class="badge badge-green">Listes noires ✓</span> }
+      </div>
+
+      <!-- ── Barre de score risque ───────────────────────── -->
+      <div class="risk-gauge-row">
+        <span class="text-xs text-muted" style="white-space:nowrap">Score LBC/FT</span>
+        <div class="risk-bar-track">
+          <div class="risk-bar-fill"
+            [style.width.%]="selected()!.scoreRisque"
+            [style.background]="risqueColor(selected()!.scoreRisque)">
+          </div>
+        </div>
+        <span class="text-sm font-semibold" [style.color]="risqueColor(selected()!.scoreRisque)">
+          {{ selected()!.scoreRisque }}/100
+        </span>
+      </div>
+
+      <!-- ── Identité ────────────────────────────────────── -->
+      <details class="detail-section" open>
+        <summary class="section-title">👤 Identité</summary>
+        <div class="info-grid">
+          <div class="info-row"><span>Date naissance</span><span>{{ selected()!.dateNaissance ? (selected()!.dateNaissance | date:'dd/MM/yyyy') : '—' }}</span></div>
+          <div class="info-row"><span>Lieu naissance</span><span>{{ selected()!.lieuNaissance || '—' }}</span></div>
+          <div class="info-row"><span>Nationalité</span><span>{{ selected()!.nationalite || '—' }}</span></div>
+          <div class="info-row"><span>Téléphone</span><span>{{ selected()!.telephone || '—' }}</span></div>
+          <div class="info-row"><span>Adresse</span><span>{{ selected()!.adresse || '—' }}</span></div>
+          <div class="info-row"><span>Ville</span><span>{{ selected()!.ville || '—' }}</span></div>
+        </div>
+      </details>
+
+      <details class="detail-section">
+        <summary class="section-title">🪪 Pièce d'identité</summary>
+        <div class="info-grid">
+          <div class="info-row"><span>Type</span><span>{{ selected()!.typePieceIdentite || '—' }}</span></div>
+          <div class="info-row"><span>Numéro</span><span>{{ selected()!.numeroPiece || '—' }}</span></div>
+          <div class="info-row"><span>Date émission</span><span>{{ selected()!.dateEmissionPiece ? (selected()!.dateEmissionPiece | date:'dd/MM/yyyy') : '—' }}</span></div>
+          <div class="info-row"><span>Date expiration</span><span>{{ selected()!.dateExpirationPiece ? (selected()!.dateExpirationPiece | date:'dd/MM/yyyy') : '—' }}</span></div>
+          <div class="info-row"><span>Lieu émission</span><span>{{ selected()!.lieuEmissionPiece || '—' }}</span></div>
+        </div>
+      </details>
+
+      <details class="detail-section">
+        <summary class="section-title">💼 Activité économique</summary>
+        <div class="info-grid">
+          <div class="info-row"><span>Profession</span><span>{{ selected()!.profession || '—' }}</span></div>
+          <div class="info-row"><span>Employeur</span><span>{{ selected()!.employeur || '—' }}</span></div>
+          <div class="info-row"><span>Revenu mensuel estimé</span>
+            <span>{{ selected()!.revenuMensuelEstim ? (selected()!.revenuMensuelEstim! | number:'1.0-0') + ' FCFA' : '—' }}</span>
+          </div>
+        </div>
+      </details>
+
+      <!-- ── Documents ──────────────────────────────────── -->
+      <details class="detail-section" open>
+        <summary class="section-title">
+          📁 Documents
+          <button class="btn btn-ghost btn-xs upload-trigger"
+            (click)="openUpload(); $event.stopPropagation()">+ Ajouter</button>
+        </summary>
+        @if (docsLoading()) {
+          <div class="skeleton" style="height:60px;border-radius:8px"></div>
+        } @else if (documents().length === 0 && !showUploadPanel()) {
+          <p class="text-sm text-muted" style="padding:12px 0">Aucun document soumis.</p>
+        } @else {
+          <div class="doc-list">
+            @for (doc of documents(); track doc.uid) {
+              <div class="doc-item">
+                <span class="doc-icon">📄</span>
+                <div class="doc-info">
+                  <div class="font-semibold text-sm">{{ typeDocLabel(doc.typeDocument) }}</div>
+                  <div class="text-xs text-muted">{{ doc.nomFichier || '—' }}</div>
+                  @if (doc.dateExpirationDoc) {
+                    <div class="text-xs text-muted">Exp. {{ doc.dateExpirationDoc | date:'dd/MM/yyyy' }}</div>
+                  }
+                </div>
+                <div class="doc-actions">
+                  @if (doc.valide === true) {
+                    <span class="badge badge-green">✓ Valide</span>
+                  } @else if (doc.valide === false) {
+                    <span class="badge badge-critique">✗ Rejeté</span>
+                    @if (doc.motifRejet) {
+                      <div class="text-xs text-muted doc-motif">{{ doc.motifRejet }}</div>
+                    }
+                  } @else {
+                    <span class="badge badge-moyenne">En attente</span>
+                    @if (docValidating() !== doc.uid) {
+                      <div class="doc-verif-btns">
+                        <button class="btn btn-xs btn-success" (click)="validerDoc(doc.uid, true)">✓</button>
+                        <button class="btn btn-xs btn-danger"  (click)="validerDoc(doc.uid, false)">✗</button>
+                      </div>
+                    } @else {
+                      <span class="text-xs text-muted">…</span>
+                    }
+                  }
+                  @if (showMotifFor() === doc.uid) {
+                    <div class="motif-rejet-inline">
+                      <textarea class="form-input text-xs" rows="2" placeholder="Motif de rejet *"
+                        [ngModel]="docMotifRejet()" (ngModelChange)="docMotifRejet.set($event)"></textarea>
+                      <div class="motif-btns">
+                        <button class="btn btn-xs btn-ghost" (click)="showMotifFor.set(null)">Annuler</button>
+                        <button class="btn btn-xs btn-danger" [disabled]="!docMotifRejet()"
+                          (click)="validerDoc(doc.uid, false)">Confirmer</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Upload panel -->
+        @if (showUploadPanel()) {
+          <div class="upload-panel">
+            <h5 class="text-sm font-semibold" style="margin-bottom:10px">📤 Ajouter un document</h5>
+            <div class="form-field">
+              <label class="text-xs">Type de document</label>
+              <select class="form-input"
+                [ngModel]="uploadTypeDoc()" (ngModelChange)="uploadTypeDoc.set($event)">
+                @for (t of docsDisponibles(); track t) {
+                  <option [value]="t">{{ typeDocLabel(t) }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="text-xs">Fichier (PDF / JPG / PNG — max 5 Mo)</label>
+              <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png"
+                (change)="onFileSelected($event)" class="file-input">
+              @if (uploadNomFichier()) {
+                <div class="text-xs file-chosen">✓ {{ uploadNomFichier() }}</div>
+              }
+            </div>
+            @if (uploadError()) {
+              <div class="alert-box alert-critique text-xs">{{ uploadError() }}</div>
+            }
+            <div class="sub-panel-actions">
+              <button class="btn btn-ghost btn-sm" (click)="showUploadPanel.set(false)">Annuler</button>
+              <button class="btn btn-primary btn-sm"
+                [disabled]="uploadSubmitting() || !uploadBase64()"
+                (click)="submitUpload()">
+                {{ uploadSubmitting() ? 'Envoi…' : 'Envoyer' }}
+              </button>
+            </div>
+          </div>
+        }
+      </details>
+
+      @if (selected()!.motifRisqueEleve) {
+        <div class="alert-box alert-critique">
+          <strong>⚠ Motif risque élevé :</strong> {{ selected()!.motifRisqueEleve }}
+        </div>
+      }
+      @if (selected()!.observations) {
+        <div class="alert-box alert-info">
+          <strong>Observations :</strong> {{ selected()!.observations }}
+        </div>
+      }
+      @if (selected()!.verificateurUsername) {
+        <p class="text-xs text-muted" style="margin-top:6px">
+          Vérifié par <strong>{{ selected()!.verificateurUsername }}</strong>
+          le {{ selected()!.dateVerification | date:'dd/MM/yyyy' }}
+        </p>
+      }
+
+      <!-- ── Boutons d'action ───────────────────────────── -->
+      <div class="action-bar">
+        <button class="btn btn-secondary btn-sm"
+          (click)="showRisquePanel.set(!showRisquePanel()); showVerifPanel.set(false)">
+          🔍 Évaluer risque
+        </button>
+        <button class="btn btn-primary btn-sm"
+          (click)="showVerifPanel.set(!showVerifPanel()); showRisquePanel.set(false)">
+          ✅ Décision
+        </button>
+      </div>
+
+      <!-- ── Sous-panneau : Risque ──────────────────────── -->
+      @if (showRisquePanel()) {
+        <div class="sub-panel">
+          <h4 class="section-title">Évaluation risque LBC/FT</h4>
+          <label class="checkbox-row">
+            <input type="checkbox" [ngModel]="risqueEstPep()" (ngModelChange)="risqueEstPep.set($event)">
+            Personne Politiquement Exposée (PPE)
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" [ngModel]="risqueSanctions()" (ngModelChange)="risqueSanctions.set($event)">
+            Vérification sanctions effectuée
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" [ngModel]="risqueListesNoires()" (ngModelChange)="risqueListesNoires.set($event)">
+            Vérification listes noires effectuée
+          </label>
+          <div class="form-field">
+            <label>Score manuel (0–100)</label>
+            <input type="number" min="0" max="100" class="form-input"
+              [ngModel]="risqueScoreManuel()" (ngModelChange)="risqueScoreManuel.set(+$event)">
+          </div>
+          <div class="form-field">
+            <label>Motif risque élevé</label>
+            <textarea class="form-input" rows="2"
+              [ngModel]="risqueMotif()" (ngModelChange)="risqueMotif.set($event)"></textarea>
+          </div>
+          <div class="sub-panel-actions">
+            <button class="btn btn-ghost btn-sm" (click)="showRisquePanel.set(false)">Annuler</button>
+            <button class="btn btn-primary btn-sm" [disabled]="risqueSubmitting()" (click)="submitRisque()">
+              {{ risqueSubmitting() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ── Sous-panneau : Vérification ───────────────── -->
+      @if (showVerifPanel()) {
+        <div class="sub-panel">
+          <h4 class="section-title">Décision de vérification</h4>
+          <div class="verif-choices">
+            @for (r of ['APPROUVE','REJETE','COMPLEMENT_REQUIS']; track r) {
+              <label class="verif-choice" [class.selected]="verifResultat() === r">
+                <input type="radio" [value]="r" name="resultat"
+                  [ngModel]="verifResultat()" (ngModelChange)="verifResultat.set($any($event))">
+                @switch (r) {
+                  @case ('APPROUVE') { ✅ Approuver }
+                  @case ('REJETE') { ❌ Rejeter }
+                  @case ('COMPLEMENT_REQUIS') { 📋 Complément requis }
+                }
+              </label>
+            }
+          </div>
+          @if (verifResultat() === 'APPROUVE') {
+            <div class="form-field">
+              <label>Niveau approuvé</label>
+              <select class="form-input"
+                [ngModel]="verifNiveauApprouve()"
+                (ngModelChange)="verifNiveauApprouve.set($any($event))">
+                @for (n of niveauOptions(selected()!.niveauDemande); track n) {
+                  <option [value]="n">{{ niveauLabel(n) }}</option>
+                }
+              </select>
+            </div>
+          }
+          @if (verifResultat() === 'REJETE') {
+            <div class="form-field">
+              <label>Motif de rejet <span style="color:red">*</span></label>
+              <textarea class="form-input" rows="2" placeholder="Motif obligatoire…"
+                [ngModel]="verifMotifRejet()" (ngModelChange)="verifMotifRejet.set($event)"></textarea>
+            </div>
+          }
+          <div class="form-field">
+            <label>Commentaire (optionnel)</label>
+            <textarea class="form-input" rows="2"
+              [ngModel]="verifCommentaire()" (ngModelChange)="verifCommentaire.set($event)"></textarea>
+          </div>
+          <div class="sub-panel-actions">
+            <button class="btn btn-ghost btn-sm" (click)="showVerifPanel.set(false)">Annuler</button>
+            <button class="btn btn-primary btn-sm"
+              [disabled]="verifSubmitting() || (verifResultat() === 'REJETE' && !verifMotifRejet())"
+              (click)="submitVerification()">
+              {{ verifSubmitting() ? 'Enregistrement…' : 'Valider décision' }}
+            </button>
+          </div>
+        </div>
+      }
+
+    </div><!-- /kyc-detail -->
+  }
+
 </div>

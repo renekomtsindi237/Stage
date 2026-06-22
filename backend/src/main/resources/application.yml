@@ -122,6 +122,11 @@ imf:
     staging-schema: staging
     ml-api-url: ${ML_API_URL:http://ml-api:8090}
     ml-api-timeout-seconds: ${ML_API_TIMEOUT_SECONDS:5}
+  ai:
+    api-key: ${GROQ_API_KEY:}
+    base-url: https://api.groq.com/openai/v1
+    model: llama-3.3-70b-versatile
+    max-tokens: 1024
 
 server:
   port: ${SERVER_PORT:8080}
@@ -160,3 +165,4 @@ logging:
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
     org.apache.kafka: WARN
+
