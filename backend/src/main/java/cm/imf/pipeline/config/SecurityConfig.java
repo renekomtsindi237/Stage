@@ -92,6 +92,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/clients/import", "/api/v1/clients/import")
                                 .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "DSI", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/clients/export", "/api/v1/clients/export").authenticated()
+                        // Dashboard agent terrain
+                        .requestMatchers(HttpMethod.GET, "/agent/dashboard", "/api/v1/agent/dashboard").hasRole("AGENT")
                         // Collectes terrain : rôle AGENT uniquement
                         .requestMatchers(HttpMethod.POST, "/collectes", "/api/v1/collectes").hasRole("AGENT")
                         .requestMatchers(HttpMethod.GET, "/collectes/mes-collectes", "/api/v1/collectes/mes-collectes").hasRole("AGENT")
