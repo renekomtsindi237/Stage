@@ -68,7 +68,7 @@ concurrency:
 
 env:
   REGISTRY:        ghcr.io
-  JAVA_VERSION:    "17"
+  JAVA_VERSION:    "21"
   PYTHON_VERSION:  "3.11"
   NODE_VERSION:    "20"
   BACKEND_IMAGE:   ${{ github.repository }}/imf-backend
