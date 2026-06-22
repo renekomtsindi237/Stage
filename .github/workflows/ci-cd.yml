@@ -396,17 +396,15 @@ jobs:
               echo "==> Compose OK : $(docker compose version)"
             fi
 
-            # ── IPv6 + ip6tables (force IPv4 pour pulls GHCR) ───────────────
+            # ── IPv6 daemon.json (sans redémarrage — le runner et le VPS sont la même machine)
+            # Redémarrer Docker ici tuerait le conteneur appleboy/ssh-action en cours d'exécution.
             DAEMON_JSON="/etc/docker/daemon.json"
-            IP6_RESTART=false
             if [ ! -f "$DAEMON_JSON" ]; then
               echo '{"ipv6":true,"fixed-cidr-v6":"fd00::/80","ip6tables":true}' > "$DAEMON_JSON"
-              IP6_RESTART=true
-            elif ! python3 -c "import json; d=json.load(open('$DAEMON_JSON')); exit(0 if d.get('ip6tables') else 1)" 2>/dev/null; then
-              python3 -c "import json; d=json.load(open('/etc/docker/daemon.json')); d.update({'ipv6':True,'ip6tables':True}); d.setdefault('fixed-cidr-v6','fd00::/80'); open('/etc/docker/daemon.json','w').write(json.dumps(d,indent=2))"
-              IP6_RESTART=true
+              echo "==> daemon.json créé (redémarrage Docker à faire hors CI)"
+            else
+              echo "==> daemon.json OK"
             fi
-            $IP6_RESTART && systemctl restart docker && sleep 10 || true
             ip6tables -t mangle -C POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1280 2>/dev/null || \
               ip6tables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1280 2>/dev/null || true
             ip6tables -C OUTPUT -p tcp -d 2606:50c0::/32 --dport 443 -j REJECT 2>/dev/null || \
