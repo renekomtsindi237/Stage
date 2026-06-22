@@ -38,7 +38,7 @@ public class AgentDashboardController {
                        COUNT(*) AS nb
                 FROM app.collectes_epargne
                 WHERE imf_id = ?
-                  AND agent_collecteur_id = (SELECT id FROM app.utilisateurs WHERE email = ? LIMIT 1)
+                  AND agent_id = (SELECT id FROM app.utilisateurs WHERE email = ? LIMIT 1)
                   AND DATE(date_collecte) = CURRENT_DATE
                 """, imfId, user.getEmail());
             collecteJour  = col.get("montant") instanceof Number n ? n.longValue() : 0L;
