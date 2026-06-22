@@ -114,6 +114,7 @@ services:
       SMTP_PORT:                     ${SMTP_PORT:-587}
       SMTP_USER:                     ${SMTP_USER:-}
       SMTP_PASSWORD:                 ${SMTP_PASSWORD:-}
+      GROQ_API_KEY:                  ${GROQ_API_KEY}
       FIREBASE_ENABLED:              "false"
       IMF_SWAGGER_SERVER_URL:        "https://imf.rene.it.com"
     volumes:

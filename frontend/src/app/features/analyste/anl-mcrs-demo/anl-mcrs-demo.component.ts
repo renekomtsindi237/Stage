@@ -64,20 +64,26 @@ interface DriftInfo {
 export class AnlMcrsDemoComponent implements OnInit {
   private readonly api = inject(ApiService);
 
-  loading     = signal(true);
-  dashboard   = signal<DashboardData | null>(null);
-  drift       = signal<DriftInfo | null>(null);
-  scores      = signal<ScorePage | null>(null);
+  loading = signal(true);
+  dashboard = signal<DashboardData | null>(null);
+  drift = signal<DriftInfo | null>(null);
+  scores = signal<ScorePage | null>(null);
   currentPage = signal(0);
-  activeTab   = signal<"scores" | "distribution" | "drift" | "alertes">("scores");
+  activeTab = signal<"scores" | "distribution" | "drift" | "alertes">("scores");
 
-  ngOnInit() { this.load(); }
+  ngOnInit() {
+    this.load();
+  }
 
   load() {
     this.loading.set(true);
     Promise.all([
-      this.api.get<{ data: DashboardData }>("/api/v1/analyste/dashboard").toPromise(),
-      this.api.get<{ data: DriftInfo }>("/api/v1/analyste/ml/drift").toPromise(),
+      this.api
+        .get<{ data: DashboardData }>("/api/v1/analyste/dashboard")
+        .toPromise(),
+      this.api
+        .get<{ data: DriftInfo }>("/api/v1/analyste/ml/drift")
+        .toPromise(),
       this.loadScores(0),
     ])
       .then(([dash, dr]) => {
@@ -99,14 +105,20 @@ export class AnlMcrsDemoComponent implements OnInit {
     this.scores.set(p);
   }
 
-  goPage(n: number) { this.loadScores(n); }
+  goPage(n: number) {
+    this.loadScores(n);
+  }
 
   niveauClass(n: string): string {
-    return {
-      FAIBLE: "badge-green", MODERE: "badge-moyenne",
-      ELEVE: "badge-haute",  TRES_ELEVE: "badge-haute",
-      CRITIQUE: "badge-critique",
-    }[n] ?? "badge-moyenne";
+    return (
+      {
+        FAIBLE: "badge-green",
+        MODERE: "badge-moyenne",
+        ELEVE: "badge-haute",
+        TRES_ELEVE: "badge-haute",
+        CRITIQUE: "badge-critique",
+      }[n] ?? "badge-moyenne"
+    );
   }
 
   psiClass(psi: number): string {
@@ -123,7 +135,7 @@ export class AnlMcrsDemoComponent implements OnInit {
 
   barWidth(count: number): number {
     const dist = this.dashboard()?.scoringDistribution ?? [];
-    const max  = Math.max(...dist.map((d) => Number(d.count)), 1);
+    const max = Math.max(...dist.map((d) => Number(d.count)), 1);
     return (Number(count) / max) * 100;
   }
 }

@@ -35,10 +35,10 @@ export class ChatbotComponent implements AfterViewChecked {
 
   @ViewChild("messagesEnd") private messagesEnd!: ElementRef;
 
-  open      = signal(false);
-  messages  = signal<Message[]>([]);
-  input     = signal("");
-  loading   = signal(false);
+  open = signal(false);
+  messages = signal<Message[]>([]);
+  input = signal("");
+  loading = signal(false);
 
   readonly welcomeMsg: Message = {
     role: "assistant",

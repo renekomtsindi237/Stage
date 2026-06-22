@@ -26,6 +26,10 @@ import java.util.*;
 @Slf4j
 public class AiChatController {
 
+    // Fix compilation issues caused by overloaded ApiResponse.ok() generic inference.
+    // We explicitly build ApiResponse<String> for every return path.
+
+
     private final JdbcTemplate jdbc;
 
     @Value("${imf.ai.api-key:}")
@@ -59,8 +63,11 @@ public class AiChatController {
 
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("GROQ_API_KEY non configuré");
-            return ResponseEntity.ok(ApiResponse.ok(
-                "L'assistant IA n'est pas encore configuré. Contactez votre DSI pour activer la clé API GROQ."));
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                .success(true)
+                .message("L'assistant IA n'est pas encore configuré. Contactez votre DSI pour activer la clé API GROQ.")
+                .timestamp(java.time.OffsetDateTime.now())
+                .build());
         }
 
         try {
@@ -96,12 +103,19 @@ public class AiChatController {
             var message = (Map<String, Object>) choices.get(0).get("message");
             String content = (String) message.get("content");
 
-            return ResponseEntity.ok(ApiResponse.ok(content));
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                .success(true)
+                .data(content)
+                .timestamp(java.time.OffsetDateTime.now())
+                .build());
 
         } catch (Exception e) {
             log.error("Erreur appel IA : {}", e.getMessage());
-            return ResponseEntity.ok(ApiResponse.ok(
-                "Désolé, je rencontre une difficulté technique. Réessayez dans quelques instants."));
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                .success(true)
+                .message("Désolé, je rencontre une difficulté technique. Réessayez dans quelques instants.")
+                .timestamp(java.time.OffsetDateTime.now())
+                .build());
         }
     }
 
