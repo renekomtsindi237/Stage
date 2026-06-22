@@ -22,7 +22,7 @@ BEGIN
         username = 'alban.dsi'
     WHERE imf_id = v_imf_id
       AND role   = 'DSI'
-      AND email IN ('dsi@finance-mf.cm', 'albanrene77@gmail.com');
+      AND email  = 'dsi@finance-mf.cm';  -- idempotent : skip si email déjà corrigé
 
     -- ── 2. IDs utiles ───────────────────────────────────────────────────────
     SELECT id INTO v_agt_id  FROM app.utilisateurs WHERE email = 'renekomtsindi99@gmail.com' AND imf_id = v_imf_id LIMIT 1;

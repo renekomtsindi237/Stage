@@ -29,6 +29,7 @@ spring:
     locations: classpath:db/migration
     schemas: app
     out-of-order: true
+    repair-on-migrate: true   # nettoie les migrations FAILED avant de relancer (PgBouncer safe)
 
   data:
     redis:
