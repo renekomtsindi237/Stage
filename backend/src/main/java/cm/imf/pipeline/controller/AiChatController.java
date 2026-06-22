@@ -21,7 +21,7 @@ import java.util.*;
  * Variable d'environnement : GROQ_API_KEY
  */
 @RestController
-@RequestMapping("/api/v1/ai")
+@RequestMapping("/ai")
 @RequiredArgsConstructor
 @Slf4j
 public class AiChatController {

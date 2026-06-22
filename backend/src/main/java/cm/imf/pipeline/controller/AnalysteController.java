@@ -90,10 +90,15 @@ public class AnalysteController {
 
         try {
             StringBuilder sql = new StringBuilder("""
-                    SELECT cs.id, cs.client_id, cs.imf_id, cs.score_mcrs,
-                           cs.classe_risque, cs.niveau_risque,
-                           cs.probabilite_defaut, cs.modele_version,
-                           cs.calculated_at, cs.created_at
+                    SELECT cs.id,
+                           cs.client_id_externe                       AS client_id,
+                           cs.imf_id,
+                           ROUND(cs.score_mcrs * 850)::INT            AS score_mcrs,
+                           cs.cobac_classe                            AS classe_risque,
+                           cs.niveau_risque,
+                           cs.probabilite_defaut_30j                  AS probabilite_defaut,
+                           COALESCE(cs.model_version, 'MCRS-v2.4.1') AS modele_version,
+                           cs.scored_at                               AS calculated_at
                     FROM ml.client_scores cs
                     WHERE cs.imf_id = ?
                     """);
@@ -104,7 +109,7 @@ public class AnalysteController {
                 sql.append(" AND cs.niveau_risque = ?");
                 params.add(niveauRisque);
             }
-            sql.append(" ORDER BY cs.created_at DESC LIMIT ? OFFSET ?");
+            sql.append(" ORDER BY cs.scored_at DESC LIMIT ? OFFSET ?");
             params.add(size);
             params.add((long) page * size);
 
@@ -268,12 +273,12 @@ public class AnalysteController {
 
         try {
             Long count = jdbc.queryForObject(
-                    "SELECT COUNT(*) FROM app.alertes_impayes WHERE imf_id = ? AND statut_alerte = 'ACTIVE'",
+                    "SELECT COUNT(*) FROM ml.alertes_predictives WHERE imf_id = ? AND statut = 'ACTIVE'",
                     Long.class, imfId);
             alertesOuvertes = count != null ? count.intValue() : 0;
         } catch (Exception e) {
-            log.debug("app.alertes_impayes indisponible (dashboard) : {}", e.getMessage());
-            alertesOuvertes = 12;
+            log.debug("ml.alertes_predictives indisponible (dashboard) : {}", e.getMessage());
+            alertesOuvertes = 0;
         }
 
         try {
@@ -301,16 +306,21 @@ public class AnalysteController {
 
         try {
             alertesRecentes = jdbc.queryForList("""
-                    SELECT id::text AS id, id_pret AS clientId, nom_client AS nomClient,
-                           '' AS agence, severite_alerte AS severite,
-                           statut_alerte AS statut, motif AS message,
-                           montant_impaye AS encours, created_at AS createdAt
-                    FROM app.alertes_impayes
-                    WHERE imf_id = ? AND statut_alerte = 'ACTIVE'
-                    ORDER BY created_at DESC LIMIT 5
+                    SELECT ap.id::text AS id,
+                           ap.client_id_externe AS clientId,
+                           COALESCE(ci.nom_complet, ap.client_id_externe) AS nomClient,
+                           ap.urgence AS severite, ap.statut,
+                           ap.titre AS message,
+                           0 AS encours, ap.created_at AS createdAt
+                    FROM ml.alertes_predictives ap
+                    LEFT JOIN app.clients_informels ci
+                          ON ci.client_id_externe = ap.client_id_externe
+                         AND ci.imf_id = ap.imf_id
+                    WHERE ap.imf_id = ? AND ap.statut = 'ACTIVE'
+                    ORDER BY ap.created_at DESC LIMIT 5
                     """, imfId);
         } catch (Exception e) {
-            log.debug("Alertes récentes indisponibles : {}", e.getMessage());
+            log.debug("Alertes prédictives récentes indisponibles : {}", e.getMessage());
         }
 
         return ResponseEntity.ok(ApiResponse.ok(new DashboardData(

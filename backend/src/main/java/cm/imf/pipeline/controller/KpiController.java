@@ -55,52 +55,94 @@ public class KpiController {
         Long imfId = TenantContext.currentImfId();
         Map<String, Object> result = new LinkedHashMap<>();
 
-        // Encours et PAR
+        // Encours total — depuis dossiers_credit (source de vérité)
         try {
-            Map<String, Object> par = jdbc.queryForMap(
-                    "SELECT * FROM app.v_par_par_imf WHERE imf_id = ?", imfId);
-            result.put("encoursTotalFcfa", par.getOrDefault("encours_total", 0));
-            double par30 = par.get("encours_par30") instanceof Number n ? n.doubleValue() : 0;
-            double total = par.get("encours_total")  instanceof Number n ? n.doubleValue() : 1;
-            result.put("par30", total > 0 ? Math.round(par30 / total * 10000.0) / 100.0 : 0);
-            result.put("par90", par.getOrDefault("encours_par90", 0));
+            Map<String, Object> enc = jdbc.queryForMap("""
+                    SELECT COALESCE(SUM(dc.montant_demande), 0) AS encours_total,
+                           COALESCE(SUM(CASE WHEN cr.jours_retard > 30  THEN cr.montant_impaye ELSE 0 END), 0) AS montant_par30,
+                           COALESCE(SUM(CASE WHEN cr.jours_retard > 90  THEN cr.montant_impaye ELSE 0 END), 0) AS montant_par90
+                    FROM app.dossiers_credit dc
+                    LEFT JOIN app.creances cr ON cr.id_pret_externe = dc.uid::text AND cr.imf_id = dc.imf_id
+                    WHERE dc.imf_id = ? AND dc.statut IN ('APPROUVE','DEBLOQUE','EN_REMBOURSEMENT')
+                    """, imfId);
+            double encTotal = enc.get("encours_total") instanceof Number n ? n.doubleValue() : 0;
+            double mp30     = enc.get("montant_par30") instanceof Number n ? n.doubleValue() : 0;
+            double mp90     = enc.get("montant_par90") instanceof Number n ? n.doubleValue() : 0;
+            result.put("encoursTotalFcfa", (long) encTotal);
+            result.put("par30", encTotal > 0 ? Math.round(mp30 / encTotal * 10000.0) / 100.0 : 0.0);
+            result.put("par90", encTotal > 0 ? Math.round(mp90 / encTotal * 10000.0) / 100.0 : 0.0);
         } catch (Exception e) {
-            log.debug("v_par_par_imf indisponible (kpi/dashboard) : {}", e.getMessage());
-            result.put("encoursTotalFcfa", 85_400_000);
-            result.put("par30", 6.2);
-            result.put("par90", 2.1);
+            log.debug("dossiers_credit/creances indisponible (kpi/dashboard) : {}", e.getMessage());
+            // Fallback depuis alertes_impayes
+            try {
+                Map<String, Object> par = jdbc.queryForMap(
+                        "SELECT * FROM app.v_par_par_imf WHERE imf_id = ?", imfId);
+                double totalImpaye = par.get("total_impaye") instanceof Number n ? n.doubleValue() : 0;
+                double mp30 = par.get("montant_par30") instanceof Number n ? n.doubleValue() : 0;
+                double mp90 = par.get("montant_par90") instanceof Number n ? n.doubleValue() : 0;
+                result.put("encoursTotalFcfa", (long) totalImpaye);
+                result.put("par30", totalImpaye > 0 ? Math.round(mp30 / totalImpaye * 10000.0) / 100.0 : 0.0);
+                result.put("par90", totalImpaye > 0 ? Math.round(mp90 / totalImpaye * 10000.0) / 100.0 : 0.0);
+            } catch (Exception e2) {
+                result.put("encoursTotalFcfa", 85_400_000L);
+                result.put("par30", 6.2);
+                result.put("par90", 2.1);
+            }
         }
 
-        // Collectes du jour
+        // Collectes du jour (montant total, pas count)
         try {
-            Long collectes = jdbc.queryForObject(
-                    "SELECT COUNT(*) FROM app.collectes WHERE imf_id = ? AND DATE(created_at) = CURRENT_DATE",
-                    Long.class, imfId);
-            result.put("collectesDuJour", collectes != null ? collectes : 0);
+            Map<String, Object> col = jdbc.queryForMap("""
+                    SELECT COALESCE(SUM(montant_collecte), 0) AS montant, COUNT(*) AS nb
+                    FROM app.collectes_epargne
+                    WHERE imf_id = ? AND DATE(date_collecte) = CURRENT_DATE
+                    """, imfId);
+            result.put("collectesDuJour", col.get("montant") instanceof Number n ? n.longValue() : 0L);
+            result.put("collectesDuJourNb", col.get("nb") instanceof Number n ? n.longValue() : 0L);
         } catch (Exception e) {
-            log.debug("collectes indisponible (kpi/dashboard) : {}", e.getMessage());
-            result.put("collectesDuJour", 12);
+            log.debug("collectes_epargne indisponible (kpi/dashboard) : {}", e.getMessage());
+            result.put("collectesDuJour", 0L);
+            result.put("collectesDuJourNb", 0L);
         }
 
         result.put("tauxRecouvrement", 87.4);
         result.put("variation", Map.of("encours", 2.3, "par30", -0.4, "par90", -0.1, "collectes", 8.5));
 
-        // Évolution PAR sur 30j (mockée si table absente)
-        result.put("evolutionPar30j", evolutionParMockee());
+        // Évolution PAR sur 30j — depuis snapshots KPI si disponibles
+        List<Map<String, Object>> evolutionPar;
+        try {
+            evolutionPar = jdbc.queryForList("""
+                    SELECT TO_CHAR(date_calcul,'YYYY-MM-DD') AS date,
+                           ROUND(100.0 * (1 - taux_ponctualite_pct), 2) AS par30,
+                           ROUND(100.0 * taux_rejet_pct, 2)              AS par90,
+                           5.0                                             AS objectif
+                    FROM app.kpi_collecte_snapshots
+                    WHERE imf_id = ?
+                    ORDER BY date_calcul DESC LIMIT 15
+                    """, imfId);
+            if (evolutionPar.isEmpty()) evolutionPar = evolutionParMockee();
+        } catch (Exception e) {
+            evolutionPar = evolutionParMockee();
+        }
+        result.put("evolutionPar30j", evolutionPar);
 
-        // Alertes actives
+        // Alertes actives — depuis ml.alertes_predictives
         List<Map<String, Object>> alertes = new ArrayList<>();
         try {
             alertes = jdbc.queryForList("""
-                    SELECT id::text AS id, nom_client AS nomClient,
-                           severite_alerte AS severite, motif AS message,
-                           created_at AS createdAt
-                    FROM app.alertes_impayes
-                    WHERE imf_id = ? AND statut_alerte = 'ACTIVE'
-                    ORDER BY created_at DESC LIMIT 5
+                    SELECT ap.id::text AS id,
+                           COALESCE(ci.nom_complet, ap.client_id_externe) AS nomClient,
+                           ap.urgence AS severite, ap.titre AS message,
+                           ap.created_at AS createdAt
+                    FROM ml.alertes_predictives ap
+                    LEFT JOIN app.clients_informels ci
+                          ON ci.client_id_externe = ap.client_id_externe
+                         AND ci.imf_id = ap.imf_id
+                    WHERE ap.imf_id = ? AND ap.statut = 'ACTIVE'
+                    ORDER BY ap.created_at DESC LIMIT 5
                     """, imfId);
         } catch (Exception e) {
-            log.debug("alertes indisponibles (kpi/dashboard) : {}", e.getMessage());
+            log.debug("alertes_predictives indisponibles (kpi/dashboard) : {}", e.getMessage());
         }
         result.put("alertesActives", alertes);
 
