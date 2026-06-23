@@ -6,7 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { map } from "rxjs";
+
 import { ApiService } from "../../../core/http/api.service";
 
 interface RgpdStatus {
@@ -34,8 +34,7 @@ export class DsiRgpdComponent implements OnInit {
 
   ngOnInit() {
     this.api
-      .get<{ data: RgpdStatus }>("/api/v1/dsi/rgpd/status")
-      .pipe(map((r) => r.data))
+      .get<RgpdStatus>("/api/v1/dsi/rgpd/status")
       .subscribe({
         next: (d: RgpdStatus) => {
           this.data.set(d);

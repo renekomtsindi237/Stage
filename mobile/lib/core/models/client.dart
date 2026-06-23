@@ -25,9 +25,16 @@ class Client {
     this.statut,
   });
 
+  static int _parseId(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v) ?? 0;
+    return 0;
+  }
+
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
-      idClient: json['idClient'] as int? ?? json['id'] as int? ?? 0,
+      idClient: _parseId(json['id'] ?? json['idClient']),
       nom: json['nom'] as String? ?? '',
       prenom: json['prenom'] as String?,
       telephone: json['telephone'] as String?,

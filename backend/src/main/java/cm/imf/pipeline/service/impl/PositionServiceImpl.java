@@ -141,11 +141,11 @@ public class PositionServiceImpl implements IPositionService {
             return jdbc.query("""
                     SELECT
                         u.uid::text      AS agent_uid,
-                    u.id             AS agent_id,
+                        u.id             AS agent_id,
                         u.username,
-                        u.nom_complet,
-                        ag.nom           AS nom_agence,
-                        ag.ville         AS ville_agence,
+                        u.username       AS nom_complet,
+                        NULL::TEXT       AS nom_agence,
+                        NULL::TEXT       AS ville_agence,
                         u.latitude,
                         u.longitude,
                         u.precision_gps_m,
@@ -156,16 +156,15 @@ public class PositionServiceImpl implements IPositionService {
                         'MOBILE'         AS source,
                         u.derniere_position_at           AS captured_at
                     FROM app.utilisateurs u
-                    LEFT JOIN app.agences ag ON ag.id = u.agence_id
+                    JOIN app.cycles_collecte cc ON cc.imf_id = u.imf_id AND cc.agence_id = ?
                     WHERE u.imf_id   = ?
-                      AND u.agence_id = ?
                       AND u.role      = 'AGENT'
                       AND u.actif     = TRUE
                       AND u.latitude  IS NOT NULL
                       AND u.position_active = TRUE
-                    ORDER BY en_deplacement DESC, u.nom_complet
+                    ORDER BY en_deplacement DESC, u.username
                     """,
-                    POSITION_ROW_MAPPER, imfId, agenceId);
+                    POSITION_ROW_MAPPER, agenceId, imfId);
         }
 
         return jdbc.query("""
@@ -173,9 +172,9 @@ public class PositionServiceImpl implements IPositionService {
                     u.uid::text      AS agent_uid,
                     u.id             AS agent_id,
                     u.username,
-                    u.nom_complet,
-                    ag.nom           AS nom_agence,
-                    ag.ville         AS ville_agence,
+                    u.username       AS nom_complet,
+                    NULL::TEXT       AS nom_agence,
+                    NULL::TEXT       AS ville_agence,
                     u.latitude,
                     u.longitude,
                     u.precision_gps_m,
@@ -186,13 +185,12 @@ public class PositionServiceImpl implements IPositionService {
                     'MOBILE'         AS source,
                     u.derniere_position_at           AS captured_at
                 FROM app.utilisateurs u
-                LEFT JOIN app.agences ag ON ag.id = u.agence_id
                 WHERE u.imf_id  = ?
                   AND u.role    = 'AGENT'
                   AND u.actif   = TRUE
                   AND u.latitude IS NOT NULL
                   AND u.position_active = TRUE
-                ORDER BY en_deplacement DESC, u.nom_complet
+                ORDER BY en_deplacement DESC, u.username
                 """,
                 POSITION_ROW_MAPPER, imfId);
     }
@@ -208,9 +206,9 @@ public class PositionServiceImpl implements IPositionService {
                     u.uid::text      AS agent_uid,
                     u.id             AS agent_id,
                     u.username,
-                    u.nom_complet,
-                    ag.nom           AS nom_agence,
-                    ag.ville         AS ville_agence,
+                    u.username       AS nom_complet,
+                    NULL::TEXT       AS nom_agence,
+                    NULL::TEXT       AS ville_agence,
                     p.latitude,
                     p.longitude,
                     p.precision_gps_m,
@@ -220,8 +218,7 @@ public class PositionServiceImpl implements IPositionService {
                     p.source,
                     p.captured_at
                 FROM app.positions_agents p
-                JOIN app.utilisateurs u  ON u.id     = p.agent_id
-                LEFT JOIN app.agences ag ON ag.id    = u.agence_id
+                JOIN app.utilisateurs u ON u.id = p.agent_id
                 WHERE p.agent_id  = ?
                   AND p.imf_id    = ?
                   AND p.captured_at::DATE = ?
@@ -238,8 +235,10 @@ public class PositionServiceImpl implements IPositionService {
                 SELECT
                     u.uid::text      AS agent_uid,
                     u.id             AS agent_id,
-                    u.username, u.nom_complet,
-                    ag.nom AS nom_agence, ag.ville AS ville_agence,
+                    u.username,
+                    u.username       AS nom_complet,
+                    NULL::TEXT       AS nom_agence,
+                    NULL::TEXT       AS ville_agence,
                     u.latitude, u.longitude, u.precision_gps_m,
                     NULL::NUMERIC AS altitude_m, NULL::NUMERIC AS vitesse_kmh,
                     (u.derniere_position_at > NOW() - INTERVAL '15 minutes'
@@ -247,7 +246,6 @@ public class PositionServiceImpl implements IPositionService {
                     'MOBILE' AS source,
                     u.derniere_position_at AS captured_at
                 FROM app.utilisateurs u
-                LEFT JOIN app.agences ag ON ag.id = u.agence_id
                 WHERE u.id = ? AND u.imf_id = ?
                 """,
                 POSITION_ROW_MAPPER, agentId, imfId)

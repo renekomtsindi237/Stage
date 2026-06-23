@@ -7,11 +7,9 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
-import { map } from "rxjs/operators";
 import { ApiService } from "../../../core/http/api.service";
 import {
   AuditEntry,
-  ApiResp,
   PagedResult,
 } from "../../../core/models/platform.model";
 
@@ -93,11 +91,10 @@ export class PlatformAuditComponent implements OnInit {
     };
 
     this.api
-      .get<ApiResp<PagedResult<AuditEntry>>>(
+      .get<PagedResult<AuditEntry>>(
         "/api/v1/admin/audit/trail",
         params,
       )
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (page_) => {
           this.entries.set(page_.content ?? []);

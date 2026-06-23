@@ -8,7 +8,6 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
-import { map } from "rxjs";
 import { ApiService } from "../../core/http/api.service";
 import { AuthService } from "../../core/auth/auth.service";
 import { ToastService } from "../../core/services/toast.service";
@@ -170,15 +169,14 @@ export class DelegationsComponent implements OnInit {
   loadDelegations() {
     this.loadingDelegations.set(true);
     this.api
-      .get<{ data: PageResponse<Delegation> }>("/api/v1/delegations", {
+      .get<PageResponse<Delegation>>("/api/v1/delegations", {
         page: 0,
         size: 50,
       })
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (p) => {
-          this.delegations.set(p.content ?? []);
-          this.totalDelegations.set(p.totalElements ?? 0);
+          this.delegations.set(p?.content ?? []);
+          this.totalDelegations.set(p?.totalElements ?? 0);
           this.loadingDelegations.set(false);
         },
         error: () => this.loadingDelegations.set(false),
@@ -188,15 +186,14 @@ export class DelegationsComponent implements OnInit {
   loadDossiers() {
     this.loadingDossiers.set(true);
     this.api
-      .get<{ data: PageResponse<Dossier> }>("/api/v1/dossiers-credit", {
+      .get<PageResponse<Dossier>>("/api/v1/dossiers-credit", {
         page: 0,
         size: 50,
       })
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (p) => {
-          this.dossiers.set(p.content ?? []);
-          this.totalDossiers.set(p.totalElements ?? 0);
+          this.dossiers.set(p?.content ?? []);
+          this.totalDossiers.set(p?.totalElements ?? 0);
           this.loadingDossiers.set(false);
         },
         error: () => this.loadingDossiers.set(false),
@@ -207,8 +204,7 @@ export class DelegationsComponent implements OnInit {
     if (this.agents().length > 0) return;
     this.loadingAgents.set(true);
     this.api
-      .get<{ data: AgentUser[] }>("/api/v1/delegations/agents-credit")
-      .pipe(map((r) => r.data))
+      .get<AgentUser[]>("/api/v1/delegations/agents-credit")
       .subscribe({
         next: (list) => {
           this.agents.set(list ?? []);
@@ -222,14 +218,13 @@ export class DelegationsComponent implements OnInit {
     if (this.agents().length > 0) return;
     this.loadingAgents.set(true);
     this.api
-      .get<{ data: { content: AgentUser[] } }>("/api/v1/admin/users", {
+      .get<{ content: AgentUser[] }>("/api/v1/admin/users", {
         page: 0,
         size: 100,
       })
-      .pipe(map((r) => r.data.content))
       .subscribe({
-        next: (list) => {
-          this.agents.set(list ?? []);
+        next: (r) => {
+          this.agents.set(r?.content ?? []);
           this.loadingAgents.set(false);
         },
         error: () => this.loadingAgents.set(false),

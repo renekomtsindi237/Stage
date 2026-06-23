@@ -2,7 +2,7 @@
 
 .landing {
   min-height: 100vh;
-  background: var(--color-bg);
+  background: #ffffff;
   display: flex;
   flex-direction: column;
 }
@@ -32,26 +32,11 @@
     gap: 10px;
   }
 
-  &-logo {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--color-primary);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .material-icons-round {
-      font-size: 20px;
-    }
-  }
-
-  &-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--color-text);
-    letter-spacing: -0.3px;
+  &-logo-img {
+    height: 40px;
+    width: auto;
+    display: block;
+    object-fit: contain;
   }
 
   &-actions {
@@ -111,7 +96,7 @@
   background: linear-gradient(
     160deg,
     rgba(79, 70, 229, 0.06) 0%,
-    var(--color-bg) 60%
+    #ffffff 60%
   );
   border-bottom: 1px solid var(--color-border);
 

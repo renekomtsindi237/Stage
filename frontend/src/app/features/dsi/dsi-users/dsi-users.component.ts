@@ -7,7 +7,6 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
-import { map } from "rxjs";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 
@@ -88,12 +87,11 @@ export class DsiUsersComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.api
-      .get<{ data: UserPage }>("/api/v1/admin/users", {
+      .get<UserPage>("/api/v1/admin/users", {
         page: this.currentPage(),
         size: 20,
         role: this.roleFilter() || undefined,
       })
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (p: UserPage) => {
           this.page.set(p);

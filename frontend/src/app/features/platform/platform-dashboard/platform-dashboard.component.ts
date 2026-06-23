@@ -7,11 +7,10 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
-import { map, forkJoin } from "rxjs";
+import { forkJoin } from "rxjs";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import {
-  ApiResp,
   PlatformActualStats,
   ImfDetail,
 } from "../../../core/models/platform.model";
@@ -33,16 +32,12 @@ export class PlatformDashboardComponent implements OnInit {
 
   ngOnInit() {
     forkJoin({
-      stats: this.api
-        .get<ApiResp<PlatformActualStats>>("/api/v1/platform/stats")
-        .pipe(map((r) => r.data)),
-      imfs: this.api
-        .get<ApiResp<ImfDetail[]>>("/api/v1/platform/imf")
-        .pipe(map((r) => r.data ?? [])),
+      stats: this.api.get<PlatformActualStats>("/api/v1/platform/stats"),
+      imfs: this.api.get<ImfDetail[]>("/api/v1/platform/imf"),
     }).subscribe({
       next: ({ stats, imfs }) => {
         this.stats.set(stats);
-        this.imfs.set(imfs.slice(0, 8));
+        this.imfs.set((imfs ?? []).slice(0, 8));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

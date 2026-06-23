@@ -1,11 +1,12 @@
 package cm.imf.pipeline.dto.response;
 
 import cm.imf.pipeline.entity.Agence;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.OffsetDateTime;
 
 public record AgenceResponse(
-        String uid,
+        @JsonProperty("id") String uid,
         String nom,
         String ville,
         String responsable,

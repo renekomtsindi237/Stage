@@ -35,11 +35,14 @@ public class ClientService implements IClientService {
     @Cacheable(value = "clients-search", key = "#query")
     public List<ClientResponse> search(String query, int limit) {
         String sql = """
-                SELECT id_client, nom_client, telephone_client, agence_principale
+                SELECT client_id_externe AS id_client,
+                       nom_complet       AS nom_client,
+                       telephone_principal AS telephone_client,
+                       agence_code       AS agence_principale
                 FROM %s.stg_clients
-                WHERE nom_client ILIKE ?
-                   OR telephone_client LIKE ?
-                ORDER BY nom_client
+                WHERE nom_complet ILIKE ?
+                   OR telephone_principal LIKE ?
+                ORDER BY nom_complet
                 LIMIT ?
                 """.formatted(stagingSchema);
         String pattern = "%" + query + "%";
@@ -50,9 +53,12 @@ public class ClientService implements IClientService {
 
     public ClientResponse getById(String idClient) {
         String sql = """
-                SELECT id_client, nom_client, telephone_client, agence_principale
+                SELECT client_id_externe AS id_client,
+                       nom_complet       AS nom_client,
+                       telephone_principal AS telephone_client,
+                       agence_code       AS agence_principale
                 FROM %s.stg_clients
-                WHERE id_client = ?
+                WHERE client_id_externe = ?
                 """.formatted(stagingSchema);
 
         ClientResponse client = jdbcTemplate.query(sql, CLIENT_ROW_MAPPER, idClient)
@@ -64,9 +70,12 @@ public class ClientService implements IClientService {
 
     public List<ClientResponse> list(int page, int size) {
         String sql = """
-                SELECT id_client, nom_client, telephone_client, agence_principale
+                SELECT client_id_externe AS id_client,
+                       nom_complet       AS nom_client,
+                       telephone_principal AS telephone_client,
+                       agence_code       AS agence_principale
                 FROM %s.stg_clients
-                ORDER BY nom_client
+                ORDER BY nom_complet
                 LIMIT ? OFFSET ?
                 """.formatted(stagingSchema);
         List<ClientResponse> resultats = jdbcTemplate.query(sql, CLIENT_ROW_MAPPER,

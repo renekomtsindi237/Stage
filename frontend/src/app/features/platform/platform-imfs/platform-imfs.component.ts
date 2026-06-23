@@ -7,10 +7,10 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
-import { map } from "rxjs/operators";
+
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
-import { ImfDetail, ApiResp } from "../../../core/models/platform.model";
+import { ImfDetail } from "../../../core/models/platform.model";
 
 @Component({
   selector: "app-platform-imfs",
@@ -131,11 +131,10 @@ export class PlatformImfsComponent implements OnInit {
   loadImfs() {
     this.loading.set(true);
     this.api
-      .get<ApiResp<ImfDetail[]>>("/api/v1/platform/imf")
-      .pipe(map((r) => r.data ?? []))
+      .get<ImfDetail[]>("/api/v1/platform/imf")
       .subscribe({
         next: (list) => {
-          this.imfs.set(list);
+          this.imfs.set(list ?? []);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
@@ -208,8 +207,7 @@ export class PlatformImfsComponent implements OnInit {
         : null,
     };
     this.api
-      .post<ApiResp<ImfDetail>>("/api/v1/platform/imf", payload)
-      .pipe(map((r) => r.data))
+      .post<ImfDetail>("/api/v1/platform/imf", payload)
       .subscribe({
         next: (imf) => {
           this.submitting.set(false);
@@ -236,8 +234,7 @@ export class PlatformImfsComponent implements OnInit {
       ? `/api/v1/platform/imf/${imf.uid}/deactivate`
       : `/api/v1/platform/imf/${imf.uid}/activate`;
     this.api
-      .patch<ApiResp<ImfDetail>>(path, {})
-      .pipe(map((r) => r.data))
+      .patch<ImfDetail>(path, {})
       .subscribe({
         next: (updated) => {
           this.updateInList(updated);
@@ -263,7 +260,7 @@ export class PlatformImfsComponent implements OnInit {
     const imf = this.selected();
     if (!imf) return;
     this.api
-      .delete<ApiResp<void>>(`/api/v1/platform/imf/${imf.uid}`)
+      .delete<void>(`/api/v1/platform/imf/${imf.uid}`)
       .subscribe({
         next: () => {
           this.imfs.update((list) => list.filter((i) => i.uid !== imf.uid));
@@ -298,11 +295,10 @@ export class PlatformImfsComponent implements OnInit {
     if (!imf) return;
     this.submitting.set(true);
     this.api
-      .post<ApiResp<ImfDetail>>(
+      .post<ImfDetail>(
         `/api/v1/platform/imf/${imf.uid}/admin`,
         this.dsiForm.value,
       )
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (updated) => {
           this.submitting.set(false);
@@ -343,11 +339,10 @@ export class PlatformImfsComponent implements OnInit {
     if (!imf) return;
     this.submitting.set(true);
     this.api
-      .patch<ApiResp<ImfDetail>>(
+      .patch<ImfDetail>(
         `/api/v1/platform/imf/${imf.uid}/admin`,
         this.dsiEditForm.value,
       )
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (updated) => {
           this.submitting.set(false);
@@ -373,11 +368,10 @@ export class PlatformImfsComponent implements OnInit {
     const imf = this.selected();
     if (!imf) return;
     this.api
-      .patch<ApiResp<ImfDetail>>(
+      .patch<ImfDetail>(
         `/api/v1/platform/imf/${imf.uid}/admin/suspend`,
         {},
       )
-      .pipe(map((r) => r.data))
       .subscribe({
         next: (updated) => {
           this.updateInList(updated);
@@ -403,8 +397,7 @@ export class PlatformImfsComponent implements OnInit {
     const imf = this.selected();
     if (!imf) return;
     this.api
-      .delete<ApiResp<ImfDetail>>(`/api/v1/platform/imf/${imf.uid}/admin`)
-      .pipe(map((r) => r.data))
+      .delete<ImfDetail>(`/api/v1/platform/imf/${imf.uid}/admin`)
       .subscribe({
         next: (updated) => {
           this.updateInList(updated);

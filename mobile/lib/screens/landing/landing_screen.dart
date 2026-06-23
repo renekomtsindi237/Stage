@@ -14,28 +14,26 @@ class LandingScreen extends StatefulWidget {
 class _LandingScreenState extends State<LandingScreen>
     with TickerProviderStateMixin {
   late AnimationController _entryCtrl;
-  late AnimationController _pulseCtrl;
   late AnimationController _orbCtrl;
 
-  // Entry animations
   late Animation<double> _logoFade;
   late Animation<double> _logoScale;
+  late Animation<double> _badgeFade;
   late Animation<Offset> _titleSlide;
   late Animation<double> _titleFade;
   late Animation<double> _subtitleFade;
-  late Animation<double> _card1Fade;
-  late Animation<Offset> _card1Slide;
-  late Animation<double> _card2Fade;
-  late Animation<Offset> _card2Slide;
-  late Animation<double> _card3Fade;
-  late Animation<Offset> _card3Slide;
+  late Animation<double> _cardFade;
+  late Animation<Offset> _cardSlide;
   late Animation<double> _ctaFade;
-
-  // Pulse for CTA
-  late Animation<double> _pulse;
-
-  // Orb breathing
   late Animation<double> _orb;
+
+  static const _navy = Color(0xFF1E3A5F);
+  static const _navyDeep = Color(0xFF071A32);
+  static const _textMuted = Color(0xFF6B7280);
+  static const _textSecondary = Color(0xFF374151);
+  static const _gold = Color(0xFFD4A853);
+  static const _teal = Color(0xFF0D9488);
+  static const _indigo = Color(0xFF4F46E5);
 
   @override
   void initState() {
@@ -43,59 +41,42 @@ class _LandingScreenState extends State<LandingScreen>
 
     _entryCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1400),
     )..forward();
-
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
 
     _orbCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 3600),
     )..repeat(reverse: true);
 
     _logoFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.0, 0.35, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.0, 0.28, curve: Curves.easeOut)),
     );
-    _logoScale = Tween<double>(begin: 0.5, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.0, 0.40, curve: Curves.elasticOut)),
+    _logoScale = Tween<double>(begin: 0.75, end: 1).animate(
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.0, 0.36, curve: Curves.elasticOut)),
     );
-    _titleSlide = Tween<Offset>(begin: const Offset(-0.3, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.2, 0.55, curve: Curves.easeOut)),
+    _badgeFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.20, 0.44, curve: Curves.easeOut)),
+    );
+    _titleSlide = Tween<Offset>(begin: const Offset(0, 0.18), end: Offset.zero).animate(
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.30, 0.58, curve: Curves.easeOut)),
     );
     _titleFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.2, 0.55, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.30, 0.58, curve: Curves.easeOut)),
     );
     _subtitleFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.35, 0.65, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.46, 0.68, curve: Curves.easeOut)),
     );
-    _card1Fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.45, 0.70, curve: Curves.easeOut)),
+    _cardFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.58, 0.82, curve: Curves.easeOut)),
     );
-    _card1Slide = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.45, 0.70, curve: Curves.easeOut)),
-    );
-    _card2Fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.56, 0.78, curve: Curves.easeOut)),
-    );
-    _card2Slide = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.56, 0.78, curve: Curves.easeOut)),
-    );
-    _card3Fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.67, 0.86, curve: Curves.easeOut)),
-    );
-    _card3Slide = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.67, 0.86, curve: Curves.easeOut)),
+    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.58, 0.82, curve: Curves.easeOut)),
     );
     _ctaFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.80, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.78, 1.0, curve: Curves.easeOut)),
     );
-    _pulse = Tween<double>(begin: 0.97, end: 1.03).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
-    _orb = Tween<double>(begin: 0.8, end: 1.2).animate(
+    _orb = Tween<double>(begin: 0.88, end: 1.12).animate(
       CurvedAnimation(parent: _orbCtrl, curve: Curves.easeInOut),
     );
   }
@@ -103,7 +84,6 @@ class _LandingScreenState extends State<LandingScreen>
   @override
   void dispose() {
     _entryCtrl.dispose();
-    _pulseCtrl.dispose();
     _orbCtrl.dispose();
     super.dispose();
   }
@@ -113,293 +93,328 @@ class _LandingScreenState extends State<LandingScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.navyDeep, Color(0xFF0A2040), AppColors.navy],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Animated background orbs
-            AnimatedBuilder(
-              animation: _orb,
-              builder: (_, __) => Stack(children: [
-                Positioned(
-                  top: -size.width * 0.2 * _orb.value,
-                  right: -size.width * 0.15,
-                  child: Container(
-                    width: size.width * 0.75 * _orb.value,
-                    height: size.width * 0.75 * _orb.value,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.navy.withOpacity(0.35),
-                    ),
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Orbs subtils sur fond blanc
+          AnimatedBuilder(
+            animation: _orb,
+            builder: (_, __) => Stack(children: [
+              Positioned(
+                top: -size.width * 0.35,
+                right: -size.width * 0.20,
+                child: Container(
+                  width: size.width * 0.85 * _orb.value,
+                  height: size.width * 0.85 * _orb.value,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _indigo.withOpacity(0.05),
                   ),
-                ),
-                Positioned(
-                  bottom: size.height * 0.28,
-                  left: -size.width * 0.28,
-                  child: Container(
-                    width: size.width * 0.65 / _orb.value,
-                    height: size.width * 0.65 / _orb.value,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.teal.withOpacity(0.07),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -size.width * 0.1,
-                  right: -size.width * 0.1,
-                  child: Container(
-                    width: size.width * 0.5 * _orb.value,
-                    height: size.width * 0.5 * _orb.value,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.gold.withOpacity(0.04),
-                    ),
-                  ),
-                ),
-              ]),
-            ),
-
-            // Floating particles
-            ..._buildParticles(size),
-
-            // Main content
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-
-                    // Logo centré
-                    FadeTransition(
-                      opacity: _logoFade,
-                      child: ScaleTransition(
-                        scale: _logoScale,
-                        child: Center(child: _buildLogo()),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Title
-                    FadeTransition(
-                      opacity: _titleFade,
-                      child: SlideTransition(
-                        position: _titleSlide,
-                        child: _buildTitle(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Subtitle
-                    FadeTransition(
-                      opacity: _subtitleFade,
-                      child: const Text(
-                        'Votre plateforme intelligente\nde gestion microfinancière',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textSecondary,
-                          height: 1.6,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Feature cards
-                    FadeTransition(
-                      opacity: _card1Fade,
-                      child: SlideTransition(
-                        position: _card1Slide,
-                        child: _FeatureCard(
-                          icon: Icons.account_balance_wallet_rounded,
-                          title: AppStrings.featurePrets,
-                          description: AppStrings.featurePretsDesc,
-                          color: AppColors.gold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    FadeTransition(
-                      opacity: _card2Fade,
-                      child: SlideTransition(
-                        position: _card2Slide,
-                        child: _FeatureCard(
-                          icon: Icons.notifications_active_rounded,
-                          title: AppStrings.featureAlertes,
-                          description: AppStrings.featureAlertesDesc,
-                          color: AppColors.teal,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    FadeTransition(
-                      opacity: _card3Fade,
-                      child: SlideTransition(
-                        position: _card3Slide,
-                        child: _FeatureCard(
-                          icon: Icons.analytics_rounded,
-                          title: AppStrings.featureKpi,
-                          description: AppStrings.featureKpiDesc,
-                          color: AppColors.success,
-                        ),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // CTA
-                    FadeTransition(
-                      opacity: _ctaFade,
-                      child: AnimatedBuilder(
-                        animation: _pulse,
-                        builder: (_, child) => Transform.scale(
-                          scale: _pulse.value,
-                          child: child,
-                        ),
-                        child: GestureDetector(
-                          onTap: () => context.go('/login'),
-                          child: Container(
-                            width: double.infinity,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppColors.gold, AppColors.goldLight],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withOpacity(0.45),
-                                  blurRadius: 24,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Commencer',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.navyDeep,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward_rounded, color: AppColors.navyDeep, size: 20),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    FadeTransition(
-                      opacity: _ctaFade,
-                      child: Center(
-                        child: Text(
-                          '${AppStrings.appName} ${AppStrings.appVersion} — IMF Cameroun',
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 11,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
                 ),
               ),
+              Positioned(
+                bottom: size.height * 0.20,
+                left: -size.width * 0.30,
+                child: Container(
+                  width: size.width * 0.65 / _orb.value,
+                  height: size.width * 0.65 / _orb.value,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _teal.withOpacity(0.05),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -size.width * 0.10,
+                right: -size.width * 0.10,
+                child: Container(
+                  width: size.width * 0.50 * _orb.value,
+                  height: size.width * 0.50 * _orb.value,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _gold.withOpacity(0.06),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+
+          // Particules flottantes (légères sur blanc)
+          ..._buildParticles(size),
+
+          // Contenu
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 28),
+
+                  // Logo
+                  FadeTransition(
+                    opacity: _logoFade,
+                    child: ScaleTransition(
+                      scale: _logoScale,
+                      child: Center(child: _buildLogo()),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Badge — Flexible pour éviter l'overflow
+                  FadeTransition(
+                    opacity: _badgeFade,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _indigo.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: _indigo.withOpacity(0.18)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.verified_rounded, size: 13, color: _teal),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'PLATEFORME DE MICROFINANCE — CAMEROUN',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: _indigo,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Titre
+                  FadeTransition(
+                    opacity: _titleFade,
+                    child: SlideTransition(
+                      position: _titleSlide,
+                      child: Text(
+                        'Gérez vos crédits simplement et en sécurité',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          color: _navy,
+                          height: 1.22,
+                          letterSpacing: -0.8,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Sous-titre
+                  FadeTransition(
+                    opacity: _subtitleFade,
+                    child: Text(
+                      'MicroRecouv est une plateforme numérique qui aide les institutions de microfinance à suivre leurs clients, gérer les remboursements et recouvrer les crédits en retard.',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: _textMuted,
+                        height: 1.65,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Carte Accès personnel
+                  FadeTransition(
+                    opacity: _cardFade,
+                    child: SlideTransition(
+                      position: _cardSlide,
+                      child: GestureDetector(
+                        onTap: () => context.go('/login'),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(22),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [_navyDeep, Color(0xFF0D2545)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: _gold.withOpacity(0.22),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _navy.withOpacity(0.18),
+                                blurRadius: 28,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: _gold.withOpacity(0.14),
+                                  borderRadius: BorderRadius.circular(13),
+                                  border: Border.all(color: _gold.withOpacity(0.28)),
+                                ),
+                                child: const Icon(Icons.badge_rounded, color: _gold, size: 22),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Accès personnel',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "Pour les agents, directeurs, caissiers et toute l'équipe de l'institution.",
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.65),
+                                  height: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildCheck('Connexion par code email'),
+                              const SizedBox(height: 8),
+                              _buildCheck('Aucun mot de passe à retenir'),
+                              const SizedBox(height: 22),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Se connecter',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: _gold,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 34,
+                                    height: 34,
+                                    decoration: BoxDecoration(
+                                      color: _gold.withOpacity(0.14),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: _gold,
+                                      size: 17,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Footer
+                  FadeTransition(
+                    opacity: _ctaFade,
+                    child: Center(
+                      child: Text(
+                        '${AppStrings.appName} ${AppStrings.appVersion} — IMF Cameroun',
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 11,
+                          color: _textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLogo() {
     return Container(
-      width: 190,
-      height: 100,
+      height: 72,
+      constraints: const BoxConstraints(maxWidth: 210),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.96),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withOpacity(0.35),
-            blurRadius: 32,
-            spreadRadius: 4,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            spreadRadius: 1,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Image.asset(
-            'assets/images/logo.png',
-            fit: BoxFit.contain,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
         ),
       ),
     );
   }
 
-  Widget _buildTitle() {
-    return RichText(
-      text: const TextSpan(
-        children: [
-          TextSpan(
-            text: 'Micro',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 44,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: -1.5,
-            ),
+  Widget _buildCheck(String text) {
+    return Row(
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: _teal.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(6),
           ),
-          TextSpan(
-            text: 'Recouv',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 44,
-              fontWeight: FontWeight.w800,
-              color: AppColors.gold,
-              letterSpacing: -1.5,
-            ),
+          child: const Icon(Icons.check_rounded, color: _teal, size: 12),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          text,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            color: Colors.white.withOpacity(0.75),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   List<Widget> _buildParticles(Size size) {
     const positions = [
-      [0.15, 0.18], [0.82, 0.12], [0.65, 0.42],
-      [0.08, 0.58], [0.90, 0.65], [0.45, 0.82],
+      [0.10, 0.12], [0.88, 0.08], [0.70, 0.35],
+      [0.04, 0.52], [0.94, 0.60], [0.45, 0.78],
     ];
     return positions.map((pos) {
       return Positioned(
@@ -410,13 +425,13 @@ class _LandingScreenState extends State<LandingScreen>
           builder: (_, __) {
             final v = sin(_orbCtrl.value * pi * 2 + pos[0] * pi);
             return Opacity(
-              opacity: 0.12 + v.abs() * 0.08,
+              opacity: 0.06 + v.abs() * 0.06,
               child: Container(
-                width: 4,
-                height: 4,
-                decoration: const BoxDecoration(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.gold,
+                  color: _indigo,
                 ),
               ),
             );
@@ -424,67 +439,5 @@ class _LandingScreenState extends State<LandingScreen>
         ),
       );
     }).toList();
-  }
-}
-
-class _FeatureCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color color;
-
-  const _FeatureCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    )),
-                const SizedBox(height: 3),
-                Text(description,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                      height: 1.4,
-                    )),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

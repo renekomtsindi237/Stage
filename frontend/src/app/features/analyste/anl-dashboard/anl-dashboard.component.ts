@@ -73,7 +73,7 @@ export class AnlDashboardComponent implements OnInit {
           datasets: [
             {
               ...this.barChartData.datasets[0],
-              data: d.scoringDistribution.map((s) => s.count),
+              data: (d.scoringDistribution ?? []).map((s) => s.count),
             },
           ],
         };

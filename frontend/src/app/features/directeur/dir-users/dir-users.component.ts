@@ -12,8 +12,7 @@ import { ToastService } from "../../../core/services/toast.service";
 
 interface UserRow {
   uid: string;
-  prenom: string;
-  nom: string;
+  username: string;
   email: string;
   role: string;
   actif: boolean;

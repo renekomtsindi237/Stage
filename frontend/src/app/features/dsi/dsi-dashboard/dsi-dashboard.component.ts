@@ -8,7 +8,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
-import { map } from "rxjs";
+
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 
@@ -97,8 +97,7 @@ export class DsiDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.api
-      .get<{ data: DsiDashboardData }>("/api/v1/dsi/dashboard")
-      .pipe(map((r) => r.data))
+      .get<DsiDashboardData>("/api/v1/dsi/dashboard")
       .subscribe({
         next: (d: DsiDashboardData) => {
           this.data.set(d);

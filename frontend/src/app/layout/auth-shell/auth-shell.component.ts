@@ -1,13 +1,17 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { RouterLink, RouterOutlet } from "@angular/router";
 
 @Component({
   selector: "app-auth-shell",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink],
   template: `
     <div class="auth-shell">
+      <a routerLink="/" class="auth-back">
+        <span class="material-icons-round">arrow_back</span>
+        Accueil
+      </a>
       <div class="auth-logo-wrap">
         <img
           src="assets/logo.png"
@@ -30,6 +34,29 @@ import { RouterOutlet } from "@angular/router";
         align-items: center;
         justify-content: center;
         padding: 40px 16px;
+        position: relative;
+      }
+      .auth-back {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: var(--radius-full);
+        transition: background 0.15s, color 0.15s;
+        &:hover {
+          background: var(--color-surface);
+          color: var(--color-primary);
+        }
+        .material-icons-round {
+          font-size: 18px;
+        }
       }
       .auth-logo-wrap {
         margin-bottom: 32px;

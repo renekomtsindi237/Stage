@@ -7,7 +7,7 @@ import {
   ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { map } from "rxjs";
+
 import { ApiService } from "../../../core/http/api.service";
 
 interface ImfHealth {
@@ -54,8 +54,7 @@ export class DsiMonitoringComponent implements OnInit {
     this.loadingLogins.set(true);
 
     this.api
-      .get<{ data: ImfHealth }>("/api/v1/dsi/monitoring/health")
-      .pipe(map((r) => r.data))
+      .get<ImfHealth>("/api/v1/dsi/monitoring/health")
       .subscribe({
         next: (h: ImfHealth) => {
           this.imfHealth.set(h);
@@ -69,13 +68,10 @@ export class DsiMonitoringComponent implements OnInit {
       });
 
     this.api
-      .get<{ data: RecentLogin[] }>(
-        "/api/v1/dsi/monitoring/connexions-recentes",
-      )
-      .pipe(map((r) => r.data))
+      .get<RecentLogin[]>("/api/v1/dsi/monitoring/connexions-recentes")
       .subscribe({
         next: (list: RecentLogin[]) => {
-          this.recentLogins.set(list);
+          this.recentLogins.set(list ?? []);
           this.loadingLogins.set(false);
           this.cdr.markForCheck();
         },
@@ -97,8 +93,13 @@ export class DsiMonitoringComponent implements OnInit {
   }
 
   storagePercent(h: ImfHealth): number {
-    const used = parseFloat(h.stockageUtilise);
-    const total = parseFloat(h.stockageTotal);
-    return total > 0 ? Math.round((used / total) * 100) : 0;
+    const toMb = (s: string): number => {
+      const v = parseFloat(s);
+      if (s.includes("GB") || s.includes("Go")) return v * 1024;
+      return v;
+    };
+    const used = toMb(h.stockageUtilise);
+    const total = toMb(h.stockageTotal);
+    return total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
   }
 }

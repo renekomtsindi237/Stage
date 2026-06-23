@@ -37,28 +37,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _loading = true;
       _error = null;
     });
+
+    final kpiService = context.read<KpiService>();
+    final alerteService = context.read<AlerteService>();
+    final now = DateTime.now();
+    final dateDebut = DateFormat('yyyy-MM-dd').format(DateTime(now.year, now.month, 1));
+    final dateFin = DateFormat('yyyy-MM-dd').format(now);
+
+    // KPI is non-fatal — dashboard still shows with zeros if it fails
     try {
-      final kpiService = context.read<KpiService>();
-      final alerteService = context.read<AlerteService>();
-      final now = DateTime.now();
-      final dateDebut = DateFormat('yyyy-MM-dd').format(DateTime(now.year, now.month, 1));
-      final dateFin = DateFormat('yyyy-MM-dd').format(now);
+      final kpi = await kpiService.getSummary(dateDebut: dateDebut, dateFin: dateFin);
+      if (mounted) setState(() => _kpi = kpi);
+    } catch (_) {
+      // KPI unavailable — show placeholder values, don't block alertes
+    }
 
-      final results = await Future.wait([
-        kpiService.getSummary(dateDebut: dateDebut, dateFin: dateFin),
-        alerteService.getAlertes(statut: 'ACTIVE', page: 0, size: 5),
-      ]);
-
-      setState(() {
-        _kpi = results[0] as KpiSummary;
-        _alertes = (results[1] as dynamic).content as List<Alerte>;
-        _loading = false;
-      });
+    // Alertes are the primary content
+    try {
+      final page = await alerteService.getAlertes(statut: 'ACTIVE', page: 0, size: 5);
+      if (mounted) {
+        setState(() {
+          _alertes = page.content;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
