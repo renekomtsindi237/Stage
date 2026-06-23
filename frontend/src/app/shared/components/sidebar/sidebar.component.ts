@@ -176,7 +176,6 @@ export class SidebarComponent {
         icon: "monitor_heart",
         route: "/support/monitoring",
       },
-      { label: "Vue IMFs", icon: "business", route: "/support/imfs" },
     ],
   };
 

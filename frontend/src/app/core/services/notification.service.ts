@@ -109,6 +109,7 @@ export class NotificationService implements OnDestroy {
       KPI_UPDATED: "KPI mis à jour",
       PIPELINE_STATUS: "Statut pipeline",
       SYNC_COMPLETED: "Synchronisation terminée",
+      TICKET_MISE_A_JOUR: "Réponse à votre ticket",
     };
     return titles[type] ?? "Notification";
   }

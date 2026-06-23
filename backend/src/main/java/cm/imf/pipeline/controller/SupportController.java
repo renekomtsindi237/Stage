@@ -34,6 +34,7 @@ import java.util.*;
  */
 @Slf4j
 @RestController
+@RequestMapping("/support")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('SUPPORT')")
 @Tag(name = "Support", description = "Monitoring infrastructure et gestion des tickets SUPPORT")
@@ -97,7 +98,7 @@ public class SupportController {
     // ── GET /api/v1/support/overview ──────────────────────────────────────────
 
     @Operation(summary = "Vue d'ensemble plateforme (cross-IMF)")
-    @GetMapping("/api/v1/support/overview")
+    @GetMapping("/overview")
     public ResponseEntity<ApiResponse<Map<String, Object>>> overview() {
         log.info("SUPPORT overview demandé par {}", TenantContext.currentUser() != null
                 ? TenantContext.currentUser().getUsername() : "anonyme");
@@ -167,7 +168,7 @@ public class SupportController {
     // ── GET /api/v1/support/docker/containers ─────────────────────────────────
 
     @Operation(summary = "Liste des containers Docker sur le VPS")
-    @GetMapping("/api/v1/support/docker/containers")
+    @GetMapping("/docker/containers")
     public ResponseEntity<ApiResponse<List<ContainerDocker>>> containers() {
         List<ContainerDocker> liste;
 
@@ -195,7 +196,7 @@ public class SupportController {
     // ── GET /api/v1/support/vps/metrics ──────────────────────────────────────
 
     @Operation(summary = "Métriques VPS en temps réel")
-    @GetMapping("/api/v1/support/vps/metrics")
+    @GetMapping("/vps/metrics")
     public ResponseEntity<ApiResponse<VpsMetrics>> vpsMetrics() {
         Random rng = new Random();
         VpsMetrics metrics = new VpsMetrics(
@@ -221,7 +222,7 @@ public class SupportController {
     // ── GET /api/v1/support/airflow/dags ─────────────────────────────────────
 
     @Operation(summary = "État des DAGs Airflow")
-    @GetMapping("/api/v1/support/airflow/dags")
+    @GetMapping("/airflow/dags")
     public ResponseEntity<ApiResponse<List<DagInfo>>> dags() {
         List<DagInfo> liste;
 
@@ -256,7 +257,7 @@ public class SupportController {
     // ── POST /api/v1/support/airflow/dags/{dagId}/trigger ────────────────────
 
     @Operation(summary = "Déclencher manuellement un DAG Airflow")
-    @PostMapping("/api/v1/support/airflow/dags/{dagId}/trigger")
+    @PostMapping("/airflow/dags/{dagId}/trigger")
     @Auditable(action = AuditTrail.ACTION_MODIFICATION, entiteType = "DAG_AIRFLOW",
                entiteIdExpression = "#dagId")
     public ResponseEntity<ApiResponse<Map<String, Object>>> triggerDag(@PathVariable String dagId) {
@@ -286,7 +287,7 @@ public class SupportController {
     // ── GET /api/v1/support/logs ──────────────────────────────────────────────
 
     @Operation(summary = "Logs applicatifs depuis app.journal_audit")
-    @GetMapping("/api/v1/support/logs")
+    @GetMapping("/logs")
     public ResponseEntity<ApiResponse<Page<LogEntry>>> logs(
             @RequestParam(defaultValue = "0")  int    page,
             @RequestParam(defaultValue = "100") int   size,
@@ -345,7 +346,7 @@ public class SupportController {
     // ── GET /api/v1/support/alertes ───────────────────────────────────────────
 
     @Operation(summary = "Alertes système non résolues")
-    @GetMapping("/api/v1/support/alertes")
+    @GetMapping("/alertes")
     public ResponseEntity<ApiResponse<List<AlerteSysteme>>> alertes() {
         List<AlerteSysteme> alertes = alerteSystemeRepository.findByStatutNotOrderByCreatedAtDesc("RESOLUE");
         log.debug("Alertes système non résolues : {}", alertes.size());
@@ -355,7 +356,7 @@ public class SupportController {
     // ── PATCH /api/v1/support/alertes/{id}/acquitter ──────────────────────────
 
     @Operation(summary = "Acquitter (résoudre) une alerte système")
-    @PatchMapping("/api/v1/support/alertes/{id}/acquitter")
+    @PatchMapping("/alertes/{id}/acquitter")
     @Auditable(action = AuditTrail.ACTION_CHANGEMENT_STATUT, entiteType = "ALERTE_SYSTEME",
                entiteIdExpression = "#id")
     public ResponseEntity<ApiResponse<Void>> acquitter(@PathVariable Long id) {
@@ -376,7 +377,7 @@ public class SupportController {
     // ── GET /api/v1/support/tickets ───────────────────────────────────────────
 
     @Operation(summary = "Tous les tickets (vue SUPPORT cross-IMF)")
-    @GetMapping("/api/v1/support/tickets")
+    @GetMapping("/tickets")
     public ResponseEntity<ApiResponse<Page<TicketSupport>>> tousLesTickets(
             @RequestParam(required = false) String statut,
             @RequestParam(defaultValue = "0")  int page,
@@ -394,7 +395,7 @@ public class SupportController {
     // ── PATCH /api/v1/support/tickets/{id} ────────────────────────────────────
 
     @Operation(summary = "Mettre à jour un ticket (SUPPORT)")
-    @PatchMapping("/api/v1/support/tickets/{id}")
+    @PatchMapping("/tickets/{id}")
     @Auditable(action = AuditTrail.ACTION_CHANGEMENT_STATUT, entiteType = "TICKET_SUPPORT",
                entiteIdExpression = "#id")
     public ResponseEntity<ApiResponse<TicketSupport>> mettreAJourTicket(

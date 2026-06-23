@@ -17,9 +17,13 @@ export interface Ticket {
   priorite: "BASSE" | "NORMALE" | "HAUTE" | "CRITIQUE";
   statut: "OUVERT" | "EN_COURS" | "RESOLU" | "FERME";
   categorie: string;
+  auteurUsername?: string;
+  auteurRole?: string;
+  resolution?: string;
+  traitéParUsername?: string;
+  dateTraitement?: string;
   createdAt: string;
   updatedAt: string;
-  createdBy?: string;
 }
 
 interface TicketPage {
@@ -45,27 +49,15 @@ export class SupTicketsComponent implements OnInit {
   loading = signal(true);
   page = signal<TicketPage | null>(null);
   currentPage = signal(0);
-  showModal = signal(false);
-  submitting = signal(false);
   activeTab = signal<string>("OUVERT");
   selected = signal<Ticket | null>(null);
+  submittingResponse = signal(false);
 
-  createForm = this.fb.group({
-    titre: ["", Validators.required],
-    description: ["", Validators.required],
-    priorite: ["NORMALE", Validators.required],
-    categorie: ["TECHNIQUE", Validators.required],
+  responseForm = this.fb.group({
+    resolution: ["", [Validators.required, Validators.minLength(10)]],
   });
 
   readonly tabs = ["OUVERT", "EN_COURS", "RESOLU", "FERME", "TOUS"];
-  readonly priorites = ["BASSE", "NORMALE", "HAUTE", "CRITIQUE"];
-  readonly categories = [
-    "TECHNIQUE",
-    "FONCTIONNEL",
-    "SECURITE",
-    "PERFORMANCE",
-    "AUTRE",
-  ];
 
   ngOnInit() {
     this.load();
@@ -89,47 +81,74 @@ export class SupTicketsComponent implements OnInit {
       });
   }
 
-  create() {
-    if (this.createForm.invalid) return;
-    this.submitting.set(true);
+  selectTicket(t: Ticket) {
+    this.selected.set(t);
+    this.responseForm.reset();
+    if (t.resolution) {
+      this.responseForm.patchValue({ resolution: t.resolution });
+    }
+  }
+
+  prendreEnCharge(id: number) {
     this.api
-      .post<Ticket>("/api/v1/support/tickets", this.createForm.value)
+      .patch(`/api/v1/support/tickets/${id}`, { statut: "EN_COURS" })
       .subscribe({
         next: () => {
-          this.submitting.set(false);
-          this.showModal.set(false);
+          this.toast.showSuccess("Ticket pris en charge", "Statut mis à jour.");
+          this.load();
+          this.selected.set(null);
+        },
+        error: () => this.toast.showError("Erreur", "Mise à jour impossible."),
+      });
+  }
+
+  soumettrReponse(id: number) {
+    if (this.responseForm.invalid) {
+      this.responseForm.markAllAsTouched();
+      return;
+    }
+    this.submittingResponse.set(true);
+    const resolution = this.responseForm.value.resolution!;
+    this.api
+      .patch(`/api/v1/support/tickets/${id}`, { statut: "RESOLU", resolution })
+      .subscribe({
+        next: () => {
+          this.submittingResponse.set(false);
           this.toast.showSuccess(
-            "Ticket créé",
-            this.createForm.value.titre ?? "",
+            "Réponse envoyée",
+            "L'utilisateur a été notifié.",
           );
-          this.createForm.reset({
-            priorite: "NORMALE",
-            categorie: "TECHNIQUE",
-          });
+          this.responseForm.reset();
+          this.selected.set(null);
           this.load();
         },
         error: () => {
-          this.submitting.set(false);
-          this.toast.showError("Erreur", "Impossible de créer le ticket.");
+          this.submittingResponse.set(false);
+          this.toast.showError("Erreur", "Impossible d'envoyer la réponse.");
         },
       });
   }
 
-  updateStatut(id: number, statut: string) {
-    this.api.patch(`/api/v1/support/tickets/${id}`, { statut }).subscribe({
-      next: () => {
-        this.toast.showSuccess("Ticket mis à jour", `Statut: ${statut}`);
-        this.load();
-      },
-      error: () => this.toast.showError("Erreur", "Mise à jour impossible."),
-    });
+  fermer(id: number) {
+    this.api
+      .patch(`/api/v1/support/tickets/${id}`, { statut: "FERME" })
+      .subscribe({
+        next: () => {
+          this.toast.showSuccess("Ticket fermé", "");
+          this.selected.set(null);
+          this.load();
+        },
+        error: () => this.toast.showError("Erreur", "Mise à jour impossible."),
+      });
   }
 
   switchTab(tab: string) {
     this.activeTab.set(tab);
     this.currentPage.set(0);
+    this.selected.set(null);
     this.load();
   }
+
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
@@ -145,6 +164,7 @@ export class SupTicketsComponent implements OnInit {
       }[p] ?? ""
     );
   }
+
   statutClass(s: string) {
     return (
       {

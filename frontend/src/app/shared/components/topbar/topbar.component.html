@@ -17,19 +17,21 @@
   </div>
 
   <div class="topbar__right">
-    <!-- Contact support -->
-    <button
-      class="topbar__support-btn"
-      (click)="openSupportModal()"
-      title="Contacter le support"
-    >
-      <img
-        src="assets/support.png"
-        alt="Support"
-        class="topbar__support-icon"
-      />
-      <span class="topbar__support-label">Support</span>
-    </button>
+    <!-- Contact support (masqué pour le rôle SUPPORT lui-même) -->
+    @if (auth.role() !== "SUPPORT") {
+      <button
+        class="topbar__support-btn"
+        (click)="openSupportModal()"
+        title="Contacter le support"
+      >
+        <img
+          src="assets/support.png"
+          alt="Support"
+          class="topbar__support-icon"
+        />
+        <span class="topbar__support-label">Support</span>
+      </button>
+    }
 
     <!-- Notifications -->
     <button

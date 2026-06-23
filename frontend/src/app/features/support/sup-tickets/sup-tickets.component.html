@@ -3,15 +3,12 @@
     <div>
       <h2>Tickets de support</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} tickets
+        {{ page()?.totalElements ?? 0 | number }} tickets reçus
       </p>
     </div>
-    <button class="btn btn-primary" (click)="showModal.set(true)">
-      <span class="material-icons-round">add</span> Nouveau ticket
-    </button>
   </div>
 
-  <!-- Tabs -->
+  <!-- Tabs statut -->
   <div class="tab-bar">
     @for (tab of tabs; track tab) {
       <button
@@ -24,221 +21,242 @@
     }
   </div>
 
-  <div class="card">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Titre</th>
-          <th>Catégorie</th>
-          <th>Priorité</th>
-          <th>Statut</th>
-          <th>Date</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading()) {
-          @for (_ of [1, 2, 3, 4, 5]; track $index) {
-            <tr>
-              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
-                <td>
-                  <div class="skeleton" style="height: 14px; width: 80%"></div>
-                </td>
-              }
-            </tr>
-          }
-        } @else {
-          @for (t of page()?.content ?? []; track t.id) {
-            <tr
-              (click)="selected.set(t)"
-              style="cursor: pointer"
-              [class.row-selected]="selected()?.id === t.id"
-            >
-              <td class="text-sm text-muted">#{{ t.id }}</td>
-              <td class="font-semibold">{{ t.titre }}</td>
-              <td class="text-sm">{{ t.categorie }}</td>
-              <td>
-                <span class="badge" [ngClass]="prioriteClass(t.priorite)">{{
-                  t.priorite
-                }}</span>
-              </td>
-              <td>
-                <span class="badge" [ngClass]="statutClass(t.statut)">{{
-                  t.statut
-                }}</span>
-              </td>
-              <td class="text-sm text-muted">
-                {{ t.createdAt | date: "dd/MM/yy HH:mm" }}
-              </td>
-              <td (click)="$event.stopPropagation()">
-                @if (t.statut === "OUVERT") {
-                  <button
-                    class="btn btn-ghost btn-sm"
-                    (click)="updateStatut(t.id, 'EN_COURS')"
-                    title="Prendre en charge"
-                  >
-                    <span class="material-icons-round">play_arrow</span>
-                  </button>
+  <div class="tickets-layout">
+    <!-- Liste -->
+    <div class="card tickets-list">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Priorité</th>
+            <th>Statut</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            @for (_ of [1, 2, 3, 4, 5]; track $index) {
+              <tr>
+                @for (__ of [1, 2, 3, 4, 5, 6]; track $index) {
+                  <td>
+                    <div
+                      class="skeleton"
+                      style="height: 14px; width: 80%"
+                    ></div>
+                  </td>
                 }
-                @if (t.statut === "EN_COURS") {
-                  <button
-                    class="btn btn-ghost btn-sm"
-                    (click)="updateStatut(t.id, 'RESOLU')"
-                    title="Marquer résolu"
-                  >
-                    <span class="material-icons-round">check</span>
-                  </button>
-                }
-                @if (t.statut !== "FERME") {
-                  <button
-                    class="btn btn-ghost btn-sm"
-                    (click)="updateStatut(t.id, 'FERME')"
-                    title="Fermer"
-                  >
-                    <span class="material-icons-round">close</span>
-                  </button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td
-                colspan="7"
-                class="text-center text-muted"
-                style="padding: 32px"
+              </tr>
+            }
+          } @else {
+            @for (t of page()?.content ?? []; track t.id) {
+              <tr
+                (click)="selectTicket(t)"
+                style="cursor: pointer"
+                [class.row-selected]="selected()?.id === t.id"
               >
-                Aucun ticket
-              </td>
-            </tr>
+                <td class="text-sm text-muted">#{{ t.id }}</td>
+                <td class="font-semibold">{{ t.titre }}</td>
+                <td class="text-sm text-muted">
+                  {{ t.auteurUsername ?? "—" }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="prioriteClass(t.priorite)">{{
+                    t.priorite
+                  }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="statutClass(t.statut)">{{
+                    t.statut
+                  }}</span>
+                </td>
+                <td class="text-sm text-muted">
+                  {{ t.createdAt | date: "dd/MM/yy HH:mm" }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td
+                  colspan="6"
+                  class="text-center text-muted"
+                  style="padding: 32px"
+                >
+                  Aucun ticket dans cette catégorie
+                </td>
+              </tr>
+            }
           }
-        }
-      </tbody>
-    </table>
+        </tbody>
+      </table>
 
-    @if (page() && (page()?.totalPages ?? 0) > 1) {
-      <div class="pagination">
-        <button
-          class="btn btn-ghost btn-sm"
-          [disabled]="currentPage() === 0"
-          (click)="goPage(currentPage() - 1)"
-        >
-          <span class="material-icons-round">chevron_left</span>
-        </button>
-        <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
-        >
-        <button
-          class="btn btn-ghost btn-sm"
-          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
-          (click)="goPage(currentPage() + 1)"
-        >
-          <span class="material-icons-round">chevron_right</span>
-        </button>
+      @if (page() && (page()?.totalPages ?? 0) > 1) {
+        <div class="pagination">
+          <button
+            class="btn btn-ghost btn-sm"
+            [disabled]="currentPage() === 0"
+            (click)="goPage(currentPage() - 1)"
+          >
+            <span class="material-icons-round">chevron_left</span>
+          </button>
+          <span class="text-sm">
+            Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}
+          </span>
+          <button
+            class="btn btn-ghost btn-sm"
+            [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+            (click)="goPage(currentPage() + 1)"
+          >
+            <span class="material-icons-round">chevron_right</span>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Panneau détail & réponse -->
+    @if (selected()) {
+      <div class="card detail-panel">
+        <div class="detail-header">
+          <div>
+            <h3>Ticket #{{ selected()!.id }}</h3>
+            <p class="text-sm text-muted" style="margin: 2px 0 0">
+              {{ selected()!.titre }}
+            </p>
+          </div>
+          <button class="btn-icon" (click)="selected.set(null)">
+            <span class="material-icons-round">close</span>
+          </button>
+        </div>
+
+        <!-- Méta -->
+        <div class="detail-meta-grid">
+          <div class="meta-row">
+            <span class="meta-label">Auteur</span>
+            <span class="meta-value">
+              {{ selected()!.auteurUsername ?? "—" }}
+              @if (selected()!.auteurRole) {
+                <span
+                  class="badge badge-secondary"
+                  style="margin-left: 6px; font-size: 10px"
+                >
+                  {{ selected()!.auteurRole }}
+                </span>
+              }
+            </span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Catégorie</span>
+            <span class="meta-value">{{ selected()!.categorie }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Priorité</span>
+            <span class="badge" [ngClass]="prioriteClass(selected()!.priorite)">
+              {{ selected()!.priorite }}
+            </span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Statut</span>
+            <span class="badge" [ngClass]="statutClass(selected()!.statut)">
+              {{ selected()!.statut }}
+            </span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Soumis le</span>
+            <span class="meta-value">
+              {{ selected()!.createdAt | date: "dd/MM/yyyy HH:mm" }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section">
+          <h4 class="detail-section__title">Description</h4>
+          <div class="detail-description">{{ selected()!.description }}</div>
+        </div>
+
+        <!-- Réponse déjà apportée -->
+        @if (selected()!.resolution) {
+          <div class="detail-section">
+            <h4 class="detail-section__title resolution-title">
+              <span class="material-icons-round">check_circle</span>
+              Réponse apportée
+            </h4>
+            <div class="resolution-box">{{ selected()!.resolution }}</div>
+            @if (selected()!.traitéParUsername) {
+              <p class="text-sm text-muted" style="margin-top: 8px">
+                Traité par <strong>{{ selected()!.traitéParUsername }}</strong>
+                @if (selected()!.dateTraitement) {
+                  · {{ selected()!.dateTraitement | date: "dd/MM/yyyy HH:mm" }}
+                }
+              </p>
+            }
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="detail-actions">
+          @if (selected()!.statut === "OUVERT") {
+            <button
+              class="btn btn-primary btn-sm"
+              (click)="prendreEnCharge(selected()!.id)"
+            >
+              <span class="material-icons-round">play_arrow</span>
+              Prendre en charge
+            </button>
+          }
+
+          @if (selected()!.statut === "EN_COURS") {
+            <div class="response-form" [formGroup]="responseForm">
+              <label class="response-label">
+                <span class="material-icons-round">reply</span>
+                Rédiger une réponse
+              </label>
+              <textarea
+                class="form-control response-textarea"
+                formControlName="resolution"
+                rows="5"
+                placeholder="Décrivez la solution apportée, les actions menées ou les informations complémentaires pour l'utilisateur…"
+              ></textarea>
+              @if (
+                responseForm.get("resolution")?.touched &&
+                responseForm.get("resolution")?.invalid
+              ) {
+                <p class="field-error">
+                  La réponse doit comporter au moins 10 caractères.
+                </p>
+              }
+              <div class="response-footer">
+                <span class="notif-hint">
+                  <span class="material-icons-round">notifications_active</span>
+                  L'utilisateur sera notifié instantanément
+                </span>
+                <button
+                  class="btn btn-primary btn-sm"
+                  [disabled]="submittingResponse()"
+                  (click)="soumettrReponse(selected()!.id)"
+                >
+                  @if (submittingResponse()) {
+                    <span class="css-spinner-sm"></span>
+                  } @else {
+                    <span class="material-icons-round">send</span>
+                  }
+                  Envoyer la réponse
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (selected()!.statut !== "FERME") {
+            <button
+              class="btn btn-ghost btn-sm close-btn"
+              (click)="fermer(selected()!.id)"
+            >
+              <span class="material-icons-round">do_not_disturb</span>
+              Fermer le ticket
+            </button>
+          }
+        </div>
       </div>
     }
   </div>
-
-  <!-- Detail panel -->
-  @if (selected()) {
-    <div class="detail-card card">
-      <div class="detail-header">
-        <h3>Ticket #{{ selected()!.id }} — {{ selected()!.titre }}</h3>
-        <button class="btn-icon" (click)="selected.set(null)">
-          <span class="material-icons-round">close</span>
-        </button>
-      </div>
-      <p class="text-sm" style="margin-bottom: 12px">
-        {{ selected()!.description }}
-      </p>
-      <div class="detail-meta">
-        <span><strong>Catégorie:</strong> {{ selected()!.categorie }}</span>
-        <span
-          ><strong>Priorité:</strong>
-          <span class="badge" [ngClass]="prioriteClass(selected()!.priorite)">{{
-            selected()!.priorite
-          }}</span></span
-        >
-        <span
-          ><strong>Créé le:</strong>
-          {{ selected()!.createdAt | date: "dd/MM/yyyy HH:mm" }}</span
-        >
-        <span
-          ><strong>Mis à jour:</strong>
-          {{ selected()!.updatedAt | date: "dd/MM/yyyy HH:mm" }}</span
-        >
-      </div>
-    </div>
-  }
 </div>
-
-<!-- Create modal -->
-@if (showModal()) {
-  <div class="modal-overlay" (click)="showModal.set(false)">
-    <div
-      class="modal-card"
-      (click)="$event.stopPropagation()"
-      [formGroup]="createForm"
-    >
-      <div class="modal-header">
-        <h3>Nouveau ticket</h3>
-        <button class="btn-icon" (click)="showModal.set(false)">
-          <span class="material-icons-round">close</span>
-        </button>
-      </div>
-
-      <div class="form-group" style="margin-bottom: 16px">
-        <label>Titre *</label>
-        <input
-          class="form-control"
-          formControlName="titre"
-          placeholder="Décrivez le problème brièvement"
-        />
-      </div>
-      <div class="form-group" style="margin-bottom: 16px">
-        <label>Description *</label>
-        <textarea
-          class="form-control"
-          formControlName="description"
-          rows="4"
-          placeholder="Détails..."
-        ></textarea>
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Priorité</label>
-          <select class="form-select" formControlName="priorite">
-            @for (p of priorites; track p) {
-              <option [value]="p">{{ p }}</option>
-            }
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Catégorie</label>
-          <select class="form-select" formControlName="categorie">
-            @for (c of categories; track c) {
-              <option [value]="c">{{ c }}</option>
-            }
-          </select>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-ghost" (click)="showModal.set(false)">
-          Annuler
-        </button>
-        <button
-          class="btn btn-primary"
-          [disabled]="createForm.invalid || submitting()"
-          (click)="create()"
-        >
-          @if (submitting()) {
-            <span class="css-spinner-sm"></span>
-          } @else {
-            Soumettre
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-}
