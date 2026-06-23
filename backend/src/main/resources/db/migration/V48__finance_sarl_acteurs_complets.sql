@@ -17,12 +17,24 @@ BEGIN
     END IF;
 
     -- ── 1. Correction email DSI ──────────────────────────────────────────────
+    -- Si albanrene77 n'existe pas encore → UPDATE normal
     UPDATE app.utilisateurs
     SET email    = 'albanrene77@gmail.com',
         username = 'alban.dsi'
     WHERE imf_id = v_imf_id
       AND role   = 'DSI'
-      AND email  = 'dsi@finance-mf.cm';  -- idempotent : skip si email déjà corrigé
+      AND email  = 'dsi@finance-mf.cm'
+      AND NOT EXISTS (
+          SELECT 1 FROM app.utilisateurs u2
+          WHERE u2.email   = 'albanrene77@gmail.com'
+            AND u2.imf_id  = v_imf_id
+      );
+    -- Si albanrene77 existe déjà (ré-exécution après doublon) → corriger le username
+    UPDATE app.utilisateurs
+    SET username = 'alban.dsi'
+    WHERE imf_id = v_imf_id
+      AND email    = 'albanrene77@gmail.com'
+      AND username != 'alban.dsi';
 
     -- ── 2. IDs utiles ───────────────────────────────────────────────────────
     SELECT id INTO v_agt_id  FROM app.utilisateurs WHERE email = 'renekomtsindi99@gmail.com' AND imf_id = v_imf_id LIMIT 1;
