@@ -11,6 +11,9 @@ import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
 
+type Tab = "superadmin" | "support";
+type SupportStep = "email" | "otp";
+
 @Component({
   selector: "app-login-admin",
   standalone: true,
@@ -25,27 +28,48 @@ export class LoginAdminComponent {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
+  activeTab = signal<Tab>("superadmin");
+  supportStep = signal<SupportStep>("email");
+
   loading = signal(false);
   error = signal("");
   showPwd = signal(false);
+  supportEmail = signal("");
 
-  form = this.fb.group({
+  superAdminForm = this.fb.group({
     email: ["", [Validators.required, Validators.email]],
     motDePasse: ["", [Validators.required, Validators.minLength(6)]],
   });
 
-  togglePwd() {
-    this.showPwd.update((v: boolean) => !v);
+  supportEmailForm = this.fb.group({
+    email: ["", [Validators.required, Validators.email]],
+  });
+
+  supportOtpForm = this.fb.group({
+    code: ["", [Validators.required, Validators.pattern(/^\d{6}$/)]],
+  });
+
+  setTab(tab: Tab) {
+    this.activeTab.set(tab);
+    this.error.set("");
+    this.supportStep.set("email");
+    this.superAdminForm.reset();
+    this.supportEmailForm.reset();
+    this.supportOtpForm.reset();
   }
 
-  submit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  togglePwd() {
+    this.showPwd.update((v) => !v);
+  }
+
+  submitSuperAdmin() {
+    if (this.superAdminForm.invalid) {
+      this.superAdminForm.markAllAsTouched();
       return;
     }
     this.loading.set(true);
     this.error.set("");
-    const { email, motDePasse } = this.form.value;
+    const { email, motDePasse } = this.superAdminForm.value;
     this.auth.login(email!, motDePasse!).subscribe({
       next: () => {
         this.loading.set(false);
@@ -57,8 +81,59 @@ export class LoginAdminComponent {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set("Identifiants incorrects.");
+        this.error.set("Email ou mot de passe incorrect.");
       },
     });
+  }
+
+  requestOtp() {
+    if (this.supportEmailForm.invalid) {
+      this.supportEmailForm.markAllAsTouched();
+      return;
+    }
+    this.loading.set(true);
+    this.error.set("");
+    const email = this.supportEmailForm.value.email!;
+    this.auth.requestOtp(email).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.supportEmail.set(email);
+        this.supportStep.set("otp");
+      },
+      error: () => {
+        this.loading.set(false);
+        this.error.set("Impossible d'envoyer le code. Vérifiez l'email.");
+      },
+    });
+  }
+
+  verifyOtp() {
+    if (this.supportOtpForm.invalid) {
+      this.supportOtpForm.markAllAsTouched();
+      return;
+    }
+    this.loading.set(true);
+    this.error.set("");
+    const code = this.supportOtpForm.value.code!;
+    this.auth.verifyOtp(this.supportEmail(), code).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.toast.showSuccess(
+          "Connexion réussie",
+          `Bienvenue, ${this.auth.fullName()} !`,
+        );
+        this.router.navigate([this.auth.defaultRouteForRole()]);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.error.set("Code incorrect ou expiré.");
+      },
+    });
+  }
+
+  backToEmail() {
+    this.supportStep.set("email");
+    this.supportOtpForm.reset();
+    this.error.set("");
   }
 }
