@@ -17,7 +17,13 @@ BEGIN
     END IF;
 
     -- ── 1. Correction email DSI ──────────────────────────────────────────────
-    -- Si albanrene77 n'existe pas encore → UPDATE normal
+    -- Libérer albanrene77 si un autre IMF l'utilise (ex-FINTECH, id=1, sans données)
+    UPDATE app.utilisateurs
+    SET email = 'dsi.archive.' || id || '@imf-old.cm'
+    WHERE email  = 'albanrene77@gmail.com'
+      AND imf_id != v_imf_id;
+
+    -- UPDATE normal : dsi@finance-mf.cm → albanrene77 (skip si déjà fait)
     UPDATE app.utilisateurs
     SET email    = 'albanrene77@gmail.com',
         username = 'alban.dsi'
@@ -26,10 +32,11 @@ BEGIN
       AND email  = 'dsi@finance-mf.cm'
       AND NOT EXISTS (
           SELECT 1 FROM app.utilisateurs u2
-          WHERE u2.email   = 'albanrene77@gmail.com'
-            AND u2.imf_id  = v_imf_id
+          WHERE u2.email  = 'albanrene77@gmail.com'
+            AND u2.imf_id = v_imf_id
       );
-    -- Si albanrene77 existe déjà (ré-exécution après doublon) → corriger le username
+
+    -- Corriger le username si albanrene77 est déjà dans FINANCE SARL
     UPDATE app.utilisateurs
     SET username = 'alban.dsi'
     WHERE imf_id = v_imf_id
