@@ -28,7 +28,7 @@ class ClientService {
     );
   }
 
-  Future<Client> getClientDetail(int idClient) async {
+  Future<Client> getClientDetail(String idClient) async {
     return _api.get<Client>(
       '/api/v1/clients/$idClient',
       fromJson: (data) {

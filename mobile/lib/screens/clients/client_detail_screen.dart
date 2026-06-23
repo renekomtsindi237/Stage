@@ -9,7 +9,7 @@ import '../../widgets/error_widget.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class ClientDetailScreen extends StatefulWidget {
-  final int idClient;
+  final String idClient;
 
   const ClientDetailScreen({super.key, required this.idClient});
 
@@ -63,7 +63,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.darkBg,
       appBar: AppBar(
-        title: Text(_client?.fullName ?? 'DÃ©tail client'),
+        title: Text(_client?.fullName ?? 'Détail client'),
         backgroundColor: AppColors.darkBg,
         leading: IconButton(
           onPressed: () => context.go('/clients'),
@@ -171,7 +171,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _StatItem(
-                      label: 'PrÃªts',
+                      label: 'Prêts',
                       value: '${client.nombrePrets ?? 0}',
                       icon: Icons.account_balance_wallet_rounded,
                       color: AppColors.teal,
@@ -198,7 +198,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
             if (client.telephone != null)
               _InfoRow(
                 icon: Icons.phone_rounded,
-                label: 'TÃ©lÃ©phone',
+                label: 'Téléphone',
                 value: client.telephone!,
               ),
             if (client.email != null)

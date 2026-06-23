@@ -1,5 +1,5 @@
 class Client {
-  final int idClient;
+  final String idClient;
   final String nom;
   final String? prenom;
   final String? telephone;
@@ -25,16 +25,10 @@ class Client {
     this.statut,
   });
 
-  static int _parseId(dynamic v) {
-    if (v == null) return 0;
-    if (v is int) return v;
-    if (v is String) return int.tryParse(v) ?? 0;
-    return 0;
-  }
-
   factory Client.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'] ?? json['idClient'];
     return Client(
-      idClient: _parseId(json['id'] ?? json['idClient']),
+      idClient: rawId?.toString() ?? '',
       nom: json['nom'] as String? ?? '',
       prenom: json['prenom'] as String?,
       telephone: json['telephone'] as String?,
@@ -57,7 +51,7 @@ class Client {
   }
 
   Map<String, dynamic> toJson() => {
-        'idClient': idClient,
+        'idClient': idClient.toString(),
         'nom': nom,
         'prenom': prenom,
         'telephone': telephone,

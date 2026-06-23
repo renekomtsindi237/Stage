@@ -15,7 +15,7 @@ interface ScoringResult {
   score: number;
   classe: "TRES_FAIBLE" | "FAIBLE" | "MOYEN" | "BON" | "TRES_BON";
   probabiliteDefaut: number;
-  facteurs: { nom: string; contribution: number }[];
+  facteurPrincipal?: string;
 }
 
 interface ScoringPage {

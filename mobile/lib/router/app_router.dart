@@ -102,7 +102,7 @@ class AppRouter {
       GoRoute(
         path: '/clients/:id',
         builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+          final id = state.pathParameters['id'] ?? '';
           return ClientDetailScreen(idClient: id);
         },
       ),

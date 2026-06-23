@@ -84,52 +84,59 @@ public class AnalysteController {
     public ResponseEntity<ApiResponse<Page<Map<String, Object>>>> scoring(
             @RequestParam(defaultValue = "0")  int    page,
             @RequestParam(defaultValue = "20") int    size,
-            @RequestParam(defaultValue = "")   String niveauRisque) {
+            @RequestParam(defaultValue = "")   String classe,
+            @RequestParam(defaultValue = "")   String search) {
 
         Long imfId = TenantContext.currentImfId();
+        String cobac = classe.isBlank() ? "" : cobacFromClasse(classe);
 
         try {
             StringBuilder sql = new StringBuilder("""
-                    SELECT cs.id,
-                           cs.client_id_externe                       AS client_id,
-                           cs.imf_id,
+                    SELECT cs.client_id_externe                       AS client_id,
+                           COALESCE(ci.nom_complet, cs.client_id_externe) AS nom,
                            ROUND(cs.score_mcrs * 850)::INT            AS score_mcrs,
                            cs.cobac_classe                            AS classe_risque,
-                           cs.niveau_risque,
-                           cs.probabilite_defaut_30j                  AS probabilite_defaut,
-                           COALESCE(cs.model_version, 'MCRS-v2.4.1') AS modele_version,
-                           cs.scored_at                               AS calculated_at
+                           cs.probabilite_defaut_30j                  AS probabilite_defaut
                     FROM ml.client_scores cs
+                    LEFT JOIN app.clients_informels ci
+                          ON ci.client_id_externe = cs.client_id_externe
+                         AND ci.imf_id = cs.imf_id
                     WHERE cs.imf_id = ?
                     """);
             List<Object> params = new ArrayList<>();
             params.add(imfId);
 
-            if (!niveauRisque.isBlank()) {
-                sql.append(" AND cs.niveau_risque = ?");
-                params.add(niveauRisque);
+            if (!cobac.isBlank()) {
+                sql.append(" AND cs.cobac_classe = ?");
+                params.add(cobac);
+            }
+            if (!search.isBlank()) {
+                sql.append(" AND (cs.client_id_externe ILIKE ? OR ci.nom_complet ILIKE ?)");
+                params.add("%" + search + "%");
+                params.add("%" + search + "%");
             }
             sql.append(" ORDER BY cs.scored_at DESC LIMIT ? OFFSET ?");
             params.add(size);
             params.add((long) page * size);
 
             List<Map<String, Object>> rows = jdbc.queryForList(sql.toString(), params.toArray());
+            List<Map<String, Object>> mapped = rows.stream().map(this::remapScoringRow).toList();
 
             Long total;
             try {
-                String countSql = "SELECT COUNT(*) FROM ml.client_scores WHERE imf_id = ?"
-                        + (niveauRisque.isBlank() ? "" : " AND niveau_risque = ?");
-                Object[] countParams = niveauRisque.isBlank()
-                        ? new Object[]{imfId}
-                        : new Object[]{imfId, niveauRisque};
-                total = jdbc.queryForObject(countSql, Long.class, countParams);
-            } catch (Exception e) {
-                total = (long) rows.size();
+                StringBuilder countSql = new StringBuilder(
+                        "SELECT COUNT(*) FROM ml.client_scores cs WHERE cs.imf_id = ?");
+                List<Object> cp = new ArrayList<>();
+                cp.add(imfId);
+                if (!cobac.isBlank()) { countSql.append(" AND cs.cobac_classe = ?"); cp.add(cobac); }
+                total = jdbc.queryForObject(countSql.toString(), Long.class, cp.toArray());
+            } catch (Exception ex) {
+                total = (long) mapped.size();
             }
 
-            Page<Map<String, Object>> pageResult = new PageImpl<>(rows,
-                    PageRequest.of(page, size), total != null ? total : rows.size());
-            log.debug("Scoring MCRS IMF {} : {} résultats (niveauRisque={})", imfId, rows.size(), niveauRisque);
+            Page<Map<String, Object>> pageResult = new PageImpl<>(mapped,
+                    PageRequest.of(page, size), total != null ? total : mapped.size());
+            log.debug("Scoring MCRS IMF {} : {} résultats (classe={})", imfId, mapped.size(), classe);
             return ResponseEntity.ok(ApiResponse.ok(pageResult));
 
         } catch (Exception e) {
@@ -139,6 +146,38 @@ public class AnalysteController {
                     PageRequest.of(page, size), mocked.size());
             return ResponseEntity.ok(ApiResponse.ok(pageResult));
         }
+    }
+
+    private Map<String, Object> remapScoringRow(Map<String, Object> r) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        String clientId = Objects.toString(r.get("client_id"), "");
+        m.put("clientId",         clientId);
+        m.put("nom",              r.getOrDefault("nom", clientId));
+        m.put("score",            r.get("score_mcrs"));
+        m.put("classe",           mapCobacClasse(Objects.toString(r.get("classe_risque"), "C")));
+        m.put("probabiliteDefaut", r.get("probabilite_defaut"));
+        m.put("facteurPrincipal", "—");
+        return m;
+    }
+
+    private String mapCobacClasse(String cobac) {
+        return switch (cobac) {
+            case "A" -> "TRES_BON";
+            case "B" -> "BON";
+            case "D" -> "FAIBLE";
+            case "E" -> "TRES_FAIBLE";
+            default  -> "MOYEN";
+        };
+    }
+
+    private String cobacFromClasse(String classe) {
+        return switch (classe) {
+            case "TRES_BON"    -> "A";
+            case "BON"         -> "B";
+            case "FAIBLE"      -> "D";
+            case "TRES_FAIBLE" -> "E";
+            default            -> "C";
+        };
     }
 
     // ── GET /api/v1/analyste/traitements ──────────────────────────────────────
@@ -505,21 +544,20 @@ public class AnalysteController {
 
     private List<Map<String, Object>> scoringMockes(Long imfId, int nb) {
         Random rng = new Random();
-        String[] classes   = {"A","B","C","D","E"};
-        String[] niveaux   = {"FAIBLE","MODERE","ELEVE","TRES_ELEVE","CRITIQUE"};
+        String[] classes  = {"TRES_BON","BON","MOYEN","FAIBLE","TRES_FAIBLE"};
+        String[] prenoms  = {"Alphonse","Berthe","Cédric","Danielle","Emmanuel","Fatou","Georges","Hélène"};
+        String[] noms     = {"MBARGA","FOUDA","NGONO","ABENA","BELINGA","ATEBA","MVONDO","ESSAMA"};
         List<Map<String, Object>> liste = new ArrayList<>();
         for (int i = 0; i < Math.min(nb, 20); i++) {
             int idx = rng.nextInt(classes.length);
+            double prob = Math.round(rng.nextDouble() * 100.0 * 10.0) / 10.0;
             Map<String, Object> m = new LinkedHashMap<>();
-            m.put("id",                 (long)(1000 + i));
-            m.put("client_id",          (long)(2000 + i));
-            m.put("imf_id",             imfId);
-            m.put("score_mcrs",         Math.round((300.0 + rng.nextDouble() * 550.0) * 100.0) / 100.0);
-            m.put("classe_risque",      classes[idx]);
-            m.put("niveau_risque",      niveaux[idx]);
-            m.put("probabilite_defaut", Math.round(rng.nextDouble() * 100.0) / 100.0);
-            m.put("modele_version",     "MCRS-v2.4.1");
-            m.put("calculated_at",      "2026-06-0" + (1 + rng.nextInt(9)) + "T08:00:00Z");
+            m.put("clientId",          "CLI-" + String.format("%03d", 100 + i));
+            m.put("nom",               prenoms[i % prenoms.length] + " " + noms[i % noms.length]);
+            m.put("score",             (int)(300 + rng.nextInt(550)));
+            m.put("classe",            classes[idx]);
+            m.put("probabiliteDefaut", prob);
+            m.put("facteurPrincipal",  "—");
             liste.add(m);
         }
         return liste;
