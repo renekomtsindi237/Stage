@@ -16,28 +16,6 @@
       </p>
     </div>
 
-    <!-- Tabs -->
-    <div class="admin-tabs">
-      <button
-        class="admin-tab"
-        [class.active]="activeTab() === 'superadmin'"
-        (click)="setTab('superadmin')"
-        type="button"
-      >
-        <span class="material-icons-round">manage_accounts</span>
-        Super Admin
-      </button>
-      <button
-        class="admin-tab"
-        [class.active]="activeTab() === 'support'"
-        (click)="setTab('support')"
-        type="button"
-      >
-        <span class="material-icons-round">support_agent</span>
-        Support
-      </button>
-    </div>
-
     <!-- Error -->
     @if (error()) {
       <div class="admin-alert">
@@ -46,139 +24,46 @@
       </div>
     }
 
-    <!-- ── SUPER ADMIN : email + mot de passe ── -->
-    @if (activeTab() === "superadmin") {
-      <form
-        [formGroup]="superAdminForm"
-        (ngSubmit)="submitSuperAdmin()"
-        class="admin-form"
-      >
-        <div class="form-group">
-          <label for="sa-email">Adresse email</label>
+    <!-- Formulaire email + mot de passe -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
+      <div class="form-group">
+        <label for="email">Adresse email</label>
+        <input
+          id="email"
+          type="email"
+          class="form-control"
+          formControlName="email"
+          placeholder="admin@microrecouv.cm"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="pwd">Mot de passe</label>
+        <div class="input-group">
           <input
-            id="sa-email"
-            type="email"
+            id="pwd"
+            [type]="showPwd() ? 'text' : 'password'"
             class="form-control"
-            formControlName="email"
-            placeholder="admin@microrecouv.cm"
-            autocomplete="username"
+            formControlName="motDePasse"
+            autocomplete="current-password"
           />
+          <span class="input-suffix material-icons-round" (click)="togglePwd()">
+            {{ showPwd() ? "visibility_off" : "visibility" }}
+          </span>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="sa-pwd">Mot de passe</label>
-          <div class="input-group">
-            <input
-              id="sa-pwd"
-              [type]="showPwd() ? 'text' : 'password'"
-              class="form-control"
-              formControlName="motDePasse"
-              autocomplete="current-password"
-            />
-            <span
-              class="input-suffix material-icons-round"
-              (click)="togglePwd()"
-            >
-              {{ showPwd() ? "visibility_off" : "visibility" }}
-            </span>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-admin-submit" [disabled]="loading()">
-          @if (loading()) {
-            <span class="material-icons-round spin">refresh</span>
-            Connexion…
-          } @else {
-            <span class="material-icons-round">lock_open</span>
-            Se connecter
-          }
-        </button>
-      </form>
-    }
-
-    <!-- ── SUPPORT : flow OTP ── -->
-    @if (activeTab() === "support") {
-      <!-- Étape 1 : saisir l'email -->
-      @if (supportStep() === "email") {
-        <form
-          [formGroup]="supportEmailForm"
-          (ngSubmit)="requestOtp()"
-          class="admin-form"
-        >
-          <div class="otp-intro">
-            <span class="material-icons-round">mark_email_unread</span>
-            <p>Un code à 6 chiffres sera envoyé à votre adresse email.</p>
-          </div>
-
-          <div class="form-group">
-            <label for="sup-email">Adresse email</label>
-            <input
-              id="sup-email"
-              type="email"
-              class="form-control"
-              formControlName="email"
-              placeholder="support@gmail.com"
-              autocomplete="username"
-            />
-          </div>
-
-          <button type="submit" class="btn-admin-submit" [disabled]="loading()">
-            @if (loading()) {
-              <span class="material-icons-round spin">refresh</span>
-              Envoi…
-            } @else {
-              <span class="material-icons-round">send</span>
-              Recevoir le code
-            }
-          </button>
-        </form>
-      }
-
-      <!-- Étape 2 : saisir le code OTP -->
-      @if (supportStep() === "otp") {
-        <form
-          [formGroup]="supportOtpForm"
-          (ngSubmit)="verifyOtp()"
-          class="admin-form"
-        >
-          <div class="otp-intro">
-            <span class="material-icons-round">verified</span>
-            <p>
-              Code envoyé à <strong>{{ supportEmail() }}</strong
-              >.<br />Valable 10 minutes.
-            </p>
-          </div>
-
-          <div class="form-group">
-            <label for="otp-code">Code de vérification</label>
-            <input
-              id="otp-code"
-              type="text"
-              inputmode="numeric"
-              maxlength="6"
-              class="form-control otp-input"
-              formControlName="code"
-              placeholder="000000"
-              autocomplete="one-time-code"
-            />
-          </div>
-
-          <button type="submit" class="btn-admin-submit" [disabled]="loading()">
-            @if (loading()) {
-              <span class="material-icons-round spin">refresh</span>
-              Vérification…
-            } @else {
-              <span class="material-icons-round">lock_open</span>
-              Vérifier et se connecter
-            }
-          </button>
-
-          <button type="button" class="btn-back" (click)="backToEmail()">
-            ← Changer d'email
-          </button>
-        </form>
-      }
-    }
+      <button type="submit" class="btn-admin-submit" [disabled]="loading()">
+        @if (loading()) {
+          <span class="material-icons-round spin">refresh</span>
+          Connexion…
+        } @else {
+          <span class="material-icons-round">lock_open</span>
+          Se connecter
+        }
+      </button>
+    </form>
 
     <!-- Lien retour -->
     <div class="admin-card__back">

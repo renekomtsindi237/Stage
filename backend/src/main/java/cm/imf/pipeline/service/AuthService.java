@@ -48,7 +48,7 @@ public class AuthService implements IAuthService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    // ── Login SUPER_ADMIN (classique — pas d'OTP) ─────────────────────────────
+    // ── Login direct SUPER_ADMIN et SUPPORT (email + mot de passe, sans OTP) ──
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
@@ -57,7 +57,7 @@ public class AuthService implements IAuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Identifiants invalides"));
 
-        if (user.getRole() != Role.SUPER_ADMIN) {
+        if (user.getRole() != Role.SUPER_ADMIN && user.getRole() != Role.SUPPORT) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Ce compte utilise l'authentification par OTP. Utilisez /auth/request-otp.");
         }
@@ -120,8 +120,8 @@ public class AuthService implements IAuthService {
 
         User user = userOpt.get();
 
-        if (user.getRole() == Role.SUPER_ADMIN) {
-            log.warn("Tentative OTP sur le compte SUPER_ADMIN — ignorée");
+        if (user.getRole() == Role.SUPER_ADMIN || user.getRole() == Role.SUPPORT) {
+            log.warn("Tentative OTP sur compte admin ({}) — ignorée", user.getRole());
             return new OtpInitResponse(MSG);
         }
 
