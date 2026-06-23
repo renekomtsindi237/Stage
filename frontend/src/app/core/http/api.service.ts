@@ -10,7 +10,7 @@ export class ApiService {
   private readonly baseUrl = environment.apiUrl;
 
   private unwrap<T>(res: unknown): T {
-    if (res && typeof res === "object" && "success" in res) {
+    if (res && typeof res === "object" && "success" in res && "data" in res) {
       return (res as { data: T }).data;
     }
     return res as T;
