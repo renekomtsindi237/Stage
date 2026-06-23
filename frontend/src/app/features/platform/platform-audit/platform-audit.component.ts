@@ -8,10 +8,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
-import {
-  AuditEntry,
-  PagedResult,
-} from "../../../core/models/platform.model";
+import { AuditEntry, PagedResult } from "../../../core/models/platform.model";
 
 @Component({
   selector: "app-platform-audit",
@@ -91,10 +88,7 @@ export class PlatformAuditComponent implements OnInit {
     };
 
     this.api
-      .get<PagedResult<AuditEntry>>(
-        "/api/v1/admin/audit/trail",
-        params,
-      )
+      .get<PagedResult<AuditEntry>>("/api/v1/admin/audit/trail", params)
       .subscribe({
         next: (page_) => {
           this.entries.set(page_.content ?? []);

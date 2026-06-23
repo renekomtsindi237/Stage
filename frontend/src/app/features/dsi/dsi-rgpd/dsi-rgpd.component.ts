@@ -33,15 +33,13 @@ export class DsiRgpdComponent implements OnInit {
   exporting = signal(false);
 
   ngOnInit() {
-    this.api
-      .get<RgpdStatus>("/api/v1/dsi/rgpd/status")
-      .subscribe({
-        next: (d: RgpdStatus) => {
-          this.data.set(d);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+    this.api.get<RgpdStatus>("/api/v1/dsi/rgpd/status").subscribe({
+      next: (d: RgpdStatus) => {
+        this.data.set(d);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
   }
 
   exportRapport() {

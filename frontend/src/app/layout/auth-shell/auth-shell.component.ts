@@ -49,7 +49,9 @@ import { RouterLink, RouterOutlet } from "@angular/router";
         text-decoration: none;
         padding: 8px 14px;
         border-radius: var(--radius-full);
-        transition: background 0.15s, color 0.15s;
+        transition:
+          background 0.15s,
+          color 0.15s;
         &:hover {
           background: var(--color-surface);
           color: var(--color-primary);

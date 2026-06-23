@@ -130,15 +130,13 @@ export class PlatformImfsComponent implements OnInit {
 
   loadImfs() {
     this.loading.set(true);
-    this.api
-      .get<ImfDetail[]>("/api/v1/platform/imf")
-      .subscribe({
-        next: (list) => {
-          this.imfs.set(list ?? []);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+    this.api.get<ImfDetail[]>("/api/v1/platform/imf").subscribe({
+      next: (list) => {
+        this.imfs.set(list ?? []);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
   }
 
   select(imf: ImfDetail) {
@@ -206,47 +204,43 @@ export class PlatformImfsComponent implements OnInit {
         ? Number(raw.maxDocumentKycOctets) * 1_048_576
         : null,
     };
-    this.api
-      .post<ImfDetail>("/api/v1/platform/imf", payload)
-      .subscribe({
-        next: (imf) => {
-          this.submitting.set(false);
-          this.showCreate.set(false);
-          this.imfs.update((list) => [imf, ...list]);
-          this.select(imf);
-          this.toast.showSuccess(
-            "IMF créée",
-            "L'institution a été enregistrée avec succès.",
-          );
-        },
-        error: (err) => {
-          this.submitting.set(false);
-          this.toast.showError(
-            "Erreur",
-            err?.error?.message ?? "Erreur lors de la création",
-          );
-        },
-      });
+    this.api.post<ImfDetail>("/api/v1/platform/imf", payload).subscribe({
+      next: (imf) => {
+        this.submitting.set(false);
+        this.showCreate.set(false);
+        this.imfs.update((list) => [imf, ...list]);
+        this.select(imf);
+        this.toast.showSuccess(
+          "IMF créée",
+          "L'institution a été enregistrée avec succès.",
+        );
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.toast.showError(
+          "Erreur",
+          err?.error?.message ?? "Erreur lors de la création",
+        );
+      },
+    });
   }
 
   toggleActif(imf: ImfDetail) {
     const path = imf.actif
       ? `/api/v1/platform/imf/${imf.uid}/deactivate`
       : `/api/v1/platform/imf/${imf.uid}/activate`;
-    this.api
-      .patch<ImfDetail>(path, {})
-      .subscribe({
-        next: (updated) => {
-          this.updateInList(updated);
-          this.selected.set(updated);
-          this.toast.showSuccess(
-            "IMF mise à jour",
-            `L'institution a été ${updated.actif ? "activée" : "désactivée"}.`,
-          );
-        },
-        error: () =>
-          this.toast.showError("Erreur", "Impossible de mettre à jour l'IMF."),
-      });
+    this.api.patch<ImfDetail>(path, {}).subscribe({
+      next: (updated) => {
+        this.updateInList(updated);
+        this.selected.set(updated);
+        this.toast.showSuccess(
+          "IMF mise à jour",
+          `L'institution a été ${updated.actif ? "activée" : "désactivée"}.`,
+        );
+      },
+      error: () =>
+        this.toast.showError("Erreur", "Impossible de mettre à jour l'IMF."),
+    });
   }
 
   confirmDelete() {
@@ -259,21 +253,19 @@ export class PlatformImfsComponent implements OnInit {
   deleteImf() {
     const imf = this.selected();
     if (!imf) return;
-    this.api
-      .delete<void>(`/api/v1/platform/imf/${imf.uid}`)
-      .subscribe({
-        next: () => {
-          this.imfs.update((list) => list.filter((i) => i.uid !== imf.uid));
-          this.selected.set(null);
-          this.showDeleteConfirm.set(false);
-          this.toast.showSuccess(
-            "IMF supprimée",
-            "L'institution a été supprimée définitivement.",
-          );
-        },
-        error: () =>
-          this.toast.showError("Erreur", "Impossible de supprimer l'IMF."),
-      });
+    this.api.delete<void>(`/api/v1/platform/imf/${imf.uid}`).subscribe({
+      next: () => {
+        this.imfs.update((list) => list.filter((i) => i.uid !== imf.uid));
+        this.selected.set(null);
+        this.showDeleteConfirm.set(false);
+        this.toast.showSuccess(
+          "IMF supprimée",
+          "L'institution a été supprimée définitivement.",
+        );
+      },
+      error: () =>
+        this.toast.showError("Erreur", "Impossible de supprimer l'IMF."),
+    });
   }
 
   openDsiForm() {
@@ -368,10 +360,7 @@ export class PlatformImfsComponent implements OnInit {
     const imf = this.selected();
     if (!imf) return;
     this.api
-      .patch<ImfDetail>(
-        `/api/v1/platform/imf/${imf.uid}/admin/suspend`,
-        {},
-      )
+      .patch<ImfDetail>(`/api/v1/platform/imf/${imf.uid}/admin/suspend`, {})
       .subscribe({
         next: (updated) => {
           this.updateInList(updated);

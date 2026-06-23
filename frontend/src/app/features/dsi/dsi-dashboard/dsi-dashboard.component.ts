@@ -96,14 +96,12 @@ export class DsiDashboardComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.api
-      .get<DsiDashboardData>("/api/v1/dsi/dashboard")
-      .subscribe({
-        next: (d: DsiDashboardData) => {
-          this.data.set(d);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+    this.api.get<DsiDashboardData>("/api/v1/dsi/dashboard").subscribe({
+      next: (d: DsiDashboardData) => {
+        this.data.set(d);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
   }
 }

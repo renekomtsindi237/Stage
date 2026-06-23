@@ -53,19 +53,17 @@ export class DsiMonitoringComponent implements OnInit {
     this.loadingHealth.set(true);
     this.loadingLogins.set(true);
 
-    this.api
-      .get<ImfHealth>("/api/v1/dsi/monitoring/health")
-      .subscribe({
-        next: (h: ImfHealth) => {
-          this.imfHealth.set(h);
-          this.loadingHealth.set(false);
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.loadingHealth.set(false);
-          this.cdr.markForCheck();
-        },
-      });
+    this.api.get<ImfHealth>("/api/v1/dsi/monitoring/health").subscribe({
+      next: (h: ImfHealth) => {
+        this.imfHealth.set(h);
+        this.loadingHealth.set(false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingHealth.set(false);
+        this.cdr.markForCheck();
+      },
+    });
 
     this.api
       .get<RecentLogin[]>("/api/v1/dsi/monitoring/connexions-recentes")

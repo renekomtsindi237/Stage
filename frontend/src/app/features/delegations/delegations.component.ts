@@ -203,15 +203,13 @@ export class DelegationsComponent implements OnInit {
   private loadAgents() {
     if (this.agents().length > 0) return;
     this.loadingAgents.set(true);
-    this.api
-      .get<AgentUser[]>("/api/v1/delegations/agents-credit")
-      .subscribe({
-        next: (list) => {
-          this.agents.set(list ?? []);
-          this.loadingAgents.set(false);
-        },
-        error: () => this.loadingAgents.set(false),
-      });
+    this.api.get<AgentUser[]>("/api/v1/delegations/agents-credit").subscribe({
+      next: (list) => {
+        this.agents.set(list ?? []);
+        this.loadingAgents.set(false);
+      },
+      error: () => this.loadingAgents.set(false),
+    });
   }
 
   private loadAllUsers() {
