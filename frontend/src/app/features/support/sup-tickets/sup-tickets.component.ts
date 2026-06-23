@@ -20,7 +20,7 @@ export interface Ticket {
   auteurUsername?: string;
   auteurRole?: string;
   resolution?: string;
-  traitéParUsername?: string;
+  traiteParUsername?: string;
   dateTraitement?: string;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +74,13 @@ export class SupTicketsComponent implements OnInit {
       })
       .subscribe({
         next: (p: TicketPage) => {
+          // Normalize accentuated key from Java field name to ASCII for template safety
+          p.content = p.content.map((t) => ({
+            ...t,
+            traiteParUsername: (t as unknown as Record<string, unknown>)[
+              "traitéParUsername"
+            ] as string | undefined,
+          }));
           this.page.set(p);
           this.loading.set(false);
         },

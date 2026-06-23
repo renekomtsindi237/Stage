@@ -182,9 +182,9 @@
               Réponse apportée
             </h4>
             <div class="resolution-box">{{ selected()!.resolution }}</div>
-            @if (selected()!.traitéParUsername) {
+            @if (selected()!.traiteParUsername) {
               <p class="text-sm text-muted" style="margin-top: 8px">
-                Traité par <strong>{{ selected()!.traitéParUsername }}</strong>
+                Traité par <strong>{{ selected()!.traiteParUsername }}</strong>
                 @if (selected()!.dateTraitement) {
                   · {{ selected()!.dateTraitement | date: "dd/MM/yyyy HH:mm" }}
                 }

@@ -31,7 +31,7 @@ interface DashboardData {
   totalClients: number;
   scoresMoyen: number;
   alertesOuvertes: number;
-  driftPsi: number;
+  driftPsi?: number | null;
   scoringDistribution: { label: string; count: number }[];
   alertesRecentes: {
     id: string;
