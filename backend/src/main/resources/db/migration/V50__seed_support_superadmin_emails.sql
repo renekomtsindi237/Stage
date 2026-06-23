@@ -7,6 +7,26 @@
 --   (renekomtsindi7@gmail.com / Mbetoumou olive77)
 -- ============================================================
 
+-- 1. Étendre la contrainte role_check pour inclure tous les rôles de l'enum
+ALTER TABLE app.utilisateurs DROP CONSTRAINT IF EXISTS utilisateurs_role_check;
+ALTER TABLE app.utilisateurs
+    ADD CONSTRAINT utilisateurs_role_check
+    CHECK (role IN (
+        'SUPER_ADMIN',
+        'DIRECTEUR',
+        'RESPONSABLE_RECOUVREMENT',
+        'ANALYSTE',
+        'DSI',
+        'SUPPORT',
+        'AGENT',
+        'AGENT_CREDIT',
+        'CHEF_AGENCE',
+        'ANALYSTE_ENGAGEMENTS',
+        'AGENT_SAISIE',
+        'CAISSIER'
+    ));
+
+-- 2. Créer le compte SUPPORT (cross-IMF, imf_id NULL)
 INSERT INTO app.utilisateurs (username, email, password_hash, role, actif, imf_id)
 VALUES (
     'support',
