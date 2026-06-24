@@ -38,7 +38,8 @@
               <div class="client-result" (click)="select(c)">
                 <p class="font-semibold">{{ c.nomClient }}</p>
                 <p class="text-sm text-muted">
-                  {{ c.idClient }} · Solde: {{ c.encours | number: "1.0-0" }} FCFA
+                  {{ c.idClient }} · Solde:
+                  {{ c.encours | number: "1.0-0" }} FCFA
                 </p>
               </div>
             }

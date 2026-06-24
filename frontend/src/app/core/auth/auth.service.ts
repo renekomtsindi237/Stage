@@ -17,9 +17,7 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
   readonly fullName = computed(() => this.currentUser()?.username ?? "");
-  readonly avatarUrl = computed(
-    () => this.currentUser()?.avatarUrl ?? null,
-  );
+  readonly avatarUrl = computed(() => this.currentUser()?.avatarUrl ?? null);
   readonly imfLogoUrl = computed(() => this.currentUser()?.imfLogoUrl ?? null);
   readonly initials = computed(() => {
     const name = this.currentUser()?.username;
@@ -77,13 +75,13 @@ export class AuthService {
     const formData = new FormData();
     formData.append("file", file);
     const token = this.getToken();
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : undefined;
     return this.http
-      .post<{ data: { avatarUrl: string } }>(
-        `${environment.apiUrl}/api/v1/users/me/avatar`,
-        formData,
-        { headers },
-      )
+      .post<{
+        data: { avatarUrl: string };
+      }>(`${environment.apiUrl}/api/v1/users/me/avatar`, formData, { headers })
       .pipe(
         map((res) => res.data.avatarUrl),
         tap((url) => this._patchAvatarUrl(url)),
@@ -95,7 +93,9 @@ export class AuthService {
    */
   removeAvatar(): Observable<void> {
     const token = this.getToken();
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : undefined;
     return this.http
       .delete<void>(`${environment.apiUrl}/api/v1/users/me/avatar`, { headers })
       .pipe(tap(() => this._patchAvatarUrl(null)));

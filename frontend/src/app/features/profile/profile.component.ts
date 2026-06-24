@@ -104,7 +104,10 @@ export class ProfileComponent {
       },
       error: () => {
         this.uploading.set(false);
-        this.toast.showError("Erreur", "Impossible de téléverser la photo. Réessayez.");
+        this.toast.showError(
+          "Erreur",
+          "Impossible de téléverser la photo. Réessayez.",
+        );
         input.value = "";
       },
     });
@@ -113,7 +116,10 @@ export class ProfileComponent {
   removeAvatar() {
     this.auth.removeAvatar().subscribe({
       next: () =>
-        this.toast.showSuccess("Photo supprimée", "Votre avatar a été réinitialisé."),
+        this.toast.showSuccess(
+          "Photo supprimée",
+          "Votre avatar a été réinitialisé.",
+        ),
       error: () =>
         this.toast.showError("Erreur", "Impossible de supprimer la photo."),
     });

@@ -44,8 +44,8 @@ class ClientControllerTest {
     @WithMockUser(roles = "ANALYSTE")
     @DisplayName("GET /api/clients — liste paginée")
     void list_200() throws Exception {
-        when(clientService.list(0, 20)).thenReturn(List.of(CLIENT));
-        when(clientService.count()).thenReturn(1L);
+        when(clientService.list(0, 20, null, null, null)).thenReturn(List.of(CLIENT));
+        when(clientService.count(null, null, null)).thenReturn(1L);
 
         mockMvc.perform(get("/api/v1/clients"))
                 .andExpect(status().isOk())

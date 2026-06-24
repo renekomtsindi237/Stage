@@ -30,7 +30,7 @@ interface Rapport {
 export class DirRapportsComponent {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly cdr  = inject(ChangeDetectorRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   generating = signal<string | null>(null);
 
@@ -48,7 +48,10 @@ export class DirRapportsComponent {
       titre: "Rapport trimestriel portefeuille",
       type: "TRIMESTRIEL",
       dateDernier: "2026-03-31",
-      endpoint: this.buildKpiUrl(this.firstOfQuarter(-1), this.lastOfQuarter(-1)),
+      endpoint: this.buildKpiUrl(
+        this.firstOfQuarter(-1),
+        this.lastOfQuarter(-1),
+      ),
       filename: "rapport_trimestriel.pdf",
     },
     {
@@ -85,24 +88,22 @@ export class DirRapportsComponent {
       ? { Authorization: `Bearer ${token}` }
       : {};
 
-    this.http
-      .get(r.endpoint, { headers, responseType: "blob" })
-      .subscribe({
-        next: (blob) => {
-          const url = URL.createObjectURL(blob);
-          const a   = document.createElement("a");
-          a.href     = url;
-          a.download = r.filename;
-          a.click();
-          URL.revokeObjectURL(url);
-          this.generating.set(null);
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.generating.set(null);
-          this.cdr.markForCheck();
-        },
-      });
+    this.http.get(r.endpoint, { headers, responseType: "blob" }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = r.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.generating.set(null);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.generating.set(null);
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   typeClass(t: string) {
@@ -120,17 +121,17 @@ export class DirRapportsComponent {
   }
 
   private buildCobacUrl(): string {
-    const today  = new Date();
-    const fin    = today.toISOString().slice(0, 10);
-    const debut  = `${today.getFullYear()}-01-01`;
+    const today = new Date();
+    const fin = today.toISOString().slice(0, 10);
+    const debut = `${today.getFullYear()}-01-01`;
     return `${environment.apiUrl}/api/v1/reporting/cobac/pdf?dateDebut=${debut}&dateFin=${fin}`;
   }
 
   private buildCollectesUrl(daysBack: number): string {
-    const today  = new Date();
-    const fin    = today.toISOString().slice(0, 10);
-    const past   = new Date(today.getTime() - daysBack * 86400000);
-    const debut  = past.toISOString().slice(0, 10);
+    const today = new Date();
+    const fin = today.toISOString().slice(0, 10);
+    const past = new Date(today.getTime() - daysBack * 86400000);
+    const debut = past.toISOString().slice(0, 10);
     return `${environment.apiUrl}/api/v1/reporting/collectes/pdf?dateDebut=${debut}&dateFin=${fin}`;
   }
 
@@ -149,14 +150,14 @@ export class DirRapportsComponent {
   private firstOfQuarter(offset: number): string {
     const d = new Date();
     const quarter = Math.floor(d.getMonth() / 3) + offset;
-    const year    = d.getFullYear() + Math.floor(quarter / 4);
-    const q       = ((quarter % 4) + 4) % 4;
+    const year = d.getFullYear() + Math.floor(quarter / 4);
+    const q = ((quarter % 4) + 4) % 4;
     return `${year}-${String(q * 3 + 1).padStart(2, "0")}-01`;
   }
 
   private lastOfQuarter(offset: number): string {
     const first = new Date(this.firstOfQuarter(offset));
-    const last  = new Date(first.getFullYear(), first.getMonth() + 3, 0);
+    const last = new Date(first.getFullYear(), first.getMonth() + 3, 0);
     return last.toISOString().slice(0, 10);
   }
 }

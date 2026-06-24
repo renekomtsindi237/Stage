@@ -56,7 +56,7 @@
             <tr>
               <td>
                 <p class="font-semibold">{{ c.nomClient }}</p>
-                <p class="text-sm text-muted">{{ c.telephoneClient ?? '—' }}</p>
+                <p class="text-sm text-muted">{{ c.telephoneClient ?? "—" }}</p>
               </td>
               <td class="text-muted text-sm">{{ c.idClient }}</td>
               <td>{{ c.encours | fcfa }}</td>
@@ -71,10 +71,12 @@
                         : 'badge-critique'
                   "
                 >
-                  {{ c.statut ?? 'ACTIF' }}
+                  {{ c.statut ?? "ACTIF" }}
                 </span>
               </td>
-              <td class="text-sm text-muted">{{ c.agencePrincipale ?? '—' }}</td>
+              <td class="text-sm text-muted">
+                {{ c.agencePrincipale ?? "—" }}
+              </td>
               <td>
                 <button class="btn btn-ghost btn-sm">
                   <span class="material-icons-round">visibility</span>

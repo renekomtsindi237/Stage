@@ -26,14 +26,14 @@ import { environment } from "../../../../environments/environment";
   styleUrls: ["./dir-kpi.component.scss"],
 })
 export class DirKpiComponent implements OnInit {
-  private readonly api  = inject(ApiService);
+  private readonly api = inject(ApiService);
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly cdr  = inject(ChangeDetectorRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  loading      = signal(true);
-  downloading  = signal(false);
-  data         = signal<KpiPortefeuille | null>(null);
+  loading = signal(true);
+  downloading = signal(false);
+  data = signal<KpiPortefeuille | null>(null);
 
   parChartData: ChartConfiguration<"line">["data"] = {
     labels: [],
@@ -66,7 +66,7 @@ export class DirKpiComponent implements OnInit {
     this.cdr.markForCheck();
 
     const today = new Date();
-    const dateFin   = today.toISOString().slice(0, 10);
+    const dateFin = today.toISOString().slice(0, 10);
     const dateDebut = `${today.getFullYear()}-01-01`;
     const token = this.auth.getToken();
     const headers: Record<string, string> = token
@@ -81,8 +81,8 @@ export class DirKpiComponent implements OnInit {
       .subscribe({
         next: (blob) => {
           const url = URL.createObjectURL(blob);
-          const a   = document.createElement("a");
-          a.href     = url;
+          const a = document.createElement("a");
+          a.href = url;
           a.download = `rapport_cobac_${dateFin}.pdf`;
           a.click();
           URL.revokeObjectURL(url);
