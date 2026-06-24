@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public record CollecteRequest(
         @NotBlank String idCollecteMobile,
         @NotBlank String clientId,
-        @NotBlank String pretId,
+        String pretId,
         @NotNull LocalDate dateCollecte,
         @NotNull @DecimalMin("0.01") BigDecimal montantCollecte,
         @NotNull CanalPaiement canalPaiement,

@@ -81,13 +81,34 @@ class SyncResult {
     required this.syncedAt,
   });
 
-  factory SyncResult.fromJson(Map<String, dynamic> json) => SyncResult(
+  factory SyncResult.fromJson(Map<String, dynamic> json) {
+    // Format cache local : clés plates (totalRecu, acceptees, …)
+    if (json.containsKey('totalRecu')) {
+      return SyncResult(
         totalRecu: json['totalRecu'] as int? ?? 0,
         acceptees: json['acceptees'] as int? ?? 0,
-        doublons: json['doublons'] as int? ?? 0,
-        rejetees: json['rejetees'] as int? ?? 0,
-        syncedAt: DateTime.now(),
+        doublons:  json['doublons']  as int? ?? 0,
+        rejetees:  json['rejetees']  as int? ?? 0,
+        syncedAt:  json['syncedAt'] != null
+            ? DateTime.parse(json['syncedAt'] as String)
+            : DateTime.now(),
       );
+    }
+    // Format réponse API : data.stats (total, succes, doublons, conflits, erreurs)
+    final stats = json['stats'] as Map<String, dynamic>? ?? {};
+    final total     = stats['total']    as int? ?? 0;
+    final succes    = stats['succes']   as int? ?? 0;
+    final doublons  = stats['doublons'] as int? ?? 0;
+    final conflits  = stats['conflits'] as int? ?? 0;
+    final erreurs   = stats['erreurs']  as int? ?? 0;
+    return SyncResult(
+      totalRecu: total,
+      acceptees: succes,
+      doublons:  doublons,
+      rejetees:  conflits + erreurs,
+      syncedAt:  DateTime.now(),
+    );
+  }
 
   String get resume => '$acceptees/${totalRecu} collecte(s) synchronisée(s)';
 }

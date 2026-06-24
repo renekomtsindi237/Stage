@@ -36,7 +36,8 @@ public final class DataMaskingUtils {
      * AGENT voit ses propres données mais pas celles des autres clients.
      */
     public static boolean peutVoirDonneesCompletes(Role role) {
-        return role == Role.RESPONSABLE_RECOUVREMENT
+        return role == Role.AGENT
+                || role == Role.RESPONSABLE_RECOUVREMENT
                 || role == Role.DIRECTEUR
                 || role == Role.DSI
                 || role == Role.SUPER_ADMIN;

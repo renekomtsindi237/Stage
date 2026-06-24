@@ -4,5 +4,6 @@ public enum CanalPaiement {
     MTN,
     ORANGE,
     ESPECES,
+    WAVE,
     VIREMENT
 }
