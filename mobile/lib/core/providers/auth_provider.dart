@@ -73,6 +73,13 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await _authService.verifyOtp(email, code);
+      if (response.role != 'AGENT') {
+        await _authService.logout();
+        _status = AuthStatus.error;
+        _errorMessage = 'Cette application est réservée aux agents terrain.';
+        notifyListeners();
+        return false;
+      }
       _currentUser = User(username: response.username, role: response.role);
       _pendingOtpEmail = null;
       _status = AuthStatus.authenticated;
@@ -129,14 +136,23 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _loadCurrentUser() async {
     try {
       _currentUser = await _authService.getCurrentUser();
+      if (_currentUser?.role != 'AGENT') {
+        await _authService.logout();
+        _currentUser = null;
+        _status = AuthStatus.unauthenticated;
+        return;
+      }
       _status = AuthStatus.authenticated;
     } catch (_) {
       final username = await _authService.getUsername();
       final role = await _authService.getRole();
-      if (username != null && role != null) {
-        _currentUser = User(username: username, role: role);
+      if (username != null && role == 'AGENT') {
+        _currentUser = User(username: username, role: role!);
         _status = AuthStatus.authenticated;
       } else {
+        if (username != null && role != null) {
+          await _authService.logout();
+        }
         _status = AuthStatus.unauthenticated;
       }
     }

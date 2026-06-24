@@ -4,11 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_helper.dart';
 import '../../core/models/client.dart';
 import '../../core/models/collecte_locale.dart';
 import '../../core/services/client_service.dart';
 import '../../core/services/sync_service.dart';
+import '../../core/services/agent_service.dart';
 
 String _generateUuid() {
   final r = Random.secure();
@@ -30,7 +33,6 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
   final _amountController = TextEditingController(text: '0');
 
   String _canal = 'ESPECES';
-  bool _gpsEnabled = true;
   bool _submitting = false;
 
   Client? _selectedClient;
@@ -81,6 +83,21 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     });
   }
 
+  Future<Position?> _determinePosition() async {
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) return null;
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 4),
+      );
+    } catch (e) {
+      debugPrint('Geolocator: $e');
+      return null;
+    }
+  }
+
   Future<void> _onSubmit() async {
     if (_selectedClient == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,6 +113,19 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
 
     setState(() => _submitting = true);
     try {
+      double? lat;
+      double? lon;
+      Position? pos;
+      try {
+        pos = await _determinePosition();
+        if (pos != null) {
+          lat = pos.latitude;
+          lon = pos.longitude;
+        }
+      } catch (e) {
+        debugPrint('Failed to get position: $e');
+      }
+
       final now = DateTime.now();
       final collecte = CollecteLocale(
         uuidMobile: _generateUuid(),
@@ -103,10 +133,29 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
         montantCollecte: amount,
         dateCollecte: DateFormat('yyyy-MM-dd').format(now),
         canalPaiement: _canal,
+        latitude: lat,
+        longitude: lon,
         createdAt: now,
       );
 
       await context.read<SyncService>().ajouterCollecteLocale(collecte);
+
+      if (pos != null && mounted) {
+        try {
+          await context.read<AgentService>().updatePosition(
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            precisionMetres: pos.accuracy,
+            altitudeMetres: pos.altitude,
+            vitesseKmh: pos.speed * 3.6,
+            capDegres: pos.heading,
+            source: 'COLLECTE',
+            collecteUuid: collecte.uuidMobile,
+          );
+        } catch (e) {
+          debugPrint('Failed to update agent position on server: $e');
+        }
+      }
 
       if (!mounted) return;
       setState(() => _submitting = false);
@@ -123,7 +172,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: context.bg,
       body: Column(
         children: [
           _buildTopBar(context),
@@ -145,8 +194,6 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
                 _buildAmountInput(),
                 const SizedBox(height: 20),
                 _buildCanalSelector(),
-                const SizedBox(height: 20),
-                _buildGpsRow(),
                 const SizedBox(height: 32),
                 _buildSubmitButton(),
                 const SizedBox(height: 24),
@@ -176,16 +223,16 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
 
   Widget _buildSearchField() {
     return Container(
-      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.darkBorder)),
+      decoration: BoxDecoration(color: context.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.border)),
       child: TextField(
         controller: _searchController,
-        style: const TextStyle(fontFamily: 'Inter', fontSize: 14, color: Colors.white),
-        decoration: const InputDecoration(
+        style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.text),
+        decoration: InputDecoration(
           hintText: 'Rechercher un client (nom, téléphone…)',
-          hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.textSecondary),
-          prefixIcon: Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
+          hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.textSec),
+          prefixIcon: Icon(Icons.search_rounded, color: context.textSec, size: 20),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
@@ -194,12 +241,12 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
   Widget _buildSearchResults() {
     return Container(
       margin: const EdgeInsets.only(top: 4),
-      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.darkBorder)),
+      decoration: BoxDecoration(color: context.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.border)),
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _searchResults.length.clamp(0, 5),
-        separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.darkBorder),
+        separatorBuilder: (_, __) => Divider(height: 1, color: context.border),
         itemBuilder: (_, i) {
           final c = _searchResults[i];
           return ListTile(
@@ -208,9 +255,9 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
               backgroundColor: AppColors.teal.withOpacity(0.15),
               child: Text(c.initials, style: const TextStyle(color: AppColors.teal, fontWeight: FontWeight.bold, fontSize: 13)),
             ),
-            title: Text(c.fullName, style: const TextStyle(color: Colors.white, fontFamily: 'Inter', fontSize: 13)),
+            title: Text(c.fullName, style: TextStyle(color: context.text, fontFamily: 'Inter', fontSize: 13)),
             subtitle: c.telephone != null
-              ? Text(c.telephone!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)) : null,
+              ? Text(c.telephone!, style: TextStyle(color: context.textSec, fontSize: 11)) : null,
             onTap: () => _selectClient(c),
           );
         },
@@ -222,7 +269,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     final c = _selectedClient!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.teal.withOpacity(0.5))),
+      decoration: BoxDecoration(color: context.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.teal.withOpacity(0.5))),
       child: Row(
         children: [
           CircleAvatar(backgroundColor: AppColors.teal.withOpacity(0.15),
@@ -232,9 +279,9 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(c.fullName, style: const TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                Text(c.fullName, style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700, color: context.text)),
                 if (c.telephone != null)
-                  Text(c.telephone!, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                  Text(c.telephone!, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: context.textSec)),
               ],
             ),
           ),
@@ -251,21 +298,21 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
   Widget _buildAmountInput() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.darkBorder)),
+      decoration: context.cardBoxR(16),
       child: Column(
         children: [
-          const Text('Montant', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+          Text('Montant', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w500, color: context.textSec)),
           const SizedBox(height: 8),
           TextField(
             controller: _amountController,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
-            style: const TextStyle(fontFamily: 'Inter', fontSize: 52, fontWeight: FontWeight.w800, color: Colors.white),
+            style: TextStyle(fontFamily: 'Inter', fontSize: 52, fontWeight: FontWeight.w800, color: context.text),
             decoration: const InputDecoration(border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.zero),
           ),
           const SizedBox(height: 4),
-          const Text('FCFA', style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+          Text('FCFA', style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w500, color: context.textSec)),
         ],
       ),
     );
@@ -275,7 +322,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Canal de paiement", style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+        Text("Canal de paiement", style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: context.text)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -287,40 +334,16 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(
-                  color: sel ? AppColors.teal.withOpacity(0.14) : AppColors.darkSurface,
+                  color: sel ? AppColors.teal.withOpacity(0.14) : context.surface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: sel ? AppColors.teal : AppColors.darkBorder, width: sel ? 1.5 : 1),
+                  border: Border.all(color: sel ? AppColors.teal : context.border, width: sel ? 1.5 : 1),
                 ),
-                child: Text(canal, style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: sel ? FontWeight.w700 : FontWeight.w500, color: sel ? AppColors.teal : AppColors.textSecondary)),
+                child: Text(canal, style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: sel ? FontWeight.w700 : FontWeight.w500, color: sel ? AppColors.teal : context.textSec)),
               ),
             );
           }).toList(),
         ),
       ],
-    );
-  }
-
-  Widget _buildGpsRow() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.darkBorder)),
-      child: Row(
-        children: [
-          Icon(Icons.location_on_rounded, color: _gpsEnabled ? AppColors.teal : AppColors.textSecondary, size: 20),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Position GPS jointe', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                SizedBox(height: 2),
-                Text("Traçabilité terrain (Loi 2024/017)", style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          Switch(value: _gpsEnabled, onChanged: (v) => setState(() => _gpsEnabled = v), activeColor: AppColors.teal, activeTrackColor: AppColors.teal.withOpacity(0.3)),
-        ],
-      ),
     );
   }
 

@@ -10,6 +10,7 @@ class Client {
   final int? nombrePrets;
   final double? encoursTotal;
   final String? statut;
+  final String? agence;
 
   Client({
     required this.idClient,
@@ -23,22 +24,27 @@ class Client {
     this.nombrePrets,
     this.encoursTotal,
     this.statut,
+    this.agence,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
-    final rawId = json['id'] ?? json['idClient'];
+    final rawId = json['idClient'] ?? json['id'];
+    final rawNom = json['nomClient'] ?? json['nom'] ?? json['nom_complet'] ?? '';
+    final rawTel = json['telephoneClient'] ?? json['telephone'] ?? json['telephone_principal'];
+    final rawEncours = json['encours'] ?? json['encoursTotal'];
     return Client(
       idClient: rawId?.toString() ?? '',
-      nom: json['nom'] as String? ?? '',
+      nom: rawNom?.toString() ?? '',
       prenom: json['prenom'] as String?,
-      telephone: json['telephone'] as String?,
+      telephone: rawTel?.toString(),
       email: json['email'] as String?,
       adresse: json['adresse'] as String?,
       numeroCni: json['numeroCni'] as String?,
       dateNaissance: json['dateNaissance'] as String?,
       nombrePrets: json['nombrePrets'] as int?,
-      encoursTotal: _parseDouble(json['encoursTotal']),
+      encoursTotal: _parseDouble(rawEncours),
       statut: json['statut'] as String?,
+      agence: (json['agencePrincipale'] ?? json['agence']) as String?,
     );
   }
 
@@ -62,6 +68,7 @@ class Client {
         'nombrePrets': nombrePrets,
         'encoursTotal': encoursTotal,
         'statut': statut,
+        'agencePrincipale': agence,
       };
 
   String get fullName => prenom != null ? '$prenom $nom' : nom;

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'storage_service.dart';
+import '../config/app_config.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -12,7 +13,7 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  static const String baseUrl = 'http://84.247.128.40:9090';
+  static final String baseUrl = AppConfig.apiBaseUrl;
 
   late final Dio _dio;
   final StorageService _storage;

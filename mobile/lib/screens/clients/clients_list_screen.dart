@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/theme_helper.dart';
 import '../../core/models/client.dart';
 import '../../core/services/client_service.dart';
 import '../../widgets/app_bottom_nav.dart';
@@ -67,10 +68,10 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: context.bg,
       appBar: AppBar(
         title: const Text('Clients'),
-        backgroundColor: AppColors.darkBg,
+        backgroundColor: context.bg,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -78,16 +79,16 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.darkSurfaceRaised,
+                  color: context.surfaceUp,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${_clients.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary,
+                    color: context.textSec,
                   ),
                 ),
               ),
@@ -97,29 +98,27 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white, fontFamily: 'Inter'),
+              style: TextStyle(color: context.text, fontFamily: 'Inter'),
               decoration: InputDecoration(
                 hintText: 'Rechercher un client...',
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                prefixIcon: Icon(Icons.search_rounded, color: context.textSec),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         onPressed: () {
                           _searchController.clear();
                           _loadClients();
                         },
-                        icon: const Icon(Icons.clear, color: AppColors.textSecondary, size: 18),
+                        icon: Icon(Icons.clear, color: context.textSec, size: 18),
                       )
                     : null,
               ),
               onChanged: _onSearch,
             ),
           ),
-          // List
           Expanded(
             child: _loading
                 ? ListView.builder(
@@ -142,7 +141,7 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
                         : RefreshIndicator(
                             onRefresh: _loadClients,
                             color: AppColors.gold,
-                            backgroundColor: AppColors.darkSurface,
+                            backgroundColor: context.surface,
                             child: ListView.builder(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: _clients.length,
@@ -159,23 +158,18 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
 
   Widget _buildClientItem(Client client) {
     return GestureDetector(
-      onTap: () => context.go('/clients/${client.idClient}'),
+      onTap: () => context.go('/collectes/historique'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.darkSurface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.darkBorder),
-        ),
+        decoration: context.cardBoxR(14),
         child: Row(
           children: [
-            // Avatar
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
                   colors: [AppColors.navy, AppColors.teal],
                 ),
                 shape: BoxShape.circle,
@@ -199,39 +193,28 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
                 children: [
                   Text(
                     client.fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: context.text,
                     ),
                   ),
                   if (client.telephone != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       client.telephone!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                  if (client.nombrePrets != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      '${client.nombrePrets} prêt${client.nombrePrets! > 1 ? 's' : ''}',
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 11,
-                        color: AppColors.teal,
+                        color: context.textSec,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 18),
+            Icon(Icons.chevron_right, color: context.textMut, size: 18),
           ],
         ),
       ),

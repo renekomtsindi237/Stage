@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'core/constants/app_theme.dart';
@@ -9,35 +10,36 @@ import 'core/services/storage_service.dart';
 import 'core/services/api_service.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/kpi_service.dart';
-import 'core/services/pret_service.dart';
 import 'core/services/alerte_service.dart';
 import 'core/services/client_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/services/sse_service.dart';
-import 'core/services/delegation_service.dart';
-import 'core/services/recouvrement_service.dart';
+import 'core/services/agent_service.dart';
+import 'core/services/notification_service.dart';
 import 'core/providers/sync_provider.dart';
 import 'router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR', null);
 
-  // Orientation portrait uniquement
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Barre de status transparente
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
 
-  final storageService = StorageService();
-  final apiService    = ApiService(storageService);
-  final authService   = AuthService(apiService, storageService);
+  final storageService       = StorageService();
+  final apiService           = ApiService(storageService);
+  final authService          = AuthService(apiService, storageService);
+  final notificationService  = NotificationService();
+
+  await notificationService.initialize();
 
   runApp(
     MultiProvider(
@@ -45,14 +47,13 @@ void main() async {
         Provider<StorageService>.value(value: storageService),
         Provider<ApiService>.value(value: apiService),
         Provider<AuthService>.value(value: authService),
+        Provider<NotificationService>.value(value: notificationService),
         Provider<KpiService>(create: (_) => KpiService(apiService)),
-        Provider<PretService>(create: (_) => PretService(apiService)),
         Provider<AlerteService>(create: (_) => AlerteService(apiService)),
         Provider<ClientService>(create: (_) => ClientService(apiService)),
+        Provider<AgentService>(create: (_) => AgentService(apiService)),
         Provider<ConnectivityService>(create: (_) => ConnectivityService()),
         Provider<SyncService>(create: (_) => SyncService(apiService)),
-        Provider<DelegationService>(create: (_) => DelegationService(apiService)),
-        Provider<RecouvrementService>(create: (_) => RecouvrementService(apiService)),
         Provider<SseService>(create: (_) => SseService(storageService)),
         ChangeNotifierProvider(
           create: (ctx) => SyncProvider(
@@ -80,13 +81,9 @@ class MicroRecouvApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'MicroRecouv',
       debugShowCheckedModeBanner: false,
-
-      // Thème
       theme:     AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
-
-      // Router
       routerConfig: router,
     );
   }
