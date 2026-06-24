@@ -127,7 +127,7 @@ imf:
     api-key: ${GROQ_API_KEY:}
     base-url: https://api.groq.com/openai/v1
     model: llama-3.3-70b-versatile
-    max-tokens: 1024
+    max-tokens: 2048
 
 server:
   port: ${SERVER_PORT:8080}
