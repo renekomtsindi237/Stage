@@ -34,6 +34,7 @@
 
 @if (open()) {
   <div class="chat-panel">
+    <!-- Header -->
     <div class="chat-header">
       <div class="chat-header-info">
         <div class="chat-avatar-wrap">
@@ -55,14 +56,14 @@
         <div>
           <div class="chat-title">Assistant MicroRecouv</div>
           <div class="chat-status">
-            <span class="status-dot"></span>En ligne · IA Groq
+            <span class="status-dot"></span>En ligne · IA Groq / Llama 3.3
           </div>
         </div>
       </div>
       <button
         class="btn-icon-header"
         (click)="clear()"
-        title="Effacer la conversation"
+        title="Nouvelle conversation"
       >
         <svg
           width="14"
@@ -78,34 +79,73 @@
       </button>
     </div>
 
+    <!-- Messages -->
     <div class="chat-messages">
       @for (msg of messages(); track msg.ts) {
         <div class="msg-row" [class.user-row]="msg.role === 'user'">
           @if (msg.role === "assistant") {
-            <div class="msg-avatar">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="2" y="3" width="20" height="14" rx="2" />
-                <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
-                <circle cx="15.5" cy="10" r="1.5" fill="currentColor" />
-              </svg>
+            <div class="msg-avatar" [class.error-avatar]="msg.error">
+              @if (msg.error) {
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              } @else {
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+                  <circle cx="15.5" cy="10" r="1.5" fill="currentColor" />
+                </svg>
+              }
             </div>
           }
-          <div class="msg-bubble" [class.user-bubble]="msg.role === 'user'">
+          <div
+            class="msg-bubble"
+            [class.user-bubble]="msg.role === 'user'"
+            [class.error-bubble]="msg.error"
+          >
             <div
               class="msg-content"
               [innerHTML]="msg.content | chatMarkdown"
             ></div>
-            <div class="msg-time">{{ msg.ts | date: "HH:mm" }}</div>
+            <div class="msg-footer">
+              <span class="msg-time">{{ msg.ts | date: "HH:mm" }}</span>
+              @if (msg.error) {
+                <button class="retry-btn" (click)="retry()">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <polyline points="1 4 1 10 7 10" />
+                    <path d="M3.51 15a9 9 0 102.13-9.36L1 10" /></svg
+                  >Réessayer
+                </button>
+              }
+            </div>
           </div>
         </div>
       }
+
+      <!-- Typing indicator -->
       @if (loading()) {
         <div class="msg-row">
           <div class="msg-avatar">
@@ -130,26 +170,52 @@
       <div #messagesEnd></div>
     </div>
 
+    <!-- Suggestions -->
+    @if (showSuggestions() && messages().length <= 1 && !loading()) {
+      <div class="suggestions-wrap">
+        @for (s of suggestions; track s) {
+          <button class="suggestion-chip" (click)="useSuggestion(s)">
+            {{ s }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Input -->
     <div class="chat-input-area">
       <textarea
         class="chat-input"
-        placeholder="Posez votre question…"
+        placeholder="Posez votre question… (Entrée pour envoyer)"
         rows="1"
         [ngModel]="input()"
         (ngModelChange)="input.set($event)"
         (keydown)="onKeydown($event)"
         [disabled]="loading()"
-      >
-      </textarea>
+      ></textarea>
       <button
         class="chat-send"
         (click)="send()"
         [disabled]="!input().trim() || loading()"
-        title="Envoyer"
+        title="Envoyer (Entrée)"
       >
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
-        </svg>
+        @if (loading()) {
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            class="spin"
+          >
+            <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25" />
+            <path d="M21 12a9 9 0 00-9-9" />
+          </svg>
+        } @else {
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
+          </svg>
+        }
       </button>
     </div>
   </div>

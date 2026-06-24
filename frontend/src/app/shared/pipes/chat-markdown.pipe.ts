@@ -5,9 +5,10 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 export class ChatMarkdownPipe implements PipeTransform {
   constructor(private readonly san: DomSanitizer) {}
 
-  transform(value: string): SafeHtml {
-    if (!value) return "";
-    let html = value
+  transform(value: unknown): SafeHtml {
+    const str = typeof value === "string" ? value : String(value ?? "");
+    if (!str) return "";
+    let html = str
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")

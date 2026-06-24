@@ -34,11 +34,11 @@
         </div>
         @if (searchResults().length) {
           <div class="client-results">
-            @for (c of searchResults(); track c.id) {
+            @for (c of searchResults(); track c.idClient) {
               <div class="client-result" (click)="select(c)">
-                <p class="font-semibold">{{ c.nom }} {{ c.prenom }}</p>
+                <p class="font-semibold">{{ c.nomClient }}</p>
                 <p class="text-sm text-muted">
-                  {{ c.code }} · Solde: {{ c.encours | number: "1.0-0" }} FCFA
+                  {{ c.idClient }} · Solde: {{ c.encours | number: "1.0-0" }} FCFA
                 </p>
               </div>
             }
@@ -48,10 +48,10 @@
         <div class="client-selected">
           <div>
             <p class="font-semibold">
-              {{ selectedClient()!.nom }} {{ selectedClient()!.prenom }}
+              {{ selectedClient()!.nomClient }}
             </p>
             <p class="text-sm text-muted">
-              {{ selectedClient()!.code }} · Solde:
+              {{ selectedClient()!.idClient }} · Solde:
               {{ selectedClient()!.encours | number: "1.0-0" }} FCFA
             </p>
           </div>

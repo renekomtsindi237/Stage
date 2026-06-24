@@ -57,7 +57,7 @@ export class CaiEncaissementComponent {
     this.loading.set(true);
     this.api
       .post("/api/v1/caisse/encaissements", {
-        clientUid: this.selectedClient()!.id,
+        clientUid: this.selectedClient()!.idClient,
         montant: this.form.value.montant,
         typeOperation: this.form.value.typeOperation,
         canal: this.form.value.canal,

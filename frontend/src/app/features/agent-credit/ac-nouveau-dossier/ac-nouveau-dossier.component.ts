@@ -81,7 +81,7 @@ export class AcNouveauDossierComponent {
       return;
     this.loading.set(true);
     const payload = {
-      clientId: this.selectedClient()!.id,
+      clientId: this.selectedClient()!.idClient,
       montant: this.montantForm.value.montant,
       duree: this.montantForm.value.duree,
       objectif: this.montantForm.value.objectif,

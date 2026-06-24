@@ -78,6 +78,7 @@ export class SidebarComponent {
       { label: "Audit Trail", icon: "history_edu", route: "/dsi/audit" },
       { label: "Violations RGPD", icon: "security", route: "/dsi/rgpd" },
       { label: "Monitoring", icon: "monitor_heart", route: "/dsi/monitoring" },
+      { label: "Paramètres IMF", icon: "settings", route: "/dsi/settings" },
       {
         label: "Délégations",
         icon: "swap_horiz",

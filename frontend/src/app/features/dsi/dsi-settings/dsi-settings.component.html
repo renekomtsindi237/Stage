@@ -1,0 +1,201 @@
+<div class="page-content">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>Paramètres IMF</h2>
+      <p class="text-muted text-sm">
+        Configuration de votre institution — {{ imfName }} ({{ imfCode }})
+      </p>
+    </div>
+  </div>
+
+  <!-- Logo section -->
+  <div class="settings-card">
+    <div class="card-section-header">
+      <div class="section-icon">
+        <span class="material-icons-round">image</span>
+      </div>
+      <div>
+        <h3>Logo de l'institution</h3>
+        <p class="text-muted text-sm">
+          Stockage persistant sur <strong>Cloudflare R2</strong> · JPG, PNG,
+          WebP, GIF · max {{ MAX_SIZE_MB }} Mo
+        </p>
+      </div>
+    </div>
+
+    <div class="logo-layout">
+      <!-- Aperçu courant -->
+      <div class="logo-preview-col">
+        <div class="logo-preview-label">Logo actuel</div>
+        <div class="logo-preview-frame">
+          <img
+            [src]="previewUrl() ?? currentLogoUrl ?? 'assets/bank.png'"
+            [class.preview-pending]="previewUrl() && upload().phase !== 'done'"
+            alt="Logo IMF"
+          />
+          @if (previewUrl() && upload().phase === "idle") {
+            <button
+              class="preview-clear"
+              (click)="removeLogo()"
+              title="Annuler"
+            >
+              <span class="material-icons-round">close</span>
+            </button>
+          }
+        </div>
+        @if (currentLogoUrl && !currentLogoUrl.includes("bank.png")) {
+          <div class="logo-url-info">
+            <span
+              class="material-icons-round"
+              style="font-size: 13px; color: #6366f1"
+              >cloud_done</span
+            >
+            Cloudflare R2
+          </div>
+        }
+      </div>
+
+      <!-- Zone upload -->
+      <div class="upload-col">
+        <!-- Drop zone -->
+        <div
+          class="drop-zone"
+          [class.drag-over]="dragOver()"
+          [class.uploading]="
+            upload().phase === 'uploading' || upload().phase === 'reading'
+          "
+          [class.done]="upload().phase === 'done'"
+          [class.error]="upload().phase === 'error'"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="openPicker()"
+        >
+          <input
+            #fileInput
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+
+          @if (upload().phase === "idle" || upload().phase === "error") {
+            <div class="drop-zone-content">
+              <div class="drop-icon">
+                <span class="material-icons-round">cloud_upload</span>
+              </div>
+              <p class="drop-title">
+                Glissez votre logo ici ou
+                <span class="drop-link">cliquez pour choisir</span>
+              </p>
+              <p class="drop-hint">
+                JPG · PNG · WebP · GIF — max {{ MAX_SIZE_MB }} Mo
+              </p>
+              @if (upload().phase === "error") {
+                <p class="drop-error-msg">
+                  <span
+                    class="material-icons-round"
+                    style="font-size: 14px; vertical-align: middle"
+                    >error_outline</span
+                  >
+                  Upload échoué — réessayez
+                </p>
+              }
+            </div>
+          } @else if (
+            upload().phase === "reading" || upload().phase === "uploading"
+          ) {
+            <div class="drop-zone-content">
+              <div class="upload-progress-wrap">
+                <div
+                  class="upload-progress-circle"
+                  [style.--pct]="upload().progress + '%'"
+                >
+                  <svg viewBox="0 0 36 36" class="progress-ring">
+                    <circle class="ring-bg" cx="18" cy="18" r="15.9" />
+                    <circle
+                      class="ring-fill"
+                      cx="18"
+                      cy="18"
+                      r="15.9"
+                      [style.stroke-dashoffset]="100 - upload().progress"
+                    />
+                  </svg>
+                  <span class="progress-pct">{{ upload().progress }}%</span>
+                </div>
+              </div>
+              <p class="drop-title" style="margin-top: 12px">
+                {{
+                  upload().phase === "reading"
+                    ? "Lecture du fichier…"
+                    : "Upload vers Cloudflare R2…"
+                }}
+              </p>
+            </div>
+          } @else if (upload().phase === "done") {
+            <div class="drop-zone-content">
+              <div class="done-icon">
+                <span class="material-icons-round">check_circle</span>
+              </div>
+              <p class="drop-title" style="color: #059669">
+                Logo mis à jour avec succès !
+              </p>
+            </div>
+          }
+        </div>
+
+        <!-- Infos techniques -->
+        <div class="tech-info">
+          <div class="tech-row">
+            <span class="material-icons-round">storage</span>
+            <span>Stockage : <strong>Cloudflare R2</strong> (CDN global)</span>
+          </div>
+          <div class="tech-row">
+            <span class="material-icons-round">autorenew</span>
+            <span
+              >Le logo est visible sur toute la plateforme après upload</span
+            >
+          </div>
+          <div class="tech-row">
+            <span class="material-icons-round">aspect_ratio</span>
+            <span>Taille recommandée : 200 × 200 px minimum, ratio 1:1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Informations IMF (lecture seule) -->
+  <div class="settings-card" style="margin-top: 20px">
+    <div class="card-section-header">
+      <div class="section-icon">
+        <span class="material-icons-round">business</span>
+      </div>
+      <div>
+        <h3>Informations de l'institution</h3>
+        <p class="text-muted text-sm">
+          Ces informations sont gérées par votre administrateur plateforme
+        </p>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Nom de l'IMF</span>
+        <span class="info-value">{{ imfName }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Code IMF</span>
+        <span class="info-value">
+          <code>{{ imfCode }}</code>
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Votre rôle</span>
+        <span class="info-value">
+          <span class="role-badge">DSI</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

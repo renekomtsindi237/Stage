@@ -441,6 +441,13 @@ export const routes: Routes = [
               ),
           },
           {
+            path: "settings",
+            loadComponent: () =>
+              import("./features/dsi/dsi-settings/dsi-settings.component").then(
+                (m) => m.DsiSettingsComponent,
+              ),
+          },
+          {
             path: "delegations",
             loadComponent: () =>
               import("./features/delegations/delegations.component").then(

@@ -63,7 +63,7 @@ export class NouvelleCollecteComponent {
     this.loading.set(true);
     this.error.set("");
     const payload = {
-      clientId: this.selectedClient()!.id,
+      clientId: this.selectedClient()!.idClient,
       montant: this.form.value.montant!,
       typeOperation: this.form.value.typeOperation!,
       positionGps: this.gpsEnabled() ? { lat: 3.848, lng: 11.502 } : undefined,

@@ -237,14 +237,93 @@
   }
 }
 
+.msg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+  gap: 8px;
+}
+
 .msg-time {
   font-size: 10px;
   color: #94a3b8;
-  margin-top: 5px;
-  text-align: right;
 
   .user-bubble & {
     color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+.retry-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.error-bubble {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.error-avatar {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ── Suggestions ── */
+.suggestions-wrap {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.suggestion-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  font-family: inherit;
+  line-height: 1.4;
+
+  &:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+}
+
+/* ── Spin for loading send button ── */
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

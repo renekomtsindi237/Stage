@@ -4,14 +4,18 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { HttpClient } from "@angular/common/http";
 import { BaseChartDirective } from "ng2-charts";
 import { ChartConfiguration } from "chart.js";
 import { ApiService } from "../../../core/http/api.service";
+import { AuthService } from "../../../core/auth/auth.service";
 import { KpiPortefeuille } from "../../../core/models/kpi.model";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import { environment } from "../../../../environments/environment";
 
 @Component({
   selector: "app-dir-kpi",
@@ -22,10 +26,14 @@ import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
   styleUrls: ["./dir-kpi.component.scss"],
 })
 export class DirKpiComponent implements OnInit {
-  private readonly api = inject(ApiService);
+  private readonly api  = inject(ApiService);
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+  private readonly cdr  = inject(ChangeDetectorRef);
 
-  loading = signal(true);
-  data = signal<KpiPortefeuille | null>(null);
+  loading      = signal(true);
+  downloading  = signal(false);
+  data         = signal<KpiPortefeuille | null>(null);
 
   parChartData: ChartConfiguration<"line">["data"] = {
     labels: [],
@@ -50,6 +58,42 @@ export class DirKpiComponent implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  downloadCobac() {
+    if (this.downloading()) return;
+    this.downloading.set(true);
+    this.cdr.markForCheck();
+
+    const today = new Date();
+    const dateFin   = today.toISOString().slice(0, 10);
+    const dateDebut = `${today.getFullYear()}-01-01`;
+    const token = this.auth.getToken();
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
+    this.http
+      .get(
+        `${environment.apiUrl}/api/v1/reporting/cobac/pdf?dateDebut=${dateDebut}&dateFin=${dateFin}`,
+        { headers, responseType: "blob" },
+      )
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a   = document.createElement("a");
+          a.href     = url;
+          a.download = `rapport_cobac_${dateFin}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+          this.downloading.set(false);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.downloading.set(false);
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   private buildChart(d: KpiPortefeuille) {

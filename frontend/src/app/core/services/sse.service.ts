@@ -29,6 +29,9 @@ export class SseService implements OnDestroy {
     "KPI_UPDATED",
     "PIPELINE_STATUS",
     "SYNC_COMPLETED",
+    "MONITORING_UPDATE",
+    "TICKET_MISE_A_JOUR",
+    "SCORING_UPDATE",
   ];
 
   connect(): Observable<SseEvent> {

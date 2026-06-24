@@ -6,9 +6,6 @@
         {{ page()?.totalElements ?? 0 | number }} clients au total
       </p>
     </div>
-    <button class="btn btn-primary">
-      <span class="material-icons-round">person_add</span> Nouveau client
-    </button>
   </div>
 
   <div
@@ -19,7 +16,7 @@
     <input
       class="form-control"
       formControlName="search"
-      placeholder="Nom, code ou téléphone..."
+      placeholder="Nom ou téléphone..."
       style="flex: 1"
     />
     <select class="form-control" formControlName="statut" style="width: auto">
@@ -36,10 +33,9 @@
       <thead>
         <tr>
           <th>Client</th>
-          <th>Code</th>
+          <th>Identifiant</th>
           <th>Encours</th>
           <th>Statut</th>
-          <th>Agent</th>
           <th>Agence</th>
           <th>Actions</th>
         </tr>
@@ -48,7 +44,7 @@
         @if (loading()) {
           @for (_ of [1, 2, 3, 4, 5]; track $index) {
             <tr>
-              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+              @for (__ of [1, 2, 3, 4, 5, 6]; track $index) {
                 <td>
                   <div class="skeleton" style="height: 14px; width: 80%"></div>
                 </td>
@@ -56,13 +52,13 @@
             </tr>
           }
         } @else {
-          @for (c of page()?.content ?? []; track c.id) {
+          @for (c of page()?.content ?? []; track c.idClient) {
             <tr>
               <td>
-                <p class="font-semibold">{{ c.nom }} {{ c.prenom }}</p>
-                <p class="text-sm text-muted">{{ c.telephone }}</p>
+                <p class="font-semibold">{{ c.nomClient }}</p>
+                <p class="text-sm text-muted">{{ c.telephoneClient ?? '—' }}</p>
               </td>
-              <td class="text-muted">{{ c.code }}</td>
+              <td class="text-muted text-sm">{{ c.idClient }}</td>
               <td>{{ c.encours | fcfa }}</td>
               <td>
                 <span
@@ -75,11 +71,10 @@
                         : 'badge-critique'
                   "
                 >
-                  {{ c.statut }}
+                  {{ c.statut ?? 'ACTIF' }}
                 </span>
               </td>
-              <td class="text-sm">{{ c.agentNom }}</td>
-              <td class="text-sm text-muted">{{ c.agenceNom }}</td>
+              <td class="text-sm text-muted">{{ c.agencePrincipale ?? '—' }}</td>
               <td>
                 <button class="btn btn-ghost btn-sm">
                   <span class="material-icons-round">visibility</span>

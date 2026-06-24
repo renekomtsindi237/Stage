@@ -1,108 +1,410 @@
 <div class="page-content">
+  <!-- Header -->
   <div class="page-header">
     <div>
       <h2>Monitoring système</h2>
       <p class="text-muted text-sm">
-        Infrastructure globale — Grafana, Prometheus, services
+        Infrastructure MicroRecouv —
+        @if (sseConnected()) {
+          <span class="sse-badge sse-live">
+            <span class="live-dot"></span> Temps réel · maj
+            {{ lastUpdate() | date: "HH:mm:ss" }}
+          </span>
+        } @else {
+          <span class="sse-badge">Connexion SSE en attente…</span>
+        }
       </p>
     </div>
-    <button class="btn btn-ghost" (click)="loadHealth()">
-      <span class="material-icons-round">refresh</span> Actualiser
-    </button>
+    <div style="display: flex; gap: 8px; align-items: center">
+      <a class="btn btn-ghost btn-sm" [href]="grafanaUrl" target="_blank">
+        <span class="material-icons-round">bar_chart</span> Grafana
+      </a>
+      <a class="btn btn-ghost btn-sm" [href]="prometheusUrl" target="_blank">
+        <span class="material-icons-round">data_thresholding</span> Prometheus
+      </a>
+      <button class="btn btn-primary btn-sm" (click)="loadAll()">
+        <span class="material-icons-round">refresh</span> Actualiser
+      </button>
+    </div>
   </div>
 
-  <!-- Quick links -->
-  <div class="tool-grid">
-    <a class="tool-card" [href]="grafanaUrl" target="_blank" rel="noopener">
-      <div class="tool-icon" style="background: #f46800">
-        <span class="material-icons-round">bar_chart</span>
-      </div>
-      <div>
-        <h4>Grafana</h4>
-        <p>Dashboards métriques temps réel</p>
-        <small class="text-muted">:3000</small>
-      </div>
-      <span class="material-icons-round open-icon">open_in_new</span>
-    </a>
-
-    <a class="tool-card" [href]="prometheusUrl" target="_blank" rel="noopener">
-      <div class="tool-icon" style="background: #e6522c">
-        <span class="material-icons-round">data_thresholding</span>
-      </div>
-      <div>
-        <h4>Prometheus</h4>
-        <p>Collecte et requêtes de métriques</p>
-        <small class="text-muted">:9100</small>
-      </div>
-      <span class="material-icons-round open-icon">open_in_new</span>
-    </a>
-
-    <a class="tool-card" href="/actuator" target="_blank" rel="noopener">
-      <div class="tool-icon" style="background: #6366f1">
-        <span class="material-icons-round">health_and_safety</span>
-      </div>
-      <div>
-        <h4>Spring Actuator</h4>
-        <p>Santé et métriques JVM</p>
-        <small class="text-muted">/actuator</small>
-      </div>
-      <span class="material-icons-round open-icon">open_in_new</span>
-    </a>
-  </div>
-
-  <!-- Service health -->
-  <div class="card" style="margin-top: 24px">
-    <h3 style="margin-bottom: 16px">État des services</h3>
-
+  <!-- KPI cards -->
+  <div class="kpi-grid">
     @if (loading()) {
-      @for (_ of [1, 2, 3]; track $index) {
-        <div class="health-row">
-          <div class="skeleton" style="height: 16px; width: 120px"></div>
+      @for (_ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+        <div class="kpi-card skeleton-card">
           <div
             class="skeleton"
-            style="height: 22px; width: 60px; border-radius: 12px"
+            style="height: 12px; width: 60%; margin-bottom: 8px"
           ></div>
+          <div class="skeleton" style="height: 28px; width: 40%"></div>
         </div>
       }
-    } @else {
-      @for (svc of services(); track svc.name) {
-        <div class="health-row">
-          <div class="svc-name">
-            <span
-              class="dot"
-              [class.dot-up]="svc.status === 'UP'"
-              [class.dot-down]="svc.status === 'DOWN'"
-              [class.dot-warn]="svc.status === 'DEGRADED'"
-            ></span>
-            {{ svc.name }}
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px">
-            @if (svc.responseTimeMs) {
-              <span class="text-sm text-muted">{{ svc.responseTimeMs }}ms</span>
-            }
-            <span class="badge" [ngClass]="statusClass(svc.status)">{{
-              svc.status
-            }}</span>
+    } @else if (overview()) {
+      <div class="kpi-card">
+        <span class="kpi-icon" style="background: #dbeafe; color: #2563eb">
+          <span class="material-icons-round">business</span>
+        </span>
+        <div>
+          <div class="kpi-label">IMF actives</div>
+          <div class="kpi-value">{{ overview()!.nbImfs }}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon" style="background: #d1fae5; color: #059669">
+          <span class="material-icons-round">dns</span>
+        </span>
+        <div>
+          <div class="kpi-label">Containers</div>
+          <div class="kpi-value">
+            {{ overview()!.containersActifs
+            }}<span class="kpi-sub">/{{ overview()!.containersTotal }}</span>
           </div>
         </div>
-      }
+      </div>
+      <div class="kpi-card" [class.kpi-alert]="overview()!.cpuVps > 80">
+        <span class="kpi-icon" style="background: #ede9fe; color: #7c3aed">
+          <span class="material-icons-round">memory</span>
+        </span>
+        <div>
+          <div class="kpi-label">CPU VPS</div>
+          <div class="kpi-value">
+            {{ overview()!.cpuVps }}<span class="kpi-sub">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card" [class.kpi-alert]="overview()!.disqueUtilise > 85">
+        <span class="kpi-icon" style="background: #fef3c7; color: #d97706">
+          <span class="material-icons-round">storage</span>
+        </span>
+        <div>
+          <div class="kpi-label">Disque</div>
+          <div class="kpi-value">
+            {{ overview()!.disqueUtilise }}<span class="kpi-sub">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card" [class.kpi-alert]="overview()!.dagsEchoues > 0">
+        <span class="kpi-icon" style="background: #fce7f3; color: #be185d">
+          <span class="material-icons-round">account_tree</span>
+        </span>
+        <div>
+          <div class="kpi-label">DAGs échoués</div>
+          <div class="kpi-value">{{ overview()!.dagsEchoues }}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon" style="background: #e0f2fe; color: #0369a1">
+          <span class="material-icons-round">people</span>
+        </span>
+        <div>
+          <div class="kpi-label">Utilisateurs</div>
+          <div class="kpi-value">{{ overview()!.utilisateursConnectes }}</div>
+        </div>
+      </div>
+      <div
+        class="kpi-card"
+        [class.kpi-alert]="overview()!.alertesCritiques > 0"
+      >
+        <span class="kpi-icon" style="background: #fee2e2; color: #dc2626">
+          <span class="material-icons-round">warning_amber</span>
+        </span>
+        <div>
+          <div class="kpi-label">Alertes critiques</div>
+          <div class="kpi-value">{{ overview()!.alertesCritiques }}</div>
+        </div>
+      </div>
+      <div
+        class="kpi-card"
+        [class.kpi-alert]="(overview()!.ticketsOuverts ?? 0) > 0"
+      >
+        <span class="kpi-icon" style="background: #fef9c3; color: #ca8a04">
+          <span class="material-icons-round">confirmation_number</span>
+        </span>
+        <div>
+          <div class="kpi-label">Tickets ouverts</div>
+          <div class="kpi-value">{{ overview()!.ticketsOuverts ?? "—" }}</div>
+        </div>
+      </div>
     }
   </div>
 
-  <div class="card" style="margin-top: 24px">
-    <h3 style="margin-bottom: 12px">Aperçu Grafana</h3>
-    <p class="text-sm text-muted" style="margin-bottom: 12px">
-      Pour afficher les dashboards ici, assurez-vous que Grafana tourne sur le
-      port 3000 avec le paramètre <code>allow_embedding = true</code>.
-    </p>
-    <a
-      class="btn btn-primary"
-      [href]="grafanaUrl + '/dashboards'"
-      target="_blank"
-      rel="noopener"
-    >
-      <span class="material-icons-round">open_in_new</span>
-      Ouvrir Grafana
-    </a>
+  <!-- Services + VPS -->
+  <div class="split-row">
+    <!-- Couches applicatives -->
+    <div class="card services-card">
+      <h3 class="card-title">
+        <span class="material-icons-round">layers</span>
+        État des couches
+      </h3>
+      @if (loading()) {
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <div class="health-row">
+            <div class="skeleton" style="height: 14px; width: 100px"></div>
+            <div
+              class="skeleton"
+              style="height: 20px; width: 50px; border-radius: 10px"
+            ></div>
+          </div>
+        }
+      } @else if (overview()) {
+        @for (c of overview()!.couches; track c.nom) {
+          <div class="health-row">
+            <div class="svc-name">
+              <span class="dot" [ngClass]="coucheClass(c.statut)"></span>
+              {{ c.nom }}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px">
+              @if (c.latenceMs !== "N/A") {
+                <span class="text-sm text-muted">{{ c.latenceMs }} ms</span>
+              }
+              <span
+                class="badge"
+                [class.badge-success]="c.statut === 'OK'"
+                [class.badge-danger]="c.statut !== 'OK'"
+              >
+                {{ c.statut }}
+              </span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- VPS Métriques -->
+    <div class="card vps-card">
+      <h3 class="card-title">
+        <span class="material-icons-round">computer</span>
+        VPS {{ vps()?.hostname ?? "…" }}
+      </h3>
+      @if (vps()) {
+        <div class="vps-meta">
+          <span>{{ vps()!.os }}</span>
+          <span>· IP {{ vps()!.ipPublique }}</span>
+          <span>· Uptime {{ vps()!.uptime }}</span>
+        </div>
+        <div class="metric-bar-list">
+          <div class="metric-bar-item">
+            <div class="metric-bar-label">
+              <span>CPU</span>
+              <strong>{{ vps()!.cpu }}%</strong>
+            </div>
+            <div class="metric-bar-track">
+              <div
+                class="metric-bar-fill"
+                [style.width.%]="vps()!.cpu"
+                [style.background]="cpuColor(vps()!.cpu)"
+              ></div>
+            </div>
+          </div>
+          <div class="metric-bar-item">
+            <div class="metric-bar-label">
+              <span>RAM</span>
+              <strong>{{ vps()!.ram }} / {{ vps()!.ramTotal }} Mo</strong>
+            </div>
+            <div class="metric-bar-track">
+              <div
+                class="metric-bar-fill"
+                [style.width.%]="(vps()!.ram / vps()!.ramTotal) * 100"
+                [style.background]="
+                  cpuColor((vps()!.ram / vps()!.ramTotal) * 100)
+                "
+              ></div>
+            </div>
+          </div>
+          <div class="metric-bar-item">
+            <div class="metric-bar-label">
+              <span>Disque</span>
+              <strong>{{ vps()!.disk }} / {{ vps()!.diskTotal }} Go</strong>
+            </div>
+            <div class="metric-bar-track">
+              <div
+                class="metric-bar-fill"
+                [style.width.%]="(vps()!.disk / vps()!.diskTotal) * 100"
+                [style.background]="
+                  cpuColor((vps()!.disk / vps()!.diskTotal) * 100)
+                "
+              ></div>
+            </div>
+          </div>
+          <div class="metric-bar-item load-avg">
+            <span class="text-sm text-muted">Load avg :</span>
+            @for (v of vps()!.loadAvg; track $index) {
+              <span class="load-chip">{{ v }}</span>
+            }
+          </div>
+        </div>
+      } @else if (!loading()) {
+        <p class="text-muted text-sm">Métriques VPS indisponibles</p>
+      }
+    </div>
   </div>
+
+  <!-- Docker containers -->
+  <div class="card" style="margin-top: 20px">
+    <h3 class="card-title">
+      <span class="material-icons-round">view_in_ar</span>
+      Containers Docker
+      <span class="badge badge-info" style="margin-left: 8px">{{
+        containers().length
+      }}</span>
+    </h3>
+    @if (loading()) {
+      <div class="skeleton" style="height: 120px; margin-top: 8px"></div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Image</th>
+              <th>Statut</th>
+              <th>Uptime</th>
+              <th>CPU%</th>
+              <th>RAM (Mo)</th>
+              <th>Ports</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of containers(); track c.id) {
+              <tr>
+                <td class="font-semibold">{{ c.nom }}</td>
+                <td class="text-sm text-muted">{{ c.image }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [ngClass]="containerStatutClass(c.statut)"
+                    >{{ c.statut }}</span
+                  >
+                </td>
+                <td class="text-sm text-muted">{{ c.uptime }}</td>
+                <td>
+                  <div class="inline-bar">
+                    <div
+                      class="inline-bar-fill"
+                      [style.width.%]="c.cpuPct"
+                      [style.background]="cpuColor(c.cpuPct)"
+                    ></div>
+                    <span>{{ c.cpuPct | number: "1.1-1" }}%</span>
+                  </div>
+                </td>
+                <td class="text-sm">{{ c.ramMo }}</td>
+                <td class="text-sm text-muted">{{ c.ports || "—" }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td
+                  colspan="7"
+                  class="text-center text-muted"
+                  style="padding: 24px"
+                >
+                  Aucun container détecté
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Airflow DAGs -->
+  <div class="card" style="margin-top: 20px">
+    <h3 class="card-title">
+      <span class="material-icons-round">account_tree</span>
+      DAGs Airflow
+    </h3>
+    @if (loading()) {
+      <div class="skeleton" style="height: 100px; margin-top: 8px"></div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>DAG</th>
+              <th>Statut</th>
+              <th>Planification</th>
+              <th>Dernière exécution</th>
+              <th>Durée (s)</th>
+              <th>Tentatives</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of dags(); track d.dagId) {
+              <tr>
+                <td>
+                  <div class="dag-name">{{ d.nom }}</div>
+                  <div class="text-sm text-muted">{{ d.dagId }}</div>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="statutDagClass(d.statut)">{{
+                    d.statut
+                  }}</span>
+                </td>
+                <td class="text-sm text-muted">{{ d.schedule }}</td>
+                <td class="text-sm text-muted">
+                  {{ d.dernierExecution | date: "dd/MM/yy HH:mm" }}
+                </td>
+                <td class="text-sm">{{ d.dureeSecondes }}</td>
+                <td class="text-sm">{{ d.tentative }}</td>
+                <td>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    [disabled]="triggeringDag() === d.dagId"
+                    (click)="triggerDag(d.dagId)"
+                    title="Déclencher manuellement"
+                  >
+                    @if (triggeringDag() === d.dagId) {
+                      <span
+                        class="css-spinner-sm"
+                        style="
+                          border-color: rgba(0, 0, 0, 0.2);
+                          border-top-color: #6366f1;
+                        "
+                      ></span>
+                    } @else {
+                      <span class="material-icons-round">play_circle</span>
+                    }
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td
+                  colspan="7"
+                  class="text-center text-muted"
+                  style="padding: 24px"
+                >
+                  Aucun DAG trouvé
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Logs récents -->
+  @if (logs().length > 0) {
+    <div class="card" style="margin-top: 20px">
+      <h3 class="card-title">
+        <span class="material-icons-round">article</span>
+        Logs récents
+      </h3>
+      <div class="log-list">
+        @for (l of logs(); track l.id) {
+          <div class="log-entry" [ngClass]="logNiveauClass(l.niveau)">
+            <span class="log-level">{{ l.niveau }}</span>
+            <span class="log-source">{{ l.source }}</span>
+            <span class="log-msg">{{ l.message }}</span>
+            <span class="log-time text-muted">{{
+              l.timestamp | date: "HH:mm:ss"
+            }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
 </div>

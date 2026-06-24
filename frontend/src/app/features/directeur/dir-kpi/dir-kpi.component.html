@@ -6,8 +6,15 @@
       Bilan de tous les employés en phase de remboursement
     </p>
   </div>
-  <button class="btn btn-outline">
-    <span class="material-icons-round">description</span> Rapport COBAC
+  <button
+    class="btn btn-outline"
+    (click)="downloadCobac()"
+    [disabled]="downloading()"
+  >
+    <span class="material-icons-round">
+      {{ downloading() ? "hourglass_empty" : "description" }}
+    </span>
+    {{ downloading() ? "Génération..." : "Rapport COBAC" }}
   </button>
 </div>
 

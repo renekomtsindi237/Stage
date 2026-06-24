@@ -1,21 +1,10 @@
 export interface Client {
-  id: string;
-  code: string;
-  nom: string;
-  prenom: string;
-  telephone: string;
-  agence: string;
-  agenceNom?: string;
-  agentNom?: string;
-  encours: number;
-  scoreMcrs?: number;
-  statut:
-    | "ACTIF"
-    | "EN_DIFFICULTE"
-    | "CONTENTIEUX"
-    | "EN_RETARD"
-    | "DEFAILLANT";
-  dernierePaiement?: string;
+  idClient: string;
+  nomClient: string;
+  telephoneClient?: string;
+  agencePrincipale?: string;
+  encours?: number;
+  statut?: "ACTIF" | "EN_RETARD" | "DEFAILLANT";
 }
 
 export interface Collecte {
