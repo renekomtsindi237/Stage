@@ -3,15 +3,13 @@
     <!-- ── Header card ── -->
     <div class="profile-card profile-card--header">
       <div class="profile-avatar-wrap">
-        @if (auth.avatarDataUrl()) {
-          <div class="profile-avatar profile-avatar--img">
-            <img [src]="auth.avatarDataUrl()!" alt="avatar" />
-          </div>
-        } @else {
-          <div class="profile-avatar profile-avatar--initials">
-            {{ auth.initials() }}
-          </div>
-        }
+        <div class="profile-avatar profile-avatar--img">
+          <img
+            [src]="avatarSrc"
+            alt="avatar"
+            (error)="$any($event.target).src = 'assets/profile.png'"
+          />
+        </div>
         <button
           class="profile-avatar-edit"
           (click)="triggerUpload()"
@@ -57,7 +55,7 @@
           <span class="material-icons-round">upload</span>
           {{ uploading() ? "Chargement..." : "Choisir une photo" }}
         </button>
-        @if (auth.avatarDataUrl()) {
+        @if (auth.avatarUrl()) {
           <button class="btn btn-danger-outline" (click)="removeAvatar()">
             <span class="material-icons-round">delete</span>
             Supprimer la photo

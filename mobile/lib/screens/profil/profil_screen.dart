@@ -1,13 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
+import '../../core/models/user.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../core/services/api_service.dart';
 
-class ProfilScreen extends StatelessWidget {
+class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
+
+  @override
+  State<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends State<ProfilScreen> {
+  bool _uploading = false;
+
+  Future<void> _pickAndUpload() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (image == null || !mounted) return;
+
+    setState(() => _uploading = true);
+    try {
+      final apiService = context.read<ApiService>();
+      final authProvider = context.read<AuthProvider>();
+
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(image.path, filename: image.name),
+      });
+
+      final user = await apiService.postMultipart<User>(
+        path: '/api/v1/users/me/avatar',
+        formData: formData,
+        fromJson: (data) => User.fromJson(data as Map<String, dynamic>),
+      );
+
+      authProvider.updateAvatarUrl(user.avatarUrl);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo de profil mise à jour'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur upload : ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  Future<void> _removeAvatar() async {
+    setState(() => _uploading = true);
+    try {
+      final apiService = context.read<ApiService>();
+      final authProvider = context.read<AuthProvider>();
+
+      await apiService.deleteAuthenticated<User>(
+        path: '/api/v1/users/me/avatar',
+        fromJson: (data) => User.fromJson(data as Map<String, dynamic>),
+      );
+
+      authProvider.updateAvatarUrl(null);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo supprimée'),
+            backgroundColor: AppColors.teal,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur : ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,26 +179,41 @@ class ProfilScreen extends StatelessWidget {
   }
 
   Widget _avatarCard(BuildContext context, String initials, String name, user) {
+    final avatarUrl = user?.avatarUrl;
+    final bool hasNetworkAvatar = avatarUrl != null &&
+        avatarUrl.isNotEmpty &&
+        !avatarUrl.startsWith('/api/v1/public/default-avatar');
+
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: context.cardBox,
       child: Column(
         children: [
-          Container(
-            width: 82,
-            height: 82,
-            decoration: const BoxDecoration(color: AppColors.navy, shape: BoxShape.circle),
-            child: Center(
-              child: Text(
-                initials.isNotEmpty ? initials : 'U',
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              _buildAvatarCircle(context, avatarUrl, initials),
+              GestureDetector(
+                onTap: _uploading ? null : _pickAndUpload,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: AppColors.teal,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: context.bg, width: 2),
+                  ),
+                  child: _uploading
+                      ? const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.camera_alt_rounded,
+                          color: Colors.white, size: 16),
                 ),
               ),
-            ),
+            ],
           ),
           const SizedBox(height: 16),
           Text(
@@ -150,7 +258,87 @@ class ProfilScreen extends StatelessWidget {
               ),
             ),
           ),
+          if (hasNetworkAvatar) ...[
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _uploading ? null : _removeAvatar,
+              icon: const Icon(Icons.delete_outline_rounded,
+                  size: 16, color: AppColors.error),
+              label: const Text(
+                'Supprimer la photo',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  color: AppColors.error,
+                ),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarCircle(
+      BuildContext context, String? avatarUrl, String initials) {
+    const size = 82.0;
+
+    // URL réseau — afficher avec Image.network
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      final fullUrl = avatarUrl.startsWith('http')
+          ? avatarUrl
+          : '${ApiService.baseUrl}$avatarUrl';
+      return ClipOval(
+        child: Image.network(
+          fullUrl,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _defaultAvatar(size, initials),
+          loadingBuilder: (ctx, child, progress) {
+            if (progress == null) return child;
+            return Container(
+              width: size,
+              height: size,
+              decoration: const BoxDecoration(
+                  color: AppColors.navy, shape: BoxShape.circle),
+              child: const Center(
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.gold)),
+            );
+          },
+        ),
+      );
+    }
+
+    // Pas d'avatar — asset par défaut
+    return ClipOval(
+      child: Image.asset(
+        'assets/images/profile.png',
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _defaultAvatar(size, initials),
+      ),
+    );
+  }
+
+  Widget _defaultAvatar(double size, String initials) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+          color: AppColors.navy, shape: BoxShape.circle),
+      child: Center(
+        child: Text(
+          initials.isNotEmpty ? initials : 'U',
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -210,7 +398,8 @@ class ProfilScreen extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: ctx.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text(
               'Déconnexion',
               style: TextStyle(

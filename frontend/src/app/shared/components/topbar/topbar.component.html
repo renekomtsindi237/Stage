@@ -63,13 +63,13 @@
 
     <!-- User menu -->
     <div class="topbar__user" (click)="toggleMenu()">
-      @if (auth.avatarDataUrl()) {
-        <div class="topbar__avatar topbar__avatar--img">
-          <img [src]="auth.avatarDataUrl()!" alt="avatar" />
-        </div>
-      } @else {
-        <div class="topbar__avatar">{{ auth.initials() }}</div>
-      }
+      <div class="topbar__avatar topbar__avatar--img">
+        <img
+          [src]="avatarSrc"
+          alt="avatar"
+          (error)="$any($event.target).src = 'assets/profile.png'"
+        />
+      </div>
       <div class="topbar__user-info">
         <span class="topbar__user-name">{{ auth.fullName() }}</span>
         <span class="topbar__user-role">{{ roleLabel }}</span>

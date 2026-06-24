@@ -9,6 +9,7 @@ import cm.imf.pipeline.exception.BusinessException;
 import cm.imf.pipeline.exception.ResourceNotFoundException;
 import cm.imf.pipeline.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,24 +29,31 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
 
     private static final Set<String> ALLOWED_TYPES =
             Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
-    private static final String AVATAR_SUB = "avatars";
+    private static final String AVATAR_PREFIX = "avatars/";
 
     private final UserRepository        userRepository;
     private final INotificationService  notificationService;
     private final PasswordEncoder       passwordEncoder;
     private final OnlineTrackingService onlineTracking;
+    private final R2StorageService      r2;
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
 
     @Value("${app.upload.max-size-mb:2}")
     private int maxSizeMb;
+
+    @Value("${imf.r2.public-url-base:}")
+    private String r2PublicUrlBase;
+
+    // ── Lecture ──────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public Page<UserResponse> listUsers(int page, int size) {
@@ -68,17 +76,11 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", username));
     }
 
-    /**
-     * Enregistre ou met à jour le token FCM d'un utilisateur connecté.
-     */
     @Transactional
     public void updateFcmToken(User user, String token) {
         userRepository.updateFcmToken(user.getId(), token);
     }
 
-    /**
-     * Désactive un compte utilisateur.
-     */
     @Transactional
     public UserResponse deactivate(Long id) {
         User user = userRepository.findById(id)
@@ -87,19 +89,14 @@ public class UserService implements IUserService {
         return UserResponse.from(userRepository.save(user));
     }
 
-    /**
-     * Récupère les utilisateurs d'une zone par rôle (pour ciblage FCM).
-     */
     @Transactional(readOnly = true)
     public List<UserResponse> listByZoneAndRole(String zoneId, Role role) {
         return userRepository.findByZoneIdAndRoleIn(zoneId, List.of(role))
                 .stream().map(UserResponse::from).toList();
     }
 
-    /**
-     * Changement de mot de passe self-service.
-     * Vérifie le mot de passe actuel avant d'appliquer le nouveau.
-     */
+    // ── Mot de passe ─────────────────────────────────────────────────────────
+
     @Transactional
     public void changePassword(User user, ChangePasswordRequest request) {
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
@@ -112,10 +109,8 @@ public class UserService implements IUserService {
         userRepository.save(managed);
     }
 
-    /**
-     * Mise à jour partielle des préférences utilisateur.
-     * Seuls les champs non-null sont appliqués (patch sémantique).
-     */
+    // ── Préférences ──────────────────────────────────────────────────────────
+
     @Transactional
     public UserResponse updatePreferences(User user, UpdatePreferencesRequest req) {
         User managed = userRepository.findById(user.getId())
@@ -130,6 +125,8 @@ public class UserService implements IUserService {
         if (req.elementsParPage()      != null) managed.setElementsParPage(req.elementsParPage());
         return UserResponse.from(userRepository.save(managed));
     }
+
+    // ── Avatar ───────────────────────────────────────────────────────────────
 
     @Transactional
     public UserResponse uploadAvatar(User user, MultipartFile file) {
@@ -153,23 +150,47 @@ public class UserService implements IUserService {
             case "image/webp" -> ".webp";
             default            -> ".gif";
         };
-        String filename = UUID.randomUUID() + ext;
 
+        byte[] bytes;
         try {
-            Path dir = Paths.get(uploadDir, AVATAR_SUB);
-            Files.createDirectories(dir);
-            Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            bytes = file.getBytes();
         } catch (IOException e) {
-            throw new BusinessException("Erreur lors de la sauvegarde du fichier", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new BusinessException("Impossible de lire le fichier", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String avatarUrl;
+
+        if (r2.isAvailable()) {
+            // ── Chemin R2 : avatars/{userId}/{uuid}.ext ───────────────────────
+            String key = AVATAR_PREFIX + user.getId() + "/" + UUID.randomUUID() + ext;
+            try {
+                r2.upload(key, bytes, contentType);
+            } catch (RuntimeException e) {
+                throw new BusinessException("Erreur upload Cloudflare R2 : " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            String pub = r2.publicUrl(key);
+            avatarUrl = (pub != null) ? pub : "/api/v1/public/avatar/" + key;
+            log.info("Avatar uploadé vers R2 : user={} key={}", user.getId(), key);
+        } else {
+            // ── Fallback local ────────────────────────────────────────────────
+            String filename = UUID.randomUUID() + ext;
+            try {
+                Path dir = Paths.get(uploadDir, "avatars");
+                Files.createDirectories(dir);
+                Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new BusinessException("Erreur lors de la sauvegarde du fichier",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            avatarUrl = "/api/uploads/avatars/" + filename;
+            log.info("Avatar enregistré localement : user={} file={}", user.getId(), filename);
         }
 
         User managed = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", user.getId()));
-
-        // Supprimer l'ancien fichier si c'est un upload local
         deleteOldAvatar(managed.getAvatarUrl());
-
-        managed.setAvatarUrl("/api/uploads/" + AVATAR_SUB + "/" + filename);
+        managed.setAvatarUrl(avatarUrl);
         return UserResponse.from(userRepository.save(managed));
     }
 
@@ -186,7 +207,6 @@ public class UserService implements IUserService {
     public UserResponse uploadAvatarForUser(Long targetId, MultipartFile file) {
         User target = userRepository.findById(targetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", targetId));
-        // Réutiliser la logique existante en passant l'entité managed
         return uploadAvatar(target, file);
     }
 
@@ -197,6 +217,8 @@ public class UserService implements IUserService {
         return removeAvatar(target);
     }
 
+    // ── Métriques en ligne ───────────────────────────────────────────────────
+
     public long countOnline() {
         return onlineTracking.countOnline();
     }
@@ -205,11 +227,31 @@ public class UserService implements IUserService {
         return onlineTracking.countOnlineByImf(imfId);
     }
 
+    // ── Helpers privés ────────────────────────────────────────────────────────
+
+    /**
+     * Supprime l'ancien avatar (R2 ou local) avant remplacement.
+     * Silencieux si l'URL ne correspond à aucun stockage géré ou est la valeur par défaut.
+     */
     private void deleteOldAvatar(String avatarUrl) {
-        if (avatarUrl == null || !avatarUrl.startsWith("/api/uploads/")) return;
-        String relative = avatarUrl.substring("/api/uploads/".length());
-        try {
-            Files.deleteIfExists(Paths.get(uploadDir, relative));
-        } catch (IOException ignored) {}
+        if (avatarUrl == null || avatarUrl.equals(UserResponse.DEFAULT_AVATAR_URL)) return;
+
+        // R2 : si l'URL commence par la base publique configurée
+        if (r2.isAvailable() && r2PublicUrlBase != null && !r2PublicUrlBase.isBlank()
+                && avatarUrl.startsWith(r2PublicUrlBase.stripTrailing())) {
+            String key = avatarUrl.substring(r2PublicUrlBase.stripTrailing().length() + 1);
+            if (key.startsWith(AVATAR_PREFIX)) {
+                r2.delete(key);
+                return;
+            }
+        }
+
+        // Local : URL de type /api/uploads/avatars/...
+        if (avatarUrl.startsWith("/api/uploads/avatars/")) {
+            String filename = avatarUrl.substring("/api/uploads/avatars/".length());
+            try {
+                Files.deleteIfExists(Paths.get(uploadDir, "avatars", filename));
+            } catch (IOException ignored) {}
+        }
     }
 }

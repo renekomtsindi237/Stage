@@ -32,6 +32,8 @@ export class ProfileComponent {
   uploadingImfLogo = signal(false);
   logoutConfirm = signal(false);
 
+  readonly apiBase = environment.apiUrl;
+
   get user() {
     return this.auth.currentUser();
   }
@@ -56,6 +58,14 @@ export class ProfileComponent {
       SUPPORT: "Support",
     };
     return map[this.user?.role ?? ""] ?? this.user?.role ?? "";
+  }
+
+  /** URL complète de l'avatar : priorité à l'URL backend, sinon asset local. */
+  get avatarSrc(): string {
+    const url = this.user?.avatarUrl;
+    if (!url) return "assets/profile.png";
+    if (url.startsWith("http")) return url;
+    return `${this.apiBase}${url}`;
   }
 
   triggerUpload() {
@@ -83,30 +93,30 @@ export class ProfileComponent {
     }
 
     this.uploading.set(true);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      this.auth.updateAvatar(dataUrl);
-      this.uploading.set(false);
-      this.toast.showSuccess(
-        "Photo mise à jour",
-        "Votre photo de profil est visible sur toute la plateforme.",
-      );
-    };
-    reader.onerror = () => {
-      this.uploading.set(false);
-      this.toast.showError("Erreur", "Impossible de lire le fichier.");
-    };
-    reader.readAsDataURL(file);
-    input.value = "";
+    this.auth.uploadAvatar(file).subscribe({
+      next: () => {
+        this.uploading.set(false);
+        this.toast.showSuccess(
+          "Photo mise à jour",
+          "Votre photo de profil est visible sur toute la plateforme.",
+        );
+        input.value = "";
+      },
+      error: () => {
+        this.uploading.set(false);
+        this.toast.showError("Erreur", "Impossible de téléverser la photo. Réessayez.");
+        input.value = "";
+      },
+    });
   }
 
   removeAvatar() {
-    this.auth.updateAvatar(null);
-    this.toast.showSuccess(
-      "Photo supprimée",
-      "Votre avatar a été réinitialisé.",
-    );
+    this.auth.removeAvatar().subscribe({
+      next: () =>
+        this.toast.showSuccess("Photo supprimée", "Votre avatar a été réinitialisé."),
+      error: () =>
+        this.toast.showError("Erreur", "Impossible de supprimer la photo."),
+    });
   }
 
   triggerImfLogoUpload() {

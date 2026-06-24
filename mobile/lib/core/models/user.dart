@@ -6,6 +6,7 @@ class User {
   final String? prenom;
   final String role;
   final bool? actif;
+  final String? avatarUrl;
 
   User({
     this.id,
@@ -15,6 +16,7 @@ class User {
     this.prenom,
     required this.role,
     this.actif,
+    this.avatarUrl,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -26,8 +28,20 @@ class User {
       prenom: json['prenom'] as String?,
       role: json['role'] as String? ?? '',
       actif: json['actif'] as bool?,
+      avatarUrl: json['avatarUrl'] as String?,
     );
   }
+
+  User copyWith({String? avatarUrl}) => User(
+        id: id,
+        username: username,
+        email: email,
+        nom: nom,
+        prenom: prenom,
+        role: role,
+        actif: actif,
+        avatarUrl: avatarUrl ?? this.avatarUrl,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -37,6 +51,7 @@ class User {
         'prenom': prenom,
         'role': role,
         'actif': actif,
+        'avatarUrl': avatarUrl,
       };
 
   String get fullName {

@@ -237,6 +237,41 @@ class ApiService {
     }
   }
 
+  Future<String?> getToken() => _storage.getAccessToken();
+
+  /// Upload multipart (FormData) — utilisé pour les photos de profil.
+  Future<T> postMultipart<T>({
+    required String path,
+    required FormData formData,
+    required T Function(dynamic) fromJson,
+  }) async {
+    final token = await _storage.getAccessToken();
+    final response = await _dio.post<Map<String, dynamic>>(
+      path,
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+        headers: {if (token != null) 'Authorization': 'Bearer $token'},
+      ),
+    );
+    final body = response.data;
+    if (body == null) throw ApiException('Réponse vide');
+    final data = body['data'];
+    return fromJson(data);
+  }
+
+  /// DELETE avec gestion token — utilisé pour supprimer l'avatar.
+  Future<T> deleteAuthenticated<T>({
+    required String path,
+    required T Function(dynamic) fromJson,
+  }) async {
+    final response = await _dio.delete<Map<String, dynamic>>(path);
+    final body = response.data;
+    if (body == null) throw ApiException('Réponse vide');
+    final data = body['data'];
+    return fromJson(data);
+  }
+
   String get sseUrl => '$baseUrl/api/v1/sse/stream';
 
   String get sseAlerteUrl => '$baseUrl/api/v1/sse/alertes';

@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { tap, catchError, throwError } from "rxjs";
+import { Observable, tap, catchError, throwError, map } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { User, AuthResponse, Role } from "../models/user.model";
 
@@ -17,8 +17,8 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
   readonly fullName = computed(() => this.currentUser()?.username ?? "");
-  readonly avatarDataUrl = computed(
-    () => this.currentUser()?.avatarDataUrl ?? null,
+  readonly avatarUrl = computed(
+    () => this.currentUser()?.avatarUrl ?? null,
   );
   readonly imfLogoUrl = computed(() => this.currentUser()?.imfLogoUrl ?? null);
   readonly initials = computed(() => {
@@ -69,12 +69,49 @@ export class AuthService {
     this.router.navigate(["/"]);
   }
 
-  updateAvatar(dataUrl: string | null) {
+  /**
+   * Upload la photo de profil vers le backend (R2 ou local).
+   * Met à jour le signal currentUser avec l'URL retournée.
+   */
+  uploadAvatar(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = this.getToken();
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http
+      .post<{ data: { avatarUrl: string } }>(
+        `${environment.apiUrl}/api/v1/users/me/avatar`,
+        formData,
+        { headers },
+      )
+      .pipe(
+        map((res) => res.data.avatarUrl),
+        tap((url) => this._patchAvatarUrl(url)),
+      );
+  }
+
+  /**
+   * Supprime la photo de profil (retour à l'image par défaut).
+   */
+  removeAvatar(): Observable<void> {
+    const token = this.getToken();
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http
+      .delete<void>(`${environment.apiUrl}/api/v1/users/me/avatar`, { headers })
+      .pipe(tap(() => this._patchAvatarUrl(null)));
+  }
+
+  private _patchAvatarUrl(url: string | null) {
     const user = this.currentUser();
     if (!user) return;
-    const updated: User = { ...user, avatarDataUrl: dataUrl };
+    const updated: User = { ...user, avatarUrl: url };
     localStorage.setItem(USER_KEY, JSON.stringify(updated));
     this.currentUser.set(updated);
+  }
+
+  /** @deprecated utiliser uploadAvatar() */
+  updateAvatar(url: string | null) {
+    this._patchAvatarUrl(url);
   }
 
   updateImfLogoUrl(url: string | null) {

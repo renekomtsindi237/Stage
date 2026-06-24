@@ -6,6 +6,7 @@ import cm.imf.pipeline.service.R2StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,6 +75,27 @@ public class PublicController {
         headers.setContentLength(data.length);
 
         return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    /**
+     * Sert l'image de profil par défaut (profile.png embarqué dans le jar).
+     * Retournée quand un utilisateur n'a pas encore défini son avatar.
+     * Cache-Control : 7 jours — l'image ne change qu'avec un déploiement.
+     */
+    @GetMapping("/default-avatar")
+    public ResponseEntity<byte[]> getDefaultAvatar() {
+        try {
+            ClassPathResource res = new ClassPathResource("static/profile.png");
+            byte[] data = res.getInputStream().readAllBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            headers.setCacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePublic());
+            headers.setContentLength(data.length);
+            return new ResponseEntity<>(data, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("profile.png manquant dans le classpath static/");
+            return ResponseEntity.notFound().build();
+        }
     }
 
     private MediaType detectMediaType(String key) {

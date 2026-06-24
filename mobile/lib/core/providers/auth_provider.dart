@@ -158,6 +158,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Met à jour l'URL de l'avatar dans le provider après un upload réussi.
+  void updateAvatarUrl(String? url) {
+    if (_currentUser == null) return;
+    _currentUser = _currentUser!.copyWith(avatarUrl: url);
+    notifyListeners();
+  }
+
   void clearError() {
     _errorMessage = null;
     if (_status == AuthStatus.error) {

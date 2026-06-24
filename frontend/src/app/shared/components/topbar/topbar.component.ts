@@ -14,6 +14,7 @@ import { NotificationPanelComponent } from "../notification-panel/notification-p
 import { ToastService } from "../../../core/services/toast.service";
 import { ApiService } from "../../../core/http/api.service";
 import { Observable } from "rxjs";
+import { environment } from "../../../../environments/environment";
 
 @Component({
   selector: "app-topbar",
@@ -40,6 +41,13 @@ export class TopbarComponent implements OnInit {
   showNotifPanel = signal(false);
   showSupportModal = signal(false);
   sendingTicket = signal(false);
+
+  get avatarSrc(): string {
+    const url = this.auth.avatarUrl();
+    if (!url) return "assets/profile.png";
+    if (url.startsWith("http")) return url;
+    return `${environment.apiUrl}${url}`;
+  }
 
   unreadCount$!: Observable<number>;
 

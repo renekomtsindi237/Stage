@@ -34,6 +34,9 @@ public record UserResponse(
         boolean notifPipeline,
         int elementsParPage
 ) {
+    /** URL publique de l'avatar par défaut — servi par le backend pour tous les profils. */
+    public static final String DEFAULT_AVATAR_URL = "/api/v1/public/default-avatar";
+
     public static UserResponse from(User u) {
         return new UserResponse(
                 u.getUid() != null ? u.getUid().toString() : null,
@@ -41,7 +44,7 @@ public record UserResponse(
                 u.getRole(),
                 u.getZoneId(),
                 u.getEmail(),
-                u.getAvatarUrl(),
+                u.getAvatarUrl() != null ? u.getAvatarUrl() : DEFAULT_AVATAR_URL,
                 u.getImf() != null && u.getImf().getUid() != null ? u.getImf().getUid().toString() : null,
                 u.getImf() != null ? u.getImf().getCode() : null,
                 u.getImf() != null ? u.getImf().getNom()  : null,
