@@ -20,4 +20,6 @@ public interface AgenceRepository extends JpaRepository<Agence, Long> {
     Optional<Agence> findByImfIdAndNomIgnoreCase(Long imfId, String nom);
 
     boolean existsByImfIdAndNomIgnoreCase(Long imfId, String nom);
+
+    Optional<Agence> findFirstByNomContainingIgnoreCase(String nom);
 }

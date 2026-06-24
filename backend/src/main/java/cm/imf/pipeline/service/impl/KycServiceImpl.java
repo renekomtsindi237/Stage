@@ -6,6 +6,7 @@ import cm.imf.pipeline.entity.*;
 import cm.imf.pipeline.enums.*;
 import cm.imf.pipeline.repository.*;
 import cm.imf.pipeline.service.IKycService;
+import cm.imf.pipeline.service.R2StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ public class KycServiceImpl implements IKycService {
     private final KycDossierRepository      dossierRepo;
     private final KycDocumentRepository     documentRepo;
     private final KycVerificationRepository verificationRepo;
+    private final R2StorageService          r2;
 
     // ── Initier un dossier KYC ────────────────────────────────────────────────
 
@@ -159,15 +162,41 @@ public class KycServiceImpl implements IKycService {
                             maxOctets / 1_048_576, dossier.getImf().getCode()));
         }
 
+        // Décoder le base64 → bytes pour upload R2
+        byte[] fileBytes = Base64.getDecoder().decode(req.contenuBase64());
+        String mimeType = req.mimeType() != null ? req.mimeType() : "application/octet-stream";
+
         KycDocument doc = KycDocument.builder()
                 .dossier(dossier)
                 .typeDocument(req.typeDocument())
                 .nomFichier(req.nomFichier())
-                .contenuBase64(req.contenuBase64())
-                .mimeType(req.mimeType())
-                .tailleOctets(req.tailleOctets())
+                .mimeType(mimeType)
+                .tailleOctets(req.tailleOctets() != null ? req.tailleOctets() : (long) fileBytes.length)
                 .dateExpirationDoc(req.dateExpirationDoc())
                 .build();
+
+        // Sauvegarde initiale pour obtenir l'UID du document
+        doc = documentRepo.save(doc);
+
+        if (r2.isAvailable()) {
+            // Upload vers R2 : kyc-docs/{imfCode}/{dossierUid}/{docUid}-{nomFichier}
+            String ext       = extensionDe(req.nomFichier(), mimeType);
+            String imfCode   = dossier.getImf().getCode();
+            String r2Key     = String.format("kyc-docs/%s/%s/%s%s",
+                    imfCode, dossierUid, doc.getUid(), ext);
+            try {
+                r2.upload(r2Key, fileBytes, mimeType);
+                doc.setCheminStockage(r2Key);
+                doc.setContenuBase64(null);
+                log.info("KYC document {} uploadé sur R2 : {}", doc.getUid(), r2Key);
+            } catch (Exception e) {
+                log.warn("R2 indisponible pour doc KYC {} — fallback base64 : {}", doc.getUid(), e.getMessage());
+                doc.setContenuBase64(req.contenuBase64());
+            }
+        } else {
+            // Fallback PostgreSQL base64 si R2 non configuré
+            doc.setContenuBase64(req.contenuBase64());
+        }
 
         doc = documentRepo.save(doc);
 
@@ -177,8 +206,43 @@ public class KycServiceImpl implements IKycService {
             dossierRepo.save(dossier);
         }
 
-        log.info("Document {} soumis pour le dossier KYC {}", req.typeDocument(), dossierUid);
+        log.info("Document {} soumis pour le dossier KYC {} (r2={})",
+                req.typeDocument(), dossierUid, r2.isAvailable());
         return KycDocumentResponse.from(doc);
+    }
+
+    // ── Télécharger le contenu d'un document ─────────────────────────────────
+
+    @Override
+    public DocumentContenu telechargerContenu(UUID documentUid) {
+        KycDocument doc = documentRepo.findByUid(documentUid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Document KYC introuvable : " + documentUid));
+
+        byte[] data = null;
+
+        if (doc.getCheminStockage() != null && !doc.getCheminStockage().isBlank()) {
+            data = r2.download(doc.getCheminStockage());
+            if (data == null) {
+                log.warn("Document KYC {} introuvable sur R2 (clé: {})", documentUid, doc.getCheminStockage());
+            }
+        }
+
+        if (data == null && doc.getContenuBase64() != null && !doc.getContenuBase64().isBlank()) {
+            try {
+                data = Base64.getDecoder().decode(doc.getContenuBase64());
+            } catch (Exception e) {
+                log.warn("Contenu base64 invalide pour document KYC {}", documentUid);
+            }
+        }
+
+        if (data == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Contenu du document indisponible.");
+        }
+
+        String mime = doc.getMimeType() != null ? doc.getMimeType() : "application/octet-stream";
+        return new DocumentContenu(data, mime, doc.getNomFichier());
     }
 
     // ── Lister les documents d'un dossier ─────────────────────────────────────
@@ -292,5 +356,18 @@ public class KycServiceImpl implements IKycService {
         if (user.getImf() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accès refusé : SUPER_ADMIN ne peut pas gérer les KYC.");
         }
+    }
+
+    private static String extensionDe(String nomFichier, String mimeType) {
+        if (nomFichier != null && nomFichier.contains(".")) {
+            return nomFichier.substring(nomFichier.lastIndexOf('.'));
+        }
+        return switch (mimeType) {
+            case "application/pdf"  -> ".pdf";
+            case "image/jpeg"       -> ".jpg";
+            case "image/png"        -> ".png";
+            case "image/webp"       -> ".webp";
+            default                 -> "";
+        };
     }
 }

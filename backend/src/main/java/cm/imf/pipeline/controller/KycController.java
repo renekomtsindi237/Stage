@@ -11,12 +11,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -132,6 +136,18 @@ public class KycController {
             @Valid @RequestBody ValiderDocumentKycRequest request,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(ApiResponse.ok("Document traité.", kycService.validerDocument(documentUid, request, user)));
+    }
+
+    @Operation(summary = "Télécharger / prévisualiser le contenu d'un document KYC (R2 ou base64 fallback)")
+    @GetMapping("/documents/{documentUid}/download")
+    public ResponseEntity<byte[]> downloadDocument(@PathVariable UUID documentUid) {
+        IKycService.DocumentContenu contenu = kycService.telechargerContenu(documentUid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(contenu.mimeType()));
+        headers.setContentDisposition(ContentDisposition.inline()
+                .filename(contenu.nomFichier(), StandardCharsets.UTF_8)
+                .build());
+        return ResponseEntity.ok().headers(headers).body(contenu.data());
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────

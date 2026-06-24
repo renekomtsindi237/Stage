@@ -4,6 +4,8 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
+  ViewChild,
+  ElementRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
@@ -18,6 +20,14 @@ interface ClientPage {
   totalElements: number;
   totalPages: number;
   number: number;
+}
+
+interface ImportResult {
+  totalLignes: number;
+  importe: number;
+  miseAJour: number;
+  erreurs: number;
+  lignesErreur: string[];
 }
 
 @Component({
@@ -38,9 +48,13 @@ export class DirClientsComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly fb = inject(FormBuilder);
 
+  @ViewChild("fileInput") fileInputRef!: ElementRef<HTMLInputElement>;
+
   loading = signal(true);
   page = signal<ClientPage | null>(null);
   currentPage = signal(0);
+  importing = signal(false);
+  importResult = signal<ImportResult | null>(null);
 
   filterForm = this.fb.group({ search: [""], statut: [""], agence: [""] });
 
@@ -71,5 +85,31 @@ export class DirClientsComponent implements OnInit {
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
+  }
+
+  templateUrl(): string {
+    return this.api.downloadUrl("/api/v1/import/template/clients");
+  }
+
+  triggerImport() {
+    this.fileInputRef.nativeElement.value = "";
+    this.fileInputRef.nativeElement.click();
+  }
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.importing.set(true);
+    this.importResult.set(null);
+    const fd = new FormData();
+    fd.append("fichier", file);
+    this.api.postFile<ImportResult>("/api/v1/import/clients", fd).subscribe({
+      next: (r) => {
+        this.importResult.set(r);
+        this.importing.set(false);
+        this.load();
+      },
+      error: () => this.importing.set(false),
+    });
   }
 }

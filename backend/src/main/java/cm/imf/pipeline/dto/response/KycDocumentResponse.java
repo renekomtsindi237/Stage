@@ -18,11 +18,16 @@ public record KycDocumentResponse(
         String motifRejet,
         String verifiePar,
         OffsetDateTime dateVerification,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        /** URL relative pour télécharger/prévisualiser le document — null si indisponible */
+        String documentUrl
 ) {
     public static KycDocumentResponse from(KycDocument d) {
+        String uid = d.getUid() != null ? d.getUid().toString() : null;
+        boolean hasContenu = (d.getCheminStockage() != null && !d.getCheminStockage().isBlank())
+                          || (d.getContenuBase64()  != null && !d.getContenuBase64().isBlank());
         return new KycDocumentResponse(
-                d.getUid() != null ? d.getUid().toString() : null,
+                uid,
                 d.getDossier() != null && d.getDossier().getUid() != null
                         ? d.getDossier().getUid().toString() : null,
                 d.getTypeDocument(),
@@ -34,7 +39,8 @@ public record KycDocumentResponse(
                 d.getMotifRejet(),
                 d.getVerifiePar() != null ? d.getVerifiePar().getUsername() : null,
                 d.getDateVerification(),
-                d.getCreatedAt()
+                d.getCreatedAt(),
+                (uid != null && hasContenu) ? "/api/v1/kyc/documents/" + uid + "/download" : null
         );
     }
 }

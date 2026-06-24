@@ -100,6 +100,8 @@ export interface KycDocument {
   verifiePar?: string;
   dateVerification?: string;
   createdAt?: string;
+  /** URL relative vers /api/v1/kyc/documents/{uid}/download — null si pas de contenu */
+  documentUrl?: string | null;
 }
 
 // Legacy alias (backward compat)

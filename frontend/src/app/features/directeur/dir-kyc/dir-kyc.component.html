@@ -386,6 +386,17 @@
                   }
                 </div>
                 <div class="doc-actions">
+                  @if (downloadUrl(doc); as url) {
+                    <a
+                      [href]="url"
+                      target="_blank"
+                      rel="noopener"
+                      class="btn btn-xs btn-ghost"
+                      title="Ouvrir le document"
+                    >
+                      {{ isPreviewable(doc) ? "👁 Voir" : "⬇ Télécharger" }}
+                    </a>
+                  }
                   @if (doc.valide === true) {
                     <span class="badge badge-green">✓ Valide</span>
                   } @else if (doc.valide === false) {

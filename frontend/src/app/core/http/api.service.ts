@@ -56,4 +56,14 @@ export class ApiService {
       .patch<unknown>(`${this.baseUrl}${path}`, body)
       .pipe(map((res) => this.unwrap<T>(res)));
   }
+
+  postFile<T>(path: string, formData: FormData): Observable<T> {
+    return this.http
+      .post<unknown>(`${this.baseUrl}${path}`, formData)
+      .pipe(map((res) => this.unwrap<T>(res)));
+  }
+
+  downloadUrl(path: string): string {
+    return `${this.baseUrl}${path}`;
+  }
 }

@@ -18,6 +18,7 @@ import {
   NiveauKyc,
   ResultatVerif,
 } from "../../../core/models/client.model";
+import { environment } from "../../../../environments/environment";
 
 // ── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -439,6 +440,15 @@ export class DirKycComponent implements OnInit {
   niveauOptions(demande: NiveauKyc): NiveauKyc[] {
     const max = NIVEAU_ORDER[demande];
     return this.niveaux.filter((n) => NIVEAU_ORDER[n] <= max);
+  }
+
+  downloadUrl(doc: KycDocument): string | null {
+    return doc.documentUrl ? `${environment.apiUrl}${doc.documentUrl}` : null;
+  }
+
+  isPreviewable(doc: KycDocument): boolean {
+    const mime = doc.mimeType ?? "";
+    return mime.startsWith("image/") || mime === "application/pdf";
   }
 
   prevPage() {

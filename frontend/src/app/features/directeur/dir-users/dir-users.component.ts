@@ -4,6 +4,8 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
+  ViewChild,
+  ElementRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
@@ -23,6 +25,13 @@ interface UserPage {
   totalPages: number;
   number: number;
 }
+interface ImportResult {
+  totalLignes: number;
+  importe: number;
+  miseAJour: number;
+  erreurs: number;
+  lignesErreur: string[];
+}
 
 @Component({
   selector: "app-dir-users",
@@ -37,11 +46,17 @@ export class DirUsersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly toast = inject(ToastService);
 
+  @ViewChild("fileAgents") fileAgentsRef!: ElementRef<HTMLInputElement>;
+  @ViewChild("fileUsers") fileUsersRef!: ElementRef<HTMLInputElement>;
+
   loading = signal(true);
   page = signal<UserPage | null>(null);
   currentPage = signal(0);
   showModal = signal(false);
   creating = signal(false);
+
+  importingType = signal<"agents" | "utilisateurs" | null>(null);
+  importResult = signal<ImportResult | null>(null);
 
   createForm = this.fb.group({
     prenom: ["", Validators.required],
@@ -120,5 +135,41 @@ export class DirUsersComponent implements OnInit {
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
+  }
+
+  templateAgentsUrl(): string {
+    return this.api.downloadUrl("/api/v1/import/template/agents");
+  }
+
+  templateUsersUrl(): string {
+    return this.api.downloadUrl("/api/v1/import/template/utilisateurs");
+  }
+
+  triggerImport(type: "agents" | "utilisateurs") {
+    this.importResult.set(null);
+    if (type === "agents") {
+      this.fileAgentsRef.nativeElement.value = "";
+      this.fileAgentsRef.nativeElement.click();
+    } else {
+      this.fileUsersRef.nativeElement.value = "";
+      this.fileUsersRef.nativeElement.click();
+    }
+  }
+
+  onFileSelected(event: Event, type: "agents" | "utilisateurs") {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.importingType.set(type);
+    this.importResult.set(null);
+    const fd = new FormData();
+    fd.append("fichier", file);
+    this.api.postFile<ImportResult>(`/api/v1/import/${type}`, fd).subscribe({
+      next: (r) => {
+        this.importResult.set(r);
+        this.importingType.set(null);
+        this.load();
+      },
+      error: () => this.importingType.set(null),
+    });
   }
 }

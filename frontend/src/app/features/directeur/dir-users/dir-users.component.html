@@ -1,4 +1,19 @@
 <div class="page-content">
+  <input
+    #fileAgents
+    type="file"
+    accept=".xlsx,.xls"
+    style="display: none"
+    (change)="onFileSelected($event, 'agents')"
+  />
+  <input
+    #fileUsers
+    type="file"
+    accept=".xlsx,.xls"
+    style="display: none"
+    (change)="onFileSelected($event, 'utilisateurs')"
+  />
+
   <div class="page-header">
     <div>
       <h2>Équipe de l'agence</h2>
@@ -6,10 +21,73 @@
         {{ page()?.totalElements ?? 0 | number }} membres
       </p>
     </div>
-    <button class="btn btn-primary" (click)="showModal.set(true)">
-      <span class="material-icons-round">person_add</span> Ajouter un membre
-    </button>
+    <div class="header-actions">
+      <a [href]="templateAgentsUrl()" download class="btn btn-ghost btn-sm">
+        <span class="material-icons-round" style="font-size: 16px"
+          >download</span
+        >
+        Modèle agents
+      </a>
+      <button
+        class="btn btn-secondary btn-sm"
+        (click)="triggerImport('agents')"
+        [disabled]="importingType() !== null"
+      >
+        @if (importingType() === "agents") {
+          <span class="spinner-xs"></span> Import…
+        } @else {
+          <span class="material-icons-round" style="font-size: 16px"
+            >upload_file</span
+          >
+          Agents Excel
+        }
+      </button>
+      <a [href]="templateUsersUrl()" download class="btn btn-ghost btn-sm">
+        <span class="material-icons-round" style="font-size: 16px"
+          >download</span
+        >
+        Modèle utilisateurs
+      </a>
+      <button
+        class="btn btn-secondary btn-sm"
+        (click)="triggerImport('utilisateurs')"
+        [disabled]="importingType() !== null"
+      >
+        @if (importingType() === "utilisateurs") {
+          <span class="spinner-xs"></span> Import…
+        } @else {
+          <span class="material-icons-round" style="font-size: 16px"
+            >upload_file</span
+          >
+          Utilisateurs Excel
+        }
+      </button>
+      <button class="btn btn-primary" (click)="showModal.set(true)">
+        <span class="material-icons-round">person_add</span> Ajouter
+      </button>
+    </div>
   </div>
+
+  @if (importResult()) {
+    <div
+      class="import-banner"
+      [class.import-banner--error]="importResult()!.erreurs > 0"
+    >
+      <strong>Import terminé</strong> — {{ importResult()!.importe }} créé(s),
+      {{ importResult()!.erreurs }} erreur(s) sur
+      {{ importResult()!.totalLignes }} ligne(s).
+      @if (importResult()!.lignesErreur.length > 0) {
+        <ul class="import-errors">
+          @for (e of importResult()!.lignesErreur; track $index) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      }
+      <button class="btn btn-ghost btn-xs" (click)="importResult.set(null)">
+        ✕
+      </button>
+    </div>
+  }
 
   <div class="card">
     <table class="data-table">

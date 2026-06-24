@@ -23,6 +23,9 @@ public interface IKycService {
     List<KycDocumentResponse> getDocuments(UUID dossierUid);
     KycDocumentResponse validerDocument(UUID documentUid, ValiderDocumentKycRequest req, User currentUser);
 
+    record DocumentContenu(byte[] data, String mimeType, String nomFichier) {}
+    DocumentContenu telechargerContenu(UUID documentUid);
+
     // ── Vérification ─────────────────────────────────────────────────────────
     KycDossierResponse verifier(UUID dossierUid, VerifierKycRequest req, User currentUser);
     List<KycVerificationResponse> getHistoriqueVerifications(UUID dossierUid);

@@ -1,4 +1,12 @@
 <div class="page-content">
+  <input
+    #fileInput
+    type="file"
+    accept=".xlsx,.xls"
+    style="display: none"
+    (change)="onFileSelected($event)"
+  />
+
   <div class="page-header">
     <div>
       <h2>Gestion Clients</h2>
@@ -6,7 +14,51 @@
         {{ page()?.totalElements ?? 0 | number }} clients au total
       </p>
     </div>
+    <div class="header-actions">
+      <a [href]="templateUrl()" download class="btn btn-ghost btn-sm">
+        <span class="material-icons-round" style="font-size: 16px"
+          >download</span
+        >
+        Modèle Excel
+      </a>
+      <button
+        class="btn btn-secondary btn-sm"
+        (click)="triggerImport()"
+        [disabled]="importing()"
+      >
+        @if (importing()) {
+          <span class="spinner-xs"></span> Import…
+        } @else {
+          <span class="material-icons-round" style="font-size: 16px"
+            >upload_file</span
+          >
+          Importer Excel
+        }
+      </button>
+    </div>
   </div>
+
+  @if (importResult()) {
+    <div
+      class="import-banner"
+      [class.import-banner--error]="importResult()!.erreurs > 0"
+    >
+      <strong>Import terminé</strong> — {{ importResult()!.importe }} ajouté(s),
+      {{ importResult()!.miseAJour }} mis à jour,
+      {{ importResult()!.erreurs }} erreur(s) sur
+      {{ importResult()!.totalLignes }} ligne(s).
+      @if (importResult()!.lignesErreur.length > 0) {
+        <ul class="import-errors">
+          @for (e of importResult()!.lignesErreur; track $index) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      }
+      <button class="btn btn-ghost btn-xs" (click)="importResult.set(null)">
+        ✕
+      </button>
+    </div>
+  }
 
   <div
     class="card filter-bar"
