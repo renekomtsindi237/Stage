@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+// R2StorageService injected via @RequiredArgsConstructor
+
 /**
  * Service d'administration IMF — réservé DSI.
  * Toutes les opérations sont strictement isolées par imf_id du DSI connecté.
@@ -64,11 +66,12 @@ public class AdminService implements IAdminService {
     private final ImfRepository    imfRepository;
     private final IUserService     userService;
     private final PasswordEncoder  passwordEncoder;
+    private final R2StorageService r2;
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
 
-    @Value("${app.upload.max-size-mb:2}")
+    @Value("${app.upload.max-size-mb:5}")
     private int maxSizeMb;
 
     // ── IMF du DSI ────────────────────────────────────────────────────────────
@@ -285,28 +288,53 @@ public class AdminService implements IAdminService {
     @Transactional
     public ImfResponse uploadImfLogo(MultipartFile file) {
         validateImageFile(file);
-        String ext = extFor(file.getContentType());
+        String ext      = extFor(file.getContentType());
         String filename = UUID.randomUUID() + ext;
+        Imf    imf      = requireCurrentImf();
+        String logoUrl;
+        String r2Key    = null;
 
-        try {
-            Path dir = Paths.get(uploadDir, LOGO_SUB);
-            Files.createDirectories(dir);
-            Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new BusinessException("Erreur lors de la sauvegarde du logo", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        Imf imf = requireCurrentImf();
-        // Supprimer l'ancien logo
-        if (imf.getLogoUrl() != null && imf.getLogoUrl().startsWith("/api/uploads/")) {
+        if (r2.isAvailable()) {
+            // ── Stockage Cloudflare R2 ──────────────────────────────────────
+            r2Key = LOGO_SUB + "/" + imf.getCode() + "-" + filename;
             try {
-                Files.deleteIfExists(Paths.get(uploadDir, imf.getLogoUrl().substring("/api/uploads/".length())));
-            } catch (IOException ignored) {}
+                r2.upload(r2Key, file.getBytes(), file.getContentType());
+            } catch (IOException e) {
+                throw new BusinessException("Lecture du fichier impossible", HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (RuntimeException e) {
+                throw new BusinessException("Erreur Cloudflare R2 : " + e.getMessage(), HttpStatus.BAD_GATEWAY);
+            }
+            // Supprimer l'ancien objet R2 si existant
+            if (imf.getLogoR2Key() != null) {
+                r2.delete(imf.getLogoR2Key());
+            }
+            // URL publique directe si bucket public, sinon proxy backend
+            String directUrl = r2.publicUrl(r2Key);
+            logoUrl = directUrl != null ? directUrl : "/api/v1/public/imf/" + imf.getCode() + "/logo";
+            imf.setLogoR2Key(r2Key);
+            log.info("Logo IMF {} uploadé sur R2 (clé: {})", imf.getCode(), r2Key);
+        } else {
+            // ── Fallback : stockage local ───────────────────────────────────
+            try {
+                Path dir = Paths.get(uploadDir, LOGO_SUB);
+                Files.createDirectories(dir);
+                Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new BusinessException("Erreur lors de la sauvegarde du logo", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            // Supprimer l'ancien logo local
+            if (imf.getLogoUrl() != null && imf.getLogoUrl().startsWith("/api/uploads/")) {
+                try {
+                    Files.deleteIfExists(Paths.get(uploadDir, imf.getLogoUrl().substring("/api/uploads/".length())));
+                } catch (IOException ignored) {}
+            }
+            logoUrl = "/api/uploads/" + LOGO_SUB + "/" + filename;
+            log.info("Logo IMF {} sauvegardé localement (R2 non disponible)", imf.getCode());
         }
-        imf.setLogoUrl("/api/uploads/" + LOGO_SUB + "/" + filename);
+
+        imf.setLogoUrl(logoUrl);
         Imf saved = imfRepository.save(imf);
         boolean hasDsi = userRepository.existsByImfIdAndRole(saved.getId(), Role.DSI);
-        log.info("Logo IMF {} mis à jour", saved.getCode());
         return ImfResponse.of(saved, hasDsi);
     }
 

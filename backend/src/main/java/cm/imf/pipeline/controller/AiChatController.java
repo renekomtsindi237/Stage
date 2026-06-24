@@ -46,11 +46,18 @@ public class AiChatController {
 
     private static final String BASE_SYSTEM =
         "Tu es l'assistant IA de MicroRecouv, une plateforme de microfinance camerounaise conforme COBAC/BEAC. "
-        + "Tu aides les directeurs, agents et analystes à comprendre les données financières, "
-        + "les indicateurs KPI (PAR30/PAR60/PAR90, taux de recouvrement, MCRS), les règlements COBAC/BEAC, "
-        + "et les bonnes pratiques de microfinance en contexte CEMAC. "
-        + "Réponds de façon concise, professionnelle et en français. "
-        + "Formule des recommandations concrètes basées sur les données réelles ci-dessous.";
+        + "Tu aides les directeurs, agents, analystes et le support technique à comprendre les données. "
+        + "Règles de réponse STRICTES :\n"
+        + "1. Réponds TOUJOURS en français, de façon concise et structurée.\n"
+        + "2. Utilise les données réelles du contexte ci-dessous quand elles sont disponibles.\n"
+        + "3. Si tu cites un chiffre, explique brièvement ce qu'il signifie.\n"
+        + "4. Formule des recommandations concrètes et actionnables.\n"
+        + "5. Utilise des listes à puces pour les réponses avec plusieurs points.\n"
+        + "6. Ne répète pas la question de l'utilisateur.\n"
+        + "7. Si la question dépasse ton contexte, dis-le honnêtement.\n"
+        + "8. Pour les questions techniques SUPPORT : diagnostics, logs, containers, DAGs.\n"
+        + "9. Pour les questions financières : KPIs (PAR30/PAR60/PAR90, MCRS), réglementation COBAC/BEAC/CEMAC.\n"
+        + "10. Longueur idéale : 3-8 phrases ou 3-6 puces. Pas de grandes introductions.";
 
     record ChatMessage(String role, String content) {}
     record ChatRequest(List<ChatMessage> messages) {}
@@ -65,7 +72,7 @@ public class AiChatController {
             log.warn("GROQ_API_KEY non configuré");
             return ResponseEntity.ok(ApiResponse.<String>builder()
                 .success(true)
-                .message("L'assistant IA n'est pas encore configuré. Contactez votre DSI pour activer la clé API GROQ.")
+                .data("L'assistant IA n'est pas encore configuré. Contactez votre DSI pour activer la clé API Groq.")
                 .timestamp(java.time.OffsetDateTime.now())
                 .build());
         }
@@ -113,7 +120,7 @@ public class AiChatController {
             log.error("Erreur appel IA : {}", e.getMessage());
             return ResponseEntity.ok(ApiResponse.<String>builder()
                 .success(true)
-                .message("Désolé, je rencontre une difficulté technique. Réessayez dans quelques instants.")
+                .data("Désolé, je rencontre une difficulté technique. Réessayez dans quelques instants.")
                 .timestamp(java.time.OffsetDateTime.now())
                 .build());
         }
@@ -122,7 +129,27 @@ public class AiChatController {
     /** Construit le contexte réel de l'IMF pour enrichir le système prompt */
     private String buildContexte(User user) {
         Long imfId = TenantContext.currentImfId();
-        if (imfId == null) return "";
+        // SUPPORT role: cross-platform technical context
+        if (imfId == null) {
+            StringBuilder ctx = new StringBuilder("=== CONTEXTE PLATEFORME (SUPPORT TECHNIQUE) ===\n");
+            try {
+                Long nbImf = jdbc.queryForObject("SELECT COUNT(*) FROM app.imf WHERE actif = true", Long.class);
+                ctx.append("IMF actives sur la plateforme : ").append(nbImf).append("\n");
+            } catch (Exception ignored) {}
+            try {
+                Long tickets = jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM app.tickets_support WHERE statut IN ('OUVERT','EN_COURS')", Long.class);
+                ctx.append("Tickets ouverts/en cours : ").append(tickets).append("\n");
+            } catch (Exception ignored) {}
+            try {
+                Long alertes = jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM app.alertes_systeme WHERE statut = 'ACTIVE'", Long.class);
+                ctx.append("Alertes système actives : ").append(alertes).append("\n");
+            } catch (Exception ignored) {}
+            ctx.append("Rôle : SUPPORT TECHNIQUE — réponds sur l'infrastructure, les tickets, le monitoring et la maintenance.\n");
+            ctx.append("=== FIN CONTEXTE ===\n");
+            return ctx.toString();
+        }
 
         StringBuilder ctx = new StringBuilder("=== DONNÉES RÉELLES DE L'IMF ===\n");
 

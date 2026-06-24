@@ -33,6 +33,7 @@ public record SseEventDto(
     public static final String TYPE_HEARTBEAT               = "HEARTBEAT";
     public static final String TYPE_AGENT_POSITION_UPDATED  = "AGENT_POSITION_UPDATED";
     public static final String TYPE_SCORING_UPDATE          = "SCORING_UPDATE";
+    public static final String TYPE_MONITORING_UPDATE       = "MONITORING_UPDATE";
 
     // ── Factory methods ───────────────────────────────────────────────────────
 

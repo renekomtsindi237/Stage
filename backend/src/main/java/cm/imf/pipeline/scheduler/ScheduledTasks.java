@@ -1,9 +1,11 @@
 package cm.imf.pipeline.scheduler;
 
+import cm.imf.pipeline.dto.response.SseEventDto;
 import cm.imf.pipeline.enums.Role;
 import cm.imf.pipeline.repository.OtpCodeRepository;
 import cm.imf.pipeline.repository.RefreshTokenRepository;
 import cm.imf.pipeline.service.INotificationService;
+import cm.imf.pipeline.sse.SseEmitterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -15,8 +17,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Tâches planifiées du système IMF Pipeline.
@@ -46,6 +50,43 @@ public class ScheduledTasks {
     private final CacheManager           cacheManager;
     private final JdbcTemplate           jdbc;
     private final INotificationService   notificationService;
+    private final SseEmitterRegistry     sseEmitterRegistry;
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // MONITORING TEMPS RÉEL — SUPPORT
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Scheduled(fixedDelay = 15_000)
+    public void broadcastMonitoringUpdate() {
+        if (sseEmitterRegistry.getConnectedCount() == 0) return;
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("nbImfs",             queryLong("SELECT COUNT(*) FROM app.imf WHERE actif = true"));
+            payload.put("alertesCritiques",   queryLong("SELECT COUNT(*) FROM app.alertes_systeme WHERE statut = 'ACTIVE'"));
+            payload.put("ticketsOuverts",     queryLong("SELECT COUNT(*) FROM app.tickets_support WHERE statut IN ('OUVERT','EN_COURS')"));
+            payload.put("utilisateursConnectes", (long) sseEmitterRegistry.getConnectedCount());
+            payload.put("timestamp",          java.time.OffsetDateTime.now().toString());
+
+            SseEventDto event = new SseEventDto(
+                SseEventDto.TYPE_MONITORING_UPDATE, "SUPPORT",
+                "Monitoring mis à jour", payload, java.time.OffsetDateTime.now()
+            );
+            sseEmitterRegistry.broadcastToRole("SUPPORT", event);
+        } catch (Exception e) {
+            log.debug("Monitoring broadcast error : {}", e.getMessage());
+        }
+    }
+
+    private Long queryLong(String sql, Object... args) {
+        try {
+            Long v = args.length > 0
+                ? jdbc.queryForObject(sql, Long.class, args)
+                : jdbc.queryForObject(sql, Long.class);
+            return v != null ? v : 0L;
+        } catch (Exception ignored) {
+            return 0L;
+        }
+    }
 
     // ══════════════════════════════════════════════════════════════════════════
     // MAINTENANCE TECHNIQUE

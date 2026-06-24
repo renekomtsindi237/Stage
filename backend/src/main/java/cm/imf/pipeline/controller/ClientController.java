@@ -32,9 +32,12 @@ public class ClientController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ClientResponse>>> list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<ClientResponse> data = clientService.list(page, size);
-        long total                = clientService.count();
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String statut,
+            @RequestParam(required = false) String agence) {
+        List<ClientResponse> data = clientService.list(page, size, search, statut, agence);
+        long total                = clientService.count(search, statut, agence);
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.of(data, page, size, total)));
     }
 

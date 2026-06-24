@@ -68,6 +68,18 @@ public class ReportingController {
                 LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)));
     }
 
+    @Operation(summary = "Rapport réglementaire COBAC PDF (année en cours par défaut)")
+    @GetMapping("/cobac/pdf")
+    public ResponseEntity<byte[]> exportCobacPDF(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin) {
+        LocalDate end   = dateFin   != null ? dateFin   : LocalDate.now();
+        LocalDate start = dateDebut != null ? dateDebut : end.withDayOfYear(1);
+        byte[] pdf = pdfExportService.exportKpiRapportPDF(start, end);
+        String filename = "rapport_cobac_%s.pdf".formatted(end.format(DateTimeFormatter.BASIC_ISO_DATE));
+        return pdfResponse(pdf, filename);
+    }
+
     @Operation(summary = "Rapport KPI PDF synthèse pour une période")
     @GetMapping("/kpi/pdf")
     public ResponseEntity<byte[]> exportKpiPDF(

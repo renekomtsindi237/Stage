@@ -4,31 +4,13 @@ import cm.imf.pipeline.dto.response.ClientResponse;
 
 import java.util.List;
 
-/**
- * Contrat du service de consultation des clients.
- * Lecture seule depuis le schéma staging via JdbcTemplate.
- */
 public interface IClientService {
 
-    /**
-     * Recherche de clients par nom ou téléphone (autocomplete web + mobile).
-     */
     List<ClientResponse> search(String query, int limit);
 
-    /**
-     * Détail d'un client par son identifiant métier.
-     *
-     * @throws cm.imf.pipeline.exception.ResourceNotFoundException si non trouvé
-     */
     ClientResponse getById(String idClient);
 
-    /**
-     * Liste paginée de tous les clients.
-     */
-    List<ClientResponse> list(int page, int size);
+    List<ClientResponse> list(int page, int size, String search, String statut, String agence);
 
-    /**
-     * Nombre total de clients — utilisé pour la pagination.
-     */
-    long count();
+    long count(String search, String statut, String agence);
 }

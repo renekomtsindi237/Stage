@@ -142,7 +142,15 @@ app:
       window-seconds: 60   # durée de la fenêtre (secondes)
   upload:
     dir: ${UPLOAD_DIR:/uploads}
-    max-size-mb: 2
+    max-size-mb: 5
+  r2:
+    enabled: ${R2_ENABLED:false}
+    endpoint: ${R2_ENDPOINT:}
+    bucket: ${R2_BUCKET:imf-ml}
+    access-key: ${R2_ACCESS_KEY_ID:}
+    secret-key: ${R2_SECRET_ACCESS_KEY:}
+    logo-prefix: imf-logos
+    public-url-base: ${R2_PUBLIC_URL:}
 
 # Kafka / Avro
 kafka:

@@ -116,9 +116,13 @@ public class Imf extends BaseEntity {
     @Builder.Default
     private Integer maxTentativesConnexion = 5;
 
-    /** URL du logo de l'IMF (stocké côté serveur, servi via /api/uploads/imf-logos/). */
+    /** URL publique du logo (chemin proxy backend ou URL R2 directe). */
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
+
+    /** Clé objet dans Cloudflare R2 (ex: "imf-logos/ABC-uuid.png"). Null si stockage local. */
+    @Column(name = "logo_r2_key", length = 400)
+    private String logoR2Key;
 
     // ── Audit ────────────────────────────────────────────────────────────────
 
