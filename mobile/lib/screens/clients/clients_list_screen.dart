@@ -152,13 +152,13 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
 
   Widget _buildClientItem(Client client) {
     return GestureDetector(
-      onTap: () => context.go('/collectes/historique'),
+      onTap: () => context.go('/clients/${client.idClient}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(14),

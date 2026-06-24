@@ -15,10 +15,10 @@ import '../../core/services/agent_service.dart';
 
 String _generateUuid() {
   final r = Random.secure();
-  String hex(int n) => r.nextInt(n).toRadixString(16).padLeft(2, '0');
-  return '${hex(256)}${hex(256)}-${hex(256)}-4${hex(16).substring(1)}'
-      '-${(8 + r.nextInt(4)).toRadixString(16)}${hex(16).substring(1)}'
-      '-${hex(256)}${hex(256)}${hex(256)}';
+  String seg(int len) =>
+      List.generate(len, (_) => r.nextInt(16).toRadixString(16)).join();
+  final v = (8 + r.nextInt(4)).toRadixString(16);
+  return '${seg(8)}-${seg(4)}-4${seg(3)}-$v${seg(3)}-${seg(12)}';
 }
 
 class NouvelleCollecteScreen extends StatefulWidget {
@@ -130,6 +130,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
       final collecte = CollecteLocale(
         uuidMobile: _generateUuid(),
         clientIdExterne: _selectedClient!.idClient.toString(),
+        nomClient: _selectedClient!.fullName,
         montantCollecte: amount,
         dateCollecte: DateFormat('yyyy-MM-dd').format(now),
         canalPaiement: _canal,

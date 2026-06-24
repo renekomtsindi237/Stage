@@ -132,7 +132,7 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
                               child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.teal, size: 19)),
                           const SizedBox(width: 12),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(c.clientIdExterne, style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: context.text),
+                            Text(c.nomClient ?? c.clientIdExterne, style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: context.text),
                                 maxLines: 1, overflow: TextOverflow.ellipsis),
                             Text(c.canalPaiement, style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: context.textSec)),
                           ])),

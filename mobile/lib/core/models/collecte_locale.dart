@@ -5,6 +5,7 @@ import 'dart:convert';
 class CollecteLocale {
   final String uuidMobile;
   final String clientIdExterne;
+  final String? nomClient;
   final double montantCollecte;
   final String dateCollecte; // ISO 8601 yyyy-MM-dd
   final String canalPaiement;
@@ -17,6 +18,7 @@ class CollecteLocale {
   const CollecteLocale({
     required this.uuidMobile,
     required this.clientIdExterne,
+    this.nomClient,
     required this.montantCollecte,
     required this.dateCollecte,
     required this.canalPaiement,
@@ -30,6 +32,7 @@ class CollecteLocale {
   Map<String, dynamic> toJson() => {
         'uuidMobile': uuidMobile,
         'clientIdExterne': clientIdExterne,
+        if (nomClient != null) 'nomClient': nomClient,
         'montantCollecte': montantCollecte,
         'dateCollecte': dateCollecte,
         'canalPaiement': canalPaiement,
@@ -43,6 +46,7 @@ class CollecteLocale {
   factory CollecteLocale.fromJson(Map<String, dynamic> json) => CollecteLocale(
         uuidMobile: json['uuidMobile'] as String,
         clientIdExterne: json['clientIdExterne'] as String,
+        nomClient: json['nomClient'] as String?,
         montantCollecte: (json['montantCollecte'] as num).toDouble(),
         dateCollecte: json['dateCollecte'] as String,
         canalPaiement: json['canalPaiement'] as String,
