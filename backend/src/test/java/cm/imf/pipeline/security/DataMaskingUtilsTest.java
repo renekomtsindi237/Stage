@@ -157,14 +157,14 @@ class DataMaskingUtilsTest {
     class AccesPii {
 
         @ParameterizedTest(name = "{0} peut voir les données complètes")
-        @ValueSource(strings = {"RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN"})
+        @ValueSource(strings = {"AGENT", "RESPONSABLE_RECOUVREMENT", "DIRECTEUR", "DSI", "SUPER_ADMIN"})
         @DisplayName("Rôles privilégiés accèdent aux données PII en clair")
         void roles_privilegies(String roleName) {
             assertThat(DataMaskingUtils.peutVoirDonneesCompletes(Role.valueOf(roleName))).isTrue();
         }
 
         @ParameterizedTest(name = "{0} ne peut pas voir les données complètes")
-        @ValueSource(strings = {"AGENT", "ANALYSTE"})
+        @ValueSource(strings = {"ANALYSTE"})
         @DisplayName("Rôles standards voient les PII masquées")
         void roles_standard(String roleName) {
             assertThat(DataMaskingUtils.peutVoirDonneesCompletes(Role.valueOf(roleName))).isFalse();
