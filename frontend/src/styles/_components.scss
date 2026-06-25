@@ -32,12 +32,26 @@
       background: var(--color-bg);
     }
   }
+  &-secondary {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    &:hover {
+      background: var(--color-bg);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+  }
   &-ghost {
     background: transparent;
     color: var(--color-primary);
     &:hover {
       background: rgba(27, 47, 75, 0.06);
     }
+  }
+  &-xs {
+    padding: 3px 7px;
+    font-size: 11px;
   }
   &-sm {
     padding: 5px 10px;

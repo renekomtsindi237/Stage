@@ -468,12 +468,13 @@ jobs:
           SMTP_HOST:              ${{ secrets.STAGING_SMTP_HOST }}
           SMTP_USER:              ${{ secrets.STAGING_SMTP_USER }}
           SMTP_PASSWORD:          ${{ secrets.STAGING_SMTP_PASSWORD }}
+          GROQ_API_KEY:           ${{ secrets.STAGING_GROQ_API_KEY }}
         with:
           host:     ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key:      ${{ secrets.STAGING_SSH_KEY }}
           port:     ${{ secrets.STAGING_PORT }}
-          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD,SMTP_HOST,SMTP_USER,SMTP_PASSWORD
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD,SMTP_HOST,SMTP_USER,SMTP_PASSWORD,GROQ_API_KEY
           command_timeout: 30m
           script: |
             set -euo pipefail
@@ -518,6 +519,8 @@ jobs:
             SMTP_HOST=${SMTP_HOST}
             SMTP_USER=${SMTP_USER}
             SMTP_PASSWORD=${SMTP_PASSWORD}
+
+            GROQ_API_KEY=${GROQ_API_KEY}
             ENVEOF
             chmod 600 "$ENVFILE"
 
@@ -538,6 +541,17 @@ jobs:
                 fi
               done < "$APP_DIR/.env.smtp.local"
               echo "  SMTP credentials restaurés depuis .env.smtp.local"
+            fi
+            # Persistance GROQ_API_KEY
+            GROQ_WRITTEN=$(grep "^GROQ_API_KEY=" "$ENVFILE" | cut -d= -f2-)
+            if [ -n "$GROQ_WRITTEN" ]; then
+              echo "GROQ_API_KEY=${GROQ_WRITTEN}" > "$APP_DIR/.env.groq.local"
+              chmod 600 "$APP_DIR/.env.groq.local"
+              echo "  GROQ_API_KEY sauvegardée"
+            elif [ -f "$APP_DIR/.env.groq.local" ]; then
+              GROQ_SAVED=$(grep "^GROQ_API_KEY=" "$APP_DIR/.env.groq.local" | cut -d= -f2-)
+              sed -i "s|^GROQ_API_KEY=.*|GROQ_API_KEY=${GROQ_SAVED}|" "$ENVFILE"
+              echo "  GROQ_API_KEY restaurée depuis .env.groq.local"
             fi
             echo "==> .env.staging écrit"
 
