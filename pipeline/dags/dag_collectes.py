@@ -95,36 +95,34 @@ def calculer_kpi_collecte(**ctx) -> None:
     cur.execute(
         """
         INSERT INTO app.kpi_collecte_snapshots
-            (imf_id, agence_id, agent_id, date_snapshot,
-             montant_total_jour, nb_collectes_jour,
-             montant_especes, montant_mobile_money, montant_virement,
-             nb_agents_actifs, created_at)
+            (imf_id, agence_id, agent_id, date_calcul, periode,
+             nb_collectes, montant_total,
+             montant_especes, montant_mtn, montant_orange,
+             created_at)
         SELECT
             c.imf_id,
             u.agence_id,
             c.agent_id,
             %(date_j)s::date,
-            SUM(c.montant_collecte)                             AS montant_total_jour,
-            COUNT(*)                                             AS nb_collectes_jour,
-            SUM(CASE WHEN canal_paiement = 'ESPECES'        THEN montant_collecte ELSE 0 END),
-            SUM(CASE WHEN canal_paiement IN ('MTN_MOBILE_MONEY','ORANGE_MONEY')
-                                                             THEN montant_collecte ELSE 0 END),
-            SUM(CASE WHEN canal_paiement = 'VIREMENT'       THEN montant_collecte ELSE 0 END),
-            COUNT(DISTINCT c.agent_id),
+            'QUOTIDIEN',
+            COUNT(*)                                                          AS nb_collectes,
+            SUM(c.montant_collecte)                                           AS montant_total,
+            SUM(CASE WHEN canal_paiement = 'ESPECES'          THEN montant_collecte ELSE 0 END),
+            SUM(CASE WHEN canal_paiement = 'MTN_MOBILE_MONEY' THEN montant_collecte ELSE 0 END),
+            SUM(CASE WHEN canal_paiement = 'ORANGE_MONEY'     THEN montant_collecte ELSE 0 END),
             NOW()
         FROM  app.collectes_terrain c
         JOIN  app.utilisateurs u ON u.id = c.agent_id
         WHERE c.date_collecte = %(date_j)s::date
           AND c.statut        = 'CONFIRMEE'
         GROUP BY c.imf_id, u.agence_id, c.agent_id
-        ON CONFLICT (imf_id, agence_id, agent_id, date_snapshot)
+        ON CONFLICT (imf_id, agence_id, cycle_id, agent_id, date_calcul, periode)
         DO UPDATE SET
-            montant_total_jour = EXCLUDED.montant_total_jour,
-            nb_collectes_jour  = EXCLUDED.nb_collectes_jour,
-            montant_especes    = EXCLUDED.montant_especes,
-            montant_mobile_money = EXCLUDED.montant_mobile_money,
-            montant_virement   = EXCLUDED.montant_virement,
-            nb_agents_actifs   = EXCLUDED.nb_agents_actifs
+            nb_collectes   = EXCLUDED.nb_collectes,
+            montant_total  = EXCLUDED.montant_total,
+            montant_especes = EXCLUDED.montant_especes,
+            montant_mtn    = EXCLUDED.montant_mtn,
+            montant_orange = EXCLUDED.montant_orange
     """,
         {"date_j": date_j},
     )
@@ -160,16 +158,16 @@ def alerter_objectifs_non_atteints(**ctx) -> None:
             SELECT
                 ks.imf_id,
                 ks.agence_id,
-                SUM(ks.montant_total_jour)::numeric /
+                SUM(ks.montant_total)::numeric /
                     NULLIF(cc.objectif_montant_cycle, 0)  AS taux
             FROM  app.kpi_collecte_snapshots ks
             JOIN  app.cycles_collecte cc
                   ON cc.agence_id = ks.agence_id
                  AND cc.statut    = 'EN_COURS'
-            WHERE ks.date_snapshot BETWEEN cc.date_debut AND CURRENT_DATE
+            WHERE ks.date_calcul BETWEEN cc.date_debut AND CURRENT_DATE
             GROUP BY ks.imf_id, ks.agence_id, cc.objectif_montant_cycle, cc.date_fin
             HAVING cc.date_fin - CURRENT_DATE <= 3
-               AND SUM(ks.montant_total_jour) / NULLIF(cc.objectif_montant_cycle, 0) < 0.70
+               AND SUM(ks.montant_total) / NULLIF(cc.objectif_montant_cycle, 0) < 0.70
         ) sub
         JOIN app.agences a ON a.id = sub.agence_id
     """)
