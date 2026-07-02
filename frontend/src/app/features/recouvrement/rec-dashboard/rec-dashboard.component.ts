@@ -4,12 +4,13 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
+  computed,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
-import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 
 interface CreanceRow {
@@ -27,30 +28,41 @@ interface RecDashboard {
   actionsDuMois: number;
   tauxRecouvrement: number;
   creances: CreanceRow[];
+  parPhase: Record<string, number>;
 }
+
+const PHASE_LABELS: Record<string, string> = {
+  RELANCE_AMIABLE:   "Relance amiable",
+  MEDIATION_AMIABLE: "Médiation amiable",
+  MISE_EN_DEMEURE:   "Mise en demeure",
+  CONTENTIEUX:       "Contentieux",
+  REECHELONNEMENT:   "Rééchelonnement",
+  PERTE:             "Perte",
+};
 
 @Component({
   selector: "app-rec-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    RouterLink,
-    StatCardComponent,
-    AlertBadgeComponent,
-    FcfaPipe,
-  ],
+  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
   templateUrl: "./rec-dashboard.component.html",
   styleUrls: ["./rec-dashboard.component.scss"],
 })
 export class RecDashboardComponent implements OnInit {
   private readonly api = inject(ApiService);
+  readonly phaseLabels = PHASE_LABELS;
+
   loading = signal(true);
   data = signal<RecDashboard | null>(null);
 
+  readonly phaseEntries = computed(() => {
+    const pp = this.data()?.parPhase ?? {};
+    return Object.entries(pp).map(([phase, count]) => ({ phase, count }));
+  });
+
   ngOnInit() {
     this.api.get<RecDashboard>("/api/v1/recouvrement/dashboard").subscribe({
-      next: (d: RecDashboard) => {
+      next: (d) => {
         this.data.set(d);
         this.loading.set(false);
       },
@@ -60,10 +72,17 @@ export class RecDashboardComponent implements OnInit {
 
   phaseClass(phase: string): string {
     const m: Record<string, string> = {
-      AMIABLE: "badge-basse",
-      JUDICIAIRE: "badge-haute",
-      CONTENTIEUX: "badge-critique",
+      RELANCE_AMIABLE:   "badge-basse",
+      MEDIATION_AMIABLE: "badge-moyenne",
+      MISE_EN_DEMEURE:   "badge-haute",
+      CONTENTIEUX:       "badge-critique",
+      REECHELONNEMENT:   "badge-primary",
+      PERTE:             "badge-dark",
     };
     return m[phase] ?? "badge-moyenne";
+  }
+
+  cobacClass(cat: string): string {
+    return { A: "badge-basse", B: "badge-moyenne", C: "badge-haute", D: "badge-critique", E: "badge-dark" }[cat] ?? "";
   }
 }

@@ -1,91 +1,91 @@
 @startuml ACT06_saisie_mobile
-!theme plain
-skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
 skinparam activity {
-  BackgroundColor #E8EAF6
-  BorderColor #3949AB
-  FontSize 11
-  DiamondBackgroundColor #FFF3E0
-  DiamondBorderColor #E65100
+  BackgroundColor white
+  BorderColor #666666
+  DiamondBackgroundColor white
+  DiamondBorderColor #666666
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
+}
 
-title ACT06 — Saisie Collecte Mobile (Flutter)\nMode Online et Offline-First
+title ACT06 - Saisie Collecte Mobile (Flutter 3.24)\nMode Online et Offline-First
 
-|#E8EAF6| Agent (Flutter App) |
-|#E8F5E9| SQLite Local |
-|#F3E5F5| Spring Boot API |
-|#FCE4EC| PostgreSQL |
+| Agent Terrain (Flutter) |
+| SQLite local (sqflite) |
+| Spring Boot API :8080 |
+| PostgreSQL 15 |
 
 start
 
-|Agent (Flutter App)|
+|Agent Terrain (Flutter)|
 :Ouvre formulaire\nSaisie Collecte;
-:Recherche client\n(liste chargée localement\ndepuis SQLite);
-:Sélectionne prêt\ncorrespondant;
-:Saisit montant,\nmode paiement,\nréférence transaction;
-:Valide le formulaire\n(contrôles Dart);
+:Recherche client\n(liste depuis SQLite);
+:Selectionne la creance;
+:Saisit montant,\ncanal, reference transaction;
+:Valide le formulaire\n(controles Dart);
 
-if (Connexion réseau\ndisponible ?) then (Oui)
+if (Connexion reseau\ndisponible ?) then (Oui)
 
-  |Spring Boot API|
-  :POST /api/collectes\n{client, pret_id, montant,\ncanal, reference}\nAuthorization: Bearer JWT;
-  :Vérification JWT\n(rôle AGENT requis);
-  :Détection doublon\n(même référence / même jour);
+  |Spring Boot API :8080|
+  :POST /api/v1/collectes\n{uid, clientId, agentId,\nmontant, canal, reference}\nCookie: imf_access (HttpOnly);
+  :Verification cookie\n(JwtFilter - role AGENT_TERRAIN);
+  :Deduplication par uid (UUID.v4());
 
-  if (Doublon détecté ?) then (Oui)
-    |Agent (Flutter App)|
-    :Affiche message erreur\n"Collecte déjà enregistrée";
+  if (Doublon detecte ? (409)) then (Oui)
+    |Agent Terrain (Flutter)|
+    :Affiche message erreur\n"Collecte deja enregistree";
     stop
   else (Non)
-    |PostgreSQL|
-    :INSERT INTO staging.collectes_terrain\n(statut = CONFIRME);
+    |PostgreSQL 15|
+    :INSERT app.collectes_terrain\n(statut = SOUMISE);
 
-    |Spring Boot API|
-    :Retourne 201 Created\n{id: "COL-2026-XXXX"};
+    |Spring Boot API :8080|
+    :Retourne 201 Created\n{uid, statut: "SOUMISE"};
 
-    |Agent (Flutter App)|
-    :Affiche confirmation\n✓ Collecte enregistrée;
-    :Sauvegarde aussi\nen SQLite local\n(historique offline);
+    |Agent Terrain (Flutter)|
+    :Affiche confirmation\nCollecte enregistree;
+    :Sauvegarde aussi en SQLite\n(historique offline);
   endif
 
 else (Hors ligne)
 
-  |SQLite Local|
-  :INSERT INTO collectes\n(statut = PENDING_SYNC,\nsynced_at = NULL);
+  |SQLite local (sqflite)|
+  :INSERT collectes\n(statut = PENDING_SYNC);
 
-  |Agent (Flutter App)|
-  :Affiche message\n"Sauvegardé localement\n(sync au retour réseau)";
+  |Agent Terrain (Flutter)|
+  :Affiche message\n"Sauvegarde localement";
+  note right : Mode offline-first\nReseau rural camerounais
 
-  note right : Mode offline-first\nRéseau rural camerounais
+  :Retour de la connectivite\n(ConnectivityPlus detecte);
 
-  :Retour de la connectivité\n(ConnectivityPlus détecte);
-
-  |SQLite Local|
+  |SQLite local (sqflite)|
   :SELECT * FROM collectes\nWHERE statut = PENDING_SYNC;
 
   while (Collectes en attente ?) is (Oui)
-    |Spring Boot API|
-    :POST /api/collectes\n{...collecte...};
+    |Spring Boot API :8080|
+    :POST /api/v1/collectes {collecte};
 
-    if (Succès ?) then (201)
-      |SQLite Local|
-      :UPDATE statut = SYNCED\nsynced_at = NOW();
-    else (Échec)
-      if (Code retour ?) then (409 Doublon)
-        |SQLite Local|
-        :UPDATE statut = DUPLICATE;
-      else (Erreur réseau)
-        |SQLite Local|
-        :UPDATE statut = SYNC_ERROR\n(retry à la prochaine tentative);
-      endif
+    if (Reponse ?) then (201 Created)
+      |SQLite local (sqflite)|
+      :UPDATE statut = CONFIRMEE;
+    else (409 Doublon)
+      |SQLite local (sqflite)|
+      :UPDATE statut = DOUBLON;
+    else (Erreur reseau)
+      |SQLite local (sqflite)|
+      :UPDATE retryCount += 1;
     endif
   endwhile (Non)
 
-  |Agent (Flutter App)|
-  :Notification in-app\n"N collecte(s) synchronisée(s)";
+  |Agent Terrain (Flutter)|
+  :Notification in-app\nN collecte(s) synchronisee(s);
 
 endif
 

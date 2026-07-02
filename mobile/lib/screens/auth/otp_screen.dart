@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -154,6 +155,7 @@ class _OtpScreenState extends State<OtpScreen>
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final l10n  = AppL10n.of(context);
     final auth  = context.watch<AuthProvider>();
     final email = auth.pendingOtpEmail ?? '';
 
@@ -171,20 +173,20 @@ class _OtpScreenState extends State<OtpScreen>
                   const SizedBox(height: 48),
 
                   // ── Logo (identique à login) ──────────────────────────────
-                  _buildLogo(),
+                  _buildLogo(l10n),
                   const SizedBox(height: 36),
 
                   // ── Card principale ───────────────────────────────────────
-                  _buildCard(auth, email),
+                  _buildCard(auth, email, l10n),
                   const SizedBox(height: 24),
 
                   // ── Lien retour ───────────────────────────────────────────
                   GestureDetector(
                     onTap: () => context.go('/login'),
-                    child: const Text(
-                      '← Retour à la connexion',
+                    child: Text(
+                      l10n.otpBackToLogin,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13,
                         color: _navy,
@@ -205,7 +207,7 @@ class _OtpScreenState extends State<OtpScreen>
 
   // ── Widgets ───────────────────────────────────────────────────────────────
 
-  Widget _buildLogo() {
+  Widget _buildLogo(AppL10n l10n) {
     return Column(
       children: [
         Container(
@@ -232,9 +234,9 @@ class _OtpScreenState extends State<OtpScreen>
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'IMF Cameroun',
-          style: TextStyle(
+        Text(
+          l10n.appImfCameroun,
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 13,
             fontWeight: FontWeight.w500,
@@ -246,7 +248,7 @@ class _OtpScreenState extends State<OtpScreen>
     );
   }
 
-  Widget _buildCard(AuthProvider auth, String email) {
+  Widget _buildCard(AuthProvider auth, String email, AppL10n l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
@@ -264,9 +266,9 @@ class _OtpScreenState extends State<OtpScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Titre
-          const Text(
-            'Vérification OTP',
-            style: TextStyle(
+          Text(
+            l10n.otpTitle,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -279,7 +281,7 @@ class _OtpScreenState extends State<OtpScreen>
               style: const TextStyle(
                   fontFamily: 'Inter', fontSize: 13, color: _mutedColor, height: 1.5),
               children: [
-                const TextSpan(text: 'Code à 6 chiffres envoyé à '),
+                TextSpan(text: l10n.otpSubtitlePrefix),
                 TextSpan(
                   text: email,
                   style: const TextStyle(
@@ -291,9 +293,9 @@ class _OtpScreenState extends State<OtpScreen>
           const SizedBox(height: 28),
 
           // Label
-          const Text(
-            'Code de vérification',
-            style: TextStyle(
+          Text(
+            l10n.otpCodeLabel,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -356,9 +358,9 @@ class _OtpScreenState extends State<OtpScreen>
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2),
                     )
-                  : const Text(
-                      'Vérifier le code',
-                      style: TextStyle(
+                  : Text(
+                      l10n.otpVerifyButton,
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -373,17 +375,17 @@ class _OtpScreenState extends State<OtpScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Code non reçu ? ',
-                  style: TextStyle(
+                Text(
+                  l10n.otpResendPrompt,
+                  style: const TextStyle(
                       fontFamily: 'Inter', fontSize: 13, color: _mutedColor),
                 ),
                 GestureDetector(
                   onTap: _canResend ? _resend : null,
                   child: Text(
                     _canResend
-                        ? 'Renvoyer'
-                        : 'Renvoyer dans ${_secondsLeft}s',
+                        ? l10n.otpResendAction
+                        : l10n.otpResendCountdown(_secondsLeft),
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,

@@ -1,7 +1,7 @@
 <div class="login-card">
-  <h2 class="login-card__title">Connexion</h2>
+  <h2 class="login-card__title">{{ 'login.title' | translate }}</h2>
   <p class="login-card__subtitle">
-    Un code de vérification sera envoyé à votre adresse email
+    {{ 'login.subtitle' | translate }}
   </p>
 
   @if (error()) {
@@ -13,20 +13,18 @@
 
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="form-group">
-      <label for="email">Adresse email professionnelle</label>
+      <label for="email">{{ 'login.email_label' | translate }}</label>
       <input
         id="email"
         type="email"
         class="form-control"
         [class.is-invalid]="emailCtrl.invalid && emailCtrl.touched"
         formControlName="email"
-        placeholder="votre@institution.cm"
+        [placeholder]="'login.email_placeholder' | translate"
         autocomplete="email"
       />
       @if (emailCtrl.invalid && emailCtrl.touched) {
-        <span class="login-card__error"
-          >Veuillez saisir une adresse email valide.</span
-        >
+        <span class="login-card__error">{{ 'login.email_error' | translate }}</span>
       }
     </div>
 
@@ -38,14 +36,149 @@
       @if (loading()) {
         <span class="material-icons-round spin">refresh</span>
       } @else {
-        Recevoir mon code
+        {{ 'login.submit' | translate }}
       }
     </button>
   </form>
 
   <div class="login-card__footer">
-    <a routerLink="/login/admin">Connexion administrateur</a>
+    <a routerLink="/login/admin">{{ 'login.admin_link' | translate }}</a>
     &nbsp;·&nbsp;
-    <span>Problème de connexion ? Contacter l'administrateur</span>
+    <button class="support-link" type="button" (click)="openSupport()">
+      {{ 'login.footer_support' | translate }}
+    </button>
   </div>
 </div>
+
+<!-- ── Modal contact support ─────────────────────────────────────────── -->
+@if (showSupport()) {
+  <div class="modal-backdrop" (click)="closeSupport()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <span class="material-icons-round">support_agent</span>
+          {{ 'login.support_modal.title' | translate }}
+        </h3>
+        <button class="modal-close" type="button" (click)="closeSupport()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      @if (supportSent()) {
+        <div class="modal-body support-success">
+          <span class="material-icons-round success-icon">check_circle</span>
+          <h4>{{ 'login.support_modal.success_title' | translate }}</h4>
+          <p>{{ 'login.support_modal.success_body' | translate }}</p>
+          <button class="btn btn-primary" type="button" (click)="closeSupport()">
+            {{ 'login.support_modal.success_close' | translate }}
+          </button>
+        </div>
+      } @else {
+        <div class="modal-body">
+          @if (supportError()) {
+            <div class="alert alert-danger" style="margin-bottom: 12px">
+              <span class="material-icons-round">error_outline</span>
+              <span>{{ supportError() }}</span>
+            </div>
+          }
+
+          <form [formGroup]="supportForm" (ngSubmit)="submitSupport()">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="s-nom">{{ 'login.support_modal.nom_label' | translate }}</label>
+                <input
+                  id="s-nom"
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="sf['nom'].invalid && sf['nom'].touched"
+                  formControlName="nom"
+                  [placeholder]="'login.support_modal.nom_placeholder' | translate"
+                />
+                @if (sf['nom'].invalid && sf['nom'].touched) {
+                  <span class="login-card__error">{{ 'login.support_modal.nom_error' | translate }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="s-email">{{ 'login.support_modal.email_label' | translate }}</label>
+                <input
+                  id="s-email"
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="sf['email'].invalid && sf['email'].touched"
+                  formControlName="email"
+                  [placeholder]="'login.support_modal.email_placeholder' | translate"
+                />
+                @if (sf['email'].invalid && sf['email'].touched) {
+                  <span class="login-card__error">{{ 'login.support_modal.email_error' | translate }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="s-cat">{{ 'login.support_modal.categorie_label' | translate }}</label>
+              <select id="s-cat" class="form-control" formControlName="categorie">
+                <option value="ACCES_COMPTE">{{ 'login.support_modal.cat_acces' | translate }}</option>
+                <option value="OTP">{{ 'login.support_modal.cat_otp' | translate }}</option>
+                <option value="BUG">{{ 'login.support_modal.cat_bug' | translate }}</option>
+                <option value="AUTRE">{{ 'login.support_modal.cat_autre' | translate }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="s-sujet">{{ 'login.support_modal.sujet_label' | translate }}</label>
+              <input
+                id="s-sujet"
+                type="text"
+                class="form-control"
+                [class.is-invalid]="sf['sujet'].invalid && sf['sujet'].touched"
+                formControlName="sujet"
+                [placeholder]="'login.support_modal.sujet_placeholder' | translate"
+              />
+              @if (sf['sujet'].invalid && sf['sujet'].touched) {
+                <span class="login-card__error">{{ 'login.support_modal.sujet_error' | translate }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="s-msg">{{ 'login.support_modal.message_label' | translate }}</label>
+              <textarea
+                id="s-msg"
+                class="form-control"
+                rows="4"
+                [class.is-invalid]="sf['message'].invalid && sf['message'].touched"
+                formControlName="message"
+                [placeholder]="'login.support_modal.message_placeholder' | translate"
+              ></textarea>
+              @if (sf['message'].invalid && sf['message'].touched) {
+                <span class="login-card__error">{{ 'login.support_modal.message_error' | translate }}</span>
+              }
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                (click)="closeSupport()"
+              >
+                {{ 'login.support_modal.cancel' | translate }}
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="supportLoading()"
+              >
+                @if (supportLoading()) {
+                  <span class="material-icons-round spin">refresh</span>
+                } @else {
+                  <span class="material-icons-round">send</span>
+                  {{ 'login.support_modal.submit' | translate }}
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
+}

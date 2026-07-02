@@ -13,6 +13,7 @@ import { FormsModule } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ChatMarkdownPipe } from "../../pipes/chat-markdown.pipe";
+import { TranslatePipe } from "@ngx-translate/core";
 
 interface Message {
   role: "user" | "assistant";
@@ -59,7 +60,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   selector: "app-chatbot",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ChatMarkdownPipe],
+  imports: [CommonModule, FormsModule, ChatMarkdownPipe, TranslatePipe],
   templateUrl: "./chatbot.component.html",
   styleUrls: ["./chatbot.component.scss"],
 })

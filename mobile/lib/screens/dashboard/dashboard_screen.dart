@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -55,10 +56,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final auth = context.watch<AuthProvider>();
     final sync = context.watch<SyncProvider>();
     final user = auth.currentUser;
-    final name = user?.fullName ?? user?.username ?? 'Utilisateur';
+    final name = user?.fullName ?? user?.username ?? l10n.dashboardUserFallback;
     final initials = name
         .trim()
         .split(' ')
@@ -81,13 +83,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 children: [
-                  _buildSyncBanner(sync),
+                  _buildSyncBanner(sync, l10n),
                   const SizedBox(height: 16),
-                  _buildActiviteCard(_dashboardData),
+                  _buildActiviteCard(_dashboardData, l10n),
                   const SizedBox(height: 16),
-                  _buildQuickActions(),
+                  _buildQuickActions(l10n),
                   const SizedBox(height: 24),
-                  _buildAlertesSection(),
+                  _buildAlertesSection(l10n),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -198,7 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSyncBanner(SyncProvider sync) {
+  Widget _buildSyncBanner(SyncProvider sync, AppL10n l10n) {
     Color color;
     IconData icon;
     String label;
@@ -206,15 +208,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (sync.syncing || sync.scoringState == ScoringState.pending) {
       color = AppColors.warning;
       icon = Icons.autorenew_rounded;
-      label = 'Synchronisation en cours…';
+      label = l10n.dashboardSyncInProgress;
     } else if (sync.pendingCount > 0) {
       color = AppColors.warning;
       icon = Icons.cloud_upload_outlined;
-      label = '${sync.pendingCount} collecte(s) en attente de sync';
+      label = l10n.dashboardSyncPending(sync.pendingCount);
     } else {
       color = AppColors.success;
       icon = Icons.check_circle_outline_rounded;
-      label = 'Synchronisé à l\'instant';
+      label = l10n.dashboardSyncOk;
     }
 
     return Container(
@@ -242,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildActiviteCard(AgentDashboardData? data) {
+  Widget _buildActiviteCard(AgentDashboardData? data, AppL10n l10n) {
     final collected = data?.collecteJour ?? 0.0;
     final collectes = data?.collectesCount ?? 0;
     final clientsVisites = data?.clientsVisites ?? 0;
@@ -256,7 +258,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Activité du jour',
+            l10n.dashboardActivityTitle,
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 13,
@@ -275,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           Text(
-            'collecté aujourd\'hui',
+            l10n.dashboardCollectedSuffix,
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 11,
@@ -285,9 +287,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 20),
           Row(
             children: [
-              _buildStat(Icons.people_outline_rounded, 'Clients visités', '$clientsVisites/$clientsTotal'),
+              _buildStat(Icons.people_outline_rounded, l10n.dashboardStatClientsVisited, '$clientsVisites/$clientsTotal'),
               const SizedBox(width: 28),
-              _buildStat(Icons.receipt_long_rounded, 'Collectes', '$collectes'),
+              _buildStat(Icons.receipt_long_rounded, l10n.dashboardStatCollectes, '$collectes'),
             ],
           ),
         ],
@@ -326,13 +328,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(AppL10n l10n) {
     return Row(
       children: [
         Expanded(
           child: _buildActionTile(
             icon: Icons.account_balance_wallet_rounded,
-            label: 'Nouvelle\nCollecte',
+            label: l10n.dashboardQuickActionCollecte,
             onTap: () => context.go('/collectes/nouvelle'),
           ),
         ),
@@ -340,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Expanded(
           child: _buildActionTile(
             icon: Icons.people_rounded,
-            label: 'Mes\nClients',
+            label: l10n.dashboardQuickActionClients,
             onTap: () => context.go('/clients'),
           ),
         ),
@@ -379,7 +381,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAlertesSection() {
+  Widget _buildAlertesSection(AppL10n l10n) {
     final alertes = _dashboardData?.alertesClients ?? [];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,7 +390,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Alertes sur vos clients',
+              l10n.dashboardAlertesSectionTitle,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 16,
@@ -405,14 +407,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           )
         else if (_error != null)
-          _buildEmptyCard('Impossible de charger les alertes')
+          _buildEmptyCard(l10n.dashboardAlertesError)
         else if (alertes.isEmpty)
-          _buildEmptyCard('Aucune alerte active')
+          _buildEmptyCard(l10n.dashboardAlertesEmpty)
         else
           ...alertes.map(
             (a) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: _buildAlerteItem(a),
+              child: _buildAlerteItem(a, l10n),
             ),
           ),
       ],
@@ -436,7 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAlerteItem(AgentAlerte a) {
+  Widget _buildAlerteItem(AgentAlerte a, AppL10n l10n) {
     final isCritique = a.severite.toUpperCase() == 'CRITIQUE' ||
         a.severite.toUpperCase() == 'HIGH' ||
         a.severite.toUpperCase() == 'URGENT';
@@ -491,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              isCritique ? 'CRITIQUE' : 'ACTIVE',
+              isCritique ? l10n.dashboardAlerteCritique : l10n.dashboardAlerteActive,
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 10,

@@ -121,3 +121,6 @@ ml/models/
 pipeline/dags/__pycache__/
 airflow.cfg
 standalone_admin_password.txt
+
+#Documentation
+api_docs/

@@ -9,12 +9,13 @@ import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ApiService } from "../../../core/http/api.service";
 import { Client } from "../../../core/models/client.model";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-nouvelle-collecte",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./nouvelle-collecte.component.html",
   styleUrls: ["./nouvelle-collecte.component.scss"],
 })

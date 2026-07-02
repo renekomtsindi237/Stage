@@ -1,0 +1,213 @@
+{
+  "@@locale": "fr",
+  "@@last_modified": "2026-07-02",
+
+  "appName": "MicroRecouv",
+  "appTagline": "Gestion & Recouvrement Intelligents",
+  "appLoading": "Chargement...",
+  "appVersion": "v1.0.0",
+  "appImfCameroun": "IMF Cameroun",
+
+  "cancel": "Annuler",
+  "retry": "Réessayer",
+  "backHome": "Retour à l'accueil",
+  "error": "Erreur",
+  "confirm": "Confirmer",
+  "close": "Fermer",
+  "save": "Enregistrer",
+  "send": "Envoyer",
+  "refresh": "Actualiser",
+  "currencyFcfa": "FCFA",
+  "currencyF": "F",
+
+  "loginTitle": "Connexion",
+  "loginSubtitle": "Un code de vérification sera envoyé à votre adresse email",
+  "loginEmailLabel": "Adresse email professionnelle",
+  "loginEmailHint": "votre@institution.cm ou exemple@gmail.com",
+  "loginEmailRequired": "Email requis",
+  "loginEmailInvalid": "Email invalide",
+  "loginSubmitButton": "Recevoir mon code",
+  "loginFooterHelp": "Problème de connexion ? Contacter l'administrateur",
+  "loginNetworkError": "Erreur réseau",
+  "loginBackHome": "Accueil",
+
+  "otpTitle": "Vérification OTP",
+  "otpSubtitlePrefix": "Code à 6 chiffres envoyé à ",
+  "otpCodeLabel": "Code de vérification",
+  "otpVerifyButton": "Vérifier le code",
+  "otpResendPrompt": "Code non reçu ? ",
+  "otpResendAction": "Renvoyer",
+  "otpResendCountdown": "Renvoyer dans {seconds}s",
+  "@otpResendCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "otpBackToLogin": "← Retour à la connexion",
+
+  "landingBadge": "PLATEFORME DE MICROFINANCE — CAMEROUN",
+  "landingTitle": "Gérez vos crédits simplement et en sécurité",
+  "landingSubtitle": "MicroRecouv est une plateforme numérique qui aide les institutions de microfinance à suivre leurs clients, gérer les remboursements et recouvrer les crédits en retard.",
+  "landingCardTitle": "Accès personnel",
+  "landingCardDescription": "Pour les agents, directeurs, caissiers et toute l'équipe de l'institution.",
+  "landingCheckEmailCode": "Connexion par code email",
+  "landingCheckNoPassword": "Aucun mot de passe à retenir",
+  "landingCtaButton": "Se connecter",
+
+  "dashboardUserFallback": "Utilisateur",
+  "dashboardSyncInProgress": "Synchronisation en cours…",
+  "dashboardSyncPending": "{count} collecte(s) en attente de sync",
+  "@dashboardSyncPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "dashboardSyncOk": "Synchronisé à l'instant",
+  "dashboardActivityTitle": "Activité du jour",
+  "dashboardCollectedSuffix": "collecté aujourd'hui",
+  "dashboardStatClientsVisited": "Clients visités",
+  "dashboardStatCollectes": "Collectes",
+  "dashboardQuickActionCollecte": "Nouvelle\nCollecte",
+  "dashboardQuickActionClients": "Mes\nClients",
+  "dashboardAlertesSectionTitle": "Alertes sur vos clients",
+  "dashboardAlertesError": "Impossible de charger les alertes",
+  "dashboardAlertesEmpty": "Aucune alerte active",
+  "dashboardAlerteCritique": "CRITIQUE",
+  "dashboardAlerteActive": "ACTIVE",
+
+  "profilTitle": "Mon Profil",
+  "profilUserFallback": "Utilisateur",
+  "profilRoleFallback": "Agent Terrain",
+  "profilAvatarDelete": "Supprimer la photo",
+  "profilAvatarUpdated": "Photo de profil mise à jour",
+  "profilAvatarDeleted": "Photo supprimée",
+  "profilSectionGps": "Localisation GPS",
+  "profilSectionAppearance": "Apparence",
+  "profilSectionAccount": "Compte",
+  "profilGpsActive": "Actif",
+  "profilGpsOffline": "Hors-ligne (positions en file)",
+  "profilGpsError": "Erreur",
+  "profilGpsIdle": "Inactif",
+  "profilGpsRequired": "Obligatoire",
+  "profilGpsCoordinates": "Coordonnées",
+  "profilGpsAccuracy": "Précision",
+  "profilGpsSpeed": "Vitesse",
+  "profilGpsPendingPositions": "{count} position(s) en attente de synchronisation",
+  "@profilGpsPendingPositions": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "profilGpsBtnStop": "Arrêter le partage GPS",
+  "profilGpsBtnStopRequired": "GPS requis par votre IMF",
+  "profilGpsBtnStopOffline": "Arrêt impossible hors-ligne",
+  "profilGpsBtnStart": "Démarrer le partage GPS",
+  "profilGpsSnackbarCantStop": "Impossible d'arrêter le GPS : votre IMF exige le partage de position.",
+  "profilThemeDarkMode": "Mode sombre",
+  "profilLogoutLabel": "Se déconnecter",
+  "profilDialogLogoutTitle": "Déconnexion",
+  "profilDialogLogoutContent": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "profilDialogConfirmLogout": "Déconnecter",
+
+  "alertesTitle": "Alertes",
+  "alertesFilterAll": "Toutes",
+  "alertesFilterActive": "Actives",
+  "alertesFilterEscalated": "Escaladées",
+  "alertesFilterTreated": "Traitées",
+  "alertesFilterClosed": "Clôturées",
+  "alertesLoadError": "Impossible de charger les alertes",
+  "alertesEmpty": "Aucune alerte",
+  "alertesClientUnknown": "Client inconnu",
+  "alertesDelayBadge": "{days}j retard",
+  "@alertesDelayBadge": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "alertesAmountDue": "{amount} FCFA dû",
+  "@alertesAmountDue": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+
+  "clientsTitle": "Clients",
+  "clientsSearchHint": "Rechercher un client...",
+  "clientsEmptyTitle": "Aucun client trouvé",
+  "clientsEmptySubtitle": "Essayez une autre recherche",
+  "clientDetailTitle": "Détail client",
+
+  "nouvelleCollecteTitle": "Enregistrer une collecte",
+  "nouvelleCollecteSearchHint": "Rechercher un client (nom, téléphone…)",
+  "nouvelleCollecteChangeClient": "Changer",
+  "nouvelleCollecteAmountLabel": "Montant",
+  "nouvelleCollecteCanalLabel": "Canal de paiement",
+  "nouvelleCollecteSubmit": "Enregistrer la collecte",
+  "nouvelleCollecteNoClient": "Veuillez sélectionner un client",
+  "nouvelleCollecteInvalidAmount": "Montant invalide",
+
+  "confirmationTitle": "Collecte enregistrée",
+  "confirmationSuccessTitle": "Collecte sauvegardée !",
+  "confirmationSuccessSubtitle": "Elle sera synchronisée dès que vous serez connecté.",
+  "confirmationAmount": "Montant",
+  "confirmationClientId": "Client ID",
+  "confirmationCanal": "Canal",
+  "confirmationDate": "Date",
+  "confirmationGps": "GPS",
+  "confirmationPendingSync": "En attente de synchronisation",
+  "confirmationNewCollecte": "Nouvelle collecte",
+
+  "historiqueTitle": "Historique du jour",
+  "historiquePendingLabel": "En attente",
+  "historiqueTotalAmount": "Montant total",
+  "historiqueSyncing": "Synchronisation...",
+  "historiqueSyncNow": "Synchroniser maintenant",
+  "historiqueLastSync": "Dernière sync : {accepted}/{total} — {time}",
+  "@historiqueLastSync": {
+    "placeholders": {
+      "accepted": { "type": "int" },
+      "total": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+  "historiqueEmptyTitle": "Aucune collecte en attente",
+  "historiqueEmptySubtitle": "Toutes vos collectes sont synchronisées.",
+  "historiqueListTitle": "Collectes ({n})",
+  "@historiqueListTitle": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "syncResultTitle": "Synchronisation terminée",
+  "syncResultTotal": "Total reçu",
+  "syncResultAccepted": "Acceptées",
+  "syncResultDuplicates": "Doublons",
+  "syncResultRejected": "Rejetées",
+  "syncResultRejectedWarning": "{count} collecte(s) non synchronisée(s). Contactez le support.",
+  "@syncResultRejectedWarning": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "errorTitle": "Une erreur est survenue",
+  "errorCodeBadge": "Erreur {code}",
+  "@errorCodeBadge": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "errorDefaultMessage": "Quelque chose s'est mal passé. Veuillez réessayer ou revenir à l'accueil.",
+
+  "offlineTitle": "Connexion indisponible",
+  "offlineDescription": "Vérifiez votre connexion Wi-Fi ou données mobiles.\nL'application fonctionne en mode hors-ligne pour les collectes.",
+  "offlineBadge": "Vos collectes sont sauvegardées localement",
+  "offlineChecking": "Vérification...",
+  "offlineCheckButton": "Vérifier la connexion",
+  "offlineStillOffline": "Toujours pas de connexion",
+
+  "langFr": "Français",
+  "langEn": "English",
+  "langSwitchTooltip": "Changer la langue"
+}

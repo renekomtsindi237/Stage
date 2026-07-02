@@ -12,5 +12,6 @@ public enum Role {
     CHEF_AGENCE,               // Valide dans sa délégation, préside le comité d'agence
     ANALYSTE_ENGAGEMENTS,      // Conformité COBAC, ratios prudentiels, Grand Comité
     AGENT_SAISIE,              // Back-office : contrats, amortissement, signatures
-    CAISSIER                   // Décaissement ordonné, encaissement remboursements
+    CAISSIER,                  // Décaissement ordonné, encaissement remboursements
+    API_CLIENT                 // Compte de service pour intégrations CBS/BluCash (auth par mot de passe, pas d'OTP)
 }

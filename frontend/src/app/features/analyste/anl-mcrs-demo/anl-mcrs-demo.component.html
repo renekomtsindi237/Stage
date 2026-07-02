@@ -1,45 +1,41 @@
 <div class="mcrs-page">
   <div class="page-header">
     <div>
-      <h2>Rapport MCRS — Données réelles</h2>
+      <h2>{{ 'anl_dashboard.title' | translate }} — {{ 'common.all' | translate }}</h2>
       <p class="text-muted text-sm">
         Scores MCRS, distribution risque et métriques dérive du modèle ML issues
         des migrations
       </p>
     </div>
-    <button class="btn btn-ghost btn-sm" (click)="load()">↺ Actualiser</button>
+    <button class="btn btn-ghost btn-sm" (click)="load()">↺ {{ 'dsi_monitoring.refresh_btn' | translate }}</button>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
       <div class="spinner"></div>
-      <p class="text-muted">Chargement des données réelles…</p>
+      <p class="text-muted">{{ 'common.loading' | translate }}</p>
     </div>
   } @else {
     <!-- ── KPI Cards ──────────────────────────────────────────── -->
     @if (dashboard()) {
       <div class="kpi-grid">
         <div class="kpi-card">
-          <div class="kpi-label">Clients scorés</div>
+          <div class="kpi-label">{{ 'anl_dashboard.kpi_clients' | translate }}</div>
           <div class="kpi-value">{{ dashboard()!.totalClients | number }}</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Score MCRS moyen</div>
-          <div class="kpi-value">
-            {{ dashboard()!.scoresMoyen | number: "1.1-1" }}
-          </div>
+          <div class="kpi-label">{{ 'anl_dashboard.kpi_score_moyen' | translate }}</div>
+          <div class="kpi-value">{{ dashboard()!.scoresMoyen | number: "1.1-1" }}</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Alertes ML actives</div>
-          <div class="kpi-value text-warning">
-            {{ dashboard()!.alertesOuvertes }}
-          </div>
+          <div class="kpi-label">{{ 'anl_dashboard.kpi_alertes' | translate }}</div>
+          <div class="kpi-value text-warning">{{ dashboard()!.alertesOuvertes }}</div>
         </div>
         <div
           class="kpi-card"
           [class.kpi-alert]="(dashboard()!.driftPsi ?? 0) > 0.2"
         >
-          <div class="kpi-label">PSI dérive modèle</div>
+          <div class="kpi-label">{{ 'anl_dashboard.kpi_psi' | translate }}</div>
           <div class="kpi-value" [class]="psiClass(dashboard()!.driftPsi ?? 0)">
             {{ dashboard()!.driftPsi | number: "1.2-2" }}
           </div>
@@ -52,10 +48,10 @@
     <div class="tab-bar">
       @for (
         tab of [
-          { id: "scores", label: "Scores clients" },
-          { id: "distribution", label: "Distribution risque" },
-          { id: "drift", label: "Dérive modèle" },
-          { id: "alertes", label: "Alertes récentes" },
+          { id: "scores", label: ('anl_scoring.title' | translate) },
+          { id: "distribution", label: ('anl_dashboard.dist_title' | translate) },
+          { id: "drift", label: ('anl_drift.title' | translate) },
+          { id: "alertes", label: ('anl_dashboard.alertes_title' | translate) },
         ];
         track tab.id
       ) {
@@ -76,10 +72,10 @@
           <thead>
             <tr>
               <th>Client ID</th>
-              <th>Score MCRS</th>
-              <th>Classe</th>
+              <th>{{ 'anl_scoring.col_score' | translate }}</th>
+              <th>{{ 'anl_scoring.col_classe' | translate }}</th>
               <th>Niveau risque</th>
-              <th>Prob. défaut</th>
+              <th>{{ 'anl_scoring.col_defaut' | translate }}</th>
               <th>Modèle</th>
               <th>Calculé le</th>
             </tr>
@@ -87,7 +83,7 @@
           <tbody>
             @if (!scores() || scores()!.content.length === 0) {
               <tr>
-                <td colspan="7" class="empty-cell">Aucun score disponible</td>
+                <td colspan="7" class="empty-cell">{{ 'common.empty' | translate }}</td>
               </tr>
             }
             @for (s of scores()?.content ?? []; track s.id) {
@@ -108,26 +104,18 @@
                         "
                       ></div>
                     </div>
-                    <span class="score-val">{{
-                      s.score_mcrs | number: "1.0-0"
-                    }}</span>
+                    <span class="score-val">{{ s.score_mcrs | number: "1.0-0" }}</span>
                   </div>
                 </td>
                 <td>
                   <span class="badge">{{ s.classe_risque }}</span>
                 </td>
                 <td>
-                  <span class="badge" [class]="niveauClass(s.niveau_risque)">{{
-                    s.niveau_risque
-                  }}</span>
+                  <span class="badge" [class]="niveauClass(s.niveau_risque)">{{ s.niveau_risque }}</span>
                 </td>
-                <td class="text-sm">
-                  {{ s.probabilite_defaut * 100 | number: "1.1-1" }}%
-                </td>
+                <td class="text-sm">{{ s.probabilite_defaut * 100 | number: "1.1-1" }}%</td>
                 <td class="text-xs text-muted">{{ s.modele_version }}</td>
-                <td class="text-xs text-muted">
-                  {{ s.calculated_at | date: "dd/MM/yy HH:mm" }}
-                </td>
+                <td class="text-xs text-muted">{{ s.calculated_at | date: "dd/MM/yy HH:mm" }}</td>
               </tr>
             }
           </tbody>
@@ -141,9 +129,7 @@
             >
               ← Préc.
             </button>
-            <span class="page-info"
-              >Page {{ currentPage() + 1 }} / {{ scores()!.totalPages }}</span
-            >
+            <span class="page-info">Page {{ currentPage() + 1 }} / {{ scores()!.totalPages }}</span>
             <button
               class="btn btn-ghost btn-sm"
               [disabled]="currentPage() >= scores()!.totalPages - 1"
@@ -160,7 +146,7 @@
     @if (activeTab() === "distribution") {
       <div class="card" style="padding: 24px">
         <h3 class="section-title" style="margin-bottom: 20px">
-          Distribution des niveaux de risque
+          {{ 'anl_dashboard.dist_title' | translate }}
         </h3>
         @if (dashboard()?.scoringDistribution?.length) {
           <div class="dist-chart">
@@ -179,9 +165,7 @@
             }
           </div>
         } @else {
-          <p class="text-muted text-sm">
-            Aucune donnée de distribution disponible.
-          </p>
+          <p class="text-muted text-sm">{{ 'common.empty' | translate }}</p>
         }
       </div>
     }
@@ -191,7 +175,7 @@
       <div class="card" style="padding: 24px">
         <div class="drift-header">
           <div>
-            <h3 class="section-title">Métriques PSI — Dérive modèle</h3>
+            <h3 class="section-title">{{ 'anl_drift.psi_label' | translate }} — {{ 'anl_drift.title' | translate }}</h3>
             <p class="text-sm text-muted">
               {{ drift()!.modeleActif }} · Entraîné le
               {{ drift()!.dernierEntrainement | date: "dd/MM/yyyy" }}
@@ -202,25 +186,21 @@
             [class.badge-critique]="drift()!.driftDetecte"
             [class.badge-green]="!drift()!.driftDetecte"
           >
-            {{ drift()!.driftDetecte ? "⚠ Dérive détectée" : "✓ Stable" }}
+            {{ drift()!.driftDetecte ? ('anl_drift.psi_drift' | translate) : ('anl_drift.psi_stable' | translate) }}
           </span>
         </div>
         <div class="drift-kpis">
           <div class="drift-kpi">
-            <span class="kpi-label">PSI actuel</span>
-            <span class="kpi-value" [class]="psiClass(drift()!.psiActuel)">{{
-              drift()!.psiActuel | number: "1.3-3"
-            }}</span>
+            <span class="kpi-label">{{ 'anl_drift.psi_label' | translate }}</span>
+            <span class="kpi-value" [class]="psiClass(drift()!.psiActuel)">{{ drift()!.psiActuel | number: "1.3-3" }}</span>
           </div>
           <div class="drift-kpi">
             <span class="kpi-label">Seuil critique</span>
-            <span class="kpi-value text-warning">{{
-              drift()!.seuilCritique | number: "1.2-2"
-            }}</span>
+            <span class="kpi-value text-warning">{{ drift()!.seuilCritique | number: "1.2-2" }}</span>
           </div>
         </div>
         <h4 class="text-sm font-semibold" style="margin: 20px 0 10px">
-          Évolution PSI
+          {{ 'anl_drift.psi_chart_title' | translate }}
         </h4>
         <div class="psi-timeline">
           @for (pt of drift()!.evolutionPsi; track pt.date) {
@@ -237,7 +217,7 @@
           }
         </div>
         <h4 class="text-sm font-semibold" style="margin: 20px 0 10px">
-          Contribution features
+          {{ 'anl_drift.features_title' | translate }}
         </h4>
         <div class="feat-table">
           @for (f of drift()!.contributionFeatures; track f.nom) {
@@ -250,12 +230,8 @@
                   [class]="psiClass(f.psi)"
                 ></div>
               </div>
-              <span class="feat-psi" [class]="psiClass(f.psi)">{{
-                f.psi | number: "1.3-3"
-              }}</span>
-              <span class="text-xs text-muted"
-                >{{ f.contribution * 100 | number: "1.1-1" }}%</span
-              >
+              <span class="feat-psi" [class]="psiClass(f.psi)">{{ f.psi | number: "1.3-3" }}</span>
+              <span class="text-xs text-muted">{{ f.contribution * 100 | number: "1.1-1" }}%</span>
             </div>
           }
         </div>
@@ -266,9 +242,7 @@
     @if (activeTab() === "alertes") {
       <div class="card" style="padding: 0">
         @if (!dashboard()?.alertesRecentes?.length) {
-          <p class="text-muted text-sm" style="padding: 24px">
-            Aucune alerte active.
-          </p>
+          <p class="text-muted text-sm" style="padding: 24px">{{ 'common.empty' | translate }}</p>
         } @else {
           <table class="data-table">
             <thead>
@@ -283,19 +257,13 @@
             <tbody>
               @for (a of dashboard()!.alertesRecentes; track a.id) {
                 <tr>
-                  <td class="font-semibold text-sm">
-                    {{ a.nomClient || "—" }}
-                  </td>
+                  <td class="font-semibold text-sm">{{ a.nomClient || "—" }}</td>
                   <td>
-                    <span class="badge" [class]="niveauClass(a.severite)">{{
-                      a.severite
-                    }}</span>
+                    <span class="badge" [class]="niveauClass(a.severite)">{{ a.severite }}</span>
                   </td>
                   <td class="text-sm">{{ a.encours | number: "1.0-0" }}</td>
                   <td class="text-sm text-muted">{{ a.message }}</td>
-                  <td class="text-xs text-muted">
-                    {{ a.createdAt | date: "dd/MM/yy" }}
-                  </td>
+                  <td class="text-xs text-muted">{{ a.createdAt | date: "dd/MM/yy" }}</td>
                 </tr>
               }
             </tbody>

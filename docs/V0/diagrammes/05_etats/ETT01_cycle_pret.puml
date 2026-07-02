@@ -1,95 +1,121 @@
 @startuml ETT01_cycle_pret
-!theme plain
-skinparam backgroundColor #FAFAFA
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
 skinparam state {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 12
-  ArrowColor #555555
-  ArrowThickness 1.5
+  BackgroundColor white
+  BorderColor #666666
+  ArrowColor #333333
 }
-skinparam stateDiagram {
-  BackgroundColor #FAFAFA
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
 }
 
-title ETT01 — Cycle de Vie d'un Prêt\nDiagramme d'états
+title ETT01 - Cycle de vie d'un credit\nDossierCredit + ContratCredit + Creance
 
-[*] --> ACTIF : Décaissement du prêt\n(date_decaissement = TODAY)
+' -- Phase 1 : Instruction du dossier --
+
+state INSTRUCTION {
+  INSTRUCTION : DossierCredit.statut = INSTRUCTION
+  INSTRUCTION : entry / Agent de Saisie cree le dossier
+  INSTRUCTION : do / Analyste instruit - collecte pieces
+}
+
+state EN_COMITE {
+  EN_COMITE : DossierCredit.statut = EN_COMITE
+  EN_COMITE : do / Deliberation ComiteDecision
+}
+
+state APPROUVE {
+  APPROUVE : DossierCredit.statut = APPROUVE
+  APPROUVE : entry / ContratCredit cree (statut=BROUILLON)
+}
+
+state AJOURNE {
+  AJOURNE : DossierCredit.statut = AJOURNE
+  AJOURNE : do / En attente de complements
+}
+
+state REJETE {
+  REJETE : DossierCredit.statut = REJETE
+}
+
+state CONTRAT_VALIDE {
+  CONTRAT_VALIDE : ContratCredit.statut = ACTIF
+  CONTRAT_VALIDE : DossierCredit.statut = DEBLOQUE
+  CONTRAT_VALIDE : entry / Signatures validees
+  CONTRAT_VALIDE : entry / Creance creee (statut=ACTIF)
+}
+
+' -- Phase 2 : Cycle de la creance --
 
 state ACTIF {
-  [*] --> surveillance
-  surveillance : Remboursements attendus\njours_retard = 0
-  surveillance --> surveillance : Remboursement reçu\nà temps (δ=0)
+  ACTIF : Creance.statut = ACTIF
+  ACTIF : entry / Echeancier genere
+  ACTIF : do / Collectes terrain appliquees
 }
-
-ACTIF : Prêt en cours\njours_retard = 0\nstatut = ACTIF
-ACTIF : --
-ACTIF : entry / Créer échéancier complet
-ACTIF : entry / Initialiser capital_restant_du
-ACTIF : do / Surveiller dates d'échéances
-
-ACTIF --> EN_RETARD : Échéance impayée détectée\n(pipeline quotidien J+1)\ndate_echeance < TODAY\nAND montant_restant > 0
-
-ACTIF --> SOLDE : Dernier remboursement reçu\nAND capital_restant_du = 0
 
 state EN_RETARD {
-  [*] --> par30
-  par30 : 1 à 30 jours de retard
-  par30 --> par60 : > 30 jours
-  par60 : 31 à 60 jours de retard
-  par60 --> par90 : > 60 jours
-  par90 : 61 à 90+ jours de retard
+  EN_RETARD : Creance.statut = EN_RETARD
+  EN_RETARD : do / AlerteImpaye generee (dag_alertes 08h00)
+  EN_RETARD : COBAC B (30-89j, 20%) / C (90-179j, 50%) / D (180-359j, 80%)
 }
-
-EN_RETARD : Au moins une échéance impayée\njours_retard ∈ [1, ∞[\nstatut = EN_RETARD
-EN_RETARD : --
-EN_RETARD : entry / Générer alerte impayé
-EN_RETARD : entry / Envoyer push FCM + email
-EN_RETARD : do / Incrémenter jours_retard quotidiennement
-EN_RETARD : do / Surveiller relances agents
-
-EN_RETARD --> ACTIF : Remboursement total des arriérés\n(jours_retard revient à 0)
-EN_RETARD --> SOLDE : Paiement intégral reçu\n(capital_restant_du = 0)
-EN_RETARD --> EN_RECOUVREMENT : jours_retard > 90\n(PAR90 atteint)
 
 state EN_RECOUVREMENT {
-  [*] --> procedure
-  procedure : Procédure recouvrement engagée
-  procedure --> relance : Agent assigné
-  relance : Relances multiples
+  EN_RECOUVREMENT : Creance.statut = EN_RECOUVREMENT
+  EN_RECOUVREMENT : entry / AlerteImpaye.statut = ESCALADEE
+  EN_RECOUVREMENT : do / Plan d'apurement (amiable) ou procedure contentieuse
 }
-
-EN_RECOUVREMENT : Créance en procédure légale / intensive\njours_retard > 90\nstatut = EN_RECOUVREMENT
-EN_RECOUVREMENT : --
-EN_RECOUVREMENT : entry / Escalade au Directeur
-EN_RECOUVREMENT : entry / Notification push Directeur
-EN_RECOUVREMENT : do / Suivi procédure de recouvrement
-EN_RECOUVREMENT : do / Reporting mensuel write-off potentiel
-
-EN_RECOUVREMENT --> SOLDE : Recouvrement réussi\n(paiement intégral ou accord partiel)
-EN_RECOUVREMENT --> PERTE : Jugé irrécouvrable\n(décision Directeur + Comité)
 
 state SOLDE {
-  SOLDE : capital_restant_du = 0
+  SOLDE : Creance.statut = SOLDE
+  SOLDE : entry / AlerteImpaye CLOTUREE
+  SOLDE : entry / dag_ml_scoring recalcule MCRS
 }
-
-SOLDE : Prêt entièrement remboursé\nencours = 0\nstatut = SOLDE
-SOLDE : --
-SOLDE : entry / Clôturer toutes alertes actives
-SOLDE : entry / Mise à jour historique client
-SOLDE : entry / Recalcul score risque client (amélioration)
 
 state PERTE {
-  PERTE : Write-off comptable enregistré
+  PERTE : Creance.statut = PERTE
+  PERTE : COBAC classe E - provision 100%
+  PERTE : entry / Write-off acte
 }
 
-PERTE : Perte définitive comptabilisée\nmontant passé en perte (write-off)\nstatut = PERTE
-PERTE : --
-PERTE : entry / Clôturer alertes
-PERTE : entry / Enregistrement comptable perte
-PERTE : entry / Impact négatif score risque client
+' -- Transitions Phase 1 --
 
-SOLDE --> [*]
-PERTE --> [*]
+[*]             --> INSTRUCTION
+INSTRUCTION     --> EN_COMITE      : Soumission au comite
+EN_COMITE       --> APPROUVE       : Approbation comite
+EN_COMITE       --> AJOURNE        : Ajournement - pieces manquantes
+EN_COMITE       --> REJETE         : Refus comite
+AJOURNE         --> INSTRUCTION    : Pieces completees
+APPROUVE        --> CONTRAT_VALIDE : Contrat signe et valide
+APPROUVE        --> REJETE         : Defaut de signature
+REJETE          --> [*]
+
+' -- Transitions Phase 2 --
+
+CONTRAT_VALIDE  --> ACTIF
+ACTIF           --> EN_RETARD      : Premier impaye detecte\n(dag_alertes_impayes)
+ACTIF           --> SOLDE          : Dernier paiement recu
+EN_RETARD       --> ACTIF          : Regularisation integrale
+EN_RETARD       --> EN_RECOUVREMENT : joursRetard > 90\nou escalade manuelle Directeur
+EN_RECOUVREMENT --> SOLDE          : Recouvrement reussi
+EN_RECOUVREMENT --> PERTE          : Irrecouvrabilite constatee\n(jours > 360 - COBAC classe E)
+SOLDE           --> [*]
+PERTE           --> [*]
+
+note right of EN_RETARD
+  Classification COBAC :
+  Classe B : 30-89 jours  (provision 20%)
+  Classe C : 90-179 jours (provision 50%)
+  Classe D : 180-359 jours (provision 80%)
+end note
+
+note right of PERTE
+  Classe E : >= 360 jours
+  Provision 100%
+  Creance definitivement irrecouvreable
+end note
 
 @enduml

@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { BaseChartDirective } from "ng2-charts";
 import { ChartData, ChartOptions } from "chart.js";
 import { ApiService } from "../../../core/http/api.service";
@@ -28,6 +29,7 @@ interface AnlDashboardData {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    TranslatePipe,
     BaseChartDirective,
     StatCardComponent,
     AlertBadgeComponent,

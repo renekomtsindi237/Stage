@@ -1,142 +1,165 @@
 @startuml ARCH05_MCD
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam entityBackgroundColor #EEF4FF
-skinparam entityBorderColor #4A6CF7
-skinparam entityFontSize 12
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
-
-title ARCH05 — Modèle Conceptuel des Données (MCD)\nPlateforme IMF Cameroun
-
-entity "ZONE" as ZONE {
-  * id_zone : INTEGER
-  --
-  nom_zone : VARCHAR(100)
-  region : VARCHAR(100)
-  type_zone : VARCHAR(20)\n  {URBAIN, SEMI_URBAIN, RURAL}
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam entity {
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
+  HeaderFontColor #333333
 }
 
-entity "CLIENT" as CLIENT {
-  * id_client : INTEGER
+title ARCH05 - Modele Conceptuel des Donnees (MCD)\nSchema app - entites principales
+
+entity "IMF" {
+  * uid : UUID
   --
-  nom : VARCHAR(100)
-  prenom : VARCHAR(100)
-  telephone : VARCHAR(20)
-  date_adhesion : DATE
-  date_creation : TIMESTAMP
-  date_modification : TIMESTAMP
+  nom : VARCHAR(200)
+  code : VARCHAR(20)
+  pays : VARCHAR(50)
 }
 
-entity "AGENT" as AGENT {
-  * id_agent : INTEGER
+entity "AGENCE" {
+  * uid : UUID
   --
-  nom : VARCHAR(100)
-  prenom : VARCHAR(100)
-  telephone : VARCHAR(20)
-  agence : VARCHAR(100)
+  nom : VARCHAR(200)
+  adresse : VARCHAR(500)
   actif : BOOLEAN
 }
 
-entity "PRODUIT_CREDIT" as PRODUIT {
-  * id_produit : INTEGER
+entity "USER" {
+  * uid : UUID
   --
-  nom_produit : VARCHAR(150)
-  taux_interet : NUMERIC(5,2)
-  duree_max_mois : INTEGER
-  montant_min : NUMERIC(15,2)
-  montant_max : NUMERIC(15,2)
+  email : VARCHAR(255)
+  nomComplet : VARCHAR(200)
+  role : VARCHAR(30)
+  actif : BOOLEAN
 }
 
-entity "PRET" as PRET {
-  * id_pret : INTEGER
+entity "CLIENT_INFORMEL" {
+  * uid : UUID
   --
-  montant_octroye : NUMERIC(15,2)
-  date_decaissement : DATE
-  date_echeance_finale : DATE
-  nombre_echeances : INTEGER
+  nom : VARCHAR(200)
+  prenom : VARCHAR(200)
+  telephone : VARCHAR(20)
+  secteurActivite : VARCHAR(100)
+  dateAdhesion : DATE
+}
+
+entity "KYC_DOSSIER" {
+  * uid : UUID
+  --
   statut : VARCHAR(30)
-  date_creation : TIMESTAMP
-  date_modification : TIMESTAMP
+  ' EN_ATTENTE | DOCUMENTS_SOUMIS
+  ' APPROUVE | REJETE
+  dateVerification : TIMESTAMP
 }
 
-entity "ECHEANCE" as ECHEANCE {
-  * id_echeance : INTEGER
+entity "DOSSIER_CREDIT" {
+  * uid : UUID
   --
-  numero_echeance : INTEGER
-  date_echeance : DATE
-  montant_du : NUMERIC(15,2)
+  montantDemande : NUMERIC(15,2)
+  dureeMois : INTEGER
+  objetFinancement : VARCHAR(500)
+  statut : VARCHAR(30)
+  ' INSTRUCTION | EN_COMITE
+  ' APPROUVE | REJETE | AJOURNE | DEBLOQUE
+  dateDecision : TIMESTAMP
+}
+
+entity "CONTRAT_CREDIT" {
+  * uid : UUID
+  --
+  referenceContrat : VARCHAR(50)
+  montantFinal : NUMERIC(15,2)
+  tauxInteret : NUMERIC(5,2)
+  nbEcheances : INTEGER
+  periodicite : VARCHAR(20)
+  statut : VARCHAR(30)
+  ' BROUILLON | SOUMIS | VALIDE | ACTIF | REJETE
+  signaturesConformes : BOOLEAN
+}
+
+entity "CREANCE" {
+  * uid : UUID
+  --
+  montantTotal : NUMERIC(15,2)
+  montantRembourse : NUMERIC(15,2)
+  joursRetard : INTEGER
+  statut : VARCHAR(30)
+  ' ACTIF | EN_RETARD | EN_RECOUVREMENT | SOLDE | PERTE
+  classeCOBAC : CHAR(1)
+}
+
+entity "COLLECTE_TERRAIN" {
+  * uid : UUID
+  --
+  montantCollecte : NUMERIC(15,2)
+  dateCollecte : DATE
+  canal : VARCHAR(30)
+  statut : VARCHAR(20)
+  ' SOUMISE | CONFIRMEE | REJETEE
+  synchronise : BOOLEAN
+}
+
+entity "ALERTE_IMPAYE" {
+  * uid : UUID
+  --
+  joursRetard : INTEGER
+  montantEnRetard : NUMERIC(15,2)
+  statutAlerte : VARCHAR(20)
+  ' ACTIVE | ESCALADEE | CLOTUREE
+}
+
+entity "CLIENT_SCORE" {
+  * uid : UUID
+  --
+  scoreMcrs : NUMERIC(4,3)
+  scoreCrs : NUMERIC(4,3)
+  scoreRps : NUMERIC(4,3)
+  scoreCsi : NUMERIC(4,3)
+  niveauRisque : VARCHAR(10)
+  ' FAIBLE | MODERE | ELEVE | CRITIQUE
+  dateCalcul : TIMESTAMP
+}
+
+entity "PLAN_APUREMENT" {
+  * uid : UUID
+  --
+  montantAccorde : NUMERIC(15,2)
+  nombreEcheances : INTEGER
   statut : VARCHAR(20)
 }
 
-entity "TRANSACTION\nMOBILE MONEY" as TRANSACTION {
-  * id_transaction : INTEGER
+entity "NOTIFICATION" {
+  * uid : UUID
   --
-  reference_externe : VARCHAR(100)
-  date_transaction : TIMESTAMP
-  montant : NUMERIC(15,2)
-  operateur : VARCHAR(20)\n  {MTN, ORANGE}
-  numero_expediteur : VARCHAR(20)
-  statut_transaction : VARCHAR(20)
-  hash_dedup : VARCHAR(64)
+  type : VARCHAR(50)
+  titre : VARCHAR(200)
+  lu : BOOLEAN
+  createdAt : TIMESTAMP
 }
 
-entity "REMBOURSEMENT" as REMBOURSEMENT {
-  * id_remboursement : INTEGER
-  --
-  date_paiement : DATE
-  montant_paye : NUMERIC(15,2)
-  canal_paiement : VARCHAR(30)
-  reference_transaction : VARCHAR(100)
-  ' FK → TRANSACTION (nullable si espèces)
-}
+' -- Relations --
+IMF      ||--o{ AGENCE           : "possede (1,n)"
+IMF      ||--o{ USER             : "emploie (1,n)"
+AGENCE   ||--o{ USER             : "rattache (1,n)"
+USER     ||--o{ COLLECTE_TERRAIN : "effectue (1,n)"
+USER     |o--o{ NOTIFICATION     : "recoit (0,n)"
 
-entity "COLLECTE\nTERRAIN" as COLLECTE {
-  * id_collecte : INTEGER
-  --
-  date_collecte : DATE
-  montant_collecte : NUMERIC(15,2)
-  mode_paiement : VARCHAR(30)
-  observation : VARCHAR(500)
-}
+CLIENT_INFORMEL   ||--o{ DOSSIER_CREDIT     : "souscrit (1,n)"
+CLIENT_INFORMEL   ||--o{ COLLECTE_TERRAIN   : "verse (1,n)"
+CLIENT_INFORMEL   |o--o| KYC_DOSSIER        : "verifie (0,1)"
+CLIENT_INFORMEL   |o--o| CLIENT_SCORE       : "score (0,1)"
 
-entity "ALERTE\nIMPAYE" as ALERTE {
-  * id_alerte : INTEGER
-  --
-  date_generation : DATE
-  jours_retard : INTEGER
-  montant_en_retard : NUMERIC(15,2)
-  statut_alerte : VARCHAR(20)\n  {ACTIVE, CLOTUREE, ESCALADEE}
-  date_cloture : DATE
-  fcm_sent : BOOLEAN
-  email_sent : BOOLEAN
-  date_modification : TIMESTAMP
-}
-
-entity "USER\n(Plateforme)" as USER {
-  * id_user : INTEGER
-  --
-  username : VARCHAR(50)
-  password_hash : VARCHAR(255)
-  role : VARCHAR(30)
-  fcm_token : VARCHAR(500)
-  actif : BOOLEAN
-}
-
-' ===== RELATIONS =====
-AGENT  |o--o| USER        : "correspond à\n(0,1)—(0,1)"
-CLIENT ||--o{ PRET        : "souscrit\n(1,n)"
-PRODUIT ||--o{ PRET       : "classifie\n(1,n)"
-PRET ||--|{ ECHEANCE      : "décomposé en\n(1,n)"
-AGENT }o--o{ PRET         : "gère\n(0,n)—(0,1)"
-ECHEANCE ||--o{ REMBOURSEMENT : "soldée par\n(1,n)"
-REMBOURSEMENT ||--o| TRANSACTION : "liée à\n(0,1)"
-PRET ||--o{ ALERTE        : "génère\n(1,n)"
-AGENT ||--o{ COLLECTE     : "effectue\n(1,n)"
-PRET ||--o{ COLLECTE      : "alimentée par\n(0,n)"
-CLIENT }|--|| ZONE        : "réside dans\n(n,1)"
-AGENT  }|--|| ZONE        : "affecté à\n(n,1)"
-USER   }|--o| ZONE        : "responsable de\n(n,0..1)"
+DOSSIER_CREDIT    |o--o| CONTRAT_CREDIT     : "genere (0,1)"
+CONTRAT_CREDIT    |o--o| CREANCE            : "produit (0,1)"
+CREANCE           |o--o{ PLAN_APUREMENT     : "restructure (0,n)"
+CREANCE           ||--o{ ALERTE_IMPAYE      : "declenche (1,n)"
+CREANCE           |o--o{ COLLECTE_TERRAIN   : "alimente (0,n)"
 
 @enduml

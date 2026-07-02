@@ -7,6 +7,7 @@ import {
   ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 
 interface CheckItem {
@@ -39,7 +40,7 @@ interface ConformiteData {
   selector: "app-eng-conformite",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./eng-conformite.component.html",
   styleUrls: ["./eng-conformite.component.scss"],
 })

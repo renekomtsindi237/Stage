@@ -1,6 +1,6 @@
 <div class="page-content">
   <div class="page-header">
-    <h2>Nouveau Dossier de Crédit</h2>
+    <h2>{{ 'ac_nouveau.title' | translate }}</h2>
   </div>
 
   <!-- Steps indicator -->
@@ -17,7 +17,12 @@
           }
         </div>
         <span class="step__label">{{
-          ["Client", "Montant", "Garantie", "Confirmation"][s - 1]
+          [
+            ('ac_nouveau.step_client' | translate),
+            ('ac_nouveau.step_montant' | translate),
+            ('ac_nouveau.step_garantie' | translate),
+            ('ac_nouveau.step_confirmation' | translate)
+          ][s - 1]
         }}</span>
       </div>
     }
@@ -26,13 +31,13 @@
   <div class="card step-card">
     <!-- ÉTAPE 1 : Client -->
     @if (step() === 1) {
-      <h3>Sélectionner le client</h3>
+      <h3>{{ 'ac_nouveau.step1_title' | translate }}</h3>
       @if (!selectedClient()) {
         <div class="search-bar" style="margin: 16px 0">
           <span class="material-icons-round">search</span>
           <input
             type="text"
-            placeholder="Nom, code ou téléphone..."
+            [placeholder]="'ac_nouveau.step1_search' | translate"
             (input)="search($any($event.target).value)"
           />
         </div>
@@ -42,7 +47,7 @@
               <div class="client-result" (click)="selectClient(c)">
                 <p class="font-semibold">{{ c.nomClient }}</p>
                 <p class="text-sm text-muted">
-                  {{ c.idClient }} · Encours: {{ c.encours | number }} FCFA
+                  {{ c.idClient }} · {{ 'ac_nouveau.step1_encours' | translate }}: {{ c.encours | number }} FCFA
                 </p>
               </div>
             }
@@ -63,7 +68,7 @@
             class="btn btn-ghost btn-sm"
             (click)="selectedClient.set(null)"
           >
-            Changer
+            {{ 'ac_nouveau.change_client' | translate }}
           </button>
         </div>
       }
@@ -71,34 +76,34 @@
 
     <!-- ÉTAPE 2 : Montant -->
     @if (step() === 2) {
-      <h3>Montant et conditions</h3>
+      <h3>{{ 'ac_nouveau.step2_title' | translate }}</h3>
       <form [formGroup]="montantForm" style="margin-top: 16px">
         <div class="form-row">
           <div class="form-group">
-            <label>Montant demandé (FCFA)</label>
+            <label>{{ 'ac_nouveau.montant_label' | translate }}</label>
             <input
               type="number"
               class="form-control"
               formControlName="montant"
-              placeholder="Ex: 500000"
+              [placeholder]="'ac_nouveau.montant_placeholder' | translate"
             />
           </div>
           <div class="form-group">
-            <label>Durée (mois)</label>
+            <label>{{ 'ac_nouveau.duree_label' | translate }}</label>
             <input
               type="number"
               class="form-control"
               formControlName="duree"
-              placeholder="Ex: 24"
+              [placeholder]="'ac_nouveau.duree_placeholder' | translate"
             />
           </div>
         </div>
         <div class="form-group">
-          <label>Objet du crédit</label>
+          <label>{{ 'ac_nouveau.objet_label' | translate }}</label>
           <select class="form-control" formControlName="objectif">
-            <option value="CREATION">Création d'entreprise</option>
-            <option value="FONDS_ROULEMENT">Fonds de roulement</option>
-            <option value="INVESTISSEMENT">Investissement productif</option>
+            <option value="CREATION">{{ 'ac_nouveau.obj_creation' | translate }}</option>
+            <option value="FONDS_ROULEMENT">{{ 'ac_nouveau.obj_fonds' | translate }}</option>
+            <option value="INVESTISSEMENT">{{ 'ac_nouveau.obj_invest' | translate }}</option>
           </select>
         </div>
       </form>
@@ -106,33 +111,33 @@
 
     <!-- ÉTAPE 3 : Garantie -->
     @if (step() === 3) {
-      <h3>Garanties</h3>
+      <h3>{{ 'ac_nouveau.step3_title' | translate }}</h3>
       <form [formGroup]="garantieForm" style="margin-top: 16px">
         <div class="form-group">
-          <label>Type de garantie</label>
+          <label>{{ 'ac_nouveau.garantie_type' | translate }}</label>
           <select class="form-control" formControlName="typeGarantie">
-            <option value="CAUTIONNEMENT">Cautionnement</option>
-            <option value="HYPOTHEQUE">Hypothèque</option>
-            <option value="NANTISSEMENT">Nantissement</option>
-            <option value="IMMOBILIER">Immobilier</option>
+            <option value="CAUTIONNEMENT">{{ 'ac_nouveau.cautionnement' | translate }}</option>
+            <option value="HYPOTHEQUE">{{ 'ac_nouveau.hypotheque' | translate }}</option>
+            <option value="NANTISSEMENT">{{ 'ac_nouveau.nantissement' | translate }}</option>
+            <option value="IMMOBILIER">{{ 'ac_nouveau.immobilier' | translate }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Valeur estimée (FCFA)</label>
+          <label>{{ 'ac_nouveau.garantie_valeur' | translate }}</label>
           <input
             type="number"
             class="form-control"
             formControlName="valeur"
-            placeholder="Ex: 1000000"
+            [placeholder]="'ac_nouveau.garantie_valeur_ph' | translate"
           />
         </div>
         <div class="form-group">
-          <label>Description</label>
+          <label>{{ 'ac_nouveau.garantie_desc' | translate }}</label>
           <textarea
             class="form-control"
             formControlName="description"
             rows="3"
-            placeholder="Description de la garantie..."
+            [placeholder]="'ac_nouveau.garantie_desc_ph' | translate"
           ></textarea>
         </div>
       </form>
@@ -140,27 +145,27 @@
 
     <!-- ÉTAPE 4 : Confirmation -->
     @if (step() === 4) {
-      <h3>Confirmation</h3>
+      <h3>{{ 'ac_nouveau.step4_title' | translate }}</h3>
       <div class="summary">
         <div class="summary-row">
-          <span>Client</span><strong>{{ selectedClient()?.nomClient }}</strong>
+          <span>{{ 'ac_nouveau.sum_client' | translate }}</span><strong>{{ selectedClient()?.nomClient }}</strong>
         </div>
         <div class="summary-row">
-          <span>Montant</span
+          <span>{{ 'ac_nouveau.sum_montant' | translate }}</span
           ><strong>{{ montantForm.value.montant | number }} FCFA</strong>
         </div>
         <div class="summary-row">
-          <span>Durée</span><strong>{{ montantForm.value.duree }} mois</strong>
+          <span>{{ 'ac_nouveau.sum_duree' | translate }}</span><strong>{{ montantForm.value.duree }} {{ 'common.months' | translate }}</strong>
         </div>
         <div class="summary-row">
-          <span>Objet</span><strong>{{ objectifLabel }}</strong>
+          <span>{{ 'ac_nouveau.sum_objet' | translate }}</span><strong>{{ objectifLabel }}</strong>
         </div>
         <div class="summary-row">
-          <span>Garantie</span
+          <span>{{ 'ac_nouveau.sum_garantie' | translate }}</span
           ><strong>{{ garantieForm.value.typeGarantie }}</strong>
         </div>
         <div class="summary-row">
-          <span>Valeur garantie</span
+          <span>{{ 'ac_nouveau.sum_valeur' | translate }}</span
           ><strong>{{ garantieForm.value.valeur | number }} FCFA</strong>
         </div>
       </div>
@@ -170,7 +175,7 @@
     <div class="step-nav">
       @if (step() > 1) {
         <button class="btn btn-ghost" (click)="prevStep()">
-          <span class="material-icons-round">arrow_back</span> Précédent
+          <span class="material-icons-round">arrow_back</span> {{ 'ac_nouveau.prev_btn' | translate }}
         </button>
       } @else {
         <span></span>
@@ -181,7 +186,7 @@
           (click)="nextStep()"
           [disabled]="step() === 1 && !selectedClient()"
         >
-          Suivant <span class="material-icons-round">arrow_forward</span>
+          {{ 'ac_nouveau.next_btn' | translate }} <span class="material-icons-round">arrow_forward</span>
         </button>
       } @else {
         <button
@@ -194,7 +199,7 @@
           } @else {
             <span class="material-icons-round">send</span>
           }
-          Soumettre le dossier
+          {{ 'ac_nouveau.submit_btn' | translate }}
         </button>
       }
     </div>

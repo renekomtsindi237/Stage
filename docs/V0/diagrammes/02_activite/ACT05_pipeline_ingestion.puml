@@ -1,88 +1,89 @@
 @startuml ACT05_pipeline_ingestion
-!theme plain
-skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
 skinparam activity {
-  BackgroundColor #EDE7F6
-  BorderColor #4527A0
-  FontSize 11
-  DiamondBackgroundColor #E3F2FD
-  DiamondBorderColor #1565C0
+  BackgroundColor white
+  BorderColor #666666
+  DiamondBackgroundColor white
+  DiamondBorderColor #666666
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
+}
 
-title ACT05 — Pipeline d'Ingestion Quotidien\nVue d'ensemble Airflow
+title ACT05 - Pipeline d'Ingestion Quotidien\nVue d'ensemble Airflow 2.8.4
 
-|#EDE7F6| Airflow Scheduler |
-|#E8F5E9| Sources (MTN/Orange/CBS/Agents) |
-|#F3E5F5| PostgreSQL Raw |
-|#FFF9C4| dbt Core |
-|#FCE4EC| PostgreSQL DW |
-|#E3F2FD| Superset / Spring Boot |
+| Airflow Scheduler |
+| Sources (MTN/Orange/CBS/Mobile) |
+| PostgreSQL raw |
+| dbt Core 1.8 |
+| PostgreSQL dw/ml |
+| Spring Boot API |
 
 start
 
 |Airflow Scheduler|
-:Déclenchement automatique\n06h00 (cron: 0 6 * * *);
+:Declenchement automatique\n06h00 (cron: 0 6 * * *);
 
 fork
-  |Sources (MTN/Orange/CBS/Agents)|
-  :MTN CSV — téléchargement\ndossier sources;
+  |Sources (MTN/Orange/CBS/Mobile)|
+  :MTN MoMo API - dag_ingestion_mtn;
 fork again
-  :Orange CSV — téléchargement\ndossier sources;
+  :Orange Money API - dag_ingestion_orange;
 fork again
-  :CBS CSV — export planifié;
+  :CBS - export quotidien - dag_ingestion_cbs;
 fork again
-  :Agents Excel — dépôt\nnouveaux fichiers;
+  :App Mobile Flutter - collectes terrain;
 end fork
 
 |Airflow Scheduler|
-:Détection nouveaux fichiers\nnon encore traités;
+:Detection donnees\nnon encore traitees;
 
-|PostgreSQL Raw|
-:LOAD INTO raw.transactions_mtn\nraw.transactions_orange\nraw.prets_cbs\nraw.collectes_agents;
-
-|Airflow Scheduler|
-:Calcul hash SHA-256\n(déduplication);
-
-|PostgreSQL Raw|
-:INSERT ... ON CONFLICT (hash_dedup)\nDO NOTHING;
+|PostgreSQL raw|
+:LOAD INTO raw schema\n(sources brutes horodatees);
 
 |Airflow Scheduler|
-:Validation des données\n(types, montants > 0, dates valides);
+:Calcul UUID\n(deduplication inter-appels);
 
-if (Erreurs critiques\ndétectées ?) then (Oui)
-  :Rejet lignes erronées\n→ table error_log;
+|PostgreSQL raw|
+:INSERT ON CONFLICT DO NOTHING;
+
+|Airflow Scheduler|
+:Validation des donnees\n(types, montants > 0, dates valides);
+
+if (Erreurs critiques\ndetectees ?) then (Oui)
+  :Rejet lignes erronees\n-> table error_log;
   :Notification email DSI;
 else (Non)
 endif
 
-|dbt Core|
-:dbt run --select staging.*\n(raw → staging :\nnettoyage, normalisation);
-:dbt run --select marts.*\n(staging → DW :\nfacts + dimensions);
-:dbt test --select ...\n(not_null, unique,\naccepted_values);
+|dbt Core 1.8|
+:dbt run --select staging.*\n(raw -> staging : nettoyage, normalisation);
+:dbt run --select intermediate.*\n(staging -> int : agregats metier);
+:dbt run --select mart.*\n(int -> dw : mart_kpi_collecte,\nmart_kpi_recouvrement,\nmart_benchmarks_agences);
+:dbt run --select ml.*\n(ml_feat_* : feature engineering);
+:dbt test\n(not_null, unique, accepted_values);
 
-if (Tests dbt\néchecs ?) then (Oui)
+if (Tests dbt\nechecs ?) then (Oui)
   |Airflow Scheduler|
   :Alerte email DSI\n+ log erreur;
   stop
 else (Non)
 endif
 
-|PostgreSQL DW|
-:DW mis à jour\n(fact_collectes,\nfact_remboursements,\nfact_par_quotidien);
+|PostgreSQL dw/ml|
+:DW mis a jour\n(mart_kpi_*, ml.features_client);
 
-|dbt Core|
-:REFRESH MATERIALIZED VIEW\nreporting.v_kpi_collectes\nreporting.v_kpi_recouvrement;
-
-|Superset / Spring Boot|
-:Données disponibles\npour dashboards Angular\net app Flutter;
-:Déclenchement dag_alertes\n(calcul PAR30/90\n+ envoi push FCM);
+|Spring Boot API|
+:Donnees disponibles\npour dashboards Angular a 08h00;
+:Declenchement dag_alertes_impayes\n(calcul PAR30/90 + alertes SSE/FCM);
 
 |Airflow Scheduler|
-:Log exécution terminée\n(durée, volumes, statut);
-:Notification succès\npar email;
+:Log execution terminee\n(duree, volumes, statut);
 
 stop
 

@@ -1,31 +1,31 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Dashboard DSI</h2>
-      <p class="text-muted text-sm">Administration système et conformité</p>
+      <h2>{{ 'dsi_dashboard.title' | translate }}</h2>
+      <p class="text-muted text-sm">{{ 'dsi_dashboard.subtitle' | translate }}</p>
     </div>
   </div>
 
   <!-- ── KPI cards ── -->
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card
-      label="Utilisateurs actifs"
+      [label]="'dsi_dashboard.kpi_users' | translate"
       [value]="data()?.utilisateursActifs ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Alertes système"
+      [label]="'dsi_dashboard.kpi_alertes' | translate"
       [value]="data()?.alertesSysteme ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Score RGPD"
+      [label]="'dsi_dashboard.kpi_rgpd' | translate"
       [value]="data()?.rgpdScore ?? 0"
       [loading]="loading()"
       [isPercent]="true"
     />
     <app-stat-card
-      label="Violations ouvertes"
+      [label]="'dsi_dashboard.kpi_violations' | translate"
       [value]="data()?.violationsOuvertes ?? 0"
       [loading]="loading()"
     />
@@ -37,7 +37,7 @@
     <div class="chart-card">
       <h3 class="chart-title">
         <span class="material-icons-round">security</span>
-        Score de conformité RGPD
+        {{ 'dsi_dashboard.rgpd_gauge_title' | translate }}
       </h3>
       @if (loading()) {
         <div class="chart-skeleton"></div>
@@ -70,11 +70,11 @@
             <span class="gauge-value" [style.color]="rgpdColor()">
               {{ data()?.rgpdScore ?? 0 }}%
             </span>
-            <span class="gauge-label">conformité</span>
+            <span class="gauge-label">{{ 'dsi_dashboard.rgpd_gauge_label' | translate }}</span>
           </div>
         </div>
         <div class="gauge-meta">
-          Dernier audit :
+          {{ 'dsi_dashboard.rgpd_last_audit' | translate }}
           <strong>{{ data()?.dernierAudit | date: "dd/MM/yyyy" }}</strong>
         </div>
       }
@@ -84,7 +84,7 @@
     <div class="chart-card chart-card--bars">
       <h3 class="chart-title">
         <span class="material-icons-round">bar_chart</span>
-        Indicateurs mesurables
+        {{ 'dsi_dashboard.bars_title' | translate }}
       </h3>
       @if (loading()) {
         <div class="chart-skeleton"></div>
@@ -124,17 +124,17 @@
     <a routerLink="/dsi/users" class="quick-link-card">
       <span class="material-icons-round">manage_accounts</span>
       <div>
-        <h4>Gestion Utilisateurs</h4>
-        <p class="text-sm text-muted">Créer, désactiver, réinitialiser</p>
+        <h4>{{ 'dsi_dashboard.nav_users_title' | translate }}</h4>
+        <p class="text-sm text-muted">{{ 'dsi_dashboard.nav_users_desc' | translate }}</p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
     </a>
     <a routerLink="/dsi/audit" class="quick-link-card">
       <span class="material-icons-round">history_edu</span>
       <div>
-        <h4>Audit Trail</h4>
+        <h4>{{ 'dsi_dashboard.nav_audit_title' | translate }}</h4>
         <p class="text-sm text-muted">
-          Dernière consultation :
+          {{ 'dsi_dashboard.nav_audit_desc' | translate }}
           {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
         </p>
       </div>
@@ -143,9 +143,9 @@
     <a routerLink="/dsi/rgpd" class="quick-link-card">
       <span class="material-icons-round">security</span>
       <div>
-        <h4>Conformité RGPD</h4>
+        <h4>{{ 'dsi_dashboard.nav_rgpd_title' | translate }}</h4>
         <p class="text-sm text-muted">
-          {{ data()?.demandesDroits ?? 0 }} demandes en attente
+          {{ data()?.demandesDroits ?? 0 }} {{ 'dsi_dashboard.nav_rgpd_pending' | translate }}
         </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
@@ -153,9 +153,9 @@
     <a routerLink="/dsi/monitoring" class="quick-link-card">
       <span class="material-icons-round">monitor_heart</span>
       <div>
-        <h4>Monitoring</h4>
+        <h4>{{ 'dsi_dashboard.nav_monitoring_title' | translate }}</h4>
         <p class="text-sm text-muted">
-          Santé des services et connexions récentes
+          {{ 'dsi_dashboard.nav_monitoring_desc' | translate }}
         </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>

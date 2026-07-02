@@ -38,4 +38,6 @@ public interface CollecteRepository extends JpaRepository<CollecteTerrain, Long>
             """)
     List<CollecteTerrain> findByStatutAndDateRange(
             StatutCollecte statut, LocalDate debut, LocalDate fin);
+
+    long countByImfIdAndDateCollecte(Long imfId, LocalDate dateCollecte);
 }

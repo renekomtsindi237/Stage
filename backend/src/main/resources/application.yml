@@ -135,6 +135,8 @@ server:
     context-path: /
 
 app:
+  api:
+    encryption-key: ${API_ENCRYPTION_KEY:microrecouv_api_enc_key_change_in_prod_32c}
   security:
     cookie-secure: false   # true en prod (application-prod.yml)
     rate-limit:

@@ -1,120 +1,98 @@
 @startuml ETT03_cycle_collecte_mobile
-!theme plain
-skinparam backgroundColor #FAFAFA
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
 skinparam state {
-  BackgroundColor #E8EAF6
-  BorderColor #3949AB
-  FontSize 12
-  ArrowColor #555555
-  ArrowThickness 1.5
+  BackgroundColor white
+  BorderColor #666666
+  ArrowColor #333333
+}
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
 }
 
-title ETT03 — Cycle de Vie d'une Collecte Mobile (Flutter)\nGestion Offline-First + Synchronisation
+title ETT03 - Cycle de vie d'une collecte mobile (Flutter)\nGestion Offline-First + Synchronisation
 
-[*] --> DRAFT : Agent ouvre le formulaire\n(SaisieCollecteScreen)
+[*] --> DRAFT : Agent ouvre le formulaire\n(CollecteScreen)
 
-DRAFT : Saisie en cours\nFormulaire non soumis
-DRAFT : --
-DRAFT : do / Saisie montant, client, canal
-
-DRAFT --> ABANDONED : Agent ferme\nsans soumettre
-
-DRAFT --> VALIDATING : Agent soumet\n(bouton "Enregistrer")
+DRAFT : entry / Saisie montant, client, canal
+DRAFT --> ABANDONED : Agent ferme sans soumettre
+DRAFT --> VALIDATING : Agent soumet (bouton Enregistrer)
 
 ABANDONED --> [*]
 
 state VALIDATING {
   [*] --> form_check
-  form_check : Validation Dart côté client\n(montant > 0, client sélectionné)
+  form_check : Validation Dart cote client\n(montant > 0, client selectionne)
 }
 
-VALIDATING : Validation en cours
-VALIDATING --> DRAFT : Erreur validation\n(champ manquant / montant invalide)
-VALIDATING --> SENDING : Validation OK\nConnexion disponible
-VALIDATING --> PENDING_SYNC : Validation OK\nHors ligne
+VALIDATING --> DRAFT       : Erreur validation\n(champ manquant / montant invalide)
+VALIDATING --> SENDING     : Validation OK - connexion disponible
+VALIDATING --> PENDING_SYNC : Validation OK - hors ligne
 
 state SENDING {
   [*] --> http_post
-  http_post : POST /api/collectes\n(Spring Boot API)
+  http_post : POST /api/v1/collectes\n(Spring Boot API)\nCookie: imf_access
 }
 
-SENDING : Envoi en cours (online)
-SENDING : --
-SENDING : do / POST /api/collectes avec JWT
-
-SENDING --> CONFIRMED : 201 Created\n(serveur accepte)
-SENDING --> DUPLICATE : 409 Conflict\n(doublon détecté)
-SENDING --> PENDING_SYNC : Erreur réseau / timeout\n(DioException)
+SENDING --> CONFIRMED    : 201 Created
+SENDING --> DUPLICATE    : 409 Conflict\n(doublon detecte)
+SENDING --> PENDING_SYNC : Erreur reseau / timeout
 
 state CONFIRMED {
-  CONFIRMED : id_collecte assigné\n(ex: COL-2026-789)
+  CONFIRMED : uid confirme par le serveur
 }
 
-CONFIRMED : Collecte confirmée par le serveur\nstatut = CONFIRMED (DB + SQLite local)
-CONFIRMED : --
 CONFIRMED : entry / Sauvegarde SQLite (historique)
-CONFIRMED : entry / Affiche toast "✓ Collecte enregistrée"
-CONFIRMED : entry / Refresh historique agent
-
+CONFIRMED : entry / Affiche toast "Collecte enregistree"
 CONFIRMED --> [*]
 
 state DUPLICATE {
-  DUPLICATE : Collecte déjà enregistrée\n(même ref + jour)
+  DUPLICATE : Collecte deja existante (meme uid)
 }
 
-DUPLICATE : Doublon détecté
-DUPLICATE : --
 DUPLICATE : entry / Affiche message erreur
-DUPLICATE : entry / Log local (statut=DUPLICATE)
-
+DUPLICATE : entry / Log local (statut=DOUBLON)
 DUPLICATE --> [*]
 
 state PENDING_SYNC {
   [*] --> local_saved
   local_saved : INSERT SQLite\nstatut = PENDING_SYNC
   local_saved --> waiting_connectivity
-  waiting_connectivity : En attente reconnexion
+  waiting_connectivity : En attente reconnexion\n(ConnectivityPlus)
 }
 
-PENDING_SYNC : Sauvegardée localement\nen attente de synchronisation
-PENDING_SYNC : --
 PENDING_SYNC : entry / INSERT SQLite (offline)
-PENDING_SYNC : entry / Affiche badge "hors ligne"
-PENDING_SYNC : do / SyncService écoute\nConnectivityPlus
-
-PENDING_SYNC --> SYNCING : Retour connectivité détecté\n(ConnectivityPlus)
+PENDING_SYNC : entry / Affiche badge hors ligne
+PENDING_SYNC : do / SyncService ecoute ConnectivityPlus
+PENDING_SYNC --> SYNCING : Retour connectivite detecte
 
 state SYNCING {
   [*] --> retry_post
-  retry_post : POST /api/collectes (retry)
+  retry_post : POST /api/v1/collectes (retry)\nCookie: imf_access
 }
 
-SYNCING : Synchronisation en cours
-SYNCING --> CONFIRMED : 201 Created\n(sync réussie)
-SYNCING --> DUPLICATE : 409 Conflict\n(doublon post-sync)
-SYNCING --> SYNC_ERROR : 5xx / Timeout\n(retry_count < 3)
+SYNCING --> CONFIRMED  : 201 Created (sync reussie)
+SYNCING --> DUPLICATE  : 409 Conflict
+SYNCING --> SYNC_ERROR : 5xx / Timeout
 
 state SYNC_ERROR {
-  SYNC_ERROR : Erreur de synchronisation\nretry_count incrémenté
+  SYNC_ERROR : Erreur de synchronisation\nretryCount incremente
 }
 
-SYNC_ERROR : Erreur de sync (retry possible)
-SYNC_ERROR : --
-SYNC_ERROR : entry / Notification "Échec sync"
+SYNC_ERROR : entry / Notification "Echec sync"
 SYNC_ERROR : do / Retry automatique (3 max)
-
-SYNC_ERROR --> SYNCING : retry_count++ / retry_count < 3\n(délai exponentiel)
-SYNC_ERROR --> FAILED : retry_count >= 3\n(échec définitif)
+SYNC_ERROR --> SYNCING  : retryCount < 3\n(delai exponentiel)
+SYNC_ERROR --> FAILED   : retryCount >= 3
 
 state FAILED {
   FAILED : Intervention manuelle requise
 }
 
-FAILED : Synchronisation définitivement échouée
-FAILED : --
 FAILED : entry / Alerte utilisateur
 FAILED : entry / Log pour DSI
-
 FAILED --> [*]
 
 @enduml

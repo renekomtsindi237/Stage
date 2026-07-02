@@ -26,13 +26,13 @@
     @if (data()?.synchronise) {
       <div class="sync-banner">
         <span class="material-icons-round">check_circle</span>
-        Synchronisé à l'instant
+        {{ 'agent.sync_banner' | translate }}
       </div>
     }
 
     <!-- Objectif card -->
     <div class="objectif-card">
-      <p class="objectif-card__label">Objectif du jour</p>
+      <p class="objectif-card__label">{{ 'agent.objectif_label' | translate }}</p>
       <div class="objectif-card__amount">
         @if (loading()) {
           <span
@@ -41,7 +41,7 @@
           ></span>
         } @else {
           {{ data()?.objectifJour | number: "1.0-0" }}
-          <span class="objectif-card__unit">FCFA</span>
+          <span class="objectif-card__unit">{{ 'common.fcfa' | translate }}</span>
         }
       </div>
       <div class="progress" style="margin: 12px 0">
@@ -50,7 +50,7 @@
       <div class="objectif-card__stats">
         <div>
           <p class="text-sm" style="color: rgba(255, 255, 255, 0.7)">
-            Clients visités
+            {{ 'agent.clients_visited' | translate }}
           </p>
           <p class="font-semibold">
             {{ data()?.clientsVisites ?? 0 }} / {{ data()?.clientsTotal ?? 0 }}
@@ -58,7 +58,7 @@
         </div>
         <div>
           <p class="text-sm" style="color: rgba(255, 255, 255, 0.7)">
-            Collectes
+            {{ 'agent.collectes' | translate }}
           </p>
           <p class="font-semibold">{{ data()?.collectesCount ?? 0 }}</p>
         </div>
@@ -69,22 +69,22 @@
     <div class="quick-actions">
       <a routerLink="/agent/collecte" class="quick-action">
         <span class="material-icons-round">account_balance_wallet</span>
-        <span>Nouvelle Collecte</span>
+        <span>{{ 'agent.quick_collecte' | translate }}</span>
       </a>
       <a routerLink="/agent/clients" class="quick-action">
         <span class="material-icons-round">group</span>
-        <span>Mes Clients</span>
+        <span>{{ 'agent.quick_clients' | translate }}</span>
       </a>
     </div>
 
     <!-- Alertes clients -->
     <div class="section-header">
-      <h4>Alertes sur vos clients</h4>
+      <h4>{{ 'agent.alertes_title' | translate }}</h4>
       <a
         routerLink="/directeur/alertes"
         class="text-sm"
         style="color: var(--color-primary)"
-        >Voir tout</a
+        >{{ 'agent.see_all' | translate }}</a
       >
     </div>
 
@@ -109,7 +109,7 @@
       class="agent-nav__item"
     >
       <span class="material-icons-round">home</span>
-      <span>Accueil</span>
+      <span>{{ 'agent.nav_home' | translate }}</span>
     </a>
     <a
       routerLink="/agent/clients"
@@ -117,7 +117,7 @@
       class="agent-nav__item"
     >
       <span class="material-icons-round">group</span>
-      <span>Clients</span>
+      <span>{{ 'agent.nav_clients' | translate }}</span>
     </a>
     <a routerLink="/agent/collecte" class="agent-nav__fab">
       <span class="material-icons-round">add</span>
@@ -128,7 +128,7 @@
       class="agent-nav__item"
     >
       <span class="material-icons-round">history</span>
-      <span>Historique</span>
+      <span>{{ 'agent.nav_historique' | translate }}</span>
     </a>
   </nav>
 </div>

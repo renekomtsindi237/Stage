@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 
@@ -37,7 +38,7 @@ interface ImportResult {
   selector: "app-dir-users",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./dir-users.component.html",
   styleUrls: ["./dir-users.component.scss"],
 })

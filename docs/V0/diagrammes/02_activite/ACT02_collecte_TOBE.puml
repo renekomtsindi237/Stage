@@ -1,25 +1,28 @@
 @startuml ACT02_collecte_TOBE
-!theme plain
-skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
 skinparam activity {
-  BackgroundColor #E8F5E9
-  BorderColor #2E7D32
-  FontSize 12
-  DiamondBackgroundColor #E3F2FD
-  DiamondBorderColor #1565C0
+  BackgroundColor white
+  BorderColor #666666
+  DiamondBackgroundColor white
+  DiamondBorderColor #666666
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
+}
 
-title ACT02 — Processus Collecte Digitale\nSituation Cible (TO-BE) — Pipeline Automatisé + Scoring ML
+title ACT02 - Processus Collecte Digitale - Situation Cible (TO-BE)\nPipeline Automatise + Scoring ML
 
-|#E3F2FD| Client |
-|#FFF9C4| MTN / Orange Money |
-|#E8F5E9| Airflow Pipeline |
-|#F3E5F5| PostgreSQL |
-|#EDE7F6| Modèle ML (Scoring) |
-|#FCE4EC| Comptable / DSI |
+| Client |
+| MTN / Orange Money |
+| Airflow Pipeline |
+| PostgreSQL |
+| FastAPI ML |
+| DSI |
 
 start
 
@@ -27,64 +30,51 @@ start
 :Effectue paiement\nvia MTN / Orange Money;
 
 |MTN / Orange Money|
-:Génère relevé CSV\n(automatique quotidien);
+:Genere releve via API\n(dag_ingestion_mtn/orange);
 
 |Airflow Pipeline|
-:Déclenchement automatique\nà 06h00 (cron scheduler);
-:Téléchargement relevés CSV\n(MTN + Orange);
-:Chargement dans schéma raw\n(PostgreSQL);
-note right : Traçabilité complète\n→ source, timestamp, nb lignes
+:Declenchement automatique\na 06h00 (cron: 0 6 * * *);
+:Appel APIs MTN + Orange Money;
+:Chargement dans schema raw\n(PostgreSQL 15);
+note right : Tracabilite complete\nsource, timestamp, nb lignes
 
-:Calcul hash SHA-256\npour déduplication;
+:Calcul UUID\npour deduplication;
 
 |PostgreSQL|
-:INSERT ... ON CONFLICT DO NOTHING\n(doublons ignorés automatiquement);
-note right : Déduplication\nauto inter-fichiers
+:INSERT ON CONFLICT DO NOTHING\n(doublons ignores automatiquement);
+note right : Deduplication\nauto inter-appels
 
 |Airflow Pipeline|
-:Transformation dbt\n(raw → staging → dw);
+:Transformation dbt Core 1.8\n(raw -> staging -> dw);
 
-|Modèle ML (Scoring)|
-:Extraction des features\n(montant, canal, heure, agent,\nhistorique client, zone);
-note right : Features normalisées\ndepuis la couche staging
+|FastAPI ML|
+:Extraction features clients\n(montant, canal, historique,\nzone, regularite);
+:Scoring MCRS par client\n(CRS + RPS + CSI);
+note right : Score in [0.000, 1.000]\nFAIBLE/MODERE/ELEVE/CRITIQUE
 
-:Scoring par transaction\n(modèle XGBoost / Régression);
-note right : Score de risque\nentre 0.0 et 1.0\n(probabilité d'anomalie)
-
-if (Score de risque ?) then (Élevé > 0.75)
-  :Marquage <color:#C62828>SUSPECT</color>\n+ mise en file de révision;
-  |Comptable / DSI|
-  :Révision manuelle\nde la transaction;
-  if (Validée manuellement ?) then (Oui)
-    :Transaction confirmée\net enrichie dans le DW;
-    note right : Feedback loop :\nréentraînement mensuel\ndu modèle
-  else (Rejetée)
-    :Archivage en table rejets\n+ notification client;
-    stop
-  endif
-else (Faible ≤ 0.75)
-  :Validation automatique\n(auto-posting);
+if (Niveau risque ?) then (CRITIQUE >= 0.75)
+  :Marquage prioritaire\n+ AlerteImpaye generee;
+  |DSI|
+  :Revision manuelle\nsi necessaire;
+else (FAIBLE / MODERE / ELEVE)
+  :Traitement automatique;
 endif
 
 |Airflow Pipeline|
-:Rapprochement automatique\ntransactions / CBS\n(3 passes algorithmiques);
+:Rapprochement automatique\ntransactions / CBS (3 passes);
 
-if (Transactions non\nréconciliées ?) then (Oui — < 5%)
+if (Transactions non\nreconciliees ?) then (Oui)
   :Stockage en table suspense;
-  |Comptable / DSI|
-  :Notification DSI\npar email;
+  |DSI|
+  :Notification email DSI;
   |Airflow Pipeline|
 else (Non)
 endif
 
-:Calcul KPIs collectes\n(volume, canal, zone, agent);
+:Calcul KPIs collectes\n(dag_kpis_quotidien a 06h30);
 
-|Modèle ML (Scoring)|
-:Génération rapport de scoring\n(distribution risques, taux\nde validation auto);
-note right : Indicateur de qualité\ndu modèle — suivi dérive
-
-|Comptable / DSI|
-:Dashboards Superset mis à jour\n(données + scores disponibles\nà 08h00);
+|DSI|
+:Dashboards Angular disponibles\na 08h00;
 
 stop
 

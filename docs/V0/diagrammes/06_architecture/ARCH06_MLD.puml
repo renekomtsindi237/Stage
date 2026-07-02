@@ -1,257 +1,242 @@
 @startuml ARCH06_MLD
-title ARCH06 — Modèle Logique des Données (MLD)\nSchéma relationnel — Plateforme Pipeline IMF Cameroun
-
-skinparam linetype ortho
-skinparam backgroundColor #FAFAFA
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
 skinparam entity {
-  BackgroundColor #E3F2FD
-  BorderColor #1565C0
-  HeaderBackgroundColor #0D47A1
-  HeaderFontColor white
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
+  HeaderFontColor #333333
 }
 skinparam note {
-  BackgroundColor #FFF9C4
-  BorderColor #F9A825
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
 }
 
+title ARCH06 - Modele Logique des Donnees (MLD)\nSchema app - PostgreSQL 15
+
 ' ══════════════════════════════════════════════
-' RÉFÉRENTIELS
+' REFERENTIELS
 ' ══════════════════════════════════════════════
-entity "zones" as ZONE {
-  <u>id_zone</u> : VARCHAR(20) PK
+entity "app.imfs" as IMF {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  nom_zone : VARCHAR(100) NOT NULL
-  region : VARCHAR(100)
-  type_zone : VARCHAR(20)
-  ' CHECK: URBAIN, SEMI_URBAIN, RURAL
+  nom : VARCHAR(200) NOT NULL
+  code : VARCHAR(20) UNIQUE NOT NULL
+  pays : VARCHAR(50) DEFAULT 'CM'
+  created_at : TIMESTAMP DEFAULT NOW()
 }
 
-entity "produits_credit" as PRODUIT {
-  <u>id_produit</u> : VARCHAR(20) PK
+entity "app.agences" as AGENCE {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  nom_produit : VARCHAR(100) NOT NULL
-  taux_interet : NUMERIC(5,2) NOT NULL
-  duree_max_mois : INTEGER NOT NULL
-  montant_min : NUMERIC(15,2)
-  montant_max : NUMERIC(15,2)
+  #imf_id : UUID FK -> imfs NOT NULL
+  nom : VARCHAR(200) NOT NULL
+  adresse : VARCHAR(500)
   actif : BOOLEAN DEFAULT TRUE
+  created_at : TIMESTAMP DEFAULT NOW()
 }
 
-entity "utilisateurs" as USER {
-  <u>id_user</u> : BIGSERIAL PK
+entity "app.users" as USER {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  username : VARCHAR(50) UNIQUE NOT NULL
-  password_hash : VARCHAR(255) NOT NULL
+  #imf_id : UUID FK -> imfs NOT NULL
+  #agence_id : UUID FK -> agences
+  email : VARCHAR(255) UNIQUE NOT NULL
+  nom_complet : VARCHAR(200) NOT NULL
   role : VARCHAR(30) NOT NULL
-  ' CHECK: DIRECTEUR, RESPONSABLE_RECOUVREMENT,
-  '        ANALYSTE, DSI, AGENT
-  fcm_token : VARCHAR(255)
-  #id_zone : VARCHAR(20) FK → zones
+  ' CHECK: DIRECTEUR, ANALYSTE, AGENT, DSI, AGENT_SAISIE, SUPER_ADMIN
+  fcm_token : VARCHAR(500)
   actif : BOOLEAN DEFAULT TRUE
   last_login : TIMESTAMP
   created_at : TIMESTAMP DEFAULT NOW()
 }
 
-entity "refresh_tokens" as RTOKEN {
-  <u>id</u> : BIGSERIAL PK
+entity "app.otp_codes" as OTP {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  #id_user : BIGINT FK → utilisateurs
+  #user_id : UUID FK -> users NOT NULL
+  code_hash : VARCHAR(255) NOT NULL
+  expires_at : TIMESTAMP NOT NULL
+  tentatives : INTEGER DEFAULT 0
+  created_at : TIMESTAMP DEFAULT NOW()
+}
+
+entity "app.refresh_tokens" as RTOKEN {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
+  ==
+  #user_id : UUID FK -> users NOT NULL
   token_hash : VARCHAR(255) UNIQUE NOT NULL
   expires_at : TIMESTAMP NOT NULL
   created_at : TIMESTAMP DEFAULT NOW()
 }
 
 ' ══════════════════════════════════════════════
-' CLIENTS & AGENTS
+' CLIENTS
 ' ══════════════════════════════════════════════
-entity "clients" as CLIENT {
-  <u>id_client</u> : VARCHAR(30) PK
+entity "app.client_informels" as CLIENT {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  nom : VARCHAR(100) NOT NULL
-  prenom : VARCHAR(100)
+  #agence_id : UUID FK -> agences NOT NULL
+  nom : VARCHAR(200) NOT NULL
+  prenom : VARCHAR(200)
   telephone : VARCHAR(20) UNIQUE
-  #id_zone : VARCHAR(20) FK → zones
+  secteur_activite : VARCHAR(100)
   date_adhesion : DATE
-  date_creation : TIMESTAMP DEFAULT NOW()
-  date_modification : TIMESTAMP
+  created_at : TIMESTAMP DEFAULT NOW()
 }
 
-entity "agents" as AGENT {
-  <u>id_agent</u> : VARCHAR(30) PK
+entity "app.kyc_dossiers" as KYC {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  nom : VARCHAR(100) NOT NULL
-  prenom : VARCHAR(100)
-  telephone : VARCHAR(20)
-  agence : VARCHAR(100)
-  #id_zone : VARCHAR(20) FK → zones
-  #id_user : BIGINT FK → utilisateurs
-  ' (0,1) : un agent terrain a un compte USER optionnel
-  actif : BOOLEAN DEFAULT TRUE
-  date_creation : TIMESTAMP DEFAULT NOW()
+  #client_id : UUID FK -> client_informels NOT NULL UNIQUE
+  statut : VARCHAR(30) NOT NULL
+  ' CHECK: EN_ATTENTE, DOCUMENTS_SOUMIS, APPROUVE, REJETE
+  date_verification : TIMESTAMP
+  agent_verif_id : UUID FK -> users
 }
 
 ' ══════════════════════════════════════════════
-' PRÊTS & ÉCHÉANCES
+' CREDIT
 ' ══════════════════════════════════════════════
-entity "prets" as PRET {
-  <u>id_pret</u> : VARCHAR(30) PK
+entity "app.dossiers_credit" as DOSSIER {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  #id_client : VARCHAR(30) FK → clients NOT NULL
-  #id_agent : VARCHAR(30) FK → agents NOT NULL
-  #id_produit : VARCHAR(20) FK → produits_credit NOT NULL
-  montant_octroye : NUMERIC(15,2) NOT NULL
-  date_decaissement : DATE NOT NULL
-  date_echeance_finale : DATE NOT NULL
-  nombre_echeances : INTEGER NOT NULL
-  statut : VARCHAR(20) NOT NULL
+  #client_id : UUID FK -> client_informels NOT NULL
+  #agent_id : UUID FK -> users NOT NULL
+  montant_demande : NUMERIC(15,2) NOT NULL
+  duree_mois : INTEGER NOT NULL
+  objet_financement : VARCHAR(500)
+  statut : VARCHAR(30) NOT NULL
+  ' CHECK: INSTRUCTION, EN_COMITE, APPROUVE, REJETE, AJOURNE, DEBLOQUE
+  date_decision : TIMESTAMP
+  created_at : TIMESTAMP DEFAULT NOW()
+}
+
+entity "app.contrats_credit" as CONTRAT {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
+  ==
+  #dossier_id : UUID FK -> dossiers_credit UNIQUE NOT NULL
+  reference_contrat : VARCHAR(50) UNIQUE NOT NULL
+  montant_final : NUMERIC(15,2) NOT NULL
+  taux_interet : NUMERIC(5,2) NOT NULL
+  nb_echeances : INTEGER NOT NULL
+  periodicite : VARCHAR(20) NOT NULL
+  ' CHECK: MENSUEL, BIMENSUEL, TRIMESTRIEL
+  statut : VARCHAR(30) NOT NULL
+  ' CHECK: BROUILLON, SOUMIS, VALIDE, ACTIF, REJETE
+  signatures_conformes : BOOLEAN DEFAULT FALSE
+  created_at : TIMESTAMP DEFAULT NOW()
+}
+
+' ══════════════════════════════════════════════
+' RECOUVREMENT
+' ══════════════════════════════════════════════
+entity "app.creances" as CREANCE {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
+  ==
+  #contrat_id : UUID FK -> contrats_credit UNIQUE NOT NULL
+  #client_id : UUID FK -> client_informels NOT NULL
+  montant_total : NUMERIC(15,2) NOT NULL
+  montant_rembourse : NUMERIC(15,2) DEFAULT 0
+  jours_retard : INTEGER DEFAULT 0
+  statut : VARCHAR(30) NOT NULL
   ' CHECK: ACTIF, EN_RETARD, EN_RECOUVREMENT, SOLDE, PERTE
-  date_creation : TIMESTAMP DEFAULT NOW()
-  date_modification : TIMESTAMP
+  classe_cobac : CHAR(1)
+  ' CHECK: A, B, C, D, E
+  date_modification : TIMESTAMP DEFAULT NOW()
 }
 
-entity "echeances" as ECHEANCE {
-  <u>id_echeance</u> : BIGSERIAL PK
+entity "app.collectes_terrain" as COLLECTE {
+  <u>uid</u> : UUID PK
+  ' UUID genere cote client Flutter (UUID.v4())
   ==
-  #id_pret : VARCHAR(30) FK → prets NOT NULL
-  numero_echeance : INTEGER NOT NULL
-  date_echeance : DATE NOT NULL
-  montant_du : NUMERIC(15,2) NOT NULL
-  statut : VARCHAR(20) NOT NULL
-  ' CHECK: EN_ATTENTE, PARTIELLEMENT_PAYEE, SOLDEE, EN_RETARD
-}
-
-' ══════════════════════════════════════════════
-' TRANSACTIONS & REMBOURSEMENTS
-' ══════════════════════════════════════════════
-entity "transactions_mm" as TRANSACTION {
-  <u>id_transaction</u> : VARCHAR(50) PK
-  ==
-  reference_externe : VARCHAR(100) UNIQUE
-  date_transaction : TIMESTAMP NOT NULL
-  montant : NUMERIC(15,2) NOT NULL
-  operateur : VARCHAR(10) NOT NULL
-  ' CHECK: MTN, ORANGE
-  numero_expediteur : VARCHAR(20)
-  statut_transaction : VARCHAR(20)
-  hash_dedup : VARCHAR(64) UNIQUE NOT NULL
-  nom_fichier_source : VARCHAR(255)
-  date_ingestion : TIMESTAMP DEFAULT NOW()
-}
-
-entity "remboursements" as REMBOURSEMENT {
-  <u>id_remboursement</u> : BIGSERIAL PK
-  ==
-  #id_echeance : BIGINT FK → echeances NOT NULL
-  #id_transaction : VARCHAR(50) FK → transactions_mm
-  ' (0,1) : peut être saisi manuellement sans transaction mobile
-  date_paiement : DATE NOT NULL
-  montant_paye : NUMERIC(15,2) NOT NULL
-  canal_paiement : VARCHAR(20) NOT NULL
-  ' CHECK: MTN, ORANGE, ESPECES, VIREMENT
-  date_creation : TIMESTAMP DEFAULT NOW()
-}
-
-' ══════════════════════════════════════════════
-' COLLECTES TERRAIN
-' ══════════════════════════════════════════════
-entity "collectes_terrain" as COLLECTE {
-  <u>id_collecte</u> : VARCHAR(50) PK
-  ' Format : COL-AAAA-NNNNN (généré Flutter)
-  ==
-  #id_agent : VARCHAR(30) FK → agents NOT NULL
-  #id_pret : VARCHAR(30) FK → prets NOT NULL
-  #id_client : VARCHAR(30) FK → clients NOT NULL
-  date_collecte : DATE NOT NULL
+  #client_id : UUID FK -> client_informels NOT NULL
+  #agent_id : UUID FK -> users NOT NULL
+  #creance_id : UUID FK -> creances
   montant_collecte : NUMERIC(15,2) NOT NULL
-  canal_paiement : VARCHAR(20) NOT NULL
-  ' CHECK: MTN, ORANGE, ESPECES, VIREMENT
+  date_collecte : DATE NOT NULL
+  canal : VARCHAR(30) NOT NULL
+  ' CHECK: MTN_MOBILE_MONEY, ORANGE_MONEY, ESPECES, VIREMENT
   reference_transaction : VARCHAR(100)
   statut : VARCHAR(20) NOT NULL
-  ' CHECK: SOUMISE, CONFIRMEE, DOUBLON, REJETEE
-  observation : TEXT
-  latitude : NUMERIC(10,7)
-  longitude : NUMERIC(10,7)
+  ' CHECK: SOUMISE, CONFIRMEE, REJETEE
+  synchronise : BOOLEAN DEFAULT TRUE
   date_soumission : TIMESTAMP DEFAULT NOW()
 }
 
-' ══════════════════════════════════════════════
-' ALERTES
-' ══════════════════════════════════════════════
-entity "alertes_impayes" as ALERTE {
-  <u>id_alerte</u> : BIGSERIAL PK
+entity "app.alertes_impayes" as ALERTE {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  #id_pret : VARCHAR(30) FK → prets NOT NULL
-  date_generation : TIMESTAMP DEFAULT NOW()
+  #creance_id : UUID FK -> creances NOT NULL
   jours_retard : INTEGER NOT NULL
   montant_en_retard : NUMERIC(15,2) NOT NULL
   statut_alerte : VARCHAR(20) NOT NULL
-  ' CHECK: ACTIVE, CLOTUREE, ESCALADEE
-  fcm_sent : BOOLEAN DEFAULT FALSE
+  ' CHECK: ACTIVE, ESCALADEE, CLOTUREE
+  type_alerte : VARCHAR(50)
+  ' CHECK: RISQUE_DEFAUT_IMMINENT, DETERIORATION_RAPIDE,
+  '        BAISSE_COLLECTE_PERSISTANTE, ECHEANCE_IMMINENTE
+  sse_sent : BOOLEAN DEFAULT FALSE
   email_sent : BOOLEAN DEFAULT FALSE
+  fcm_sent : BOOLEAN DEFAULT FALSE
   date_cloture : TIMESTAMP
-  date_modification : TIMESTAMP
-  CONSTRAINT uq_alerte_pret_active UNIQUE (id_pret, statut_alerte)
-  ' (une seule alerte ACTIVE par prêt)
+  created_at : TIMESTAMP DEFAULT NOW()
+  CONSTRAINT uq_alerte_creance_active\nUNIQUE (creance_id, statut_alerte)
+  ' (une seule alerte ACTIVE par creance)
 }
 
-' ══════════════════════════════════════════════
-' JOURNAL INGESTIONS (audit)
-' ══════════════════════════════════════════════
-entity "journal_ingestions" as JOURNAL {
-  <u>id</u> : BIGSERIAL PK
+entity "app.plans_apurement" as PLAN {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
   ==
-  dag_id : VARCHAR(100) NOT NULL
-  dag_run_id : VARCHAR(200) NOT NULL
-  nom_fichier : VARCHAR(255)
-  source : VARCHAR(20) NOT NULL
-  ' CHECK: MTN, ORANGE, CBS, TERRAIN
-  nb_lignes_lues : INTEGER
-  nb_inserts : INTEGER
-  nb_doublons : INTEGER
-  nb_erreurs : INTEGER
+  #creance_id : UUID FK -> creances NOT NULL
+  montant_accorde : NUMERIC(15,2) NOT NULL
+  nombre_echeances : INTEGER NOT NULL
   statut : VARCHAR(20) NOT NULL
-  ' CHECK: SUCCESS, PARTIAL, FAILED
-  message_erreur : TEXT
-  debut_ingestion : TIMESTAMP
-  fin_ingestion : TIMESTAMP DEFAULT NOW()
+  created_at : TIMESTAMP DEFAULT NOW()
+}
+
+entity "app.notifications" as NOTIF {
+  <u>uid</u> : UUID PK DEFAULT gen_random_uuid()
+  ==
+  #user_id : UUID FK -> users NOT NULL
+  type : VARCHAR(50) NOT NULL
+  titre : VARCHAR(200) NOT NULL
+  corps : TEXT
+  lu : BOOLEAN DEFAULT FALSE
+  created_at : TIMESTAMP DEFAULT NOW()
 }
 
 ' ══════════════════════════════════════════════
-' CARDINALITÉS
+' CARDINALITES
 ' ══════════════════════════════════════════════
-ZONE ||--o{ CLIENT : "réside dans (1,N)"
-ZONE ||--o{ AGENT  : "affecté à (1,N)"
-ZONE |o--o{ USER   : "responsable de (0,1 / 0,N)"
+IMF    ||--o{ AGENCE  : "possede (1,N)"
+IMF    ||--o{ USER    : "emploie (1,N)"
+AGENCE ||--o{ USER    : "rattache (1,N)"
+AGENCE ||--o{ CLIENT  : "gere (1,N)"
 
-PRODUIT ||--o{ PRET : "classifie (1,N)"
-CLIENT  ||--o{ PRET : "souscrit (1,N)"
-AGENT   ||--o{ PRET : "gère (1,N)"
+USER |o--o{ COLLECTE  : "effectue (0,N)"
+USER |o--o{ DOSSIER   : "instruit (0,N)"
+USER |o--o{ NOTIF     : "recoit (0,N)"
 
-PRET ||--o{ ECHEANCE : "décomposé en (1,N)"
-ECHEANCE ||--o{ REMBOURSEMENT : "soldée par (1,N)"
-TRANSACTION |o--o{ REMBOURSEMENT : "liée à (0,1)"
+CLIENT ||--o{ DOSSIER  : "souscrit (1,N)"
+CLIENT ||--o{ COLLECTE : "verse (1,N)"
+CLIENT |o--o| KYC      : "verifie (0,1)"
 
-AGENT ||--o{ COLLECTE : "effectue (1,N)"
-PRET  ||--o{ COLLECTE : "alimentée par (0,N)"
-CLIENT |o--o{ COLLECTE : "référencée dans"
+DOSSIER ||--o| CONTRAT : "genere (0,1)"
+CONTRAT ||--o| CREANCE : "produit (0,1)"
 
-PRET ||--o{ ALERTE : "génère (0,N)"
-
-USER ||--o{ RTOKEN : "possède (1,N)"
-AGENT |o--|| USER : "associé à (0,1)"
-
-note bottom of REMBOURSEMENT
-  id_transaction est nullable :
-  les remboursements en espèces
-  (ESPECES) n'ont pas de référence
-  de transaction mobile money.
-end note
+CREANCE ||--o{ COLLECTE : "alimente (1,N)"
+CREANCE ||--o{ ALERTE   : "declenche (1,N)"
+CREANCE |o--o{ PLAN     : "restructure (0,N)"
 
 note bottom of COLLECTE
-  id_collecte généré par Flutter :
-  format COL-AAAA-NNNNN
-  Déduplication via UNIQUE constraint
-  sur (reference_transaction, date_collecte)
+  uid genere cote Flutter (UUID.v4())
+  Deduplication par contrainte PRIMARY KEY
+  Supporte le mode offline-first
 end note
 
 @enduml

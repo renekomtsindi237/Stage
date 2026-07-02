@@ -1,52 +1,56 @@
 @startuml UC05_administration_pipeline
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam actorStyle awesome
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam actorStyle none
 skinparam usecase {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 11
+  BackgroundColor white
+  BorderColor #666666
 }
 skinparam actor {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
+  BackgroundColor white
+  BorderColor #333333
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam rectangle {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
 
-title UC05 — Administration du Pipeline (Airflow + Système)\nPlateforme IMF Cameroun
+title UC05 - Administration du Pipeline (Airflow 2.8.4)
 
 left to right direction
 
-actor "DSI / Admin" as DSI
+actor "DSI\n(DSI)" as DSI
+actor "Administrateur\n(ADMIN_SYSTEME)" as ADM
 
-rectangle "UC05 — Administration du Pipeline" {
+rectangle "UC05 - Administration du Pipeline" {
 
-  usecase "UC05.1\nSurveiller l'état\ndes DAGs Airflow\n(succès / échec / en cours)" as UC0501
-  usecase "UC05.2\nLancer manuellement\nun DAG\n(trigger manuel)" as UC0502
-  usecase "UC05.3\nRejouer un DAG\néchoué sur date\npassée (backfill)" as UC0503
-  usecase "UC05.4\nConsulter les logs\nd'exécution\n(par tâche, par DAG)" as UC0504
-  usecase "UC05.5\nConfigurer les\nconnexions sources\n(CBS, MTN, Orange)" as UC0505
-  usecase "UC05.6\nGérer les utilisateurs\nde la plateforme\n(CRUD + rôles)" as UC0506
-  usecase "UC05.7\nSauvegarder\nla base de données\n(pg_dump schedulé)" as UC0507
-  usecase "UC05.8\nRestaurer la base\nde données\n(pg_restore)" as UC0508
-  usecase "UC05.9\nSurveiller espace\ndisque et ressources\nserveur" as UC0509
+  usecase "UC05.1\nSurveiller l'etat\ndes DAGs (succes/echec)" as UC0501
+  usecase "UC05.2\nDeclencher manuellement\nun DAG" as UC0502
+  usecase "UC05.3\nRejouer un DAG\n(backfill date passee)" as UC0503
+  usecase "UC05.4\nConsulter logs\nd'execution (par tache)" as UC0504
+  usecase "UC05.5\nConfigurer connexions\nAPI sources (CBS, MTN, OM)" as UC0505
+  usecase "UC05.6\nGerer utilisateurs\nde la plateforme" as UC0506
+  usecase "UC05.7\nSauvegarder\nla base (pg_dump)" as UC0507
+  usecase "UC05.8\nRestaurer\nla base (pg_restore)" as UC0508
+  usecase "UC05.9\nSurveiller ressources\nserveur (CPU, disque)" as UC0509
 
 }
 
-' Relations DSI
 DSI --> UC0501
 DSI --> UC0502
 DSI --> UC0503
 DSI --> UC0504
 DSI --> UC0505
-DSI --> UC0506
 DSI --> UC0507
 DSI --> UC0508
 DSI --> UC0509
+ADM --> UC0506
 
-' Inclusions / Extensions
 UC0503 ..> UC0502 : <<include>>
 UC0501 ..> UC0504 : <<extend>>
 UC0507 ..> UC0509 : <<extend>>

@@ -1,0 +1,113 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">{{ 'dir_scoring.title' | translate }}</h2>
+      <p class="page-subtitle">
+        {{ 'dir_scoring.subtitle' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card filter-bar" [formGroup]="filterForm" style="margin-bottom: 16px">
+    <input
+      class="form-control"
+      formControlName="search"
+      [placeholder]="'dir_scoring.search_placeholder' | translate"
+      style="flex: 1"
+    />
+    <select
+      class="form-control"
+      formControlName="niveauRisque"
+      style="width: auto"
+      (change)="load()"
+    >
+      <option value="">{{ 'dir_scoring.filter_all' | translate }}</option>
+      <option value="CRITIQUE">{{ 'dir_scoring.filter_critique' | translate }}</option>
+      <option value="ELEVE">{{ 'dir_scoring.filter_eleve' | translate }}</option>
+      <option value="MODERE">{{ 'dir_scoring.filter_modere' | translate }}</option>
+      <option value="FAIBLE">{{ 'dir_scoring.filter_faible' | translate }}</option>
+    </select>
+    <button class="btn btn-primary" (click)="load()">
+      <span class="material-icons-round" style="font-size:16px">search</span>
+      {{ 'dir_scoring.filter_btn' | translate }}
+    </button>
+  </div>
+
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>{{ 'dir_scoring.col_client' | translate }}</th>
+          <th>{{ 'dir_scoring.col_score' | translate }}</th>
+          <th>{{ 'dir_scoring.col_niveau' | translate }}</th>
+          <th>{{ 'dir_scoring.col_defaut' | translate }}</th>
+          <th>{{ 'dir_scoring.col_action' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1,2,3,4,5,6,7,8,9,10]; track $index) {
+            <tr>
+              @for (__ of [1,2,3,4,5]; track $index) {
+                <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+              }
+            </tr>
+          }
+        } @else if ((page()?.content ?? []).length === 0) {
+          <tr>
+            <td colspan="5" style="text-align:center;padding:40px;color:var(--color-text-muted)">
+              <span class="material-icons-round" style="font-size:40px;display:block;margin-bottom:8px">insights</span>
+              {{ 'dir_scoring.empty' | translate }}
+            </td>
+          </tr>
+        } @else {
+          @for (r of page()?.content ?? []; track r.clientId) {
+            <tr>
+              <td class="font-semibold">{{ r.nom }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="score-bar">
+                    <div
+                      class="score-fill"
+                      [style.width.%]="r.score * 100"
+                      [class]="niveauClass(r.niveauRisque)"
+                    ></div>
+                  </div>
+                  <span class="font-semibold">{{ r.score | number:'1.2-2' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class]="niveauClass(r.niveauRisque)">
+                  {{ niveauLabel(r.niveauRisque) }}
+                </span>
+              </td>
+              <td>{{ r.probabiliteDefaut | number:'1.1-1' }}%</td>
+              <td class="text-sm text-muted">{{ r.actionRecommandee ?? '—' }}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    @if (page() && (page()?.totalPages ?? 0) > 1) {
+      <div class="pagination">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
+          <span class="material-icons-round">chevron_left</span>
+        </button>
+        <span class="text-sm">{{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span>
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+          (click)="goPage(currentPage() + 1)"
+        >
+          <span class="material-icons-round">chevron_right</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

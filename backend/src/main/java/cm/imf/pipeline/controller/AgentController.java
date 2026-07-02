@@ -140,6 +140,21 @@ public class AgentController {
     }
 
     /**
+     * Carte complète : retourne la DERNIÈRE position connue de tous les agents
+     * qui ont au moins une coordonnée GPS (y compris partage désactivé).
+     * Permet au Directeur de voir l'ensemble de la couverture terrain même
+     * sans activité GPS en temps réel.
+     */
+    @Operation(summary = "Dernière position connue de tous les agents (carte complète)")
+    @GetMapping("/positions/toutes")
+    @PreAuthorize("hasAnyRole('RESPONSABLE_RECOUVREMENT', 'DIRECTEUR', 'DSI', 'ANALYSTE', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<List<AgentPositionResponse>>> listerDernieresPositions() {
+        Long imfId = TenantContext.currentImfId();
+        return ResponseEntity.ok(ApiResponse.ok(
+                positionService.listerDernieresPositions(imfId)));
+    }
+
+    /**
      * Trajet journalier d'un agent (historique GPS).
      * Retourne jusqu'à 500 points de passage pour reconstruire la route
      * sur une carte et vérifier la couverture terrain.

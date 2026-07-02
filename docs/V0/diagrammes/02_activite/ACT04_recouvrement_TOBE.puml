@@ -1,81 +1,86 @@
 @startuml ACT04_recouvrement_TOBE
-!theme plain
-skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
 skinparam activity {
-  BackgroundColor #E8F5E9
-  BorderColor #2E7D32
-  FontSize 12
-  DiamondBackgroundColor #E3F2FD
-  DiamondBorderColor #1565C0
+  BackgroundColor white
+  BorderColor #666666
+  DiamondBackgroundColor white
+  DiamondBorderColor #666666
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
+}
 
-title ACT04 — Processus Recouvrement\nSituation Cible (TO-BE) — Automatisé
+title ACT04 - Processus Recouvrement - Situation Cible (TO-BE)\nAutomatise - Airflow + Spring Boot + SSE + FCM
 
-|#E8F5E9| Airflow Pipeline |
-|#F3E5F5| Spring Boot API |
-|#FFF9C4| Flutter / Email |
-|#FCE4EC| Responsable Recouvrement |
-|#E3F2FD| Agent de Terrain (Flutter) |
-|#FFFDE7| Client |
+| Airflow Pipeline |
+| Spring Boot API |
+| Notifications SSE / FCM |
+| Directeur |
+| Agent Terrain (Flutter) |
+| Client |
 
 start
 
 |Airflow Pipeline|
-:Déclenchement dag_alertes\nà 08h00 (après transformation DW);
-:Calcul PAR30 et PAR90\nquotidien (par zone, produit, agent);
-:Détection créances\nau-delà du seuil configurable;
+:Declenchement dag_alertes_impayes\na 08h00 (apres transformation DW);
+:Calcul PAR30 et PAR90 quotidien\n(par agence, produit, agent);
+:Detection creances\nau-dela du seuil configurable;
 
-if (Nouvelles créances\nPAR30 détectées ?) then (Oui)
+if (Nouvelles creances\nPAR30 detectees ?) then (Oui)
 
   |Spring Boot API|
-  :INSERT INTO staging.alertes_impayes\n(id_pret, jours_retard, montant, statut=ACTIVE);
-  :Récupérer FCM tokens\ndes RR assignés à la zone;
+  :INSERT AlerteImpaye\n{uid, clientId, joursRetard, montant,\nstatut=ACTIVE};
+  :Recuperer FCM tokens agents\net web sessions Directeur;
 
   fork
-    |Flutter / Email|
-    :Envoi email SMTP\nau responsable recouvrement;
+    |Notifications SSE / FCM|
+    :Envoi SSE (Server-Sent Events)\nau Directeur via SseController\n/api/v1/sse/stream;
   fork again
-    |Flutter / Email|
-    :Envoi push notification FCM\n(app Flutter — fond ou premier plan);
+    |Notifications SSE / FCM|
+    :Envoi email SMTP\nsi configure;
+  fork again
+    |Notifications SSE / FCM|
+    :Envoi push FCM\n(app Flutter mobile);
   end fork
 
-  |Responsable Recouvrement|
-  :Reçoit notification\n(email + push mobile);
-  :Consulte dashboard\nRecouvrement (Angular web\nou Flutter mobile);
-  :Sélectionne client\nen retard;
+  |Directeur|
+  :Recoit notification SSE (web)\net push FCM (mobile);
+  :Consulte dashboard\nRecouvrement (Angular web);
+  :Selectionne client en retard;
 
-  |Agent de Terrain (Flutter)|
-  :Reçoit notification push\nFCM sur son téléphone;
-  :Ouvre détail de l'alerte\n(app Flutter);
-  :Se déplace chez le client;
+  |Agent Terrain (Flutter)|
+  :Recoit notification push FCM;
+  :Ouvre detail de l'alerte (Flutter);
+  :Se deplace chez le client;
 
   |Client|
-  if (Client peut\npayer ?) then (Oui)
-    :Effectue paiement\n(MTN / Orange / espèces);
-    |Agent de Terrain (Flutter)|
-    :Saisit la collecte\ndans Flutter (formulaire);
+  if (Client peut payer ?) then (Oui)
+    :Effectue paiement\n(MTN / Orange / especes);
+    |Agent Terrain (Flutter)|
+    :Saisit collecte dans Flutter\n(formulaire offline-first);
     |Spring Boot API|
-    :POST /api/collectes\n→ PostgreSQL staging;
-    :Pipeline reprend\nla collecte à J+1;
-    :Alerte clôturée\nautomatiquement;
-    |Responsable Recouvrement|
-    :Dashboard mis à jour\n(PAR recalculé à J+1);
+    :POST /api/v1/collectes\n-> PostgreSQL app.collectes_terrain;
+    :Alerte cloturee\nautomatiquement a J+1;
+    |Directeur|
+    :Dashboard mis a jour\n(PAR recalcule a J+1);
   else (Non)
-    |Responsable Recouvrement|
+    |Directeur|
     if (Retard > 90 jours ?) then (Oui)
-      :Escalade au Directeur\n(alerte statut = ESCALADEE);
+      :Escalade - alerte statut = ESCALADEE;
       |Spring Boot API|
-      :Notification push\nau Directeur;
-      :Décision write-off;
+      :Notification SSE prioritaire\nau Directeur;
+      :Decision plan d'apurement\nou procedure contentieuse;
     else (Non)
-      :Alerte maintenue active\n(re-notifiée demain);
+      :Alerte maintenue ACTIVE\n(re-notifiee le lendemain);
     endif
   endif
 
-else (Non — aucune créance)
+else (Non - aucune creance)
   :Aucune action requise;
 
 endif

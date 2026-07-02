@@ -1,28 +1,28 @@
 <div class="page-content">
   <div class="page-header">
-    <h2>Dashboard Analyste</h2>
-    <p class="text-muted text-sm">Scoring MCRS & surveillance du modèle ML</p>
+    <h2>{{ 'anl_dashboard.title' | translate }}</h2>
+    <p class="text-muted text-sm">{{ 'anl_dashboard.subtitle' | translate }}</p>
   </div>
 
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card
-      label="Clients scorés"
+      [label]="'anl_dashboard.kpi_clients' | translate"
       [value]="data()?.totalClients ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Score moyen"
+      [label]="'anl_dashboard.kpi_score_moyen' | translate"
       [value]="data()?.scoresMoyen ?? 0"
       [isPercent]="true"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Alertes ouvertes"
+      [label]="'anl_dashboard.kpi_alertes' | translate"
       [value]="data()?.alertesOuvertes ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="PSI dérive ML"
+      [label]="'anl_dashboard.kpi_psi' | translate"
       [value]="data()?.driftPsi ?? 0"
       [loading]="loading()"
     />
@@ -31,7 +31,7 @@
   <div class="two-col">
     <!-- Distribution des scores -->
     <div class="card">
-      <h4 style="margin-bottom: 16px">Distribution des scores MCRS</h4>
+      <h4 style="margin-bottom: 16px">{{ 'anl_dashboard.dist_title' | translate }}</h4>
       @if (loading()) {
         <div class="skeleton" style="height: 200px"></div>
       } @else {
@@ -46,7 +46,7 @@
 
     <!-- Alertes récentes -->
     <div class="card">
-      <h4 style="margin-bottom: 16px">Alertes récentes</h4>
+      <h4 style="margin-bottom: 16px">{{ 'anl_dashboard.alertes_title' | translate }}</h4>
       @for (a of data()?.alertesRecentes ?? []; track a.id) {
         <div
           style="

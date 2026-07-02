@@ -6,6 +6,8 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { RouterLink } from "@angular/router";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import { ToastService } from "../../../core/services/toast.service";
@@ -13,11 +15,16 @@ import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 
 interface DossierPendant {
   uid: string;
-  reference: string;
   clientNom: string;
-  montant: number;
+  clientId: string;
+  montantDemande: number;
+  dureeMois: number;
+  secteurActivite: string;
+  objetFinancement: string;
   agentNom: string;
-  dateDepot: string;
+  dateSoumission: string;
+  statut: string;
+  noteAnalyse: string | null;
 }
 
 interface CaDashboard {
@@ -25,6 +32,8 @@ interface CaDashboard {
   clientsCount: number;
   collectesJour: number;
   par30: number;
+  dossiersEnAttente: number;
+  dossiersValidesMois: number;
   dossiers: DossierPendant[];
 }
 
@@ -32,7 +41,7 @@ interface CaDashboard {
   selector: "app-ca-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, StatCardComponent, FcfaPipe],
+  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
   templateUrl: "./ca-dashboard.component.html",
   styleUrls: ["./ca-dashboard.component.scss"],
 })
@@ -58,8 +67,8 @@ export class CaDashboardComponent implements OnInit {
     this.validating.set(uid);
     this.api
       .patch(`/api/v1/dossiers-credit/${uid}/valider-chef`, {
-        decision,
-        commentaire: "",
+        action: decision,
+        motif: "",
       })
       .subscribe({
         next: () => {

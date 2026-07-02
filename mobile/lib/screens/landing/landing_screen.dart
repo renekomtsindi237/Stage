@@ -1,8 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_strings.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/providers/locale_provider.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -30,7 +31,6 @@ class _LandingScreenState extends State<LandingScreen>
   static const _navy = Color(0xFF1E3A5F);
   static const _navyDeep = Color(0xFF071A32);
   static const _textMuted = Color(0xFF6B7280);
-  static const _textSecondary = Color(0xFF374151);
   static const _gold = Color(0xFFD4A853);
   static const _teal = Color(0xFF0D9488);
   static const _indigo = Color(0xFF4F46E5);
@@ -88,8 +88,33 @@ class _LandingScreenState extends State<LandingScreen>
     super.dispose();
   }
 
+  Widget _langBtn(LocaleProvider locale, String code, bool active) {
+    return GestureDetector(
+      onTap: () => locale.setLocale(Locale(code.toLowerCase())),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: active ? _navy : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          code,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: active ? Colors.white : _textMuted,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final locale = context.watch<LocaleProvider>();
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -149,6 +174,33 @@ class _LandingScreenState extends State<LandingScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Language toggle — top right aligned
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 8, bottom: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _langBtn(locale, 'FR', locale.isFrench),
+                          _langBtn(locale, 'EN', !locale.isFrench),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 28),
 
                   // Logo
@@ -179,7 +231,7 @@ class _LandingScreenState extends State<LandingScreen>
                             const SizedBox(width: 6),
                             Flexible(
                               child: Text(
-                                'PLATEFORME DE MICROFINANCE — CAMEROUN',
+                                l10n.landingBadge,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Inter',
@@ -203,7 +255,7 @@ class _LandingScreenState extends State<LandingScreen>
                     child: SlideTransition(
                       position: _titleSlide,
                       child: Text(
-                        'Gérez vos crédits simplement et en sécurité',
+                        l10n.landingTitle,
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 30,
@@ -221,7 +273,7 @@ class _LandingScreenState extends State<LandingScreen>
                   FadeTransition(
                     opacity: _subtitleFade,
                     child: Text(
-                      'MicroRecouv est une plateforme numérique qui aide les institutions de microfinance à suivre leurs clients, gérer les remboursements et recouvrer les crédits en retard.',
+                      l10n.landingSubtitle,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14,
@@ -276,9 +328,9 @@ class _LandingScreenState extends State<LandingScreen>
                                 child: const Icon(Icons.badge_rounded, color: _gold, size: 22),
                               ),
                               const SizedBox(height: 16),
-                              const Text(
-                                'Accès personnel',
-                                style: TextStyle(
+                              Text(
+                                l10n.landingCardTitle,
+                                style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
@@ -287,7 +339,7 @@ class _LandingScreenState extends State<LandingScreen>
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                "Pour les agents, directeurs, caissiers et toute l'équipe de l'institution.",
+                                l10n.landingCardDescription,
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 13,
@@ -296,16 +348,16 @@ class _LandingScreenState extends State<LandingScreen>
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              _buildCheck('Connexion par code email'),
+                              _buildCheck(l10n.landingCheckEmailCode),
                               const SizedBox(height: 8),
-                              _buildCheck('Aucun mot de passe à retenir'),
+                              _buildCheck(l10n.landingCheckNoPassword),
                               const SizedBox(height: 22),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Se connecter',
-                                    style: TextStyle(
+                                  Text(
+                                    l10n.landingCtaButton,
+                                    style: const TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
@@ -340,7 +392,7 @@ class _LandingScreenState extends State<LandingScreen>
                     opacity: _ctaFade,
                     child: Center(
                       child: Text(
-                        '${AppStrings.appName} ${AppStrings.appVersion} — IMF Cameroun',
+                        '${l10n.appName} ${l10n.appVersion} — ${l10n.appImfCameroun}',
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,

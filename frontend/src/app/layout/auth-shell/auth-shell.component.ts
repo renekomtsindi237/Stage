@@ -1,16 +1,17 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { RouterLink, RouterOutlet } from "@angular/router";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-auth-shell",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, TranslatePipe],
   template: `
     <div class="auth-shell">
       <a routerLink="/" class="auth-back">
         <span class="material-icons-round">arrow_back</span>
-        Accueil
+        {{ 'auth_shell.back_home' | translate }}
       </a>
       <div class="auth-logo-wrap">
         <img

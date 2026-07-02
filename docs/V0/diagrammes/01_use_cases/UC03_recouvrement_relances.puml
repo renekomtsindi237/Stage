@@ -1,66 +1,63 @@
 @startuml UC03_recouvrement_relances
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam actorStyle awesome
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam actorStyle none
 skinparam usecase {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 11
+  BackgroundColor white
+  BorderColor #666666
 }
 skinparam actor {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
+  BackgroundColor white
+  BorderColor #333333
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam rectangle {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
 
-title UC03 — Recouvrement et Relances\nPlateforme IMF Cameroun
+title UC03 - Recouvrement et Relances
 
 left to right direction
 
-actor "Responsable\nRecouvrement" as RR
-actor "Directeur Général" as DG
-actor "Serveur Email\n(SMTP)" as SMTP <<système>>
-actor "Firebase FCM\n(Push)" as FCM <<système>>
-actor "Spring Boot\n(Scheduler)" as SCH <<système>>
+actor "Directeur\n(DIRECTEUR)" as DIR
+actor "SMTP" as SMTP <<systeme>>
+actor "Firebase FCM\n(push mobile)" as FCM <<systeme>>
+actor "Airflow Scheduler" as SCH <<systeme>>
 
-rectangle "UC03 — Recouvrement et Relances" {
+rectangle "UC03 - Recouvrement et Relances" {
 
-  usecase "UC03.1\nDétecter créances\néchues (PAR30/90)\nautomatiquement" as UC0301
-  usecase "UC03.2\nGénérer alerte\nimpayé (stockage\nDB + notification)" as UC0302
-  usecase "UC03.3\nEnvoyer notification\nemail (SMTP)\nresponsable recouvrement" as UC0303
-  usecase "UC03.4\nEnvoyer notification\npush FCM\n(app mobile)" as UC0304
-  usecase "UC03.5\nConsulter liste\nalertes actives\n(web + mobile)" as UC0305
-  usecase "UC03.6\nConfigurer seuil\nd'alerte\n(30 / 60 / 90 jours)" as UC0306
-  usecase "UC03.7\nClôturer une alerte\n(recouvrement réussi)" as UC0307
+  usecase "UC03.1\nDetecter creances\nechues automatiquement\n(dag_alertes_impayes)" as UC0301
+  usecase "UC03.2\nGenerer alerte impaye\n(INSERT AlerteImpaye)" as UC0302
+  usecase "UC03.3\nEnvoyer notification\nSSE (web temps reel)" as UC0303
+  usecase "UC03.4\nEnvoyer notification\nemail SMTP" as UC0304
+  usecase "UC03.5\nEnvoyer notification\npush FCM (mobile)" as UC0305
+  usecase "UC03.6\nConsulter liste\nalertes actives" as UC0306
+  usecase "UC03.7\nCloture manuelle\nd'une alerte" as UC0307
   usecase "UC03.8\nEscalader une alerte\n(passage PAR90)" as UC0308
-  usecase "UC03.9\nConsulter historique\ndes relances et alertes" as UC0309
+  usecase "UC03.9\nCreer plan\nd'apurement" as UC0309
 
 }
 
-' Acteurs humains
-RR  --> UC0305
-RR  --> UC0306
-RR  --> UC0307
-RR  --> UC0308
-RR  --> UC0309
-DG  --> UC0305
-DG  --> UC0308
+DIR --> UC0306
+DIR --> UC0307
+DIR --> UC0308
+DIR --> UC0309
 
-' Acteurs systèmes
-SCH --> UC0301
-UC0302 --> SMTP : <<include>>
-UC0302 --> FCM  : <<include>>
-SMTP   <-- UC0303
-FCM    <-- UC0304
+SCH     --> UC0301
+UC0304  --> SMTP
+UC0305  --> FCM
 
-' Inclusions
 UC0301 ..> UC0302 : <<include>>
 UC0302 ..> UC0303 : <<include>>
-UC0302 ..> UC0304 : <<include>>
-UC0305 ..> UC0307 : <<extend>>
-UC0305 ..> UC0308 : <<extend>>
+UC0302 ..> UC0304 : <<extend>>
+UC0302 ..> UC0305 : <<extend>>
+UC0306 ..> UC0307 : <<extend>>
+UC0306 ..> UC0308 : <<extend>>
 UC0308 ..> UC0303 : <<include>>
 
 @enduml

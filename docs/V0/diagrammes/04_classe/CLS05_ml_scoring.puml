@@ -1,146 +1,165 @@
-@startuml CLS05_ML_Scoring
-title CLS05 — Modèle ML Scoring XGBoost (Phase 5)\nPlateforme Pipeline IMF Cameroun
-
+@startuml CLS05_ml_scoring
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
 skinparam classAttributeIconSize 0
-skinparam classFontSize 11
-skinparam backgroundColor #FAFAFA
 skinparam class {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
-  HeaderBackgroundColor #BF360C
-  HeaderFontColor white
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
+  HeaderFontColor #333333
+  ArrowColor #333333
 }
 skinparam enum {
-  BackgroundColor #FBE9E7
-  BorderColor #BF360C
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
 }
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
+}
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
 
-' ══════════════════════════════════════════════
-' ENUM
-' ══════════════════════════════════════════════
+title CLS05 - Architecture du scoring MCRS
+
 enum NiveauRisque {
   FAIBLE
-  MOYEN
+  MODERE
   ELEVE
   CRITIQUE
 }
 
-' ══════════════════════════════════════════════
-' FEATURE ENGINEERING
-' ══════════════════════════════════════════════
-class FeatureExtractor {
-  -colonnes_pret : List[str]
-  -colonnes_client : List[str]
-  -date_reference : date
-  +extract_features_pret(df_prets : DataFrame) : DataFrame
-  +extract_features_client(df_clients : DataFrame) : DataFrame
-  +encode_categoricals(df : DataFrame) : DataFrame
-  +normalize_amounts(df : DataFrame) : DataFrame
-  +get_feature_vector(id_pret : str) : ndarray
-  +build_training_dataset(date_debut : date, date_fin : date) : DataFrame
-}
-
-note right of FeatureExtractor
-  Features calculées :
-  • jours_retard
-  • taux_remboursement
-  • nb_echeances_manquees
-  • montant_pret (normalisé)
-  • anciennete_client (jours)
-  • score_historique (avg prêts passés)
-  • zone_encodee, produit_encode
+note right of NiveauRisque
+  Seuils (scoring_config.json) :
+  FAIBLE   < 0.30
+  MODERE   0.30 - 0.55
+  ELEVE    0.55 - 0.75
+  CRITIQUE >= 0.75
 end note
 
-' ══════════════════════════════════════════════
-' SCORING XGBoost
-' ══════════════════════════════════════════════
-class XGBoostScorer {
-  -model_path : str
-  -model : XGBClassifier
-  -feature_names : List[str]
-  -version : str
-  -seuil_confiance_min : float = 0.60
-  +load_model(path : str) : void
-  +predict_proba(features : ndarray) : float
-  +batch_score(df : DataFrame) : DataFrame
-  +get_feature_importance() : Dict[str, float]
-  +save_model(path : str) : void
-  +validate_features(df : DataFrame) : bool
+class CRSCalculator {
+  - config : dict
+  + calculer(clientId : str, features : dict) : float
 }
 
-note right of XGBoostScorer
-  Modèle sérialisé en .pkl (joblib)
-  Score en sortie : float [0.0 – 1.0]
-  Représente la probabilité de défaut
+note right of CRSCalculator
+  Collection Reliability Score
+  regularite_collecte_pct x0.30
+  nb_collectes_30j_normalise x0.20
+  taux_remboursement_hist x0.25
+  absence_semaines_penalite x0.15
+  stabilite_montants x0.10
 end note
 
-' ══════════════════════════════════════════════
-' ROUTAGE PAR SEUIL
-' ══════════════════════════════════════════════
-class ScoreThresholdRouter {
-  -seuil_faible : float = 0.25
-  -seuil_moyen : float = 0.50
-  -seuil_eleve : float = 0.75
-  +route(score : float) : NiveauRisque
-  +get_action_recommandee(niveau : NiveauRisque) : str
-  +get_couleur_alerte(niveau : NiveauRisque) : str
+class RPSCalculator {
+  - config : dict
+  + calculer(clientId : str, features : dict) : float
 }
 
-note bottom of ScoreThresholdRouter
-  FAIBLE   [0.00 – 0.25) → surveillance normale
-  MOYEN    [0.25 – 0.50) → surveillance accrue
-  ÉLEVÉ    [0.50 – 0.75) → relance agent terrain
-  CRITIQUE [0.75 – 1.00] → escalade direction
+note right of RPSCalculator
+  Recovery Performance Score
+  taux_recouvrement_global x0.35
+  par_30_jours x0.25
+  delai_moyen_recouvrement x0.20
+  historique_plan_apurement x0.20
 end note
 
-' ══════════════════════════════════════════════
-' FEEDBACK / RÉENTRAÎNEMENT
-' ══════════════════════════════════════════════
-class FeedbackLoop {
-  -historique_path : str
-  -seuil_mae : float = 0.10
-  -nb_min_observations : int = 100
-  +enregistrer_resultat_reel(id_pret : str, defaut_reel : bool) : void
-  +calculer_derive_mae() : float
-  +reentraine_si_drift(seuil_mae : float) : bool
-  +exporter_dataset_retrain() : DataFrame
-  +sauvegarder_historique() : void
+class CSICalculator {
+  - config : dict
+  + calculer(clientId : str, features : dict) : float
 }
 
-' ══════════════════════════════════════════════
-' TÂCHE AIRFLOW (DAG Phase 5)
-' ══════════════════════════════════════════════
-class ScoreIngestionTask {
-  -conn : psycopg2.connection
-  -dossier_modele : str
-  -dag_run_id : str
-  +run(dag_run_id : str) : dict
-  +get_prets_a_scorer(date_cible : date) : DataFrame
-  +sauvegarder_scores_dw(scores : DataFrame) : int
-  +journaliser(stats : dict) : void
+note right of CSICalculator
+  Client Scoring Index
+  indice_resilience x0.35
+  capacite_remboursement x0.30
+  pression_prix x0.15
+  pression_climatique x0.10
+  diversification x0.10
+end note
+
+class MCRSAggregator {
+  - w_crs : float = 0.35
+  - w_rps : float = 0.45
+  - w_csi : float = 0.20
+  + calculer_mcrs(crs, rps, csi : float) : float
+  + classifier(mcrs : float) : NiveauRisque
+  + batch_score(df : DataFrame) : DataFrame
 }
 
-' ══════════════════════════════════════════════
-' RAPPORT
-' ══════════════════════════════════════════════
-class ScoreReport {
-  -connexion : psycopg2.connection
-  -zone_ids : List[str]
-  +generer_rapport_zone(zone_id : str, date : date) : DataFrame
-  +calculer_stats_globales() : Dict[str, float]
-  +exporter_csv(chemin : str) : void
-  +generer_histogramme_scores() : Figure
+note bottom of MCRSAggregator
+  MCRS = 0.35 x (1-CRS) + 0.45 x RPS_risk + 0.20 x CSI_risk
+  Score in [0.000, 1.000] - 1 = risque maximum
+end note
+
+class XGBoostModel {
+  - model : XGBClassifier
+  - feature_names : List[str]
+  - version : str
+  + charger_depuis_db(model_run_id : str) : void
+  + predict_proba(features : ndarray) : float
+  + get_importances() : Dict[str, float]
 }
 
-' ══════════════════════════════════════════════
-' RELATIONS
-' ══════════════════════════════════════════════
-ScoreIngestionTask --> FeatureExtractor : 1. extrait features
-FeatureExtractor --> XGBoostScorer : 2. alimente
-XGBoostScorer --> ScoreThresholdRouter : 3. transmet score
-ScoreThresholdRouter --> NiveauRisque : retourne
-FeedbackLoop --> XGBoostScorer : réentraîne si dérive MAE
-ScoreIngestionTask --> ScoreReport : génère rapport post-scoring
-ScoreIngestionTask ..> FeedbackLoop : déclenche vérification dérive
+class SHAPExplainer {
+  - explainer : shap.TreeExplainer
+  + calculer_shap(model, features) : ndarray
+  + sauvegarder(clientId, shap_values) : void
+  + top_features(n : int) : List
+}
+
+class PSIMonitor {
+  - psi_seuil : float = 0.20
+  - check_freq_jours : int = 7
+  + calculer_psi(baseline, actuel) : float
+  + detecter_derive() : bool
+  + declencher_retrain() : void
+}
+
+class MCRSFastAPIService {
+  ' FastAPI 0.111 - Python 3.11 - :8090
+  + score_client(clientId : str) : ScoreResponse
+  + score_batch(clientIds : List) : List[ScoreResponse]
+  + shap_client(clientId : str) : SHAPResponse
+  + health() : dict
+}
+
+class ScoreResponse {
+  + clientId : str
+  + scoreMcrs : float
+  + scoreCrs : float
+  + scoresRps : float
+  + scoresCsi : float
+  + niveauRisque : NiveauRisque
+  + dateCalcul : datetime
+  + topFeatures : List[dict]
+}
+
+class MLRepository {
+  ' PostgreSQL schema ml
+  + sauvegarder_score(s : ScoreResponse) : void
+  + sauvegarder_shap(clientId, values) : void
+  + charger_modele_actif() : XGBoostModel
+}
+
+MCRSFastAPIService --> MCRSAggregator
+MCRSFastAPIService --> MLRepository
+MCRSFastAPIService --> ScoreResponse
+
+MCRSAggregator --> CRSCalculator
+MCRSAggregator --> RPSCalculator
+MCRSAggregator --> CSICalculator
+MCRSAggregator --> XGBoostModel
+MCRSAggregator --> NiveauRisque
+
+XGBoostModel --> SHAPExplainer
+SHAPExplainer --> MLRepository
+MLRepository ..> XGBoostModel : charge modele actif
+
+PSIMonitor --> MLRepository
+PSIMonitor ..> MCRSAggregator : re-scoring si derive
 
 @enduml

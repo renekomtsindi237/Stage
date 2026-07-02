@@ -1,0 +1,50 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  scrape_timeout:      10s
+  external_labels:
+    environment: staging
+    project: microrecouv-imf
+
+# ── Règles d'alerte (optionnel) ──────────────────────────────────────────────
+rule_files: []
+
+scrape_configs:
+
+  # ── Backend Spring Boot / Java 17 ──────────────────────────────────────────
+  - job_name: 'imf-backend'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['127.0.0.1:9200']
+        labels:
+          service: 'spring-boot'
+          component: 'backend'
+    scrape_interval: 15s
+
+  # ── ML API (FastAPI + prometheus-client) ────────────────────────────────────
+  - job_name: 'imf-ml-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['127.0.0.1:8090']
+        labels:
+          service: 'fastapi'
+          component: 'ml-scoring'
+    scrape_interval: 30s
+
+  # ── Node Exporter (métriques OS du VPS) ────────────────────────────────────
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['127.0.0.1:9101']
+        labels:
+          service: 'node-exporter'
+          component: 'vps-host'
+    scrape_interval: 30s
+
+  # ── Prometheus lui-même ─────────────────────────────────────────────────────
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['127.0.0.1:9100']
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
+    scrape_interval: 60s

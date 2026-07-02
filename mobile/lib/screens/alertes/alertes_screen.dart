@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -23,14 +24,6 @@ class _AlertesScreenState extends State<AlertesScreen> {
   int _page = 0;
   bool _hasMore = true;
   final _scrollController = ScrollController();
-
-  static const _filtres = [
-    (label: 'Toutes', value: null as String?),
-    (label: 'Actives', value: 'ACTIVE'),
-    (label: 'Escaladées', value: 'ESCALADEE'),
-    (label: 'Traitées', value: 'TRAITEE'),
-    (label: 'Clôturées', value: 'CLOTUREE'),
-  ];
 
   @override
   void initState() {
@@ -109,19 +102,20 @@ class _AlertesScreenState extends State<AlertesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: context.bg,
       body: Column(
         children: [
-          _buildTopBar(),
-          _buildFilterRow(),
-          Expanded(child: _buildContent()),
+          _buildTopBar(l10n),
+          _buildFilterRow(l10n),
+          Expanded(child: _buildContent(l10n)),
         ],
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(AppL10n l10n) {
     return Container(
       color: AppColors.navyDark,
       padding: EdgeInsets.only(
@@ -136,10 +130,10 @@ class _AlertesScreenState extends State<AlertesScreen> {
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
             onPressed: () => context.go('/dashboard'),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Alertes',
-              style: TextStyle(
+              l10n.alertesTitle,
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -169,14 +163,22 @@ class _AlertesScreenState extends State<AlertesScreen> {
     );
   }
 
-  Widget _buildFilterRow() {
+  Widget _buildFilterRow(AppL10n l10n) {
+    final filtres = [
+      (label: l10n.alertesFilterAll, value: null as String?),
+      (label: l10n.alertesFilterActive, value: 'ACTIVE'),
+      (label: l10n.alertesFilterEscalated, value: 'ESCALADEE'),
+      (label: l10n.alertesFilterTreated, value: 'TRAITEE'),
+      (label: l10n.alertesFilterClosed, value: 'CLOTUREE'),
+    ];
+
     return Container(
       color: context.surface,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: _filtres.map((f) {
+          children: filtres.map((f) {
             final selected = _selectedStatut == f.value;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -214,7 +216,7 @@ class _AlertesScreenState extends State<AlertesScreen> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(AppL10n l10n) {
     if (_loading) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.gold),
@@ -230,16 +232,16 @@ class _AlertesScreenState extends State<AlertesScreen> {
               Icon(Icons.error_outline, size: 52, color: context.textSec),
               const SizedBox(height: 14),
               Text(
-                'Impossible de charger les alertes',
+                l10n.alertesLoadError,
                 style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.textSec),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 18),
               TextButton(
                 onPressed: () => _load(reset: true),
-                child: const Text(
-                  'Réessayer',
-                  style: TextStyle(
+                child: Text(
+                  l10n.retry,
+                  style: const TextStyle(
                     color: AppColors.gold,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
@@ -259,7 +261,7 @@ class _AlertesScreenState extends State<AlertesScreen> {
             Icon(Icons.notifications_off_outlined, size: 52, color: context.textSec),
             const SizedBox(height: 14),
             Text(
-              'Aucune alerte',
+              l10n.alertesEmpty,
               style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.textSec),
             ),
           ],
@@ -289,14 +291,14 @@ class _AlertesScreenState extends State<AlertesScreen> {
           }
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: _buildItem(_alertes[i]),
+            child: _buildItem(_alertes[i], l10n),
           );
         },
       ),
     );
   }
 
-  Widget _buildItem(Alerte a) {
+  Widget _buildItem(Alerte a, AppL10n l10n) {
     final accentColor = a.isEscaladee
         ? AppColors.error
         : a.isActive
@@ -333,7 +335,7 @@ class _AlertesScreenState extends State<AlertesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      a.nomClient ?? 'Client inconnu',
+                      a.nomClient ?? l10n.alertesClientUnknown,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14,
@@ -377,7 +379,7 @@ class _AlertesScreenState extends State<AlertesScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '${a.joursRetard}j retard',
+                      l10n.alertesDelayBadge(a.joursRetard!),
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 11,
@@ -390,7 +392,7 @@ class _AlertesScreenState extends State<AlertesScreen> {
                 ],
                 if (a.montantDu != null)
                   Text(
-                    '${NumberFormat('#,###', 'fr_FR').format(a.montantDu!.toInt())} FCFA dû',
+                    l10n.alertesAmountDue(NumberFormat('#,###', 'fr_FR').format(a.montantDu!.toInt())),
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12,

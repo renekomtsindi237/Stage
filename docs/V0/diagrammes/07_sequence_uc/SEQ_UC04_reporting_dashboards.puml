@@ -1,155 +1,90 @@
 @startuml SEQ_UC04_reporting_dashboards
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 2
-skinparam sequenceGroupBackgroundColor #F5F5F5
-skinparam sequenceGroupBorderColor #9E9E9E
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceBoxBorderColor #4A6CF7
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ_UC04 — Reporting & Tableaux de Bord (Angular)\nDonnées multi-sources agrégées → Spring Boot → Angular SPA\n<size:11><color:#555>Architecture conteneurisée Docker — Données issues de CBS + MTN + Orange + Agents</color></size>
+title SEQ_UC04 - Reporting et Tableaux de Bord (Angular 17)\nKPIs multi-sources -> Spring Boot -> Angular SPA
 
-' ===== ACTEURS =====
-actor "Directeur Général\n(Web Angular)" as DG
-actor "Responsable\nRecouvrement\n(Web Angular)" as RR
-actor "Analyste Data\n(Web Angular)" as AD
+actor "Directeur\n(web Angular)" as DIR
+actor "Analyste Credit\n(web Angular)" as ANA
 
-' ===== CONTENEUR : nginx =====
-box "🐳 nginx (:80/:443)\n[Reverse Proxy + Serveur Angular]" #FFF9C4
-  participant "Nginx\n[Sert index.html Angular\nProxy /api/* → springboot:8080]" as NGINX
+box "nginx :80"
+  participant "Nginx\n(Reverse Proxy + Angular build)" as NGINX
 end box
 
-' ===== CONTENEUR : angular (logique côté client) =====
-box "📦 Angular SPA (navigateur client)" #E3F2FD
-  participant "Angular Router\n[AuthGuard + RoleGuard]" as ROUTER
-  participant "KpiService\n[Angular HttpClient]" as ANG_SVC
-  participant "AuthInterceptor\n[Injecte JWT Bearer]" as INTER
-  participant "Chart.js Components\n[line, bar, pie]" as CHART
-  participant "Angular Material\n[Table, Filters, Cards]" as MAT
+box "Angular SPA (navigateur)"
+  participant "Angular Router\n(AuthGuard + RoleGuard)" as ROUTER
+  participant "KpiService\n(HttpClient + Interceptor)" as ANG_SVC
+  participant "Chart.js\n(graphiques)" as CHART
 end box
 
-' ===== CONTENEUR : springboot =====
-box "🐳 springboot-api (:8080 interne)" #E8F5E9
-  participant "KpiController\n[@RestController\n@RequestMapping('/api/kpi')]" as CTRL
-  participant "KpiService\n[@Service]" as SVC
-  participant "AlerteRepository\n[count actives]" as REPO_ALE
-  participant "KpiParRepository\n[lecture DW/reporting]" as REPO_PAR
-  participant "CollecteRepository\n[lecture DW/reporting]" as REPO_COL
+box "springboot-api :8080"
+  participant "JwtAuthFilter\nDirecteurController\nAnalysteController" as SPRING
 end box
 
-' ===== CONTENEUR : postgres-pipeline =====
-box "🐳 postgres-pipeline (:5432)" #E8F5E9
-  database "reporting\nv_kpi_collectes\nv_kpi_recouvrement\nv_kpi_executif\n<i>(vues matérialisées\npré-agrégées — toutes sources)</i>" as RPT
-  database "staging\nalertes_impayes" as STG
+box "postgres:15 schema dw"
+  database "mart_kpi_collecte\nmart_kpi_recouvrement\nmart_benchmarks_agences" as DW
 end box
 
-note over RPT : Les vues matérialisées agrègent\nautomatiquement les données de :\n• CBS (prêts, remboursements)\n• MTN Mobile Money (transactions)\n• Orange Money (transactions)\n• Agents terrain (collectes)\n→ 1 seule source de vérité
+== Authentification et acces ==
 
-' =================================================
-' ÉTAPE 1 — CHARGEMENT INITIAL APP ANGULAR
-' =================================================
-== 🌐 ÉTAPE 1 — Chargement de l'application Angular ==
+DIR -> NGINX : HTTPS GET /dashboard
+NGINX -> ROUTER : Sert Angular SPA (index.html)
+ROUTER -> ROUTER : AuthGuard - verifie\ncookie imf_access (HttpOnly)
+ROUTER --> DIR : Affiche /dashboard (role DIRECTEUR)
 
-DG -> NGINX : HTTPS GET https://imf-plateforme.cm/
-NGINX -> DG : HTTP 200\nContent: dist/angular/index.html\n+ main.js, polyfills.js, styles.css\n(fichiers Angular compilés dans volume /angular-dist/)
+== Chargement des KPIs Directeur ==
 
-DG -> ROUTER : Bootstrap Angular\nÉvaluation des routes
-ROUTER -> ROUTER : AuthGuard.canActivate()\nVérifie JWT dans sessionStorage
+DIR -> ANG_SVC : ngOnInit() -> fetchKpis()
+ANG_SVC -> NGINX : GET /api/v1/directeur/kpis\n?dateDebut=...&agenceId=...\n[Cookie: imf_access auto]
+NGINX -> SPRING : Proxy -> springboot:8080
 
-alt <b>JWT valide et non expiré</b>
-  ROUTER -> DG : Redirige vers /dashboard-executif (Directeur)
-else <b>Pas de JWT ou expiré</b>
-  ROUTER -> DG : Redirige vers /login
-end
+activate SPRING
+SPRING -> SPRING : JwtAuthFilter\nvalide cookie, extrait role=DIRECTEUR
+SPRING -> DW : SELECT FROM dw.mart_kpi_collecte\nJOIN dw.mart_kpi_recouvrement\nWHERE date_snapshot BETWEEN ? AND ?
+DW --> SPRING : agregats par date/agence
 
-' =================================================
-' ÉTAPE 2 — DASHBOARD EXÉCUTIF (Directeur)
-' =================================================
-== 📊 ÉTAPE 2 — Dashboard Exécutif (Directeur) | Données : CBS + MTN + Orange + Agents ==
+SPRING -> DW : SELECT FROM dw.mart_benchmarks_agences\nWHERE date_snapshot = CURRENT_DATE - 1
+DW --> SPRING : classement agences
 
-DG -> ANG_SVC : ngOnInit() → loadDashboardExecutif()
-ANG_SVC -> INTER : http.get('/api/kpi/dashboard-summary')
-INTER -> INTER : Lit JWT depuis sessionStorage\nAjoute header Authorization: Bearer <JWT>
+SPRING --> ANG_SVC : 200 OK\n{montantTotal, tauxPAR30, tauxPAR90,\nbenchmarks: [...], trend30j: [...]}
+deactivate SPRING
 
-INTER -> NGINX : HTTPS GET /api/kpi/dashboard-summary
-NGINX -> CTRL : HTTP Proxy → springboot:8080\nGET /api/kpi/dashboard-summary
+ANG_SVC -> CHART : Render graphiques\n(Line chart PAR30, Bar chart collectes,\nPie chart canaux)
+CHART --> DIR : Dashboard affiche
 
-CTRL -> CTRL : JwtAuthFilter: valide JWT\n@PreAuthorize("hasRole('DIRECTEUR')")
+== Filtrage par agence ==
 
-CTRL -> SVC : getDashboardSummary()
+DIR -> ANG_SVC : Selectionne agence dans filtre
+ANG_SVC -> NGINX : GET /api/v1/directeur/kpis?agenceId={uid}
+note right : Debounce 300ms\nRxJS switchMap
 
-' Appels parallèles vers les vues
-par
-  SVC -> REPO_PAR : findLatestPar()
-  REPO_PAR -> RPT : SELECT taux_par30, taux_par90,\nencours_total, nb_prets_actifs\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete = CURRENT_DATE - 1
-  RPT --> REPO_PAR : {par30: 0.083, par90: 0.031,\nencours: 625_000_000 XAF}
-  note right RPT : Données CBS\n(prêts + remboursements)
+NGINX -> SPRING : Proxy request
+SPRING -> DW : SELECT WHERE agence_id = ?
+DW --> SPRING : KPIs filtres
+SPRING --> ANG_SVC : 200 OK KpiResponse filtre
+ANG_SVC -> CHART : Re-render graphiques
+CHART --> DIR : Dashboard mis a jour
 
-  SVC -> REPO_COL : findTotalCollectes(periode='MOIS_EN_COURS')
-  REPO_COL -> RPT : SELECT SUM(montant_total) AS total_mois,\nSUM(nb_mobile_money) AS mobile_mois,\nCOUNT(DISTINCT date_complete) AS nb_jours\nFROM reporting.v_kpi_collectes\nWHERE date_complete >= DATE_TRUNC('month', CURRENT_DATE)
-  RPT --> REPO_COL : {total: 87_300_000 XAF,\n pct_mobile: 0.68}
-  note right RPT : Données MTN + Orange\n+ Agents terrain
+== Scoring ML par l'Analyste ==
 
-  SVC -> REPO_ALE : countByStatutAlerte('ACTIVE')
-  REPO_ALE -> STG : SELECT COUNT(*) FROM staging.alertes_impayes\nWHERE statut_alerte = 'ACTIVE'
-  STG --> REPO_ALE : 47 alertes actives
-
-  SVC -> REPO_PAR : findPar30Trend(30)
-  REPO_PAR -> RPT : SELECT date_complete, taux_par30\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete >= CURRENT_DATE - 30\nORDER BY date_complete ASC
-  RPT --> REPO_PAR : [{date, par30} × 30 jours]
-end
-
-SVC -> SVC : build DashboardSummaryResponse {\n  par30: 0.083, par90: 0.031,\n  totalCollectes: 87_300_000,\n  tauxMobileMoney: 0.68,\n  nbAlertes: 47,\n  nbPretsActifs: 1250,\n  trendPar30: [×30]\n}
-SVC --> CTRL : DashboardSummaryResponse
-CTRL --> NGINX : HTTP 200 JSON (gzip)
-NGINX --> ANG_SVC : HTTPS 200 JSON
-
-ANG_SVC -> CHART : Injecte données dans\nLineChart (PAR30 tendance)\nBarChart (collectes par canal)\nKpiCards (PAR30/90, alertes)
-ANG_SVC -> MAT : Peuple MatTable\n(alertes actives top 5)
-CHART --> DG : Dashboard Exécutif rendu
-MAT --> DG : Tableau alertes affiché
-
-' =================================================
-' ÉTAPE 3 — FILTRAGE DYNAMIQUE (Responsable Recouvrement)
-' =================================================
-== 🔍 ÉTAPE 3 — Dashboard Recouvrement avec filtres dynamiques (RR) ==
-
-RR -> NGINX : HTTPS GET /api/kpi/par\n?dateDebut=2026-01-01&dateFin=2026-04-01\n&zoneId=2&produitId=3\nAuthorization: Bearer <JWT_RR>
-NGINX -> CTRL : Proxy
-CTRL -> CTRL : @PreAuthorize("hasAnyRole\n('RESPONSABLE_RECOUVREMENT','DIRECTEUR','ANALYSTE')")
-CTRL -> SVC : getParStats(dateDebut, dateFin, zoneId=2, produitId=3)
-SVC -> REPO_PAR : findParByFilters(params)
-REPO_PAR -> RPT : SELECT date_complete, nom_zone,\nnom_produit, taux_par30, taux_par90,\nencours_par30, encours_par90,\nnb_prets_en_retard\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete BETWEEN '2026-01-01' AND '2026-04-01'\nAND zone_id = 2 AND produit_id = 3\nORDER BY date_complete ASC
-
-RPT --> REPO_PAR : 90 lignes (filtres appliqués)
-REPO_PAR --> SVC : KpiParResponse (filtré)
-SVC --> NGINX : HTTP 200 JSON
-NGINX --> RR : Données filtrées → Angular met à jour les graphiques\n(RxJS debounceTime 300ms évite les appels excessifs)
-
-' =================================================
-' ÉTAPE 4 — EXPORT CSV (Analyste)
-' =================================================
-== 📥 ÉTAPE 4 — Export CSV depuis le Dashboard (Analyste) ==
-
-AD -> NGINX : HTTPS GET /api/kpi/collectes/export\n?format=csv&dateDebut=2026-01-01&dateFin=2026-04-01\nAuthorization: Bearer <JWT_ANALYSTE>
-NGINX -> CTRL : Proxy GET /api/kpi/collectes/export
-CTRL -> CTRL : @PreAuthorize("hasAnyRole('ANALYSTE','DIRECTEUR')")
-CTRL -> SVC : exportCollectesCSV(params)
-SVC -> REPO_COL : findAllCollectesByPeriod(params)
-REPO_COL -> RPT : SELECT date_complete, nom_zone, nom_canal,\nnom_agent, nb_collectes, montant_total,\nmontant_moyen, nb_mobile_money\nFROM reporting.v_kpi_collectes\nWHERE date_complete BETWEEN ? AND ?\nORDER BY date_complete, nom_zone
-RPT --> REPO_COL : N lignes toutes sources confondues
-REPO_COL --> SVC : List<KpiCollecteRow>
-SVC -> SVC : generateCSV(rows)\n→ RFC 4180 : "Date,Zone,Canal,Nb collectes,Montant..."
-SVC --> CTRL : byte[] (CSV content)
-CTRL --> NGINX : HTTP 200\nContent-Type: text/csv\nContent-Disposition: attachment; filename="collectes_2026-Q1.csv"
-NGINX --> AD : Téléchargement CSV (navigateur)\nDonnées : MTN + Orange + Agents — toutes sources
+ANA -> ANG_SVC : GET /api/v1/analyste/scoring/{clientId}\n[Cookie: imf_access]
+NGINX -> SPRING : Proxy request
+SPRING -> DW : SELECT ml.client_scores + ml.shap_explanations
+DW --> SPRING : {scoreMcrs, niveauRisque, shap}
+SPRING --> ANG_SVC : 200 OK ScoringResponse
+ANG_SVC --> ANA : Affiche MCRS + top features SHAP
 
 @enduml

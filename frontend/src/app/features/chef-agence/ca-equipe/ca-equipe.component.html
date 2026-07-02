@@ -1,0 +1,110 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>{{ 'ca_equipe.title' | translate }}</h2>
+      <p class="text-muted text-sm">
+        {{ loading() ? '…' : (pageData()?.totalElements ?? 0) }} {{ 'ca_equipe.subtitle' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Recherche -->
+  <div class="search-wrap" style="margin-bottom: 20px">
+    <span class="material-icons-round search-icon">search</span>
+    <input
+      type="text"
+      class="form-control search-input"
+      [placeholder]="'ca_equipe.search_placeholder' | translate"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+    />
+  </div>
+
+  <!-- Grille membres -->
+  @if (loading()) {
+    <div class="members-grid">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+        <div class="member-card skeleton-card">
+          <div class="skeleton avatar-skeleton"></div>
+          <div style="flex:1">
+            <div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div>
+            <div class="skeleton" style="height:12px;width:80%"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (members().length === 0) {
+    <div class="empty-state">
+      <span class="material-icons-round">group_off</span>
+      <p>{{ 'ca_equipe.empty' | translate }}</p>
+    </div>
+  } @else {
+    <div class="members-grid">
+      @for (m of members(); track m.uid) {
+        <div class="member-card" [class.inactive]="!m.actif">
+          <!-- Avatar -->
+          <div class="avatar">{{ initials(m.username) }}</div>
+
+          <!-- Info -->
+          <div class="member-info">
+            <div class="member-name">{{ m.username }}</div>
+            <div class="member-meta">
+              <span class="badge badge-sm" [ngClass]="roleClass(m.role)">
+                {{ roleLabel(m.role) }}
+              </span>
+              @if (!m.actif) {
+                <span class="badge badge-sm badge-critique">{{ 'ca_equipe.inactive' | translate }}</span>
+              }
+            </div>
+            @if (m.email) {
+              <div class="member-email">
+                <span class="material-icons-round" style="font-size:13px">mail</span>
+                {{ m.email }}
+              </div>
+            }
+            @if (m.zoneId) {
+              <div class="member-zone">
+                <span class="material-icons-round" style="font-size:13px">location_on</span>
+                {{ 'ca_equipe.zone_prefix' | translate }} {{ m.zoneId }}
+              </div>
+            }
+          </div>
+
+          <!-- Dernière connexion -->
+          <div class="member-login">
+            @if (m.lastLogin) {
+              <span class="text-sm text-muted">
+                {{ 'ca_equipe.last_login' | translate }} {{ m.lastLogin | date: "dd/MM/yy" }}
+              </span>
+            } @else {
+              <span class="text-sm text-muted">{{ 'ca_equipe.never' | translate }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if ((pageData()?.totalPages ?? 0) > 1) {
+      <div class="pagination">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
+          <span class="material-icons-round">chevron_left</span>
+        </button>
+        <span class="text-sm text-muted">
+          {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ pageData()?.totalPages }}
+        </span>
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() + 1 >= (pageData()?.totalPages ?? 0)"
+          (click)="goPage(currentPage() + 1)"
+        >
+          <span class="material-icons-round">chevron_right</span>
+        </button>
+      </div>
+    }
+  }
+</div>

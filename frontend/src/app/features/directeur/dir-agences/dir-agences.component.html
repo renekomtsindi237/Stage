@@ -9,7 +9,7 @@
 
   <div class="page-header">
     <div>
-      <h2>Gestion des Agences</h2>
+      <h2>{{ 'dir_agences.title' | translate }}</h2>
       <p class="text-muted text-sm">{{ agences().length }} agences</p>
     </div>
     <div class="header-actions">
@@ -17,7 +17,7 @@
         <span class="material-icons-round" style="font-size: 16px"
           >download</span
         >
-        Modèle Excel
+        {{ 'dir_agences.template' | translate }}
       </a>
       <button
         class="btn btn-secondary btn-sm"
@@ -25,16 +25,16 @@
         [disabled]="importing()"
       >
         @if (importing()) {
-          <span class="spinner-xs"></span> Import…
+          <span class="spinner-xs"></span> {{ 'dir_agences.import_loading' | translate }}
         } @else {
           <span class="material-icons-round" style="font-size: 16px"
             >upload_file</span
           >
-          Importer Excel
+          {{ 'dir_agences.import_btn' | translate }}
         }
       </button>
       <button class="btn btn-primary">
-        <span class="material-icons-round">add_business</span> Nouvelle agence
+        <span class="material-icons-round">add_business</span> {{ 'dir_agences.new_btn' | translate }}
       </button>
     </div>
   </div>
@@ -44,8 +44,8 @@
       class="import-banner"
       [class.import-banner--error]="importResult()!.erreurs > 0"
     >
-      <strong>Import terminé</strong> — {{ importResult()!.importe }} agence(s)
-      créée(s), {{ importResult()!.erreurs }} erreur(s) sur
+      <strong>Import terminé</strong> — {{ importResult()!.importe }} {{ 'dir_agences.banner_created' | translate }},
+      {{ importResult()!.erreurs }} erreur(s) sur
       {{ importResult()!.totalLignes }} ligne(s).
       @if (importResult()!.lignesErreur.length > 0) {
         <ul class="import-errors">
@@ -77,15 +77,15 @@
           </div>
           <div class="agence-card__stats">
             <div>
-              <p class="text-sm text-muted">Agents</p>
+              <p class="text-sm text-muted">{{ 'dir_agences.card_agents' | translate }}</p>
               <p class="font-semibold">{{ a.agentsCount }}</p>
             </div>
             <div>
-              <p class="text-sm text-muted">Clients</p>
+              <p class="text-sm text-muted">{{ 'dir_agences.card_clients' | translate }}</p>
               <p class="font-semibold">{{ a.clientsCount | number }}</p>
             </div>
             <div>
-              <p class="text-sm text-muted">PAR30</p>
+              <p class="text-sm text-muted">{{ 'dir_agences.card_par30' | translate }}</p>
               <p class="font-semibold" [class]="a.par30 > 10 ? 'danger' : ''">
                 {{ a.par30 | number: "1.1-1" }}%
               </p>

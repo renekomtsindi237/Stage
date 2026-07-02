@@ -9,6 +9,7 @@ import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { BaseChartDirective } from "ng2-charts";
 import { ChartConfiguration } from "chart.js";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { KpiDashboard } from "../../../core/models/kpi.model";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
@@ -28,6 +29,7 @@ import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
     AlertBadgeComponent,
     FcfaPipe,
     TimeAgoPipe,
+    TranslatePipe,
   ],
   templateUrl: "./dir-dashboard.component.html",
   styleUrls: ["./dir-dashboard.component.scss"],

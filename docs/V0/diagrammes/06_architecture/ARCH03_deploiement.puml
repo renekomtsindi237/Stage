@@ -1,107 +1,95 @@
 @startuml ARCH03_deploiement
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam nodeBackgroundColor #EEF4FF
-skinparam nodeBorderColor #4A6CF7
-skinparam artifactBackgroundColor #E8F5E9
-skinparam artifactBorderColor #2E7D32
-skinparam componentArrowColor #555555
-skinparam componentArrowThickness 1.5
-skinparam Padding 8
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam node {
+  BackgroundColor white
+  BorderColor #666666
+}
+skinparam component {
+  BackgroundColor white
+  BorderColor #666666
+}
+skinparam artifact {
+  BackgroundColor white
+  BorderColor #666666
+}
+skinparam package {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
 
-title ARCH03 — Diagramme de Déploiement\nInfrastructure Serveurs + Docker + Clients
+title ARCH03 - Diagramme de deploiement\nMicroRecouv - VPS 
 
-' ===== INTERNET =====
-cloud "Internet / Réseau Mobile 4G" as INTERNET {
-  node "Firebase Cloud\nMessaging (FCM)" as FCM_NODE {
-    artifact "FCM API\n(Google Cloud)" as FCM
-  }
-  node "Serveur SMTP\n(Externe)" as SMTP_NODE {
-    artifact "Serveur Email" as SMTP
+node "Navigateur web" as BROWSER {
+  artifact "Angular 17 (SPA)"
+}
+
+node "Smartphone Android/iOS" as PHONE {
+  artifact "Flutter 3.24 (APK/IPA)"
+}
+
+node "VPS Ubuntu 22.04" as VPS {
+
+  package "Docker Compose (reseau microrecouv_net)" {
+
+    component "nginx 1.25\n:80, :443" as NGINX
+
+    component "backend\nSpring Boot 3.3 / Java 21\n:8080 (interne)" as BACKEND
+
+    component "frontend\nnginx (Angular build)\n:4200 -> :80 (interne)" as FRONTEND
+
+    component "ml-api\nFastAPI 0.111 / Python 3.11\n:8090 (interne)" as ML
+
+    component "airflow-web\nApache Airflow 2.8.4\n:8089 (interne)" as AIRFLOW
+
+    component "airflow-scheduler" as AIRFLOW_SCHED
+
+    component "postgres\nPostgreSQL 15-alpine\n:5432 (interne)" as PG
+
+    component "redis\nRedis 7-alpine\n:6379 (interne)" as REDIS
+
+    component "dbt\ndbt Core 1.8\n(no port - invoque par Airflow)" as DBT
+
+    component "adminer\n:8888 (interne)" as ADMINER
   }
 }
 
-' ===== RÉSEAU LOCAL LAN =====
-node "Routeur / Firewall\n(NAT + SSL Termination)" as FIREWALL {
-  artifact "Let's Encrypt TLS" as TLS
-  artifact "NAT règles :\n80→:80, 443→:443" as NAT
+node "Services externes" {
+  component "SMTP (email OTP)" as SMTP
+  component "MTN MoMo API" as MTN
+  component "Orange Money API" as OM
+  component "GROQ API (LLM)" as GROQ
 }
 
-' ===== SERVEUR PIPELINE =====
-node "Serveur Pipeline\nUbuntu 22.04 LTS\n192.168.1.10\n(CPU: 8c | RAM: 16Go | SSD: 200Go)" as SRV_PIPELINE {
-  node "Docker Engine" as DOCKER_PIPELINE {
-    artifact "airflow-webserver\nimage: apache/airflow:2.8\n:8080" as AW_ART
-    artifact "airflow-scheduler\nimage: apache/airflow:2.8" as AS_ART
-    artifact "postgres-pipeline\nimage: postgres:15\n:5432" as PG_ART
-    artifact "superset\nimage: apache/superset:3.0\n:8088" as SUP_ART
-  }
-  folder "Volumes Docker" as VOL_PIPELINE {
-    folder "dags/" as VOL_DAGS
-    folder "dbt_project/" as VOL_DBT
-    folder "data/sources/" as VOL_SOURCES
-    folder "data/archives/" as VOL_ARCHIVES
-    folder "pgdata-pipeline/" as VOL_PG1
-  }
-}
+' -- Flux depuis client --
+BROWSER --> NGINX  : HTTPS :443
+PHONE   --> NGINX  : HTTPS :443
 
-' ===== SERVEUR APPLICATION =====
-node "Serveur Application\nUbuntu 22.04 LTS\n192.168.1.11\n(CPU: 8c | RAM: 16Go | SSD: 100Go)" as SRV_APP {
-  node "Docker Engine" as DOCKER_APP {
-    artifact "nginx\nimage: nginx:1.25\n:80, :443" as NGINX_ART
-    artifact "springboot-api\nimage: openjdk:17-jre\n:8080 (interne)" as SPRING_ART
-    artifact "postgres-app\nimage: postgres:15\n:5432 (interne)" as PG_APP_ART
-    artifact "redis\nimage: redis:7\n:6379 (interne)" as REDIS_ART
-  }
-  folder "Volumes Docker" as VOL_APP {
-    folder "angular-dist/" as VOL_ANG
-    folder "pgdata-app/" as VOL_PG2
-    folder "logs/" as VOL_LOGS
-  }
-}
+' -- Flux Nginx (reverse proxy) --
+NGINX --> BACKEND  : /api/**
+NGINX --> FRONTEND : /
+NGINX --> AIRFLOW  : /airflow/**
+NGINX --> ML       : /ml/**
 
-' ===== POSTES CLIENTS LAN =====
-node "Postes Clients (LAN)\n192.168.1.20–50" as CLIENTS {
-  artifact "Navigateur Web\n(Chrome / Firefox)\nAngular App" as BROWSER
-  artifact "Poste Admin DSI\n(Airflow UI + Superset)" as ADMIN
-}
+' -- Flux internes --
+BACKEND  --> PG    : JDBC :5432
+BACKEND  --> REDIS : lettuce :6379
+BACKEND  --> ML    : HTTP /score/*
+ML       --> PG    : asyncpg :5432
+AIRFLOW  --> PG    : SQLAlchemy :5432
+AIRFLOW  --> DBT   : BashOperator
+AIRFLOW  --> ML    : dag_ml_scoring
+AIRFLOW_SCHED --> AIRFLOW
 
-' ===== APPAREILS MOBILES =====
-node "Appareils Mobiles\n(Réseau 4G/WiFi)" as MOBILES {
-  artifact "Smartphone Android\nFlutter App\n(APK installé)" as ANDROID
-  artifact "Smartphone iOS\nFlutter App\n(IPA installé)" as IOS
-}
-
-' ===== RELATIONS RÉSEAU =====
-INTERNET --> FIREWALL : Réseau public
-
-' Clients web LAN
-BROWSER --> FIREWALL : HTTPS :443
-ADMIN --> SRV_PIPELINE : HTTP :8080 (Airflow)\nHTTP :8088 (Superset)
-FIREWALL --> SRV_APP : Proxy HTTPS → HTTP :80
-
-' Mobile vers API
-ANDROID --> FIREWALL : HTTPS :443 (4G/WiFi)
-IOS --> FIREWALL : HTTPS :443 (4G/WiFi)
-
-' Intérieur serveur application
-NGINX_ART --> SPRING_ART : Reverse proxy /api/*
-NGINX_ART --> VOL_ANG : Sert fichiers statiques
-SPRING_ART --> PG_APP_ART : JDBC :5432
-SPRING_ART --> REDIS_ART : Cache :6379
-SPRING_ART --> FCM : HTTPS Firebase Admin SDK
-SPRING_ART --> SMTP : SMTP :587
-
-' Intérieur serveur pipeline
-AW_ART --> PG_ART : JDBC :5432
-AS_ART --> PG_ART : JDBC :5432
-SUP_ART --> PG_ART : JDBC :5432
-AS_ART --> VOL_DAGS : Lecture DAGs Python
-AS_ART --> VOL_DBT : Exécute dbt
-
-' Lien inter-serveurs (lecture DW par Spring Boot)
-SPRING_ART --> SRV_PIPELINE : JDBC :5432\n(lecture schéma dw + reporting)
-
-' Sauvegarde
-SRV_PIPELINE --> SRV_APP : Backup pg_dump\n(cron 23h00)
+' -- Flux externes --
+BACKEND --> SMTP
+BACKEND --> GROQ
+AIRFLOW --> MTN
+AIRFLOW --> OM
 
 @enduml

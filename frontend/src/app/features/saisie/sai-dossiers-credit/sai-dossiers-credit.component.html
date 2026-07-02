@@ -1,0 +1,235 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>{{ 'sai_dossiers.title' | translate }}</h2>
+      <p class="text-muted text-sm">{{ 'sai_dossiers.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Filtre statut -->
+  <div class="filter-bar">
+    @for (s of statuts; track s) {
+      <button
+        class="btn btn-sm"
+        [class.btn-primary]="filterStatut() === s"
+        [class.btn-ghost]="filterStatut() !== s"
+        (click)="changeFilter(s)"
+      >{{ s }}</button>
+    }
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    @if (loading()) {
+      <div class="loading-row"><span class="text-muted text-sm">{{ 'common.loading' | translate }}</span></div>
+    } @else if (!page()?.content?.length) {
+      <div class="empty-row"><span class="text-muted text-sm">{{ 'common.empty' | translate }}</span></div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'common.name' | translate }}</th>
+            <th>{{ 'sai_dossiers.col_montant' | translate }}</th>
+            <th>{{ 'sai_dossiers.col_duree' | translate }}</th>
+            <th>{{ 'sai_dossiers.col_objet' | translate }}</th>
+            <th>{{ 'common.status' | translate }}</th>
+            <th>{{ 'sai_dossiers.col_date_decision' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of page()!.content; track d.uid) {
+            <tr
+              [class.row-selected]="selectedDossier()?.uid === d.uid"
+              (click)="openDetail(d)"
+              style="cursor: pointer"
+            >
+              <td>
+                <span class="font-semibold">{{ d.clientNom }}</span>
+                <span class="text-muted text-sm block">{{ d.clientId }}</span>
+              </td>
+              <td class="font-semibold">{{ d.montantDemande | number:'1.0-0' }} {{ 'common.fcfa' | translate }}</td>
+              <td>{{ d.dureeMois }} {{ 'sai_dossiers.mois' | translate }}</td>
+              <td class="text-sm">{{ d.objetFinancement }}</td>
+              <td><span class="badge" [ngClass]="statutClass(d.statut)">{{ d.statut }}</span></td>
+              <td class="text-sm text-muted">
+                {{ d.dateDecision ? (d.dateDecision | date:'dd/MM/yyyy') : '—' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      @if ((page()?.totalPages ?? 0) > 1) {
+        <div class="pagination">
+          <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === 0" (click)="goPage(currentPage() - 1)">
+            {{ 'common.prev' | translate }}
+          </button>
+          @for (p of pages; track p) {
+            <button class="btn btn-sm"
+              [class.btn-primary]="currentPage() === p"
+              [class.btn-ghost]="currentPage() !== p"
+              (click)="goPage(p)">{{ p + 1 }}</button>
+          }
+          <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === (page()?.totalPages ?? 1) - 1" (click)="goPage(currentPage() + 1)">
+            {{ 'common.next' | translate }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Panneau de détail -->
+@if (selectedDossier()) {
+  <div class="detail-overlay" (click)="closeDetail()"></div>
+  <div class="detail-panel">
+
+    <div class="panel-header">
+      <div>
+        <h3>{{ selectedDossier()!.clientNom }}</h3>
+        <span class="text-muted text-sm">{{ selectedDossier()!.clientId }}</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" (click)="closeDetail()">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <!-- KPIs dossier -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <span class="kpi-label">{{ 'common.amount' | translate }}</span>
+        <span class="kpi-value">{{ selectedDossier()!.montantDemande | number:'1.0-0' }} {{ 'common.fcfa' | translate }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">{{ 'sai_dossiers.col_duree' | translate }}</span>
+        <span class="kpi-value">{{ selectedDossier()!.dureeMois }} {{ 'sai_dossiers.mois' | translate }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">{{ 'common.status' | translate }}</span>
+        <span class="badge" [ngClass]="statutClass(selectedDossier()!.statut)">{{ selectedDossier()!.statut }}</span>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-label">{{ 'sai_dossiers.col_objet' | translate }}</span>
+      <span>{{ selectedDossier()!.objetFinancement }}</span>
+    </div>
+
+    <hr />
+
+    <!-- Zone contrat (uniquement pour dossiers APPROUVE) -->
+    @if (selectedDossier()!.statut !== 'APPROUVE') {
+      <div class="info-notice">
+        <span class="material-icons-round">info</span>
+        <span class="text-sm text-muted">{{ 'sai_dossiers.contrat_notice' | translate }}</span>
+      </div>
+    } @else {
+
+      @if (contratLoading()) {
+        <p class="text-muted text-sm">{{ 'sai_dossiers.verif_contrat' | translate }}</p>
+
+      } @else if (contrat()) {
+        <!-- Contrat existant -->
+        <div class="contrat-section">
+          <h4 class="section-title">{{ 'sai_dossiers.contrat_credit' | translate }}</h4>
+          <div class="contrat-ref">
+            <span class="material-icons-round">description</span>
+            <span class="font-semibold">{{ contrat()!.referenceContrat }}</span>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi">
+              <span class="kpi-label">{{ 'sai_dossiers.montant_final' | translate }}</span>
+              <span class="kpi-value">{{ contrat()!.montantFinal | number:'1.0-0' }} {{ 'common.fcfa' | translate }}</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">{{ 'sai_dossiers.taux_interet' | translate }}</span>
+              <span class="kpi-value">{{ contrat()!.tauxInteret }}%</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">{{ 'sai_dossiers.echeances' | translate }}</span>
+              <span class="kpi-value">{{ contrat()!.nbEcheances }} × {{ contrat()!.periodicite | lowercase }}</span>
+            </div>
+          </div>
+
+          @if (contrat()!.signaturesConformes) {
+            <div class="status-done">
+              <span class="material-icons-round">verified</span>
+              <span>{{ 'sai_dossiers.signatures_done' | translate }}</span>
+            </div>
+          } @else {
+            <div class="status-pending">
+              <span class="material-icons-round">pending</span>
+              <span class="text-sm">{{ 'sai_dossiers.signatures_pending' | translate }}</span>
+            </div>
+            <button
+              class="btn btn-primary btn-block"
+              [disabled]="validating()"
+              (click)="submitValiderSignatures()"
+            >
+              <span class="material-icons-round">verified</span>
+              {{ validating() ? ('common.loading' | translate) : ('sai_dossiers.valider_signatures' | translate) }}
+            </button>
+          }
+        </div>
+
+      } @else if (contratAbsent()) {
+        <!-- Pas encore de contrat -->
+        @if (!showGenererForm()) {
+          <div class="no-contrat">
+            <p class="text-sm text-muted">{{ 'sai_dossiers.no_contrat' | translate }}</p>
+            <button class="btn btn-primary" (click)="showGenererForm.set(true)">
+              <span class="material-icons-round">add</span>
+              {{ 'sai_dossiers.generer_contrat' | translate }}
+            </button>
+          </div>
+        } @else {
+          <!-- Formulaire génération -->
+          <div class="generer-form">
+            <h4 class="section-title">{{ 'sai_dossiers.params_contrat' | translate }}</h4>
+
+            <div class="form-group">
+              <label>{{ 'sai_dossiers.montant_final' | translate }} ({{ 'common.fcfa' | translate }}) <span class="req">*</span></label>
+              <input type="number" class="form-control" [(ngModel)]="genererForm.montantFinal"
+                min="1" placeholder="Ex: 500000" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'sai_dossiers.taux_interet' | translate }} (%) <span class="req">*</span></label>
+              <input type="number" class="form-control" [(ngModel)]="genererForm.tauxInteret"
+                min="0.001" step="0.01" placeholder="Ex: 12.5" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'sai_dossiers.frais_dossier' | translate }} ({{ 'common.fcfa' | translate }})</label>
+              <input type="number" class="form-control" [(ngModel)]="genererForm.fraisDossier"
+                min="0" [placeholder]="'sai_dossiers.facultatif' | translate" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'sai_dossiers.nb_echeances' | translate }} <span class="req">*</span></label>
+              <input type="number" class="form-control" [(ngModel)]="genererForm.nbEcheances"
+                min="1" placeholder="Ex: 12" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'sai_dossiers.periodicite' | translate }} <span class="req">*</span></label>
+              <select class="form-control" [(ngModel)]="genererForm.periodicite">
+                <option value="MENSUEL">{{ 'sai_dossiers.mensuel' | translate }}</option>
+                <option value="HEBDOMADAIRE">{{ 'sai_dossiers.hebdomadaire' | translate }}</option>
+                <option value="QUOTIDIEN">{{ 'sai_dossiers.quotidien' | translate }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>{{ 'sai_dossiers.date_signature' | translate }}</label>
+              <input type="date" class="form-control" [(ngModel)]="genererForm.dateSignature" />
+            </div>
+
+            <div class="form-footer">
+              <button class="btn btn-ghost btn-sm" (click)="showGenererForm.set(false)">{{ 'common.cancel' | translate }}</button>
+              <button class="btn btn-primary" [disabled]="generating()" (click)="submitGenerer()">
+                <span class="material-icons-round">description</span>
+                {{ generating() ? ('common.loading' | translate) : ('common.generate' | translate) }}
+              </button>
+            </div>
+          </div>
+        }
+      }
+    }
+  </div>
+}

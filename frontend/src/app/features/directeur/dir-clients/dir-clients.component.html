@@ -9,17 +9,15 @@
 
   <div class="page-header">
     <div>
-      <h2>Gestion Clients</h2>
+      <h2>{{ 'dir_clients.title' | translate }}</h2>
       <p class="text-muted text-sm">
         {{ page()?.totalElements ?? 0 | number }} clients au total
       </p>
     </div>
     <div class="header-actions">
       <a [href]="templateUrl()" download class="btn btn-ghost btn-sm">
-        <span class="material-icons-round" style="font-size: 16px"
-          >download</span
-        >
-        Modèle Excel
+        <span class="material-icons-round" style="font-size: 16px">download</span>
+        {{ 'dir_clients.template' | translate }}
       </a>
       <button
         class="btn btn-secondary btn-sm"
@@ -27,12 +25,10 @@
         [disabled]="importing()"
       >
         @if (importing()) {
-          <span class="spinner-xs"></span> Import…
+          <span class="spinner-xs"></span> {{ 'dir_clients.import_loading' | translate }}
         } @else {
-          <span class="material-icons-round" style="font-size: 16px"
-            >upload_file</span
-          >
-          Importer Excel
+          <span class="material-icons-round" style="font-size: 16px">upload_file</span>
+          {{ 'dir_clients.import_btn' | translate }}
         }
       </button>
     </div>
@@ -43,10 +39,8 @@
       class="import-banner"
       [class.import-banner--error]="importResult()!.erreurs > 0"
     >
-      <strong>Import terminé</strong> — {{ importResult()!.importe }} ajouté(s),
-      {{ importResult()!.miseAJour }} mis à jour,
-      {{ importResult()!.erreurs }} erreur(s) sur
-      {{ importResult()!.totalLignes }} ligne(s).
+      <strong>{{ 'dir_clients.banner_added' | translate: { count: importResult()!.importe } }}</strong>,
+      {{ 'dir_clients.banner_updated' | translate: { count: importResult()!.miseAJour } }}
       @if (importResult()!.lignesErreur.length > 0) {
         <ul class="import-errors">
           @for (e of importResult()!.lignesErreur; track $index) {
@@ -68,28 +62,28 @@
     <input
       class="form-control"
       formControlName="search"
-      placeholder="Nom ou téléphone..."
+      [placeholder]="'dir_clients.search_placeholder' | translate"
       style="flex: 1"
     />
     <select class="form-control" formControlName="statut" style="width: auto">
-      <option value="">Tous statuts</option>
-      <option value="ACTIF">Actif</option>
-      <option value="EN_RETARD">En retard</option>
-      <option value="DEFAILLANT">Défaillant</option>
+      <option value="">{{ 'dir_clients.filter_all' | translate }}</option>
+      <option value="ACTIF">{{ 'dir_clients.filter_active' | translate }}</option>
+      <option value="EN_RETARD">{{ 'dir_clients.filter_late' | translate }}</option>
+      <option value="DEFAILLANT">{{ 'dir_clients.filter_default' | translate }}</option>
     </select>
-    <button class="btn btn-primary" (click)="load()">Rechercher</button>
+    <button class="btn btn-primary" (click)="load()">{{ 'dir_clients.search_btn' | translate }}</button>
   </div>
 
   <div class="card">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Client</th>
-          <th>Identifiant</th>
-          <th>Encours</th>
-          <th>Statut</th>
-          <th>Agence</th>
-          <th>Actions</th>
+          <th>{{ 'dir_clients.col_client' | translate }}</th>
+          <th>{{ 'dir_clients.col_id' | translate }}</th>
+          <th>{{ 'dir_clients.col_encours' | translate }}</th>
+          <th>{{ 'dir_clients.col_statut' | translate }}</th>
+          <th>{{ 'dir_clients.col_agence' | translate }}</th>
+          <th>{{ 'dir_clients.col_actions' | translate }}</th>
         </tr>
       </thead>
       <tbody>

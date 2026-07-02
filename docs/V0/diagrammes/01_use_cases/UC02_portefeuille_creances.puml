@@ -1,64 +1,60 @@
 @startuml UC02_portefeuille_creances
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam actorStyle awesome
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam actorStyle none
 skinparam usecase {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 11
+  BackgroundColor white
+  BorderColor #666666
 }
 skinparam actor {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
+  BackgroundColor white
+  BorderColor #333333
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam rectangle {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
 
-title UC02 — Suivi du Portefeuille de Créances (PAR)\nPlateforme IMF Cameroun
+title UC02 - Suivi du Portefeuille de Creances (PAR)
 
 left to right direction
 
-actor "Responsable\nRecouvrement" as RR
-actor "Analyste Data" as AD
-actor "Directeur Général" as DG
-actor "Core Banking\nSystem (CBS)" as CBS <<système>>
+actor "Directeur\n(DIRECTEUR)" as DIR
+actor "Analyste Credit\n(ANALYSTE_CREDIT)" as ANA
+actor "Core Banking System" as CBS <<systeme>>
 
-rectangle "UC02 — Suivi du portefeuille de créances" {
+rectangle "UC02 - Suivi du portefeuille de creances" {
 
-  usecase "UC02.1\nCalculer le PAR30\n(quotidien, par zone\net produit)" as UC0201
-  usecase "UC02.2\nCalculer le PAR90\n(quotidien, par zone\net produit)" as UC0202
-  usecase "UC02.3\nCalculer le taux\nde recouvrement\n(par agent / zone)" as UC0203
-  usecase "UC02.4\nCalculer le score\nde risque client\n(règles métier)" as UC0204
-  usecase "UC02.5\nVisualiser l'évolution\ndu PAR (graphique\ntendance)" as UC0205
-  usecase "UC02.6\nConsulter la liste\ndes prêts en retard\n(avec jours retard)" as UC0206
-  usecase "UC02.7\nFiltrer par zone,\nagent, produit\net période" as UC0207
-  usecase "UC02.8\nExporter la liste\ncréances à risque\n(CSV)" as UC0208
-  usecase "UC02.9\nCalculer le taux\nde défaut mensuel\n(write-off ratio)" as UC0209
+  usecase "UC02.1\nCalculer PAR30 et PAR90\n(quotidien, par agence)" as UC0201
+  usecase "UC02.2\nCalculer taux\nde recouvrement\n(par agent / agence)" as UC0202
+  usecase "UC02.3\nScorer le risque client\n(MCRS via FastAPI)" as UC0203
+  usecase "UC02.4\nVisualiser evolution\ndu PAR (graphique tendance)" as UC0204
+  usecase "UC02.5\nConsulter la liste\ndes creances en retard" as UC0205
+  usecase "UC02.6\nFiltrer par agence,\nagent, produit, periode" as UC0206
+  usecase "UC02.7\nExporter creances\na risque (CSV)" as UC0207
+  usecase "UC02.8\nConsulter la classification\nCOBAC (classes A-E)" as UC0208
 
 }
 
-' Acteurs humains
-RR --> UC0205
-RR --> UC0206
-RR --> UC0207
-RR --> UC0208
-AD --> UC0203
-AD --> UC0204
-AD --> UC0208
-AD --> UC0209
-DG --> UC0205
+DIR --> UC0204
+DIR --> UC0205
+ANA --> UC0202
+ANA --> UC0203
+ANA --> UC0207
+ANA --> UC0208
 
-' Acteurs systèmes
 CBS --> UC0201
 CBS --> UC0202
-CBS --> UC0203
 
-' Inclusions / Extensions
-UC0201 ..> UC0205 : <<include>>
-UC0202 ..> UC0205 : <<include>>
+UC0201 ..> UC0204 : <<include>>
+UC0204 ..> UC0206 : <<extend>>
+UC0205 ..> UC0206 : <<extend>>
 UC0205 ..> UC0207 : <<extend>>
-UC0206 ..> UC0207 : <<extend>>
-UC0206 ..> UC0208 : <<extend>>
+UC0205 ..> UC0208 : <<extend>>
 
 @enduml

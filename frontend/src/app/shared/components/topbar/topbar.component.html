@@ -22,22 +22,48 @@
       <button
         class="topbar__support-btn"
         (click)="openSupportModal()"
-        title="Contacter le support"
+        [title]="'topbar.support_btn' | translate"
       >
         <img
           src="assets/support.png"
-          alt="Support"
+          [alt]="'topbar.support_label' | translate"
           class="topbar__support-icon"
         />
-        <span class="topbar__support-label">Support</span>
+        <span class="topbar__support-label">{{ 'topbar.support_label' | translate }}</span>
       </button>
     }
+
+    <!-- Language toggle -->
+    <div class="topbar__lang">
+      <button
+        class="topbar__lang-btn"
+        [class.topbar__lang-btn--active]="langSvc.lang() === 'fr'"
+        (click)="langSvc.setLang('fr')"
+      >FR</button>
+      <button
+        class="topbar__lang-btn"
+        [class.topbar__lang-btn--active]="langSvc.lang() === 'en'"
+        (click)="langSvc.setLang('en')"
+      >EN</button>
+    </div>
+
+    <!-- Thème dark/light -->
+    <button
+      class="topbar__theme-btn"
+      (click)="theme.toggle()"
+      [title]="(theme.isDark() ? 'topbar.theme_to_light' : 'topbar.theme_to_dark') | translate"
+      [attr.aria-label]="'topbar.theme_aria' | translate"
+    >
+      <span class="material-icons-round">
+        {{ theme.isDark() ? 'light_mode' : 'dark_mode' }}
+      </span>
+    </button>
 
     <!-- Notifications -->
     <button
       class="topbar__notif"
       (click)="toggleNotif()"
-      aria-label="Notifications"
+      [attr.aria-label]="'topbar.notif_aria' | translate"
     >
       <span class="material-icons-round">notifications</span>
       @if ((unreadCount$ | async) ?? 0; as count) {
@@ -55,10 +81,10 @@
     <button
       class="topbar__logout-btn"
       (click)="logout()"
-      title="Se déconnecter"
+      [title]="'topbar.logout_title' | translate"
     >
       <span class="material-icons-round">logout</span>
-      <span class="topbar__logout-label">Déconnexion</span>
+      <span class="topbar__logout-label">{{ 'topbar.logout_label' | translate }}</span>
     </button>
 
     <!-- User menu -->
@@ -88,14 +114,14 @@
           routerLink="/profile"
           (click)="showUserMenu.set(false)"
         >
-          <span class="material-icons-round">person</span> Mon profil
+          <span class="material-icons-round">person</span> {{ 'topbar.menu_profile' | translate }}
         </a>
         <div class="topbar__dropdown-divider"></div>
         <button
           class="topbar__dropdown-item topbar__dropdown-item--danger"
           (click)="logout()"
         >
-          <span class="material-icons-round">logout</span> Déconnexion
+          <span class="material-icons-round">logout</span> {{ 'topbar.menu_logout' | translate }}
         </button>
       </div>
     }
@@ -117,9 +143,9 @@
             <span class="material-icons-round">support_agent</span>
           </div>
           <div>
-            <h3>Contacter le support</h3>
+            <h3>{{ 'topbar.support_modal.title' | translate }}</h3>
             <p class="text-muted text-sm">
-              Votre demande sera traitée dans les meilleurs délais
+              {{ 'topbar.support_modal.subtitle' | translate }}
             </p>
           </div>
         </div>
@@ -134,46 +160,46 @@
         class="support-modal__body"
       >
         <div class="form-group">
-          <label>Objet de la demande <span class="req">*</span></label>
+          <label>{{ 'topbar.support_modal.objet_label' | translate }} <span class="req">*</span></label>
           <input
             type="text"
             class="form-control"
             formControlName="titre"
-            placeholder="Décrivez brièvement votre problème..."
+            [placeholder]="'topbar.support_modal.objet_placeholder' | translate"
           />
           @if (
             supportForm.get("titre")?.invalid &&
             supportForm.get("titre")?.touched
           ) {
-            <span class="field-error">Objet requis (5-120 caractères)</span>
+            <span class="field-error">{{ 'topbar.support_modal.objet_error' | translate }}</span>
           }
         </div>
 
         <div class="support-modal__row">
           <div class="form-group">
-            <label>Catégorie</label>
+            <label>{{ 'topbar.support_modal.categorie' | translate }}</label>
             <select class="form-control" formControlName="categorie">
               @for (opt of categorieOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
+                <option [value]="opt.value">{{ opt.label | translate }}</option>
               }
             </select>
           </div>
           <div class="form-group">
-            <label>Priorité</label>
+            <label>{{ 'topbar.support_modal.priorite' | translate }}</label>
             <select class="form-control" formControlName="priorite">
               @for (opt of prioriteOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
+                <option [value]="opt.value">{{ opt.label | translate }}</option>
               }
             </select>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Description détaillée <span class="req">*</span></label>
+          <label>{{ 'topbar.support_modal.desc_label' | translate }} <span class="req">*</span></label>
           <textarea
             class="form-control support-modal__textarea"
             formControlName="description"
-            placeholder="Décrivez votre problème en détail : étapes pour le reproduire, messages d'erreur, contexte..."
+            [placeholder]="'topbar.support_modal.desc_placeholder' | translate"
             rows="6"
           ></textarea>
           @if (
@@ -181,7 +207,7 @@
             supportForm.get("description")?.touched
           ) {
             <span class="field-error"
-              >Description requise (min. 20 caractères)</span
+              >{{ 'topbar.support_modal.desc_error' | translate }}</span
             >
           }
           <span class="field-hint"
@@ -193,7 +219,7 @@
 
       <div class="support-modal__footer">
         <button class="btn btn-ghost" (click)="closeSupportModal()">
-          Annuler
+          {{ 'topbar.support_modal.cancel' | translate }}
         </button>
         <button
           class="btn btn-primary"
@@ -201,9 +227,9 @@
           [disabled]="sendingTicket()"
         >
           @if (sendingTicket()) {
-            <span class="material-icons-round spin">refresh</span> Envoi...
+            <span class="material-icons-round spin">refresh</span> {{ 'topbar.support_modal.sending' | translate }}
           } @else {
-            <span class="material-icons-round">send</span> Envoyer le ticket
+            <span class="material-icons-round">send</span> {{ 'topbar.support_modal.send_btn' | translate }}
           }
         </button>
       </div>

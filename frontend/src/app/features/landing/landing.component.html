@@ -11,14 +11,14 @@
     <div class="landing__nav-actions">
       <a routerLink="/login" class="landing__nav-link landing__nav-link--ghost">
         <span class="material-icons-round">login</span>
-        <span class="landing__nav-label">Connexion</span>
+        <span class="landing__nav-label">{{ 'landing.nav_login' | translate }}</span>
       </a>
       <a
         routerLink="/admin/login"
         class="landing__nav-link landing__nav-link--outline"
       >
         <span class="material-icons-round">admin_panel_settings</span>
-        <span class="landing__nav-label">Admin</span>
+        <span class="landing__nav-label">{{ 'landing.nav_admin' | translate }}</span>
       </a>
     </div>
   </nav>
@@ -28,18 +28,16 @@
     <div class="landing__hero-inner">
       <div class="landing__hero-badge">
         <span class="material-icons-round">verified</span>
-        Plateforme de microfinance — Cameroun
+        {{ 'landing.hero_badge' | translate }}
       </div>
 
       <h1 class="landing__hero-title">
-        Gérez vos crédits<br class="landing__hero-br" />
-        <span class="landing__hero-accent">simplement et en sécurité</span>
+        {{ 'landing.hero_title_1' | translate }}<br class="landing__hero-br" />
+        <span class="landing__hero-accent">{{ 'landing.hero_title_accent' | translate }}</span>
       </h1>
 
       <p class="landing__hero-subtitle">
-        MicroRecouv est une plateforme numérique qui aide les institutions de
-        microfinance à suivre leurs clients, gérer les remboursements et
-        recouvrer les crédits en retard, sans effort et en toute conformité.
+        {{ 'landing.hero_subtitle' | translate }}
       </p>
 
       <!-- Deux boutons principaux -->
@@ -52,24 +50,19 @@
             <span class="material-icons-round">badge</span>
           </div>
           <div class="landing__login-card__body">
-            <h3>Accès personnel</h3>
-            <p>
-              Pour les agents, directeurs, caissiers et toute l'équipe de
-              l'institution.
-            </p>
+            <h3>{{ 'landing.card_user_title' | translate }}</h3>
+            <p>{{ 'landing.card_user_desc' | translate }}</p>
             <ul class="landing__login-card__list">
               <li>
-                <span class="material-icons-round">check</span> Connexion par
-                code email
+                <span class="material-icons-round">check</span> {{ 'landing.card_user_feat1' | translate }}
               </li>
               <li>
-                <span class="material-icons-round">check</span> Aucun mot de
-                passe à retenir
+                <span class="material-icons-round">check</span> {{ 'landing.card_user_feat2' | translate }}
               </li>
             </ul>
           </div>
           <div class="landing__login-card__cta">
-            Se connecter
+            {{ 'landing.card_user_cta' | translate }}
             <span class="material-icons-round">arrow_forward</span>
           </div>
         </a>
@@ -82,21 +75,19 @@
             <span class="material-icons-round">admin_panel_settings</span>
           </div>
           <div class="landing__login-card__body">
-            <h3>Espace administrateur</h3>
-            <p>Réservé au Super Administrateur de la plateforme.</p>
+            <h3>{{ 'landing.card_admin_title' | translate }}</h3>
+            <p>{{ 'landing.card_admin_desc' | translate }}</p>
             <ul class="landing__login-card__list">
               <li>
-                <span class="material-icons-round">check</span> Gestion des
-                institutions
+                <span class="material-icons-round">check</span> {{ 'landing.card_admin_feat1' | translate }}
               </li>
               <li>
-                <span class="material-icons-round">check</span> Audit et
-                supervision globale
+                <span class="material-icons-round">check</span> {{ 'landing.card_admin_feat2' | translate }}
               </li>
             </ul>
           </div>
           <div class="landing__login-card__cta">
-            Accès administration
+            {{ 'landing.card_admin_cta' | translate }}
             <span class="material-icons-round">arrow_forward</span>
           </div>
         </a>
@@ -105,11 +96,7 @@
       <!-- Aide rapide -->
       <div class="landing__help-text">
         <span class="material-icons-round">help_outline</span>
-        <span>
-          Vous êtes un <strong>employé de l'IMF</strong> (agent, caissier,
-          directeur…) ? Utilisez <strong>« Accès personnel »</strong>. L'espace
-          administrateur est réservé à l'équipe technique de la plateforme.
-        </span>
+        <span [innerHTML]="'landing.help' | translate"></span>
       </div>
     </div>
   </section>
@@ -132,10 +119,9 @@
   <!-- ── Fonctionnalités ── -->
   <section class="landing__features">
     <div class="landing__section-inner">
-      <h2 class="landing__section-title">Tout ce dont votre IMF a besoin</h2>
+      <h2 class="landing__section-title">{{ 'landing.features_title' | translate }}</h2>
       <p class="landing__section-sub">
-        Une seule plateforme pour centraliser toutes les opérations de crédit et
-        de recouvrement.
+        {{ 'landing.features_subtitle' | translate }}
       </p>
       <div class="landing__features-grid">
         @for (f of features; track f.title) {
@@ -154,10 +140,9 @@
   <!-- ── Comment ça marche ── -->
   <section class="landing__steps">
     <div class="landing__section-inner">
-      <h2 class="landing__section-title">Comment ça marche ?</h2>
+      <h2 class="landing__section-title">{{ 'landing.steps_title' | translate }}</h2>
       <p class="landing__section-sub">
-        Prendre en main MicroRecouv est simple et rapide, même sans expérience
-        informatique.
+        {{ 'landing.steps_subtitle' | translate }}
       </p>
       <div class="landing__steps-grid">
         @for (s of steps; track s.num) {
@@ -180,16 +165,16 @@
       <span class="material-icons-round landing__bottom-cta__icon"
         >rocket_launch</span
       >
-      <h2>Prêt à commencer ?</h2>
-      <p>Choisissez votre type d'accès pour vous connecter à la plateforme.</p>
+      <h2>{{ 'landing.cta_title' | translate }}</h2>
+      <p>{{ 'landing.cta_subtitle' | translate }}</p>
       <div class="landing__bottom-btns">
         <a routerLink="/login" class="landing__btn-user">
           <span class="material-icons-round">login</span>
-          Accès personnel
+          {{ 'landing.cta_btn_user' | translate }}
         </a>
         <a routerLink="/admin/login" class="landing__btn-admin">
           <span class="material-icons-round">admin_panel_settings</span>
-          Espace administrateur
+          {{ 'landing.cta_btn_admin' | translate }}
         </a>
       </div>
     </div>
@@ -200,11 +185,10 @@
     <div class="landing__footer-inner">
       <div class="landing__footer-brand">
         <span class="material-icons-round">account_balance</span>
-        MicroRecouv
+        {{ 'landing.footer_brand' | translate }}
       </div>
       <p class="landing__footer-copy">
-        © 2025 MicroRecouv · Plateforme de recouvrement pour institutions de
-        microfinance · Stage IUSJ
+        {{ 'landing.footer_copy' | translate }}
       </p>
     </div>
   </footer>

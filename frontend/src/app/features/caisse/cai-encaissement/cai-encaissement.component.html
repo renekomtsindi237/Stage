@@ -1,18 +1,18 @@
 <div class="page-content" style="max-width: 640px">
   <div class="page-header">
-    <h2>Nouvel Encaissement</h2>
+    <h2>{{ 'caisse.encaissement_title' | translate }}</h2>
   </div>
 
   <div class="card">
     <!-- Client -->
     <div class="form-group">
-      <label>Client</label>
+      <label>{{ 'common.name' | translate }}</label>
       @if (!selectedClient()) {
         <div class="search-bar">
           <span class="material-icons-round">search</span>
           <input
             type="text"
-            placeholder="Nom, code ou téléphone..."
+            [placeholder]="'caisse.search_client_placeholder' | translate"
             (input)="search($any($event.target).value)"
           />
         </div>
@@ -41,7 +41,7 @@
             class="btn btn-ghost btn-sm"
             (click)="selectedClient.set(null)"
           >
-            Changer
+            {{ 'collecte.change' | translate }}
           </button>
         </div>
       }
@@ -49,7 +49,7 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="form-group">
-        <label>Montant (FCFA)</label>
+        <label>{{ 'caisse.montant_fcfa' | translate }}</label>
         <input
           type="number"
           class="form-control"
@@ -60,19 +60,19 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Type d'opération</label>
+          <label>{{ 'collecte.type_operation' | translate }}</label>
           <select class="form-control" formControlName="typeOperation">
-            <option value="REMBOURSEMENT">Remboursement</option>
-            <option value="EPARGNE">Épargne</option>
+            <option value="REMBOURSEMENT">{{ 'collecte.remboursement' | translate }}</option>
+            <option value="EPARGNE">{{ 'collecte.epargne' | translate }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Canal de paiement</label>
+          <label>{{ 'caisse.canal_paiement' | translate }}</label>
           <select class="form-control" formControlName="canal">
-            <option value="ESPECES">Espèces</option>
-            <option value="MOBILE_MONEY">Mobile Money</option>
-            <option value="VIREMENT">Virement</option>
-            <option value="CHEQUE">Chèque</option>
+            <option value="ESPECES">{{ 'caisse.canal_especes' | translate }}</option>
+            <option value="MOBILE_MONEY">{{ 'caisse.canal_mobile_money' | translate }}</option>
+            <option value="VIREMENT">{{ 'caisse.canal_virement' | translate }}</option>
+            <option value="CHEQUE">{{ 'caisse.canal_cheque' | translate }}</option>
           </select>
         </div>
       </div>
@@ -83,7 +83,7 @@
           class="btn btn-ghost"
           routerLink="/caisse/dashboard"
         >
-          Annuler
+          {{ 'common.cancel' | translate }}
         </button>
         <button
           type="submit"
@@ -94,7 +94,7 @@
           @if (loading()) {
             <span class="material-icons-round spin">refresh</span>
           } @else {
-            Enregistrer l'encaissement
+            {{ 'caisse.save_encaissement' | translate }}
           }
         </button>
       </div>

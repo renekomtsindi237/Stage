@@ -1,67 +1,60 @@
 @startuml SEQ01_ingestion_mtn
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 1.5
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceBoxBorderColor #4A6CF7
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ01 — Ingestion Quotidienne Transactions MTN Mobile Money\nPipeline Python / Apache Airflow
+title SEQ01 - Ingestion quotidienne transactions MTN Mobile Money\nApache Airflow 2.8.4 - dag_ingestion_mtn
 
 actor "Airflow Scheduler" as SCHED
-participant "DAG\ndag_ingest_mtn" as DAG
+participant "DAG\ndag_ingestion_mtn" as DAG
 participant "IngestScript\n(Python)" as SCRIPT
-participant "Dossier sources\n/data/sources/mtn/" as FS
-database "PostgreSQL\nschéma raw" as RAW
-participant "Pipeline Logger" as LOG
+participant "MTN MoMo API\n(externe)" as API_MTN
+database "PostgreSQL 15\nschema raw" as RAW
+participant "PipelineLogger" as LOG
 
-SCHED -> DAG : <b>Trigger</b> cron 0 6 * * *\n(06h00 chaque matin)
+SCHED -> DAG : Trigger cron 0 6 * * *\n(06h00 chaque matin)
 activate DAG
 
-DAG -> SCRIPT : <b>Exécute</b> Task: load_mtn_csv
+DAG -> SCRIPT : Execute Task: load_mtn_transactions
 activate SCRIPT
 
-SCRIPT -> FS : <b>scan()</b> fichiers MTN_YYYYMMDD.csv\nnon encore traités
-FS --> SCRIPT : [MTN_20260331.csv]
+SCRIPT -> API_MTN : GET /transactions?date={YYYY-MM-DD}\nAPI Key Bearer
+API_MTN --> SCRIPT : [{ref, montant, date, expediteur, ...}]\n(JSON - N transactions)
 
-loop <b>Pour chaque fichier CSV</b>
+SCRIPT -> SCRIPT : normalize_columns()\nRenommage colonnes -> format standard
 
-  SCRIPT -> FS : <b>read_csv()</b> fichier
-  FS --> SCRIPT : DataFrame\n(N lignes brutes)
+SCRIPT -> SCRIPT : cast_types()\ndate_transaction -> TIMESTAMP\nmontant -> DECIMAL(15,2)
 
-  SCRIPT -> SCRIPT : <b>normalize_columns()</b>\nRenommage colonnes\n→ format standard interne
+SCRIPT -> SCRIPT : compute_dedup_uuid()\nUUID base sur (ref_ext + date + montant + operateur)
 
-  SCRIPT -> SCRIPT : <b>cast_types()</b>\ndate_transaction → TIMESTAMP\nmontant → DECIMAL(15,2)
+SCRIPT -> SCRIPT : drop_duplicates()\nDeduplication intra-appel
 
-  SCRIPT -> SCRIPT : <b>compute_dedup_hash()</b>\nSHA256(ref_ext + date + montant + operateur)\npour chaque ligne
+SCRIPT -> RAW : INSERT INTO raw.transactions_mtn\nON CONFLICT (hash_dedup) DO NOTHING
+note right : Deduplication inter-appels\ngestion par contrainte UNIQUE
 
-  SCRIPT -> SCRIPT : <b>drop_duplicates()</b>\nDéduplication intra-fichier\n(subset=['hash_dedup'])
+RAW --> SCRIPT : {inserted: N, skipped: M}
 
-  SCRIPT -> RAW : <b>INSERT INTO</b> raw.transactions_mtn\n<b>ON CONFLICT</b> (hash_dedup) <b>DO NOTHING</b>
-  note right RAW : Déduplication inter-fichiers\ngérée par contrainte UNIQUE
-
-  RAW --> SCRIPT : {inserted: N, skipped: M}
-
-  SCRIPT -> FS : <b>move()</b> fichier\n→ /data/archives/mtn/
-
-end
-
-SCRIPT -> LOG : <b>log_ingestion()</b>\nsource='MTN', inserted=N,\nduplicates=M, errors=0, duration=T
+SCRIPT -> LOG : log_ingestion()\nsource='MTN', inserted=N,\nduplicates=M, errors=0
 activate LOG
 LOG -> RAW : INSERT INTO raw.pipeline_log
 deactivate LOG
 
-SCRIPT --> DAG : Rapport: {total_inserted: N,\ntotal_duplicates: M, status: SUCCESS}
+SCRIPT --> DAG : {total_inserted: N, total_duplicates: M, status: SUCCESS}
 deactivate SCRIPT
 
-DAG --> SCHED : <b>Task MTN</b> → SUCCESS ✓
+DAG --> SCHED : Task dag_ingestion_mtn -> SUCCESS
 deactivate DAG
 
 @enduml

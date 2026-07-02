@@ -1,24 +1,24 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Alertes de recouvrement</h2>
+      <h2>{{ 'rec_alertes.title' | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} alertes actives
+        {{ page()?.totalElements ?? 0 | number }} alerte(s)
       </p>
     </div>
     <button class="btn btn-ghost" (click)="load()">
-      <span class="material-icons-round">refresh</span> Actualiser
+      <span class="material-icons-round">refresh</span> {{ 'rec_alertes.refresh_btn' | translate }}
     </button>
   </div>
 
   <div class="tab-bar">
-    @for (tab of tabs; track tab) {
+    @for (tab of tabs; track tab.value) {
       <button
         class="tab-btn"
-        [class.active]="activeTab() === tab"
-        (click)="switchTab(tab)"
+        [class.active]="activeTab() === tab.value"
+        (click)="switchTab(tab.value)"
       >
-        {{ tab }}
+        {{ tab.label }}
       </button>
     }
   </div>
@@ -27,20 +27,19 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Client</th>
-          <th class="text-right">Montant dû</th>
-          <th>Retard</th>
-          <th>Niveau</th>
-          <th>Statut</th>
-          <th>Date alerte</th>
-          <th>Actions</th>
+          <th>{{ 'rec_alertes.col_ref' | translate }}</th>
+          <th class="text-right">{{ 'rec_alertes.col_montant' | translate }}</th>
+          <th>{{ 'rec_alertes.col_jours' | translate }}</th>
+          <th>{{ 'rec_alertes.col_statut' | translate }}</th>
+          <th>{{ 'rec_alertes.col_date' | translate }}</th>
+          <th>{{ 'rec_alertes.col_actions' | translate }}</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           @for (_ of [1, 2, 3, 4, 5]; track $index) {
             <tr>
-              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+              @for (__ of [1, 2, 3, 4, 5, 6]; track $index) {
                 <td>
                   <div class="skeleton" style="height: 14px; width: 80%"></div>
                 </td>
@@ -48,64 +47,57 @@
             </tr>
           }
         } @else {
-          @for (a of page()?.content ?? []; track a.id) {
+          @for (a of page()?.content ?? []; track a.uid) {
             <tr>
-              <td class="font-semibold">
-                {{ a.clientPrenom }} {{ a.clientNom }}
-              </td>
+              <td class="font-semibold">{{ a.idPret }}</td>
               <td class="text-right text-danger font-semibold">
-                {{ a.montantDu | number: "1.0-0" }} F
+                {{ a.montantEnRetard | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
               </td>
               <td>
-                <span
-                  class="retard-chip"
-                  [class.retard-severe]="a.joursRetard > 90"
-                >
+                <span class="retard-chip" [class]="retardClass(a.joursRetard)">
                   {{ a.joursRetard }} j
                 </span>
               </td>
               <td>
-                <span class="badge" [ngClass]="niveauClass(a.niveauAlerte)">{{
-                  a.niveauAlerte
-                }}</span>
-              </td>
-              <td>
-                <span class="badge" [ngClass]="statutClass(a.statut)">{{
-                  a.statut
-                }}</span>
+                <span class="badge" [ngClass]="statutClass(a.statutAlerte)">
+                  {{ statutLabel(a.statutAlerte) }}
+                </span>
               </td>
               <td class="text-sm text-muted">
-                {{ a.dateAlerte | date: "dd/MM/yy" }}
+                {{ a.dateGeneration | date: "dd/MM/yy" }}
               </td>
               <td>
-                @if (a.statut === "OUVERTE") {
+                @if (a.statutAlerte === "ACTIVE" || a.statutAlerte === "NON_TRAITEE") {
                   <button
                     class="btn btn-ghost btn-sm"
-                    (click)="prendre(a.id)"
-                    title="Prendre en charge"
+                    (click)="prendre(a.uid)"
+                    [title]="'rec_alertes.btn_take_charge' | translate"
                   >
                     <span class="material-icons-round">play_arrow</span>
                   </button>
                 }
-                @if (a.statut === "EN_TRAITEMENT") {
+                @if (a.statutAlerte === "EN_TRAITEMENT" || a.statutAlerte === "ESCALADEE") {
                   <button
                     class="btn btn-ghost btn-sm"
-                    (click)="resoudre(a.id)"
-                    title="Marquer résolue"
+                    (click)="resoudre(a.uid)"
+                    [title]="'rec_alertes.btn_resolve' | translate"
                   >
                     <span class="material-icons-round">check</span>
                   </button>
+                }
+                @if (a.statutAlerte === "RESOLUE" || a.statutAlerte === "CLOTUREE") {
+                  <span class="text-muted text-sm">—</span>
                 }
               </td>
             </tr>
           } @empty {
             <tr>
               <td
-                colspan="7"
+                colspan="6"
                 class="text-center text-muted"
                 style="padding: 32px"
               >
-                Aucune alerte
+                {{ 'rec_alertes.empty' | translate }}
               </td>
             </tr>
           }
@@ -122,9 +114,9 @@
         >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
-        >
+        <span class="text-sm">
+          {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}
+        </span>
         <button
           class="btn btn-ghost btn-sm"
           [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"

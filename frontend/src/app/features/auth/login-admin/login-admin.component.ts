@@ -10,12 +10,13 @@ import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-login-admin",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: "./login-admin.component.html",
   styleUrls: ["./login-admin.component.scss"],
 })

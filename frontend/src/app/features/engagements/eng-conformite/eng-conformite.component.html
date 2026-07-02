@@ -1,15 +1,15 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Conformité réglementaire</h2>
+      <h2>{{ 'eng.title' | translate }}</h2>
       <p class="text-muted text-sm">
         @if (data()) {
-          Rapport du {{ data()!.dateRapport | date: "dd/MM/yyyy" }}
+          {{ data()!.dateRapport | date: "dd/MM/yyyy" }}
         }
       </p>
     </div>
     <button class="btn btn-ghost" (click)="load()">
-      <span class="material-icons-round">refresh</span> Actualiser
+      <span class="material-icons-round">refresh</span> {{ 'eng.refresh_btn' | translate }}
     </button>
   </div>
 
@@ -27,14 +27,14 @@
         <span class="score-unit">/ 100</span>
       </div>
       <div>
-        <h3>Score de conformité global</h3>
+        <h3>{{ 'eng.score_title' | translate }}</h3>
         <p>
           @if (data()!.scoreGlobal >= 80) {
-            Conforme — aucune action critique requise
+            {{ 'eng.score_ok' | translate }}
           } @else if (data()!.scoreGlobal >= 60) {
-            Partiellement conforme — des améliorations sont nécessaires
+            {{ 'eng.score_partial' | translate }}
           } @else {
-            Non conforme — actions correctives urgentes requises
+            {{ 'eng.score_nok' | translate }}
           }
         </p>
       </div>
@@ -64,7 +64,7 @@
             }}</span>
             @if (item.echeance && !item.conforme) {
               <span class="text-xs text-danger"
-                >Échéance: {{ item.echeance | date: "dd/MM/yyyy" }}</span
+                >{{ 'eng.echeance_prefix' | translate }}: {{ item.echeance | date: "dd/MM/yyyy" }}</span
               >
             }
           </div>
@@ -75,14 +75,14 @@
     <!-- Engagements table -->
     @if (data()!.engagements.length) {
       <div class="card" style="margin-top: 24px">
-        <h3 style="margin-bottom: 16px">Engagements en cours</h3>
+        <h3 style="margin-bottom: 16px">{{ 'eng.engagements_title' | translate }}</h3>
         <table class="data-table">
           <thead>
             <tr>
-              <th>Titre</th>
-              <th class="text-right">Montant</th>
-              <th>Risque</th>
-              <th>Échéance</th>
+              <th>{{ 'eng.col_titre' | translate }}</th>
+              <th class="text-right">{{ 'common.amount' | translate }}</th>
+              <th>{{ 'eng.col_risque' | translate }}</th>
+              <th>{{ 'eng.col_echeance' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -113,7 +113,7 @@
         style="font-size: 48px; color: var(--color-border)"
         >gavel</span
       >
-      <p class="text-muted">Données de conformité non disponibles</p>
+      <p class="text-muted">{{ 'eng.empty' | translate }}</p>
     </div>
   }
 </div>

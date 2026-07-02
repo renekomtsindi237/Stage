@@ -1,0 +1,212 @@
+{
+  "@@locale": "en",
+
+  "appName": "MicroRecouv",
+  "appTagline": "Intelligent Management & Recovery",
+  "appLoading": "Loading...",
+  "appVersion": "v1.0.0",
+  "appImfCameroun": "IMF Cameroon",
+
+  "cancel": "Cancel",
+  "retry": "Retry",
+  "backHome": "Back to home",
+  "error": "Error",
+  "confirm": "Confirm",
+  "close": "Close",
+  "save": "Save",
+  "send": "Send",
+  "refresh": "Refresh",
+  "currencyFcfa": "FCFA",
+  "currencyF": "F",
+
+  "loginTitle": "Sign In",
+  "loginSubtitle": "A verification code will be sent to your email address",
+  "loginEmailLabel": "Professional email address",
+  "loginEmailHint": "your@institution.cm or example@gmail.com",
+  "loginEmailRequired": "Email required",
+  "loginEmailInvalid": "Invalid email",
+  "loginSubmitButton": "Receive my code",
+  "loginFooterHelp": "Connection problem? Contact the administrator",
+  "loginNetworkError": "Network error",
+  "loginBackHome": "Home",
+
+  "otpTitle": "OTP Verification",
+  "otpSubtitlePrefix": "6-digit code sent to ",
+  "otpCodeLabel": "Verification code",
+  "otpVerifyButton": "Verify code",
+  "otpResendPrompt": "Didn't receive the code? ",
+  "otpResendAction": "Resend",
+  "otpResendCountdown": "Resend in {seconds}s",
+  "@otpResendCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "otpBackToLogin": "← Back to sign in",
+
+  "landingBadge": "MICROFINANCE PLATFORM — CAMEROON",
+  "landingTitle": "Manage your credits simply and securely",
+  "landingSubtitle": "MicroRecouv is a digital platform that helps microfinance institutions track their clients, manage repayments and recover overdue credits.",
+  "landingCardTitle": "Personal access",
+  "landingCardDescription": "For agents, directors, cashiers and the entire institution team.",
+  "landingCheckEmailCode": "Sign in with email code",
+  "landingCheckNoPassword": "No password to remember",
+  "landingCtaButton": "Sign in",
+
+  "dashboardUserFallback": "User",
+  "dashboardSyncInProgress": "Synchronization in progress…",
+  "dashboardSyncPending": "{count} collection(s) pending sync",
+  "@dashboardSyncPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "dashboardSyncOk": "Just synchronized",
+  "dashboardActivityTitle": "Today's activity",
+  "dashboardCollectedSuffix": "collected today",
+  "dashboardStatClientsVisited": "Clients visited",
+  "dashboardStatCollectes": "Collections",
+  "dashboardQuickActionCollecte": "New\nCollection",
+  "dashboardQuickActionClients": "My\nClients",
+  "dashboardAlertesSectionTitle": "Alerts on your clients",
+  "dashboardAlertesError": "Unable to load alerts",
+  "dashboardAlertesEmpty": "No active alert",
+  "dashboardAlerteCritique": "CRITICAL",
+  "dashboardAlerteActive": "ACTIVE",
+
+  "profilTitle": "My Profile",
+  "profilUserFallback": "User",
+  "profilRoleFallback": "Field Agent",
+  "profilAvatarDelete": "Delete photo",
+  "profilAvatarUpdated": "Profile photo updated",
+  "profilAvatarDeleted": "Photo deleted",
+  "profilSectionGps": "GPS Location",
+  "profilSectionAppearance": "Appearance",
+  "profilSectionAccount": "Account",
+  "profilGpsActive": "Active",
+  "profilGpsOffline": "Offline (positions queued)",
+  "profilGpsError": "Error",
+  "profilGpsIdle": "Inactive",
+  "profilGpsRequired": "Required",
+  "profilGpsCoordinates": "Coordinates",
+  "profilGpsAccuracy": "Accuracy",
+  "profilGpsSpeed": "Speed",
+  "profilGpsPendingPositions": "{count} position(s) pending synchronization",
+  "@profilGpsPendingPositions": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "profilGpsBtnStop": "Stop GPS sharing",
+  "profilGpsBtnStopRequired": "GPS required by your IMF",
+  "profilGpsBtnStopOffline": "Cannot stop while offline",
+  "profilGpsBtnStart": "Start GPS sharing",
+  "profilGpsSnackbarCantStop": "Cannot stop GPS: your IMF requires location sharing.",
+  "profilThemeDarkMode": "Dark mode",
+  "profilLogoutLabel": "Sign out",
+  "profilDialogLogoutTitle": "Sign out",
+  "profilDialogLogoutContent": "Are you sure you want to sign out?",
+  "profilDialogConfirmLogout": "Sign out",
+
+  "alertesTitle": "Alerts",
+  "alertesFilterAll": "All",
+  "alertesFilterActive": "Active",
+  "alertesFilterEscalated": "Escalated",
+  "alertesFilterTreated": "Treated",
+  "alertesFilterClosed": "Closed",
+  "alertesLoadError": "Unable to load alerts",
+  "alertesEmpty": "No alerts",
+  "alertesClientUnknown": "Unknown client",
+  "alertesDelayBadge": "{days}d overdue",
+  "@alertesDelayBadge": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "alertesAmountDue": "{amount} FCFA due",
+  "@alertesAmountDue": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+
+  "clientsTitle": "Clients",
+  "clientsSearchHint": "Search for a client...",
+  "clientsEmptyTitle": "No client found",
+  "clientsEmptySubtitle": "Try a different search",
+  "clientDetailTitle": "Client detail",
+
+  "nouvelleCollecteTitle": "Record a collection",
+  "nouvelleCollecteSearchHint": "Search for a client (name, phone…)",
+  "nouvelleCollecteChangeClient": "Change",
+  "nouvelleCollecteAmountLabel": "Amount",
+  "nouvelleCollecteCanalLabel": "Payment channel",
+  "nouvelleCollecteSubmit": "Record the collection",
+  "nouvelleCollecteNoClient": "Please select a client",
+  "nouvelleCollecteInvalidAmount": "Invalid amount",
+
+  "confirmationTitle": "Collection recorded",
+  "confirmationSuccessTitle": "Collection saved!",
+  "confirmationSuccessSubtitle": "It will be synchronized as soon as you are connected.",
+  "confirmationAmount": "Amount",
+  "confirmationClientId": "Client ID",
+  "confirmationCanal": "Channel",
+  "confirmationDate": "Date",
+  "confirmationGps": "GPS",
+  "confirmationPendingSync": "Pending synchronization",
+  "confirmationNewCollecte": "New collection",
+
+  "historiqueTitle": "Today's history",
+  "historiquePendingLabel": "Pending",
+  "historiqueTotalAmount": "Total amount",
+  "historiqueSyncing": "Synchronizing...",
+  "historiqueSyncNow": "Synchronize now",
+  "historiqueLastSync": "Last sync: {accepted}/{total} — {time}",
+  "@historiqueLastSync": {
+    "placeholders": {
+      "accepted": { "type": "int" },
+      "total": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+  "historiqueEmptyTitle": "No pending collection",
+  "historiqueEmptySubtitle": "All your collections are synchronized.",
+  "historiqueListTitle": "Collections ({n})",
+  "@historiqueListTitle": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "syncResultTitle": "Synchronization complete",
+  "syncResultTotal": "Total received",
+  "syncResultAccepted": "Accepted",
+  "syncResultDuplicates": "Duplicates",
+  "syncResultRejected": "Rejected",
+  "syncResultRejectedWarning": "{count} collection(s) not synchronized. Contact support.",
+  "@syncResultRejectedWarning": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "errorTitle": "An error occurred",
+  "errorCodeBadge": "Error {code}",
+  "@errorCodeBadge": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "errorDefaultMessage": "Something went wrong. Please try again or go back to home.",
+
+  "offlineTitle": "Connection unavailable",
+  "offlineDescription": "Check your Wi-Fi or mobile data connection.\nThe app works in offline mode for collections.",
+  "offlineBadge": "Your collections are saved locally",
+  "offlineChecking": "Checking...",
+  "offlineCheckButton": "Check connection",
+  "offlineStillOffline": "Still no connection",
+
+  "langFr": "Français",
+  "langEn": "English",
+  "langSwitchTooltip": "Change language"
+}

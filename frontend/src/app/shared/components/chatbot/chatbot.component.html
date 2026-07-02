@@ -2,7 +2,7 @@
   class="chat-fab"
   (click)="toggle()"
   [class.open]="open()"
-  title="Assistant IA MicroRecouv"
+  [title]="'chatbot.fab_title' | translate"
 >
   @if (open()) {
     <svg
@@ -54,16 +54,16 @@
           </svg>
         </div>
         <div>
-          <div class="chat-title">Assistant MicroRecouv</div>
+          <div class="chat-title">{{ 'chatbot.title' | translate }}</div>
           <div class="chat-status">
-            <span class="status-dot"></span>En ligne · IA Groq / Llama 3.3
+            <span class="status-dot"></span>{{ 'chatbot.status' | translate }}
           </div>
         </div>
       </div>
       <button
         class="btn-icon-header"
         (click)="clear()"
-        title="Nouvelle conversation"
+        [title]="'chatbot.new_conversation' | translate"
       >
         <svg
           width="14"
@@ -137,7 +137,7 @@
                   >
                     <polyline points="1 4 1 10 7 10" />
                     <path d="M3.51 15a9 9 0 102.13-9.36L1 10" /></svg
-                  >Réessayer
+                  >{{ 'chatbot.retry' | translate }}
                 </button>
               }
             </div>
@@ -185,7 +185,7 @@
     <div class="chat-input-area">
       <textarea
         class="chat-input"
-        placeholder="Posez votre question… (Entrée pour envoyer)"
+        [placeholder]="'chatbot.input_placeholder' | translate"
         rows="1"
         [ngModel]="input()"
         (ngModelChange)="input.set($event)"
@@ -196,7 +196,7 @@
         class="chat-send"
         (click)="send()"
         [disabled]="!input().trim() || loading()"
-        title="Envoyer (Entrée)"
+        [title]="'chatbot.send_title' | translate"
       >
         @if (loading()) {
           <svg

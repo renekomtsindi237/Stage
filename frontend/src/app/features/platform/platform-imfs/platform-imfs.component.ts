@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
@@ -16,7 +17,7 @@ import { ImfDetail } from "../../../core/models/platform.model";
   selector: "app-platform-imfs",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./platform-imfs.component.html",
   styleUrls: ["./platform-imfs.component.scss"],
 })

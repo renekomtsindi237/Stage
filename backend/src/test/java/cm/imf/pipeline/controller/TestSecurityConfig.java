@@ -1,6 +1,8 @@
 package cm.imf.pipeline.controller;
 
+import cm.imf.pipeline.filter.ApiKeyAuthenticationFilter;
 import cm.imf.pipeline.filter.InternalApiKeyFilter;
+import cm.imf.pipeline.repository.ApiClientRepository;
 import cm.imf.pipeline.security.JwtAuthenticationFilter;
 import cm.imf.pipeline.security.JwtTokenProvider;
 import cm.imf.pipeline.security.UserDetailsServiceImpl;
@@ -34,11 +36,13 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 @EnableMethodSecurity
 public class TestSecurityConfig {
 
-    @MockBean JwtAuthenticationFilter jwtAuthenticationFilter;
-    @MockBean JwtTokenProvider jwtTokenProvider;
-    @MockBean UserDetailsServiceImpl userDetailsService;
-    @MockBean StringRedisTemplate stringRedisTemplate;
-        @MockBean InternalApiKeyFilter internalApiKeyFilter;
+    @MockBean JwtAuthenticationFilter    jwtAuthenticationFilter;
+    @MockBean ApiKeyAuthenticationFilter  apiKeyAuthenticationFilter;
+    @MockBean JwtTokenProvider            jwtTokenProvider;
+    @MockBean UserDetailsServiceImpl      userDetailsService;
+    @MockBean StringRedisTemplate         stringRedisTemplate;
+    @MockBean InternalApiKeyFilter        internalApiKeyFilter;
+    @MockBean ApiClientRepository         apiClientRepository;
 
     /**
      * Désactive l'auto-enregistrement du filtre JWT comme Servlet filter standalone.
@@ -49,6 +53,15 @@ public class TestSecurityConfig {
     public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(
             JwtAuthenticationFilter filter) {
         FilterRegistrationBean<JwtAuthenticationFilter> registration =
+                new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiKeyAuthenticationFilter> apiKeyFilterRegistration(
+            ApiKeyAuthenticationFilter filter) {
+        FilterRegistrationBean<ApiKeyAuthenticationFilter> registration =
                 new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;

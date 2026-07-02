@@ -1,0 +1,170 @@
+<div class="page-content">
+
+  <!-- ── SECTION 1 : Pipeline ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">{{ 'dir_analytics.title' | translate }}</h2>
+      <p class="page-subtitle">{{ 'dir_analytics.subtitle' | translate }}</p>
+    </div>
+    <button
+      class="btn btn-outline"
+      [disabled]="triggering()"
+      (click)="triggerPipeline()"
+    >
+      <span class="material-icons-round">play_arrow</span>
+      {{ triggering() ? ('dir_analytics.trigger_loading' | translate) : ('dir_analytics.trigger_btn' | translate) }}
+    </button>
+  </div>
+
+  <!-- Statut global pipeline -->
+  @if (!loadingPipeline() && pipeline()) {
+    <div class="global-status-card">
+      <div class="global-status-card__icon">
+        <span class="material-icons-round">account_tree</span>
+      </div>
+      <div>
+        <p class="text-sm text-muted">{{ 'dir_analytics.last_run' | translate }}</p>
+        <p class="font-semibold">{{ pipeline()!.derniereExecution }}</p>
+      </div>
+      <div class="ml-auto">
+        <span class="badge" [class]="'badge-' + statutClass(pipeline()!.statutGlobal)">
+          <span class="material-icons-round" style="font-size:12px">circle</span>
+          {{ pipeline()!.statutGlobal }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- DAGs -->
+  <div class="dags-grid">
+    @if (loadingPipeline()) {
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="skeleton" style="height:160px;border-radius:10px"></div>
+      }
+    } @else {
+      @for (dag of pipeline()?.dags ?? []; track dag.id) {
+        <div class="dag-card" [class]="'dag-card--' + statutClass(dag.statut)">
+          <div class="dag-card__header">
+            <span
+              class="material-icons-round dag-card__icon"
+              [class.spin]="dag.statut === 'RUNNING'"
+            >{{ dagIcon(dag.statut) }}</span>
+            <div>
+              <p class="dag-card__name font-semibold">{{ dag.nom }}</p>
+              <p class="text-sm text-muted">{{ dag.id }}</p>
+            </div>
+            <span class="badge ml-auto" [class]="'badge-' + statutClass(dag.statut)">
+              {{ dag.statut }}
+            </span>
+          </div>
+          <div class="dag-metrics">
+            <div class="dag-metric">
+              <span class="dag-metric__label">{{ 'dir_analytics.dag_duration' | translate }}</span>
+              <span class="dag-metric__val">{{ dag.duree ?? '—' }}</span>
+            </div>
+            <div class="dag-metric">
+              <span class="dag-metric__label">{{ 'dir_analytics.dag_rows_read' | translate }}</span>
+              <span class="dag-metric__val">{{ formatLines(dag.lignesLues) }}</span>
+            </div>
+            <div class="dag-metric">
+              <span class="dag-metric__label">{{ 'dir_analytics.dag_rows_written' | translate }}</span>
+              <span class="dag-metric__val">{{ formatLines(dag.lignesEcrites) }}</span>
+            </div>
+          </div>
+          <p class="text-muted text-sm" style="margin-top:8px">{{ dag.derniereExec ?? '' }}</p>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- ── SECTION 2 : Dérive ML ────────────────────────────────────────── -->
+  <div class="section-divider">
+    <span class="material-icons-round">trending_up</span>
+    {{ 'dir_analytics.drift_section' | translate }}
+  </div>
+
+  @if (!loadingDrift() && drift()?.driftDetecte) {
+    <div class="alert alert-danger" style="margin-bottom:16px">
+      <span class="material-icons-round">warning</span>
+      <div>
+        <p class="alert-title">{{ 'dir_analytics.drift_alert_title' | translate }}</p>
+        <p class="alert-body">
+          PSI = {{ drift()!.psiActuel | number:'1.2-2' }} — dépasse le seuil de {{ drift()!.seuilCritique }}.
+          {{ 'dir_analytics.drift_alert_body' | translate }}
+        </p>
+      </div>
+    </div>
+  }
+
+  <div class="content-grid two-col" style="margin-bottom:20px">
+    <!-- PSI actuel -->
+    <div class="card psi-card">
+      <p class="text-muted text-sm text-center" style="margin-bottom:8px">{{ 'dir_analytics.psi_label' | translate }}</p>
+      @if (loadingDrift()) {
+        <div class="skeleton" style="height:80px;border-radius:8px"></div>
+      } @else {
+        <div class="psi-value" [class]="psiClass">
+          {{ drift()?.psiActuel ?? 0 | number:'1.2-2' }}
+        </div>
+        @if (drift()?.driftDetecte) {
+          <div class="psi-badge">{{ 'dir_analytics.psi_drift' | translate }}</div>
+        } @else {
+          <div class="psi-badge psi-badge--ok">{{ 'dir_analytics.psi_stable' | translate }}</div>
+        }
+        <div class="psi-meta">
+          <div class="psi-meta__row">
+            <span class="text-muted text-sm">{{ 'dir_analytics.psi_model' | translate }}</span>
+            <span class="font-semibold">{{ drift()?.modeleActif ?? '—' }}</span>
+          </div>
+          <div class="psi-meta__row">
+            <span class="text-muted text-sm">{{ 'dir_analytics.psi_last_train' | translate }}</span>
+            <span class="font-semibold">{{ drift()?.dernierEntrainement ?? '—' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Features contribution -->
+    <div class="card">
+      <h4 style="margin-bottom:16px">{{ 'dir_analytics.features_title' | translate }}</h4>
+      @if (loadingDrift()) {
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="skeleton" style="height:28px;margin-bottom:10px"></div>
+        }
+      } @else {
+        @for (f of drift()?.contributionFeatures ?? []; track f.nom) {
+          <div class="feature-row">
+            <div class="feature-row__header">
+              <code class="feature-row__name">{{ f.nom }}</code>
+              <span class="text-sm text-muted">PSI: <strong>{{ f.psi | number:'1.2-2' }}</strong></span>
+              <span class="text-sm font-semibold ml-auto">{{ f.contribution }}%</span>
+            </div>
+            <div class="progress" style="margin-top:4px">
+              <div
+                class="progress-bar"
+                [style.width.%]="f.contribution"
+                [class]="f.contribution > 30 ? 'danger' : f.contribution > 15 ? 'warning' : 'accent'"
+              ></div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- PSI Chart -->
+  <div class="card chart-card">
+    <div class="card-header"><h4>{{ 'dir_analytics.psi_chart_title' | translate }}</h4></div>
+    <div style="height:240px;position:relative">
+      @if (!loadingDrift()) {
+        <canvas
+          baseChart
+          [data]="psiChartData"
+          [options]="psiChartOptions"
+          type="line"
+        ></canvas>
+      }
+    </div>
+  </div>
+
+</div>

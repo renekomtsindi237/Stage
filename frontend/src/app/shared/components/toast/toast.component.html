@@ -20,7 +20,7 @@
         <p class="fs-message">{{ toast.message }}</p>
         <div class="fs-redirect fs-redirect--login">
           <div class="css-spinner css-spinner--blue"></div>
-          <span>Redirection en cours…</span>
+          <span>{{ 'toast.redirecting' | translate }}</span>
         </div>
         <div class="fs-progress-wrap">
           <div
@@ -65,7 +65,7 @@
         <p class="fs-message">{{ toast.message }}</p>
         <div class="fs-redirect">
           <div class="css-spinner css-spinner--green"></div>
-          <span>Traitement en cours…</span>
+          <span>{{ 'toast.processing' | translate }}</span>
         </div>
         <div class="fs-progress-wrap">
           <div
@@ -88,7 +88,7 @@
           <span class="material-icons-round" style="font-size: 20px"
             >close</span
           >
-          Fermer
+          {{ 'toast.close' | translate }}
         </button>
       }
 
@@ -109,7 +109,7 @@
           <span class="material-icons-round" style="font-size: 20px"
             >close</span
           >
-          Fermer
+          {{ 'toast.close' | translate }}
         </button>
       }
 

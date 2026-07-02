@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
+import { TranslatePipe } from "@ngx-translate/core";
 import { AuthService } from "../../../core/auth/auth.service";
 import { environment } from "../../../../environments/environment";
 
@@ -23,7 +24,7 @@ interface Rapport {
   selector: "app-dir-rapports",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./dir-rapports.component.html",
   styleUrls: ["./dir-rapports.component.scss"],
 })

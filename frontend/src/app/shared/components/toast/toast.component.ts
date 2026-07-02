@@ -7,6 +7,7 @@ import {
   ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import {
   trigger,
   state,
@@ -21,7 +22,7 @@ import { ToastService, ToastState } from "../../../core/services/toast.service";
   selector: "app-toast",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./toast.component.html",
   styleUrls: ["./toast.component.scss"],
   animations: [

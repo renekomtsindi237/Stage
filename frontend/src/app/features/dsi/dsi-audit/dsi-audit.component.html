@@ -1,13 +1,13 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Audit Trail</h2>
+      <h2>{{ 'dsi_audit.title' | translate }}</h2>
       <p class="text-muted text-sm">
         {{ page()?.totalElements ?? 0 | number }} événements enregistrés
       </p>
     </div>
     <button class="btn btn-ghost" (click)="exportCsv()">
-      <span class="material-icons-round">download</span> Exporter CSV
+      <span class="material-icons-round">download</span> {{ 'dsi_audit.export_btn' | translate }}
     </button>
   </div>
 
@@ -19,27 +19,27 @@
     <input
       class="form-control"
       formControlName="utilisateur"
-      placeholder="Filtrer par utilisateur..."
+      [placeholder]="'dsi_audit.filter_user' | translate"
       style="flex: 1"
     />
     <input
       class="form-control"
       formControlName="action"
-      placeholder="Filtrer par action..."
+      [placeholder]="'dsi_audit.filter_action' | translate"
       style="flex: 1"
     />
-    <button class="btn btn-primary" (click)="load()">Filtrer</button>
+    <button class="btn btn-primary" (click)="load()">{{ 'dsi_audit.filter_btn' | translate }}</button>
   </div>
 
   <div class="card">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Horodatage</th>
-          <th>Utilisateur</th>
-          <th>Action</th>
-          <th>Entité</th>
-          <th>ID Entité</th>
+          <th>{{ 'dsi_audit.col_timestamp' | translate }}</th>
+          <th>{{ 'dsi_audit.col_user' | translate }}</th>
+          <th>{{ 'dsi_audit.col_action' | translate }}</th>
+          <th>{{ 'dsi_audit.col_entity' | translate }}</th>
+          <th>{{ 'dsi_audit.col_entity_id' | translate }}</th>
         </tr>
       </thead>
       <tbody>

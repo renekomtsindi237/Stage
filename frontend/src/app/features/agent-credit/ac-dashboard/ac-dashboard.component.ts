@@ -10,6 +10,7 @@ import { RouterLink } from "@angular/router";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import { TranslatePipe } from "@ngx-translate/core";
 
 interface DossierItem {
   uid: string;
@@ -32,7 +33,7 @@ interface AcDashboard {
   selector: "app-ac-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe],
+  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
   templateUrl: "./ac-dashboard.component.html",
   styleUrls: ["./ac-dashboard.component.scss"],
 })

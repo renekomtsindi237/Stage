@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 
 interface AuditEntry {
@@ -31,7 +32,7 @@ interface AuditPage {
   selector: "app-dsi-audit",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./dsi-audit.component.html",
   styleUrls: ["./dsi-audit.component.scss"],
 })

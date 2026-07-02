@@ -6,6 +6,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { Router } from "@angular/router";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
@@ -15,7 +16,7 @@ import { Client } from "../../../core/models/client.model";
   selector: "app-ac-nouveau-dossier",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./ac-nouveau-dossier.component.html",
   styleUrls: ["./ac-nouveau-dossier.component.scss"],
 })

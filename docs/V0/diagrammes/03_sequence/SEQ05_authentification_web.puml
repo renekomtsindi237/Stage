@@ -1,90 +1,102 @@
 @startuml SEQ05_authentification_web
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 1.5
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ05 — Authentification Web (Angular → Spring Boot)\nFlux JWT : Login + Refresh + Déconnexion
+title SEQ05 - Authentification web (email + OTP)\nAngular 17 -> Spring Boot 3.3 - Cookies HttpOnly
 
 actor "Utilisateur" as USER
-participant "Navigateur\n(Angular)" as ANG
-participant "AuthService\n(Angular)" as AUTHSVC
-participant "JwtInterceptor\n(Angular)" as INTER
-participant "Spring Boot\nAuthController" as SPRING
-database "PostgreSQL\nusers + refresh_tokens" as PG
+participant "Angular\n(LoginComponent\n+ OtpComponent)" as ANG
+participant "AuthService" as AUTHSVC
+participant "HttpInterceptor" as INTER
+participant "Spring Boot\nAuthController" as API
+database "PostgreSQL 15\n(users, otp_codes)" as PG
+participant "SMTP" as SMTP
 
-== Connexion initiale ==
+== Etape 1 - Demande de code OTP ==
 
-USER -> ANG : Saisit username + password\n(formulaire /login)
-ANG -> AUTHSVC : login({username, password})
-AUTHSVC -> SPRING : <b>POST</b> /api/auth/login\n{"username": "jkamga", "password": "***"}
-activate SPRING
-
-SPRING -> PG : <b>SELECT</b> users WHERE username = 'jkamga'
-PG --> SPRING : {id, username, password_hash, role}
-
-SPRING -> SPRING : <b>BCrypt.matches()</b>\nCompare password avec hash stocké
-
-alt <b>Authentification réussie</b>
-  SPRING -> SPRING : <b>JwtTokenProvider.generate()</b>\naccessToken (15 min)\nrefreshToken (7 jours)
-
-  SPRING -> PG : <b>INSERT INTO</b> refresh_tokens\n{user_id, token_hash, expires_at}
-
-  SPRING --> AUTHSVC : <b>200 OK</b>\n{"accessToken": "eyJ...",\n "refreshToken": "r_xxx",\n "role": "ANALYSTE",\n "username": "jkamga"}
-  deactivate SPRING
-
-  AUTHSVC -> ANG : Stocke accessToken (sessionStorage)\net refreshToken (localStorage)
-  ANG --> USER : Redirige vers /dashboard
-
-else <b>Authentification échouée</b>
-  SPRING --> AUTHSVC : <b>401 Unauthorized</b>\n{"message": "Identifiants incorrects"}
-  AUTHSVC --> USER : Affiche message d'erreur
+USER -> ANG : Saisit son email (/login)
+ANG -> AUTHSVC : requestOtp(email)
+AUTHSVC -> API : POST /auth/request-otp?email={email}
+activate API
+API -> PG : SELECT users WHERE email = ?
+PG --> API : {uid, role, actif}
+alt Utilisateur actif
+  API -> PG : INSERT otp_codes {userId, codeHash, expiresAt}
+  API -> SMTP : Envoie code OTP (valable 10 min)
+  API --> AUTHSVC : 200 OK {status: "OTP_SENT"}
+  deactivate API
+  ANG --> USER : Redirige vers /otp
+else Email inconnu
+  API --> AUTHSVC : 200 OK (reponse identique - anti-enumeration)
 end
 
-== Requête API avec JWT ==
+== Etape 2 - Verification du code ==
 
-USER -> ANG : Navigue vers /recouvrement
-ANG -> INTER : Intercepte requête HTTP
-INTER -> INTER : Lit accessToken depuis sessionStorage
-INTER -> SPRING : <b>GET</b> /api/kpi/par\nAuthorization: Bearer eyJ...
-SPRING --> ANG : <b>200 OK</b> {data...}
+USER -> ANG : Saisit les 6 chiffres (autosoumission)
+ANG -> AUTHSVC : verifyOtp(email, code)
+AUTHSVC -> API : POST /auth/verify-otp {email, code}
+activate API
+API -> PG : SELECT otp_codes WHERE userId = ?\nAND expiresAt > NOW()
+PG --> API : {codeHash, tentatives}
+API -> API : BCrypt.matches(code, codeHash)
 
-== Renouvellement du token (token expiré) ==
+alt Code valide (tentatives < 3)
+  API -> PG : INSERT refresh_tokens {userId, tokenHash, expiresAt}
+  API -> PG : DELETE otp_codes WHERE userId = ?
+  API --> AUTHSVC : 200 OK {role, nomComplet}\n+ Set-Cookie: imf_access=...; HttpOnly; Secure\n+ Set-Cookie: imf_refresh=...; HttpOnly; Secure
+  deactivate API
+  AUTHSVC -> AUTHSVC : Stocke role + nomComplet (signal Angular)
+  ANG --> USER : Redirection selon role (defaultRouteForRole)
+else Code invalide ou expire
+  API --> AUTHSVC : 401 Unauthorized
+  ANG --> USER : Affiche erreur - reset formulaire
+else 3 tentatives epuisees
+  API --> AUTHSVC : 401 {message: "Code verrouille"}
+  ANG --> USER : Demandez un nouveau code
+end
 
-ANG -> SPRING : <b>GET</b> /api/kpi/collectes\nAuthorization: Bearer <JWT expiré>
-SPRING --> ANG : <b>401 Unauthorized</b> {"error": "Token expiré"}
+== Requete API protegee ==
 
-ANG -> INTER : Intercepte le 401
-note over INTER : [max 1 retry]\nSi le refresh échoue à son tour,\nrediriger vers /login sans boucle
-INTER -> SPRING : <b>POST</b> /api/auth/refresh\n{"refreshToken": "r_xxx"}
-activate SPRING
-SPRING -> PG : <b>SELECT</b> refresh_tokens\nWHERE token_hash = ? AND expires_at > NOW()
-PG --> SPRING : Token valide
+USER -> ANG : Navigue vers une page protegee
+note over INTER
+  Cookie imf_access envoye automatiquement
+  par le navigateur (pas d'injection manuelle)
+end note
+INTER -> API : GET /api/v1/directeur/kpis [Cookie: imf_access]
+API --> ANG : 200 OK
 
-SPRING -> SPRING : Génère nouveau accessToken (15 min)
-SPRING --> INTER : <b>200 OK</b> {"accessToken": "eyJ_new..."}
-deactivate SPRING
+== Rafraichissement du token ==
 
-INTER -> ANG : Stocke nouveau accessToken
-INTER -> SPRING : Rejoue requête initiale\nGET /api/kpi/collectes\nAuthorization: Bearer eyJ_new...
-SPRING --> ANG : <b>200 OK</b> {data...}
+INTER -> API : GET /api/v1/... [Cookie: imf_access expire]
+API --> INTER : 401 Unauthorized
+INTER -> API : POST /auth/refresh [Cookie: imf_refresh]
+activate API
+API -> PG : SELECT refresh_tokens WHERE hash = ? AND expiresAt > NOW()
+PG --> API : valide
+API --> INTER : 200 OK + Set-Cookie: imf_access=...; HttpOnly
+deactivate API
+INTER -> API : Rejoue la requete initiale
+API --> ANG : 200 OK
 
-== Déconnexion ==
+== Deconnexion ==
 
-USER -> ANG : Clic "Déconnexion"
-ANG -> SPRING : <b>POST</b> /api/auth/logout\n{refreshToken: "r_xxx"}
-SPRING -> PG : <b>DELETE FROM</b> refresh_tokens\nWHERE token_hash = ?
-PG --> SPRING : OK
-SPRING --> ANG : <b>200 OK</b>
-ANG -> ANG : Efface sessionStorage + localStorage
+USER -> ANG : Clic "Se deconnecter"
+ANG -> API : POST /auth/logout [Cookie: imf_refresh]
+API -> PG : DELETE refresh_tokens WHERE hash = ?
+API --> ANG : 200 OK + Set-Cookie: imf_access=; Max-Age=0\n+ Set-Cookie: imf_refresh=; Max-Age=0
 ANG --> USER : Redirige vers /login
 
 @enduml

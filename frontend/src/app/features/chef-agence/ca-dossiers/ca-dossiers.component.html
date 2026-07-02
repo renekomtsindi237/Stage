@@ -1,0 +1,297 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>{{ 'ca_dossiers.title' | translate }}</h2>
+      <p class="text-muted text-sm">{{ 'ca_dossiers.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Onglets statut -->
+  <div class="tab-bar">
+    @for (tab of tabs; track tab.value) {
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === tab.value"
+        (click)="switchTab(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Table -->
+  <div class="card" style="padding: 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>{{ 'ca_dossiers.col_client' | translate }}</th>
+          <th>{{ 'ca_dossiers.col_objet' | translate }}</th>
+          <th class="text-right">{{ 'ca_dossiers.col_montant' | translate }}</th>
+          <th>{{ 'ca_dossiers.col_duree' | translate }}</th>
+          <th>{{ 'ca_dossiers.col_statut' | translate }}</th>
+          <th>{{ 'ca_dossiers.col_soumis' | translate }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1,2,3,4,5]; track $index) {
+            <tr>
+              @for (__ of [1,2,3,4,5,6,7]; track $index) {
+                <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+              }
+            </tr>
+          }
+        } @else {
+          @for (d of rows(); track d.uid) {
+            <tr
+              [class.row-selected]="selected()?.uid === d.uid"
+              (click)="select(d)"
+              style="cursor: pointer"
+            >
+              <td>
+                <div class="font-semibold">{{ d.clientNom || d.clientId }}</div>
+              </td>
+              <td>
+                <div class="text-sm">{{ d.objetFinancement }}</div>
+                <div class="text-sm text-muted">{{ d.secteurActivite }}</div>
+              </td>
+              <td class="text-right font-semibold" style="color: var(--color-primary)">
+                {{ d.montantDemande | fcfa }}
+              </td>
+              <td class="text-sm text-muted">{{ d.dureeMois }} {{ 'common.months' | translate }}</td>
+              <td>
+                <span class="badge" [ngClass]="statutClass(d.statut)">
+                  {{ statutLabel(d.statut) }}
+                </span>
+              </td>
+              <td class="text-sm text-muted">
+                {{ d.dateSoumission | date: "dd/MM/yyyy" }}
+              </td>
+              <td>
+                @if (canValidate(d)) {
+                  <span class="badge badge-primary" style="font-size:10px">{{ 'ca_dossiers.badge_to_validate' | translate }}</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted" style="padding: 40px">
+                <span class="material-icons-round" style="font-size:36px;opacity:.4">folder_off</span>
+                <p style="margin:8px 0 0">{{ 'ca_dossiers.empty' | translate }}</p>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  @if ((pageData()?.totalPages ?? 0) > 1) {
+    <div class="pagination">
+      <button
+        class="btn btn-ghost btn-sm"
+        [disabled]="currentPage() === 0"
+        (click)="goPage(currentPage() - 1)"
+      >
+        <span class="material-icons-round">chevron_left</span>
+      </button>
+      <span class="text-sm text-muted">
+        {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ pageData()?.totalPages }}
+      </span>
+      <button
+        class="btn btn-ghost btn-sm"
+        [disabled]="currentPage() + 1 >= (pageData()?.totalPages ?? 0)"
+        (click)="goPage(currentPage() + 1)"
+      >
+        <span class="material-icons-round">chevron_right</span>
+      </button>
+    </div>
+  }
+</div>
+
+<!-- ── Panneau de détail ─────────────────────────────────────────────────── -->
+@if (selected()) {
+  <div class="detail-overlay" (click)="closePanel()"></div>
+
+  <div class="detail-panel">
+    <!-- En-tête -->
+    <div class="detail-header">
+      <div>
+        <h3>{{ selected()!.clientNom || selected()!.clientId }}</h3>
+        <span class="badge" [ngClass]="statutClass(selected()!.statut)">
+          {{ statutLabel(selected()!.statut) }}
+        </span>
+      </div>
+      <button class="btn btn-ghost btn-sm" (click)="closePanel()">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="detail-kpis">
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'ca_dossiers.kpi_montant' | translate }}</span>
+        <span class="kpi-value text-primary">{{ selected()!.montantDemande | fcfa }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'ca_dossiers.kpi_duree' | translate }}</span>
+        <span class="kpi-value">{{ selected()!.dureeMois }} {{ 'common.months' | translate }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'ca_dossiers.kpi_revenu' | translate }}</span>
+        <span class="kpi-value">{{ selected()!.revenuEstime != null ? (selected()!.revenuEstime | fcfa) : '—' }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'ca_dossiers.kpi_capacite' | translate }}</span>
+        <span class="kpi-value">{{ selected()!.capaciteRemboursement != null ? (selected()!.capaciteRemboursement | fcfa) : '—' }}</span>
+      </div>
+    </div>
+
+    <!-- Infos -->
+    <div class="info-bloc">
+      <h5>{{ 'ca_dossiers.project_title' | translate }}</h5>
+      <div class="info-grid">
+        <div class="info-row">
+          <span class="info-label">{{ 'ca_dossiers.project_objet' | translate }}</span>
+          <span>{{ selected()!.objetFinancement }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ 'ca_dossiers.project_secteur' | translate }}</span>
+          <span>{{ selected()!.secteurActivite || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ 'ca_dossiers.project_soumis' | translate }}</span>
+          <span>{{ selected()!.dateSoumission | date: "dd/MM/yyyy" }}</span>
+        </div>
+        @if (selected()!.dateDecision) {
+          <div class="info-row">
+            <span class="info-label">{{ 'ca_dossiers.project_decision' | translate }}</span>
+            <span>{{ selected()!.dateDecision | date: "dd/MM/yyyy" }}</span>
+          </div>
+        }
+        @if (selected()!.noteAnalyse) {
+          <div class="info-row">
+            <span class="info-label">{{ 'ca_dossiers.project_note' | translate }}</span>
+            <span class="text-sm">{{ selected()!.noteAnalyse }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Actions (uniquement pour EN_COMITE) -->
+    @if (canValidate(selected()!)) {
+      <div class="detail-actions">
+        <button
+          class="btn btn-primary"
+          [disabled]="validating()"
+          (click)="valider('VALIDE')"
+        >
+          <span class="material-icons-round">check_circle</span>
+          {{ 'ca_dossiers.action_validate' | translate }}
+        </button>
+        <button
+          class="btn btn-ghost danger"
+          [disabled]="validating()"
+          (click)="valider('REJETE')"
+        >
+          <span class="material-icons-round">cancel</span>
+          {{ 'ca_dossiers.action_reject' | translate }}
+        </button>
+        <button
+          class="btn btn-ghost"
+          (click)="openReassign()"
+        >
+          <span class="material-icons-round">swap_horiz</span>
+          {{ 'ca_dossiers.action_reassign' | translate }}
+        </button>
+      </div>
+
+      <!-- Champ motif rejet -->
+      @if (showMotif()) {
+        <div class="inline-form">
+          <h5>{{ 'ca_dossiers.motif_title' | translate }}</h5>
+          <textarea
+            class="form-control"
+            rows="3"
+            [placeholder]="'ca_dossiers.motif_placeholder' | translate"
+            [ngModel]="motifRejeter()"
+            (ngModelChange)="motifRejeter.set($event)"
+          ></textarea>
+          <div class="form-actions">
+            <button class="btn btn-ghost btn-sm" (click)="showMotif.set(false)">{{ 'ca_dossiers.motif_cancel' | translate }}</button>
+            <button
+              class="btn btn-danger btn-sm"
+              [disabled]="!motifRejeter() || validating()"
+              (click)="valider('REJETE')"
+            >{{ 'ca_dossiers.motif_confirm' | translate }}</button>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="detail-actions">
+        <button class="btn btn-ghost" (click)="openReassign()">
+          <span class="material-icons-round">swap_horiz</span>
+          {{ 'ca_dossiers.action_reassign' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+}
+
+<!-- ── Modal réassignation ──────────────────────────────────────────────── -->
+@if (showReassign()) {
+  <div class="modal-overlay" (click)="closeReassign()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3>{{ 'ca_dossiers.reassign_title' | translate }}</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeReassign()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal__body">
+        @if (agentsLoading()) {
+          <div class="skeleton" style="height: 40px; margin-bottom: 12px"></div>
+        } @else if (agents().length === 0) {
+          <p class="text-muted text-sm">{{ 'ca_dossiers.reassign_empty' | translate }}</p>
+        } @else {
+          <div class="form-group">
+            <label class="form-label">{{ 'ca_dossiers.reassign_agent' | translate }}</label>
+            <select
+              class="form-control"
+              [ngModel]="selectedAgentUid()"
+              (ngModelChange)="selectedAgentUid.set($event)"
+            >
+              <option value="">{{ 'ca_dossiers.reassign_choose' | translate }}</option>
+              @for (a of agents(); track a.uid) {
+                <option [value]="a.uid">{{ a.username }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group" style="margin-top: 12px">
+            <label class="form-label">{{ 'ca_dossiers.reassign_motif' | translate }}</label>
+            <textarea
+              class="form-control"
+              rows="2"
+              [placeholder]="'ca_dossiers.reassign_motif_placeholder' | translate"
+              [ngModel]="reassignMotif()"
+              (ngModelChange)="reassignMotif.set($event)"
+            ></textarea>
+          </div>
+        }
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn-ghost" (click)="closeReassign()">{{ 'ca_dossiers.reassign_cancel' | translate }}</button>
+        <button
+          class="btn btn-primary"
+          [disabled]="!selectedAgentUid() || reassigning()"
+          (click)="submitReassign()"
+        >
+          @if (reassigning()) { <span class="material-icons-round spin">refresh</span> }
+          {{ 'ca_dossiers.reassign_submit' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

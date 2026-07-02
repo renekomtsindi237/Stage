@@ -1,13 +1,13 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Gestion des utilisateurs</h2>
+      <h2>{{ 'dsi_users.title' | translate }}</h2>
       <p class="text-muted text-sm">
         {{ page()?.totalElements ?? 0 | number }} utilisateurs
       </p>
     </div>
     <button class="btn btn-primary" (click)="showModal.set(true)">
-      <span class="material-icons-round">person_add</span> Créer un utilisateur
+      <span class="material-icons-round">person_add</span> {{ 'dsi_users.create_btn' | translate }}
     </button>
   </div>
 
@@ -19,7 +19,7 @@
         roleFilter.set($any($event.target).value); currentPage.set(0); load()
       "
     >
-      <option value="">Tous les rôles</option>
+      <option value="">{{ 'dsi_users.filter_all' | translate }}</option>
       @for (r of roles; track r) {
         <option [value]="r">{{ r }}</option>
       }
@@ -30,12 +30,12 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Nom d'utilisateur</th>
-          <th>Email</th>
-          <th>Rôle</th>
-          <th>Agence</th>
-          <th>Statut</th>
-          <th>Actions</th>
+          <th>{{ 'dsi_users.col_username' | translate }}</th>
+          <th>{{ 'dsi_users.col_email' | translate }}</th>
+          <th>{{ 'dsi_users.col_role' | translate }}</th>
+          <th>{{ 'dsi_users.col_agence' | translate }}</th>
+          <th>{{ 'dsi_users.col_statut' | translate }}</th>
+          <th>{{ 'dsi_users.col_actions' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -64,21 +64,21 @@
                   [class.badge-success]="u.actif"
                   [class.badge-danger]="!u.actif"
                 >
-                  {{ u.actif ? "Actif" : "Inactif" }}
+                  {{ u.actif ? ('dsi_users.btn_reactivate' | translate) : ('dsi_users.btn_disable' | translate) }}
                 </span>
               </td>
               <td class="actions-cell">
                 <button
                   class="btn btn-ghost btn-sm"
                   (click)="openEdit(u)"
-                  title="Modifier le profil"
+                  [title]="'dsi_users.btn_edit' | translate"
                 >
                   <span class="material-icons-round">edit</span>
                 </button>
                 <button
                   class="btn btn-ghost btn-sm"
                   (click)="toggle(u.uid, !u.actif)"
-                  [title]="u.actif ? 'Désactiver' : 'Réactiver'"
+                  [title]="u.actif ? ('dsi_users.btn_disable' | translate) : ('dsi_users.btn_reactivate' | translate)"
                 >
                   <span class="material-icons-round">{{
                     u.actif ? "block" : "check_circle"
@@ -87,7 +87,7 @@
                 <button
                   class="btn btn-ghost btn-sm text-danger"
                   (click)="openDelete(u)"
-                  title="Supprimer l'utilisateur"
+                  [title]="'dsi_users.btn_delete' | translate"
                 >
                   <span class="material-icons-round">delete</span>
                 </button>
@@ -131,36 +131,36 @@
       [formGroup]="createForm"
     >
       <div class="modal-header">
-        <h3>Créer un utilisateur</h3>
+        <h3>{{ 'dsi_users.modal_create_title' | translate }}</h3>
         <button class="btn-icon" (click)="showModal.set(false)">
           <span class="material-icons-round">close</span>
         </button>
       </div>
 
       <p class="text-muted text-sm" style="margin-bottom: 12px">
-        L'utilisateur recevra un code OTP par email à sa première connexion.
+        {{ 'dsi_users.modal_create_otp' | translate }}
       </p>
 
       <div class="form-grid">
         <div class="form-group">
-          <label>Nom d'utilisateur *</label>
+          <label>{{ 'dsi_users.modal_username' | translate }} *</label>
           <input
             class="form-control"
             formControlName="username"
-            placeholder="jean.dupont"
+            [placeholder]="'dsi_users.modal_username_placeholder' | translate"
           />
         </div>
         <div class="form-group">
-          <label>Email *</label>
+          <label>{{ 'dsi_users.modal_email' | translate }} *</label>
           <input
             class="form-control"
             type="email"
             formControlName="email"
-            placeholder="jean.dupont@imf.cm"
+            [placeholder]="'dsi_users.modal_email_placeholder' | translate"
           />
         </div>
         <div class="form-group" style="grid-column: 1/-1">
-          <label>Rôle *</label>
+          <label>{{ 'dsi_users.modal_role' | translate }} *</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
               <option [value]="r">{{ r }}</option>
@@ -171,7 +171,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">
-          Annuler
+          {{ 'dsi_users.modal_cancel' | translate }}
         </button>
         <button
           class="btn btn-primary"
@@ -181,7 +181,7 @@
           @if (creating()) {
             <span class="css-spinner-sm"></span>
           } @else {
-            Créer
+            {{ 'dsi_users.modal_submit' | translate }}
           }
         </button>
       </div>
@@ -198,7 +198,7 @@
       [formGroup]="editForm"
     >
       <div class="modal-header">
-        <h3>Modifier — {{ selectedUser()?.username }}</h3>
+        <h3>{{ 'dsi_users.modal_edit_prefix' | translate }} — {{ selectedUser()?.username }}</h3>
         <button class="btn-icon" (click)="showEditModal.set(false)">
           <span class="material-icons-round">close</span>
         </button>
@@ -206,7 +206,7 @@
 
       <div class="form-grid">
         <div class="form-group" style="grid-column: 1/-1">
-          <label>Email</label>
+          <label>{{ 'dsi_users.modal_edit_email' | translate }}</label>
           <input
             class="form-control"
             type="email"
@@ -215,7 +215,7 @@
           />
         </div>
         <div class="form-group" style="grid-column: 1/-1">
-          <label>Rôle</label>
+          <label>{{ 'dsi_users.modal_edit_role' | translate }}</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
               <option [value]="r">{{ r }}</option>
@@ -223,18 +223,18 @@
           </select>
         </div>
         <div class="form-group" style="grid-column: 1/-1">
-          <label>Zone / Agence</label>
+          <label>{{ 'dsi_users.modal_edit_zone' | translate }}</label>
           <input
             class="form-control"
             formControlName="zoneId"
-            placeholder="Code agence (optionnel)"
+            [placeholder]="'dsi_users.modal_edit_zone_placeholder' | translate"
           />
         </div>
       </div>
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showEditModal.set(false)">
-          Annuler
+          {{ 'dsi_users.modal_edit_cancel' | translate }}
         </button>
         <button
           class="btn btn-primary"
@@ -244,7 +244,7 @@
           @if (saving()) {
             <span class="css-spinner-sm"></span>
           } @else {
-            Enregistrer
+            {{ 'dsi_users.modal_edit_save' | translate }}
           }
         </button>
       </div>
@@ -257,21 +257,21 @@
   <div class="modal-overlay" (click)="showDeleteConfirm.set(false)">
     <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Supprimer l'utilisateur</h3>
+        <h3>{{ 'dsi_users.modal_delete_title' | translate }}</h3>
         <button class="btn-icon" (click)="showDeleteConfirm.set(false)">
           <span class="material-icons-round">close</span>
         </button>
       </div>
 
       <p>
-        Voulez-vous vraiment supprimer le compte
-        <strong>{{ selectedUser()?.username }}</strong> ? Cette action est
-        irréversible.
+        {{ 'dsi_users.modal_delete_body' | translate }}
+        <strong>{{ selectedUser()?.username }}</strong> ?
+        {{ 'dsi_users.modal_delete_irreversible' | translate }}
       </p>
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showDeleteConfirm.set(false)">
-          Annuler
+          {{ 'dsi_users.modal_delete_cancel' | translate }}
         </button>
         <button
           class="btn btn-danger"
@@ -281,7 +281,7 @@
           @if (deleting()) {
             <span class="css-spinner-sm"></span>
           } @else {
-            Supprimer
+            {{ 'dsi_users.modal_delete_confirm' | translate }}
           }
         </button>
       </div>

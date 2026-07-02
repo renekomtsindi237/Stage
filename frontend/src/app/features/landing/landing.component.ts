@@ -6,12 +6,13 @@ import {
 } from "@angular/core";
 import { Router, RouterLink } from "@angular/router";
 import { AuthService } from "../../core/auth/auth.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-landing",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: "./landing.component.html",
   styleUrls: ["./landing.component.scss"],
 })

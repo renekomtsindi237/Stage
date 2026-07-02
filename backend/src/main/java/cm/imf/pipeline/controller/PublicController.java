@@ -1,8 +1,20 @@
 package cm.imf.pipeline.controller;
 
+import cm.imf.pipeline.dto.response.ApiResponse;
+import cm.imf.pipeline.dto.response.SseEventDto;
 import cm.imf.pipeline.entity.Imf;
+import cm.imf.pipeline.entity.TicketSupport;
 import cm.imf.pipeline.repository.ImfRepository;
+import cm.imf.pipeline.repository.TicketSupportRepository;
+import cm.imf.pipeline.service.EmailService;
 import cm.imf.pipeline.service.R2StorageService;
+import cm.imf.pipeline.sse.SseEmitterRegistry;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +26,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.Map;
 
 /**
  * Endpoints publics (sans authentification) pour les ressources partagées.
@@ -23,10 +37,24 @@ import java.time.Duration;
 @RequestMapping("/public")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Public", description = "Ressources et contact support sans authentification")
 public class PublicController {
 
-    private final ImfRepository    imfRepository;
-    private final R2StorageService r2;
+    private final ImfRepository           imfRepository;
+    private final R2StorageService        r2;
+    private final TicketSupportRepository ticketRepo;
+    private final SseEmitterRegistry      sseRegistry;
+    private final EmailService            emailService;
+
+    // ── DTO contact support ───────────────────────────────────────────────────
+
+    record ContactSupportRequest(
+            @NotBlank @Size(max = 100) String nom,
+            @NotBlank @Email           String email,
+            @NotBlank @Size(max = 200) String sujet,
+            @NotBlank @Size(max = 2000) String message,
+            String categorie
+    ) {}
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
@@ -97,6 +125,54 @@ public class PublicController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // ── POST /api/v1/public/contact-support ──────────────────────────────────
+
+    @Operation(summary = "Contacter le support depuis la page de connexion (sans authentification)")
+    @PostMapping("/contact-support")
+    public ResponseEntity<ApiResponse<Map<String, String>>> contactSupport(
+            @Valid @RequestBody ContactSupportRequest req) {
+
+        String cat   = req.categorie() != null ? req.categorie() : "AUTRE";
+        String titre = "[PUBLIC] " + req.sujet();
+        String desc  = "De : " + req.nom() + " <" + req.email() + ">\n\n" + req.message();
+
+        TicketSupport ticket = TicketSupport.builder()
+                .imfId(null)
+                .auteurId(null)
+                .auteurUsername(req.nom())
+                .auteurRole("PUBLIC")
+                .titre(titre)
+                .description(desc)
+                .categorie(cat)
+                .priorite("NORMALE")
+                .statut("OUVERT")
+                .build();
+        ticketRepo.save(ticket);
+
+        String msg = "Contact public de " + req.nom() + " — " + req.sujet();
+        sseRegistry.broadcastToRole("SUPPORT", new SseEventDto(
+                "NOUVEAU_TICKET", "SUPPORT", msg,
+                Map.of(
+                        "ticketId",  ticket.getId(),
+                        "uid",       ticket.getUid().toString(),
+                        "categorie", cat,
+                        "priorite",  "NORMALE",
+                        "auteur",    req.nom() + " <" + req.email() + ">"
+                ),
+                OffsetDateTime.now()
+        ));
+
+        emailService.sendContactSupportConfirmation(
+                req.email(), req.nom(), req.sujet(), ticket.getUid().toString());
+
+        log.info("Contact public de {} <{}> — sujet: {}", req.nom(), req.email(), req.sujet());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Votre message a été transmis au support.",
+                        Map.of("reference", ticket.getUid().toString())));
+    }
+
+    // ── Helpers médias ────────────────────────────────────────────────────────
 
     private MediaType detectMediaType(String key) {
         if (key.endsWith(".jpg") || key.endsWith(".jpeg")) return MediaType.IMAGE_JPEG;

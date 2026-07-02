@@ -8,6 +8,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../core/http/api.service";
 import { AuthService } from "../../core/auth/auth.service";
 import { ToastService } from "../../core/services/toast.service";
@@ -64,7 +65,7 @@ interface AgentUser {
   selector: "app-delegations",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./delegations.component.html",
   styleUrls: ["./delegations.component.scss"],
 })

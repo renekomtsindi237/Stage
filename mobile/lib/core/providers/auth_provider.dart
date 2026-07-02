@@ -2,18 +2,21 @@ import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../services/location_service.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService;
+  final AuthService    _authService;
+  final LocationService? _locationService;
 
   AuthStatus _status = AuthStatus.initial;
   User? _currentUser;
   String? _errorMessage;
   String? _pendingOtpEmail;
 
-  AuthProvider(this._authService);
+  AuthProvider(this._authService, {LocationService? locationService})
+      : _locationService = locationService;
 
   AuthStatus get status => _status;
   User? get currentUser => _currentUser;
@@ -84,6 +87,10 @@ class AuthProvider extends ChangeNotifier {
       _pendingOtpEmail = null;
       _status = AuthStatus.authenticated;
       notifyListeners();
+      // Démarrer le GPS automatiquement pour les agents terrain
+      if (response.role == 'AGENT') {
+        _locationService?.startTracking();
+      }
       return true;
     } on ApiException catch (e) {
       _status = AuthStatus.error;
@@ -125,6 +132,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _locationService?.shutdownForLogout();
     await _authService.logout();
     _currentUser = null;
     _pendingOtpEmail = null;

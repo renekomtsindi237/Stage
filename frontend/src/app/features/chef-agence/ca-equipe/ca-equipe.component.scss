@@ -1,0 +1,139 @@
+// ── Recherche ─────────────────────────────────────────────────────────────────
+.search-wrap {
+  position: relative;
+  max-width: 360px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 36px;
+}
+
+// ── Grille ────────────────────────────────────────────────────────────────────
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+// ── Carte membre ──────────────────────────────────────────────────────────────
+.member-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  }
+
+  &.inactive {
+    opacity: .55;
+  }
+}
+
+.skeleton-card {
+  min-height: 80px;
+}
+
+// ── Avatar ────────────────────────────────────────────────────────────────────
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatar-skeleton {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// ── Infos ─────────────────────────────────────────────────────────────────────
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.member-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.badge-sm {
+  font-size: 10px;
+  padding: 2px 7px;
+}
+
+.member-email,
+.member-zone {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 3px;
+
+  .material-icons-round { opacity: .7; }
+}
+
+// ── Dernière connexion ────────────────────────────────────────────────────────
+.member-login {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+// ── Empty ─────────────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 60px;
+  color: var(--color-text-muted);
+
+  .material-icons-round {
+    font-size: 48px;
+    opacity: .4;
+  }
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 20px;
+}

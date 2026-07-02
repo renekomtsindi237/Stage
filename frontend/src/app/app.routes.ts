@@ -170,6 +170,27 @@ export const routes: Routes = [
               ),
           },
           {
+            path: "scoring",
+            loadComponent: () =>
+              import("./features/directeur/dir-scoring/dir-scoring.component").then(
+                (m) => m.DirScoringComponent,
+              ),
+          },
+          {
+            path: "recouvrement",
+            loadComponent: () =>
+              import("./features/directeur/dir-recouvrement/dir-recouvrement.component").then(
+                (m) => m.DirRecouvrementComponent,
+              ),
+          },
+          {
+            path: "analytics",
+            loadComponent: () =>
+              import("./features/directeur/dir-analytics/dir-analytics.component").then(
+                (m) => m.DirAnalyticsComponent,
+              ),
+          },
+          {
             path: "delegations",
             loadComponent: () =>
               import("./features/delegations/delegations.component").then(
@@ -288,6 +309,20 @@ export const routes: Routes = [
                 (m) => m.CaDashboardComponent,
               ),
           },
+          {
+            path: "dossiers",
+            loadComponent: () =>
+              import("./features/chef-agence/ca-dossiers/ca-dossiers.component").then(
+                (m) => m.CaDossiersComponent,
+              ),
+          },
+          {
+            path: "equipe",
+            loadComponent: () =>
+              import("./features/chef-agence/ca-equipe/ca-equipe.component").then(
+                (m) => m.CaEquipeComponent,
+              ),
+          },
         ],
       },
 
@@ -302,6 +337,20 @@ export const routes: Routes = [
             loadComponent: () =>
               import("./features/recouvrement/rec-dashboard/rec-dashboard.component").then(
                 (m) => m.RecDashboardComponent,
+              ),
+          },
+          {
+            path: "creances",
+            loadComponent: () =>
+              import("./features/recouvrement/rec-creances/rec-creances.component").then(
+                (m) => m.RecCreancesComponent,
+              ),
+          },
+          {
+            path: "actions",
+            loadComponent: () =>
+              import("./features/recouvrement/rec-actions/rec-actions.component").then(
+                (m) => m.RecActionsComponent,
               ),
           },
           {
@@ -355,6 +404,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import("./features/saisie/sai-contrats/sai-contrats.component").then(
                 (m) => m.SaiContratsComponent,
+              ),
+          },
+          {
+            path: "dossiers-credit",
+            loadComponent: () =>
+              import("./features/saisie/sai-dossiers-credit/sai-dossiers-credit.component").then(
+                (m) => m.SaiDossiersCreditComponent,
               ),
           },
         ],

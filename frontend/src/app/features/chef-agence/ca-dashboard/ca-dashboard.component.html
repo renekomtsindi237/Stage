@@ -1,92 +1,122 @@
 <div class="page-content">
   <div class="page-header">
-    <h2>Dashboard Agence</h2>
-    <p class="text-muted text-sm">
-      Supervision et validation des dossiers crédit
-    </p>
+    <div>
+      <h2>{{ 'ca_dashboard.title' | translate }}</h2>
+      <p class="text-muted text-sm">{{ 'ca_dashboard.subtitle' | translate }}</p>
+    </div>
+    <a routerLink="/chef-agence/dossiers" class="btn btn-primary">
+      <span class="material-icons-round">folder_open</span> {{ 'ca_dashboard.all_files_btn' | translate }}
+    </a>
   </div>
 
-  <div class="stats-grid" style="margin-bottom: 24px">
+  <!-- KPIs ligne 1 -->
+  <div class="stats-grid" style="margin-bottom: 16px">
     <app-stat-card
-      label="Agents"
+      [label]="'ca_dashboard.kpi_agents' | translate"
       [value]="data()?.agentsCount ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Clients actifs"
+      [label]="'ca_dashboard.kpi_clients' | translate"
       [value]="data()?.clientsCount ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Collectes du jour"
+      [label]="'ca_dashboard.kpi_collectes' | translate"
       [value]="data()?.collectesJour ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="PAR 30 jours"
+      [label]="'ca_dashboard.kpi_par30' | translate"
       [value]="data()?.par30 ?? 0"
       [loading]="loading()"
       [isPercent]="true"
     />
   </div>
 
-  <div class="card">
-    <h4 style="margin-bottom: 16px">Dossiers en attente de validation</h4>
+  <!-- KPIs ligne 2 -->
+  <div class="kpi-row" style="margin-bottom: 24px">
+    <div class="kpi-mini">
+      <span class="material-icons-round">pending_actions</span>
+      <div>
+        <div class="kpi-mini-value">{{ loading() ? '—' : (data()?.dossiersEnAttente ?? 0) }}</div>
+        <div class="kpi-mini-label">{{ 'ca_dashboard.kpi_en_attente' | translate }}</div>
+      </div>
+    </div>
+    <div class="kpi-mini">
+      <span class="material-icons-round kpi-success">task_alt</span>
+      <div>
+        <div class="kpi-mini-value">{{ loading() ? '—' : (data()?.dossiersValidesMois ?? 0) }}</div>
+        <div class="kpi-mini-label">{{ 'ca_dashboard.kpi_approuves' | translate }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dossiers en attente -->
+  <div class="card" style="margin-bottom: 20px">
+    <div class="card-header">
+      <h4>{{ 'ca_dashboard.pending_title' | translate }}</h4>
+      <a routerLink="/chef-agence/dossiers" [queryParams]="{statut:'EN_COMITE'}"
+         class="text-sm" style="color: var(--color-primary)">
+        {{ 'ca_dashboard.see_all' | translate }}
+      </a>
+    </div>
 
     @if (loading()) {
       @for (_ of [1, 2, 3]; track $index) {
-        <div class="skeleton" style="height: 60px; margin-bottom: 8px"></div>
+        <div class="skeleton" style="height: 56px; margin-bottom: 8px; border-radius: 6px"></div>
       }
     } @else if (!data()?.dossiers?.length) {
       <div class="empty-state">
         <span class="material-icons-round">check_circle</span>
-        <p>Aucun dossier en attente</p>
+        <p>{{ 'ca_dashboard.pending_empty' | translate }}</p>
       </div>
     } @else {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Référence</th>
-            <th>Client</th>
-            <th>Montant</th>
-            <th>Agent</th>
-            <th>Dépôt</th>
-            <th>Actions</th>
+            <th>{{ 'ca_dashboard.col_client' | translate }}</th>
+            <th>{{ 'ca_dashboard.col_objet' | translate }}</th>
+            <th class="text-right">{{ 'ca_dashboard.col_montant' | translate }}</th>
+            <th>{{ 'ca_dashboard.col_duree' | translate }}</th>
+            <th>{{ 'ca_dashboard.col_agent' | translate }}</th>
+            <th>{{ 'ca_dashboard.col_soumis' | translate }}</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           @for (d of data()?.dossiers ?? []; track d.uid) {
             <tr>
-              <td class="font-semibold" style="color: var(--color-primary)">
-                {{ d.reference }}
-              </td>
-              <td>{{ d.clientNom }}</td>
-              <td>{{ d.montant | fcfa }}</td>
-              <td class="text-sm text-muted">{{ d.agentNom }}</td>
-              <td class="text-sm text-muted">
-                {{ d.dateDepot | date: "dd/MM/yyyy" }}
+              <td>
+                <div class="font-semibold">{{ d.clientNom || d.clientId }}</div>
               </td>
               <td>
-                <div style="display: flex; gap: 8px">
+                <div class="text-sm">{{ d.objetFinancement }}</div>
+                <div class="text-sm text-muted">{{ d.secteurActivite }}</div>
+              </td>
+              <td class="text-right font-semibold" style="color: var(--color-primary)">
+                {{ d.montantDemande | fcfa }}
+              </td>
+              <td class="text-sm text-muted">{{ d.dureeMois }} {{ 'ca_dashboard.col_duree_unit' | translate }}</td>
+              <td class="text-sm text-muted">{{ d.agentNom }}</td>
+              <td class="text-sm text-muted">{{ d.dateSoumission | date: "dd/MM/yyyy" }}</td>
+              <td>
+                <div style="display: flex; gap: 6px">
                   <button
                     class="btn btn-primary btn-sm"
                     [disabled]="validating() === d.uid"
                     (click)="valider(d.uid, 'VALIDE')"
                   >
-                    <span class="material-icons-round" style="font-size: 14px"
-                      >check</span
-                    >
-                    Valider
+                    <span class="material-icons-round" style="font-size: 14px">check</span>
+                    {{ 'ca_dashboard.btn_validate' | translate }}
                   </button>
                   <button
                     class="btn btn-ghost btn-sm danger"
                     [disabled]="validating() === d.uid"
                     (click)="valider(d.uid, 'REJETE')"
                   >
-                    <span class="material-icons-round" style="font-size: 14px"
-                      >close</span
-                    >
-                    Rejeter
+                    <span class="material-icons-round" style="font-size: 14px">close</span>
+                    {{ 'ca_dashboard.btn_reject' | translate }}
                   </button>
                 </div>
               </td>
@@ -95,5 +125,19 @@
         </tbody>
       </table>
     }
+  </div>
+
+  <!-- Raccourcis -->
+  <div class="quick-links">
+    <a routerLink="/chef-agence/dossiers" class="quick-link">
+      <span class="material-icons-round">folder_open</span>
+      <span>{{ 'ca_dashboard.nav_dossiers' | translate }}</span>
+      <span class="material-icons-round" style="margin-left: auto">chevron_right</span>
+    </a>
+    <a routerLink="/chef-agence/equipe" class="quick-link">
+      <span class="material-icons-round">groups</span>
+      <span>{{ 'ca_dashboard.nav_equipe' | translate }}</span>
+      <span class="material-icons-round" style="margin-left: auto">chevron_right</span>
+    </a>
   </div>
 </div>

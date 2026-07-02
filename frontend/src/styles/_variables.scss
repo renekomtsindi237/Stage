@@ -55,6 +55,41 @@
   --topbar-height: 64px;
 }
 
+// ── Mode sombre ───────────────────────────────────────────────────────────────
+
+[data-theme="dark"] {
+  // Primaires (sidebar reste navy mais légèrement ajusté)
+  --color-primary: #1e3a5f;
+  --color-primary-light: #2a4f7c;
+  --color-primary-dark: #0f1f35;
+  --color-accent: #f0a500;
+
+  // Sémantiques inchangées (contraste suffisant sur fonds sombres)
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #60a5fa;
+
+  // Surfaces
+  --color-surface: #1e2433;
+  --color-bg: #111827;
+  --color-bg-dark: #0d1117;
+
+  // Texte
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-text-light: #64748b;
+
+  // Bordures
+  --color-border: #2d3748;
+  --color-border-light: #1e2533;
+
+  // Shadows (plus prononcées sur fond sombre)
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
 // SCSS variables (pour les mixins)
 $primary: #1b2f4b;
 $primary-light: #243d62;

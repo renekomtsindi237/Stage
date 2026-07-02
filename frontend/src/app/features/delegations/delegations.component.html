@@ -5,11 +5,10 @@
       <div class="del-header__left">
         <h1 class="del-header__title">
           <span class="material-icons-round del-header__icon">swap_horiz</span>
-          Délégations & Réassignations
+          {{ 'del.title' | translate }}
         </h1>
         <p class="del-header__sub">
-          Gérez les réassignations de dossiers et les délégations d'autorité au
-          sein de votre IMF.
+          {{ 'del.subtitle' | translate }}
         </p>
       </div>
 
@@ -19,7 +18,7 @@
           (click)="openAutoriteModal()"
         >
           <span class="material-icons-round">person_add</span>
-          Déléguer une autorité
+          {{ 'del.delegate_btn' | translate }}
         </button>
       }
     </div>
@@ -32,7 +31,7 @@
         (click)="activeTab.set('delegations')"
       >
         <span class="material-icons-round">assignment_ind</span>
-        Délégations actives
+        {{ 'del.tab_delegations' | translate }}
         @if (totalDelegations() > 0) {
           <span class="del-tab__badge">{{ totalDelegations() }}</span>
         }
@@ -43,7 +42,7 @@
         (click)="activeTab.set('dossiers')"
       >
         <span class="material-icons-round">folder_open</span>
-        Dossiers crédit
+        {{ 'del.tab_dossiers' | translate }}
         @if (totalDossiers() > 0) {
           <span class="del-tab__badge">{{ totalDossiers() }}</span>
         }
@@ -55,15 +54,15 @@
       @if (loadingDelegations()) {
         <div class="del-loading">
           <span class="material-icons-round del-spin">refresh</span>
-          Chargement des délégations…
+          {{ 'del.loading_delegations' | translate }}
         </div>
       } @else if (delegations().length === 0) {
         <div class="del-empty">
           <span class="material-icons-round del-empty__icon">swap_horiz</span>
-          <p>Aucune délégation enregistrée pour cette IMF.</p>
+          <p>{{ 'del.empty_delegations' | translate }}</p>
           @if (isDirecteur()) {
             <button class="btn btn-primary" (click)="openAutoriteModal()">
-              Créer une délégation
+              {{ 'del.create_btn' | translate }}
             </button>
           }
         </div>
@@ -95,7 +94,7 @@
                   [class.del-status--active]="d.actif"
                   [class.del-status--inactive]="!d.actif"
                 >
-                  {{ d.actif ? "Active" : "Révoquée" }}
+                  {{ (d.actif ? 'del.status_active' : 'del.status_revoked') | translate }}
                 </span>
               </div>
 
@@ -104,7 +103,7 @@
                   <span class="material-icons-round del-card__row-icon"
                     >person</span
                   >
-                  <span class="del-card__row-label">Délégant</span>
+                  <span class="del-card__row-label">{{ 'del.col_delegant' | translate }}</span>
                   <span class="del-card__row-value"
                     >Agent #{{ d.delegantId }}</span
                   >
@@ -113,7 +112,7 @@
                   <span class="material-icons-round del-card__row-icon"
                     >person_outline</span
                   >
-                  <span class="del-card__row-label">Délégataire</span>
+                  <span class="del-card__row-label">{{ 'del.col_delegataire' | translate }}</span>
                   <span class="del-card__row-value"
                     >Agent #{{ d.delegataireId }}</span
                   >
@@ -123,7 +122,7 @@
                     <span class="material-icons-round del-card__row-icon"
                       >badge</span
                     >
-                    <span class="del-card__row-label">Rôle délégué</span>
+                    <span class="del-card__row-label">{{ 'del.col_role_delegue' | translate }}</span>
                     <span class="del-card__row-value">{{ d.roleDelegue }}</span>
                   </div>
                 }
@@ -132,7 +131,7 @@
                     <span class="material-icons-round del-card__row-icon"
                       >payments</span
                     >
-                    <span class="del-card__row-label">Plafond</span>
+                    <span class="del-card__row-label">{{ 'del.col_plafond' | translate }}</span>
                     <span
                       class="del-card__row-value del-card__row-value--amount"
                     >
@@ -160,10 +159,10 @@
                   <button
                     class="btn btn-danger-sm"
                     (click)="revoquer(d)"
-                    title="Révoquer"
+                    [title]="'del.revoke_btn' | translate"
                   >
                     <span class="material-icons-round">block</span>
-                    Révoquer
+                    {{ 'del.revoke_btn' | translate }}
                   </button>
                 }
               </div>
@@ -178,25 +177,25 @@
       @if (loadingDossiers()) {
         <div class="del-loading">
           <span class="material-icons-round del-spin">refresh</span>
-          Chargement des dossiers…
+          {{ 'del.loading_dossiers' | translate }}
         </div>
       } @else if (dossiers().length === 0) {
         <div class="del-empty">
           <span class="material-icons-round del-empty__icon">folder_open</span>
-          <p>Aucun dossier crédit trouvé pour cette IMF.</p>
+          <p>{{ 'del.empty_dossiers' | translate }}</p>
         </div>
       } @else {
         <div class="del-table-wrap">
           <table class="del-table">
             <thead>
               <tr>
-                <th>Client</th>
-                <th>Objet financement</th>
-                <th>Montant</th>
-                <th>Durée</th>
-                <th>Statut</th>
-                <th>Soumis le</th>
-                <th>Action</th>
+                <th>{{ 'del.col_client' | translate }}</th>
+                <th>{{ 'del.col_objet' | translate }}</th>
+                <th>{{ 'common.amount' | translate }}</th>
+                <th>{{ 'del.col_duree' | translate }}</th>
+                <th>{{ 'common.status' | translate }}</th>
+                <th>{{ 'del.col_soumis' | translate }}</th>
+                <th>{{ 'common.actions' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -221,7 +220,7 @@
                   <td class="del-table__montant">
                     {{ formatMontant(d.montantDemande) }}
                   </td>
-                  <td>{{ d.dureeMois }} mois</td>
+                  <td>{{ d.dureeMois }} {{ 'common.months' | translate }}</td>
                   <td>
                     <span class="badge" [class]="statutColor(d.statut)">{{
                       statutLabel(d.statut)
@@ -239,7 +238,7 @@
                         (click)="openReassignModal(d)"
                       >
                         <span class="material-icons-round">swap_horiz</span>
-                        Réassigner
+                        {{ 'del.reassign_btn' | translate }}
                       </button>
                     }
                   </td>
@@ -260,7 +259,7 @@
       <div class="modal__header">
         <h3 class="modal__title">
           <span class="material-icons-round">folder_shared</span>
-          Réassigner le dossier
+          {{ 'del.modal_reassign_title' | translate }}
         </h3>
         <button class="modal__close" (click)="closeReassignModal()">
           <span class="material-icons-round">close</span>
@@ -283,16 +282,16 @@
         class="modal__form"
       >
         <div class="form-group">
-          <label class="form-label">Nouvel agent responsable *</label>
+          <label class="form-label">{{ 'del.modal_agent_label' | translate }}</label>
           @if (loadingAgents()) {
-            <div class="form-loading">Chargement des agents…</div>
+            <div class="form-loading">{{ 'del.loading_agents' | translate }}</div>
           } @else if (agents().length === 0) {
             <div class="form-empty">
-              Aucun agent crédit disponible dans cette IMF.
+              {{ 'del.empty_agents' | translate }}
             </div>
           } @else {
             <select class="form-control" formControlName="nouvelAgentUid">
-              <option value="">— Sélectionner un agent —</option>
+              <option value="">{{ 'del.select_agent' | translate }}</option>
               @for (a of agents(); track a.uid) {
                 <option [value]="a.uid">{{ a.username }} ({{ a.role }})</option>
               }
@@ -301,12 +300,12 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Motif de réassignation</label>
+          <label class="form-label">{{ 'del.motif_reassign' | translate }}</label>
           <textarea
             class="form-control"
             formControlName="motif"
             rows="3"
-            placeholder="Ex : Agent en congé, surcharge de travail…"
+            [placeholder]="'del.motif_reassign_ph' | translate"
           ></textarea>
         </div>
 
@@ -316,7 +315,7 @@
             class="btn btn-ghost"
             (click)="closeReassignModal()"
           >
-            Annuler
+            {{ 'common.cancel' | translate }}
           </button>
           <button
             type="submit"
@@ -326,7 +325,7 @@
             @if (submitting()) {
               <span class="material-icons-round del-spin">refresh</span>
             }
-            Confirmer la réassignation
+            {{ 'del.confirm_reassign' | translate }}
           </button>
         </div>
       </form>
@@ -341,7 +340,7 @@
       <div class="modal__header">
         <h3 class="modal__title">
           <span class="material-icons-round">supervisor_account</span>
-          Déléguer une autorité
+          {{ 'del.modal_autorite_title' | translate }}
         </h3>
         <button class="modal__close" (click)="closeAutoriteModal()">
           <span class="material-icons-round">close</span>
@@ -354,14 +353,14 @@
         class="modal__form"
       >
         <div class="form-group">
-          <label class="form-label">Délégataire (utilisateur) *</label>
+          <label class="form-label">{{ 'del.delegataire_label' | translate }}</label>
           @if (loadingAgents()) {
-            <div class="form-loading">Chargement des utilisateurs…</div>
+            <div class="form-loading">{{ 'del.loading_users' | translate }}</div>
           } @else if (agents().length === 0) {
-            <div class="form-empty">Aucun utilisateur trouvé.</div>
+            <div class="form-empty">{{ 'del.empty_users' | translate }}</div>
           } @else {
             <select class="form-control" formControlName="delegataireUid">
-              <option value="">— Sélectionner un utilisateur —</option>
+              <option value="">{{ 'del.select_user' | translate }}</option>
               @for (a of agents(); track a.uid) {
                 <option [value]="a.uid">{{ a.username }} — {{ a.role }}</option>
               }
@@ -370,7 +369,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Rôle délégué</label>
+          <label class="form-label">{{ 'del.role_label' | translate }}</label>
           <select class="form-control" formControlName="roleDelegue">
             @for (r of rolesAutorites; track r) {
               <option [value]="r">{{ r }}</option>
@@ -380,28 +379,28 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Plafond FCFA (optionnel)</label>
+            <label class="form-label">{{ 'del.plafond_label' | translate }}</label>
             <input
               type="number"
               class="form-control"
               formControlName="montantSeuil"
-              placeholder="Ex : 2 500 000"
+              [placeholder]="'del.plafond_ph' | translate"
               min="0"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Date de fin (optionnel)</label>
+            <label class="form-label">{{ 'del.end_date_label' | translate }}</label>
             <input type="date" class="form-control" formControlName="dateFin" />
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Motif *</label>
+          <label class="form-label">{{ 'del.motif_required' | translate }}</label>
           <textarea
             class="form-control"
             formControlName="motif"
             rows="3"
-            placeholder="Motif de la délégation d'autorité…"
+            [placeholder]="'del.motif_autorite_ph' | translate"
           ></textarea>
         </div>
 
@@ -411,7 +410,7 @@
             class="btn btn-ghost"
             (click)="closeAutoriteModal()"
           >
-            Annuler
+            {{ 'common.cancel' | translate }}
           </button>
           <button
             type="submit"
@@ -421,7 +420,7 @@
             @if (submitting()) {
               <span class="material-icons-round del-spin">refresh</span>
             }
-            Créer la délégation
+            {{ 'del.create_delegation' | translate }}
           </button>
         </div>
       </form>

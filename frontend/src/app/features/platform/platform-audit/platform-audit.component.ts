@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { AuditEntry, PagedResult } from "../../../core/models/platform.model";
 
@@ -14,7 +15,7 @@ import { AuditEntry, PagedResult } from "../../../core/models/platform.model";
   selector: "app-platform-audit",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./platform-audit.component.html",
   styleUrls: ["./platform-audit.component.scss"],
 })

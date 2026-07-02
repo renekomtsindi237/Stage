@@ -1,182 +1,90 @@
 @startuml SEQ_UC03_recouvrement_relances
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 2
-skinparam sequenceGroupBackgroundColor #F5F5F5
-skinparam sequenceGroupBorderColor #9E9E9E
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceBoxBorderColor #4A6CF7
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ_UC03 — Recouvrement et Relances\nDétection automatique → Alertes multi-canaux → Gestion web/mobile\n<size:11><color:#555>Architecture conteneurisée Docker Compose — Sources CBS + Mobile Money</color></size>
+title SEQ_UC03 - Recouvrement et Relances\nDetection auto -> Alertes multi-canaux -> Gestion Angular + Flutter
 
-' ===== ACTEURS =====
-actor "Responsable\nRecouvrement\n(Web Angular)" as RR
-actor "Directeur\n(Mobile Flutter)" as DG
-actor "Agent Terrain\n(Mobile Flutter)" as AT
+actor "Directeur\n(web Angular)" as DIR
+actor "Agent Terrain\n(Flutter)" as AT
 
-' ===== SOURCES (alimentent le PAR) =====
-boundary "CBS — Prêts & Échéances\n[Source primaire retards]" as CBS_SRC
-boundary "MTN / Orange\n[Transactions règlements]" as MOBILE_SRC
-
-' ===== CONTENEUR : airflow =====
-box "🐳 airflow-scheduler" #EDE7F6
-  participant "Airflow\ndag_alertes\n[cron: 0 8 * * *]" as AS_ALERT
+box "airflow-scheduler"
+  participant "dag_alertes_impayes\n(cron: 0 8 * * *)" as DAG_ALERT
 end box
 
-' ===== CONTENEUR : python alertes =====
-box "🐳 python-scripts (alertes)" #E8EAF6
-  participant "AlertManager\n[alert_mgr.py]" as ALERTM
-  participant "PARCalculator\n[par_calc.py]" as PARC
+box "postgres:15 (app + dw)"
+  database "app.creances\napp.alertes_impayes" as PG_APP
+  database "dw.mart_kpi_recouvrement" as PG_DW
 end box
 
-' ===== CONTENEUR : postgres-pipeline =====
-box "🐳 postgres-pipeline (:5432)" #E8F5E9
-  database "dw\nfact_par_quotidien" as DW
-  database "staging\nalertes_impayes\nprets + clients" as STG
+box "springboot-api :8080"
+  participant "SseController\nAlertesController" as SPRING
 end box
 
-' ===== CONTENEUR : springboot =====
-box "🐳 springboot-api (:8080 interne)" #E3F2FD
-  participant "AlerteController\n[GET/PUT /api/alertes]" as CTRL_ALE
-  participant "AlerteService\n[@Service]" as SVC_ALE
-  participant "NotificationService\n[FCM + SMTP]" as NOTIF
-  participant "AlerteRepository\n[@Repository]" as REPO_ALE
-  participant "Firebase Admin SDK\n[Java]" as FB_SDK
-end box
+participant "SMTP" as SMTP
+participant "Firebase FCM" as FCM
 
-' ===== CONTENEUR : nginx =====
-box "🐳 nginx (:80/:443)" #FFF9C4
-  participant "Nginx\n[Proxy + Angular]" as NGINX
-end box
+== Detection et creation des alertes ==
 
-' ===== SERVICES EXTERNES =====
-boundary "Firebase FCM\n[Google Cloud\nPush notifications]" as FCM
-boundary "Serveur SMTP\n[Email alertes]" as SMTP
+DAG_ALERT -> PG_DW : SELECT agence_id, taux_par30, taux_par90\nWHERE date_snapshot = CURRENT_DATE
+PG_DW --> DAG_ALERT : KPIs jour
 
-' =================================================
-' ÉTAPE 1 — ALIMENTATION DES DONNÉES (pipeline)
-' =================================================
-== 🔄 ÉTAPE 1 — Sources alimentent le calcul de retard ==
+DAG_ALERT -> PG_APP : SELECT creances WHERE\njours_retard > 30\nAND statut IN (EN_RETARD, EN_RECOUVREMENT)
+PG_APP --> DAG_ALERT : [{uid, clientId, joursRetard, montant}]
 
-CBS_SRC -> STG : Prêts + échéances importés\n(via dag_ingest_cbs à 06h20)\nVia conteneur python-scripts
-MOBILE_SRC -> STG : Remboursements MTN/Orange\nimportés (via dag_ingest_mtn/orange à 06h00)\nVia conteneur python-scripts
-note right STG : Les remboursements reçus\nde MTN et Orange réduisent\nle capital restant dû\n→ calcul de retard CBS + Mobile Money
+loop Pour chaque creance en retard
 
-' =================================================
-' ÉTAPE 2 — DÉTECTION AUTOMATIQUE (08h00)
-' =================================================
-== 🔄 ÉTAPE 2 — Détection automatique des impayés (08h00) | airflow → python → postgres ==
+  DAG_ALERT -> PG_APP : SELECT COUNT(*) FROM alertes_impayes\nWHERE creance_id=? AND statut_alerte=ACTIVE
+  PG_APP --> DAG_ALERT : 0 (premiere detection)
 
-AS_ALERT -> ALERTM : trigger Task: detect_impayes\n(dépend du succès de dag_transform_dw)
+  DAG_ALERT -> PG_APP : INSERT alertes_impayes\n{uid, creanceId, joursRetard, montant,\nstatutAlerte=ACTIVE, typeAlerte=?}
+  DAG_ALERT -> SPRING : POST /internal/notify-alerte {alerteId}
 
-ALERTM -> PARC : get_prets_en_retard(threshold=30)
+  SPRING -> PG_APP : SELECT users WHERE\nrole = DIRECTEUR AND actif = TRUE
 
-PARC -> DW : SELECT fp.zone_id, fp.produit_id,\nfp.nb_prets_en_retard, fp.taux_par30\nFROM dw.fact_par_quotidien\nWHERE date_id = 20260401\nAND nb_prets_en_retard > 0
-DW --> PARC : Zones + produits avec retard PAR30
-
-PARC -> STG : SELECT p.id_pret, c.nom, c.telephone,\na.id_agent, z.id_zone,\np.montant_octroye - COALESCE(SUM(r.montant_paye),0)\nAS capital_restant_du,\nCURRENT_DATE - MAX(e.date_echeance) AS jours_retard\nFROM staging.prets p\nJOIN staging.clients c ON p.id_client = c.id_client\nJOIN staging.agents a ON p.id_agent = a.id_agent\nJOIN staging.zones z ON c.id_zone = z.id_zone\nJOIN staging.echeances e ON p.id_pret = e.id_pret\nLEFT JOIN staging.remboursements r ON e.id_echeance = r.id_echeance\nWHERE p.statut IN ('ACTIF','EN_RETARD')\nGROUP BY p.id_pret, c.nom, c.telephone, a.id_agent, z.id_zone\nHAVING MAX(CURRENT_DATE - e.date_echeance) > 30\nAND SUM(e.montant_du) - COALESCE(SUM(r.montant_paye),0) > 0\nORDER BY jours_retard DESC
-
-STG --> PARC : 104 prêts en retard > 30 jours
-
-loop <b>Pour chaque prêt en retard</b>
-
-  ALERTM -> STG : SELECT id FROM staging.alertes_impayes\nWHERE id_pret = ? AND statut_alerte = 'ACTIVE'\nAND DATE(date_generation) = CURRENT_DATE
-  STG --> ALERTM : alerte existante ? (oui/non)
-
-  alt <b>Nouvelle alerte (aucune alerte active aujourd'hui)</b>
-    ALERTM -> STG : INSERT INTO staging.alertes_impayes\n{id_pret, jours_retard, montant_en_retard,\nstatut_alerte='ACTIVE', date_generation=TODAY,\nfcm_sent=FALSE, email_sent=FALSE}
-    STG --> ALERTM : id_alerte = 101
-
-    ALERTM -> ALERTM : Appel Spring Boot\n(endpoint interne protégé par IP whitelist)
-    ALERTM -> NOTIF : POST /internal/notify-alerte\n{alerte_id:101, zone_id:3,\n pret_id:42, jours_retard:45,\n montant:125_000}
-
-    NOTIF -> REPO_ALE : findUsersForNotification(zoneId=3,\nroles=['RESPONSABLE_RECOUVREMENT','DIRECTEUR'])
-    REPO_ALE -> STG : SELECT u.fcm_token, u.email\nFROM staging.users u\nWHERE u.id_zone = 3\nAND u.role IN ('RESPONSABLE_RECOUVREMENT','DIRECTEUR')\nAND u.actif = TRUE
-    STG --> REPO_ALE : [{RR: fcm_token_RR, email_RR},\n{DG: fcm_token_DG}]
-
-    fork
-      NOTIF -> FB_SDK : FirebaseMessaging.send(\n  Message.builder()\n    .setToken(fcm_token_RR)\n    .setTitle("🚨 ALERTE IMPAYÉ")\n    .setBody("Prêt #42 — KAMGA Jean\n45 jours de retard — 125 000 XAF")\n    .putData("type","ALERTE_IMPAYE")\n    .putData("pret_id","42")\n    .putData("alerte_id","101")\n  .build()\n)
-      FB_SDK -> FCM : HTTPS POST\nhttps://fcm.googleapis.com/v1/messages:send\n{Authorization: Bearer <service_account>}
-      FCM --> RR : 📱 Push notification Flutter
-      FCM --> DG : 📱 Push notification Flutter
-
-    fork again
-      NOTIF -> SMTP : sendMail(\n  to: [rr@imf.cm],\n  subject: "ALERTE IMPAYÉ — Prêt #42",\n  body: "Client: KAMGA Jean\nRetard: 45 jours\nMontant dû: 125 000 XAF\nZone: Douala Nord"\n)
-      SMTP --> RR : 📧 Email reçu
-
-    end fork
-
-    NOTIF -> STG : UPDATE staging.alertes_impayes\nSET fcm_sent=TRUE, email_sent=TRUE\nWHERE id_alerte = 101
-
-  else <b>Alerte déjà existante — mise à jour jours</b>
-    ALERTM -> STG : UPDATE staging.alertes_impayes\nSET jours_retard = jours_retard + 1\nWHERE id_pret = ? AND statut = 'ACTIVE'
-  end
+  fork
+    SPRING -> SPRING : SseEmitter.send(event)\n/api/v1/sse/stream
+    SPRING --> DIR : Notification SSE\n(Angular NotifPanel)
+  fork again
+    SPRING -> SMTP : sendMail()\nAlerte impayee client {nom}
+    SMTP --> DIR : Email recu
+  fork again
+    SPRING -> FCM : FirebaseMessaging.send()\nMessage push FCM
+    FCM --> AT : Push notification mobile
+    FCM --> DIR : Push notification mobile
+  end fork
 
 end
 
-ALERTM -> STG : UPDATE staging.alertes_impayes\nSET statut_alerte = 'CLÔTUREE',\ndate_cloture = CURRENT_DATE\nWHERE id_pret IN (\n  SELECT id_pret FROM staging.prets\n  WHERE statut = 'SOLDE'\n)\nAND statut_alerte = 'ACTIVE'
+== Consultation et gestion des alertes ==
 
-ALERTM --> AS_ALERT : {nouvelles:12, maj:92, cloturees:5}
-AS_ALERT -> AS_ALERT : Task dag_alertes → SUCCESS ✓
+DIR -> SPRING : GET /api/v1/alertes?statut=ACTIVE\n[Cookie: imf_access]
+SPRING -> PG_APP : SELECT alertes_impayes\nWHERE statut_alerte = ACTIVE\nORDER BY jours_retard DESC
+PG_APP --> SPRING : [{alertes}]
+SPRING --> DIR : 200 OK [AlerteResponse]
 
-' =================================================
-' ÉTAPE 3 — GESTION WEB (Angular — RR)
-' =================================================
-== 📊 ÉTAPE 3 — Gestion des alertes (Angular — RR) | Nginx → Spring Boot ==
+DIR -> SPRING : PUT /api/v1/alertes/{uid}/statut\n{statut: "CLOTUREE"}\n[Cookie: imf_access]
+SPRING -> PG_APP : UPDATE alertes_impayes\nSET statut_alerte = CLOTUREE\nSET date_cloture = NOW()
+PG_APP --> SPRING : OK
+SPRING --> DIR : 200 OK {statut: "CLOTUREE"}
 
-RR -> NGINX : HTTPS GET /api/alertes?statut=ACTIVE\nAuthorization: Bearer <JWT_RR>
-NGINX -> CTRL_ALE : Proxy → springboot:8080
-CTRL_ALE -> CTRL_ALE : @PreAuthorize:\nRESPONSABLE_RECOUVREMENT ✓
-CTRL_ALE -> SVC_ALE : getActiveAlertes()
-SVC_ALE -> REPO_ALE : findByStatutAlerte('ACTIVE')
-REPO_ALE -> STG : SELECT ai.id_alerte, ai.id_pret,\nc.nom, c.telephone, ai.jours_retard,\nai.montant_en_retard, ai.date_generation,\nz.nom_zone, a.nom AS agent\nFROM staging.alertes_impayes ai\nJOIN staging.prets p ON ai.id_pret = p.id_pret\nJOIN staging.clients c ON p.id_client = c.id_client\nJOIN staging.zones z ON c.id_zone = z.id_zone\nJOIN staging.agents a ON p.id_agent = a.id_agent\nWHERE ai.statut_alerte = 'ACTIVE'\nORDER BY ai.jours_retard DESC
-STG --> REPO_ALE : 104 alertes actives
-REPO_ALE --> SVC_ALE : List<AlerteImpaye>
-SVC_ALE --> CTRL_ALE : List<AlerteResponse>
-CTRL_ALE --> NGINX : HTTP 200 JSON
-NGINX --> RR : Liste alertes triée (plus grave d'abord)
+== Escalade ==
 
-RR -> NGINX : HTTPS PUT /api/alertes/101\n{statut: "CLOTUREE", motif: "Paiement reçu"}\nAuthorization: Bearer <JWT_RR>
-NGINX -> CTRL_ALE : Proxy PUT /api/alertes/101
-CTRL_ALE -> SVC_ALE : cloturerAlerte(id=101)
-SVC_ALE -> REPO_ALE : findById(101) → update(statut=CLOTUREE)
-REPO_ALE -> STG : UPDATE staging.alertes_impayes\nSET statut_alerte='CLÔTUREE',\ndate_cloture=CURRENT_DATE\nWHERE id_alerte = 101
-STG --> REPO_ALE : OK
-REPO_ALE --> SVC_ALE : AlerteImpaye (mise à jour)
-SVC_ALE --> CTRL_ALE : AlerteResponse{statut:"CLÔTUREE"}
-CTRL_ALE --> NGINX : HTTP 200 OK
-NGINX --> RR : ✓ Alerte clôturée
-
-' =================================================
-' ÉTAPE 4 — GESTION MOBILE (Flutter — AT)
-' =================================================
-== 📱 ÉTAPE 4 — Agent consulte son alerte sur mobile ==
-
-AT -> NGINX : HTTPS GET /api/alertes?agentId=7&statut=ACTIVE\nAuthorization: Bearer <JWT_AGENT>
-NGINX -> CTRL_ALE : Proxy
-CTRL_ALE -> CTRL_ALE : @PreAuthorize: AGENT\nExtrait agentId du JWT
-CTRL_ALE -> SVC_ALE : getAlertesAgent(agentId=7)
-SVC_ALE -> REPO_ALE : findByAgentId(7)
-REPO_ALE -> STG : SELECT * FROM staging.alertes_impayes ai\nJOIN prets p ON ai.id_pret = p.id_pret\nWHERE p.id_agent = 7\nAND ai.statut_alerte = 'ACTIVE'
-STG --> REPO_ALE : Alertes de l'agent
-REPO_ALE --> CTRL_ALE : List<AlerteResponse>
-CTRL_ALE --> NGINX : HTTP 200
-NGINX --> AT : Liste alertes de sa zone
-
-AT -> NGINX : HTTPS GET /api/prets/42\n(détail prêt pour préparer la visite)\nAuthorization: Bearer <JWT_AGENT>
-NGINX -> CTRL_ALE : Proxy GET /api/prets/42
-CTRL_ALE -> REPO_ALE : findPretById(42) + getHistoriqueEcheances(42)
-REPO_ALE -> STG : SELECT p.*, c.*, a.*,\ne.date_echeance, e.montant_du,\nCOALESCE(r.montant_paye,0)\nFROM staging.prets p\nJOIN staging.clients c ON ...\nJOIN staging.echeances e ON ...\nLEFT JOIN staging.remboursements r ON ...\nWHERE p.id_pret = 42
-STG --> REPO_ALE : Prêt + échéances + remboursements
-REPO_ALE --> NGINX : PretDetailResponse
-NGINX --> AT : Détail complet du prêt\n(historique + montant restant dû)
+DIR -> SPRING : PUT /api/v1/alertes/{uid}/statut\n{statut: "ESCALADEE"}\n[Cookie: imf_access]
+SPRING -> PG_APP : UPDATE alertes SET statut_alerte = ESCALADEE
+SPRING -> SPRING : SseEmitter.send(prioritaire)\nau Directeur
+SPRING --> DIR : 200 OK {statut: "ESCALADEE"}
 
 @enduml

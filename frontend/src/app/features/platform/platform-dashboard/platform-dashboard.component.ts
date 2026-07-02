@@ -8,6 +8,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { forkJoin } from "rxjs";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import {
@@ -19,7 +20,7 @@ import {
   selector: "app-platform-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent],
+  imports: [CommonModule, RouterLink, StatCardComponent, TranslatePipe],
   templateUrl: "./platform-dashboard.component.html",
   styleUrls: ["./platform-dashboard.component.scss"],
 })

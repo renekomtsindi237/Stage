@@ -1,86 +1,75 @@
 @startuml CLS01_pipeline_python
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam classBackgroundColor #EEF4FF
-skinparam classBorderColor #4A6CF7
-skinparam classArrowColor #555555
-skinparam classArrowThickness 1.5
-skinparam stereotypeBackgroundColor #FFF3E0
-skinparam Padding 8
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam class {
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
+  HeaderFontColor #333333
+}
+skinparam enum {
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
+}
 
-title CLS01 — Diagramme de Classes — Pipeline Python\nCouche Data Engineering
+title CLS01 - Diagramme de Classes - Pipeline Python\nCouche Data Engineering (Airflow 2.8.4 + dbt Core 1.8)
 
-' ===== CLASSES SOURCES =====
 abstract class DataSource {
   - source_name : str
-  - source_path : str
-  - file_format : str
   - last_processed : datetime
-  + read_data() : DataFrame
+  + fetch_data() : DataFrame
   + validate_schema() : bool
-  + get_unprocessed_files() : list[str]
-  + mark_as_processed(file: str) : void
 }
 
-class CSVDataSource {
-  - delimiter : str = ","
-  - encoding : str = "utf-8"
-  + read_data() : DataFrame
-  + detect_encoding() : str
-  + normalize_line_endings() : void
-}
-
-class ExcelDataSource {
-  - sheet_name : str
-  - header_row : int = 0
-  + read_data() : DataFrame
-  + list_sheets() : list[str]
-}
-
-class MTNDataSource {
-  - column_mapping : dict
+class MTNApiSource {
+  - api_key : str
+  - base_url : str
   - operateur : str = "MTN"
-  + read_data() : DataFrame
+  + fetch_data() : DataFrame
   + normalize_columns() : DataFrame
-  + extract_reference() : str
 }
 
-class OrangeDataSource {
-  - column_mapping : dict
+class OrangeApiSource {
+  - api_key : str
+  - base_url : str
   - operateur : str = "ORANGE"
-  + read_data() : DataFrame
+  + fetch_data() : DataFrame
   + normalize_columns() : DataFrame
 }
 
 class CBSDataSource {
+  - host : str
   - encoding : str = "latin-1"
   - date_format : str = "%d/%m/%Y"
-  + read_data() : DataFrame
+  + fetch_data() : DataFrame
   + parse_dates() : DataFrame
-  + normalize_pret_ids() : DataFrame
 }
 
-class AgentDataSource {
-  - agent_id : int
-  + read_data() : DataFrame
-  + validate_agent_id() : bool
+class MobileDataSource {
+  - agent_id : str
+  - endpoint : str
+  + fetch_data() : DataFrame
 }
 
-' ===== CLASSES TRANSFORMATION =====
 abstract class Transformer {
   - source_schema : str
   - target_schema : str
   - db_connection : Engine
   + run() : TransformResult
   + validate() : bool
-  + rollback() : void
 }
 
 class Deduplicator {
-  - hash_columns : list[str]
+  - uuid_columns : list[str]
   - table_name : str
-  + compute_hash(row: dict) : str
-  + deduplicate_intra_file(df: DataFrame) : DataFrame
+  + compute_uuid(row: dict) : str
+  + deduplicate_intra_batch(df: DataFrame) : DataFrame
   + get_stats() : DedupStats
 }
 
@@ -88,82 +77,39 @@ class SchemaValidator {
   - expected_columns : list[str]
   - type_mapping : dict
   + validate(df: DataFrame) : ValidationResult
-  + get_errors() : list[str]
   + coerce_types(df: DataFrame) : DataFrame
 }
 
 class DbtTransformer {
   - dbt_project_path : str
-  - profiles_dir : str
   - models_to_run : list[str]
   + run() : DbtResult
   + run_tests() : DbtTestResult
-  + generate_docs() : void
-  + get_model_results() : dict
 }
 
-' ===== CLASSES CALCUL KPIs =====
-class PARCalculator {
-  - reference_date : date
-  - par30_threshold : int = 30
-  - par90_threshold : int = 90
-  - db_connection : Engine
-  + calculate_par30(zone_id: int) : float
-  + calculate_par90(zone_id: int) : float
-  + get_prets_en_retard(threshold: int) : DataFrame
-  + compute_encours_total() : float
-}
-
-class ScoreRisqueCalculator {
-  - regles : list[RegleScoring]
-  + calculer_score(client_id: int) : int
-  + categoriser(score: int) : str
-  + get_facteurs_risque(client_id: int) : dict
-}
-
-class RegleScoring {
-  - code_regle : str
-  - description : str
-  - poids : int
-  + evaluer(historique: dict) : int
-}
-
-' ===== CLASSES ALERTES =====
 class AlertManager {
-  - smtp_host : str
-  - smtp_port : int
-  - smtp_user : str
   - spring_api_url : str
   - seuil_jours : int = 30
-  - retry_count : int = 0
   - max_retries : int = 3
-  + detect_impayes() : list[Alerte]
-  + generate_alert(pret_id: int, jours: int) : Alerte
-  + send_email_alert(alerte: Alerte) : bool
-  + trigger_push_notification(alerte: Alerte) : bool
+  + detect_impayes() : list[AlerteDto]
+  + generate_alert(clientId: str, joursRetard: int) : AlerteDto
+  + trigger_notifications(alerte: AlerteDto) : bool
   + close_resolved_alerts() : int
-  + retry(alerte: Alerte) : bool
 }
 
-class Alerte {
-  - alerte_id : int
-  - pret_id : int
-  - client_nom : str
-  - jours_retard : int
-  - montant_en_retard : float
+class AlerteDto {
+  - uid : str
+  - clientId : str
+  - joursRetard : int
+  - montantEnRetard : float
   - statut : str
-  - date_generation : date
-  + to_email_body() : str
   + to_api_payload() : dict
-  + close() : void
 }
 
-' ===== CLASSES ORCHESTRATION =====
 class DAGRunner {
   - dag_id : str
   - schedule_cron : str
   - tasks : list[Task]
-  - airflow_conn : AirflowHook
   + trigger(execution_date: date) : RunResult
   + get_status() : str
   + backfill(start_date: date, end_date: date) : void
@@ -172,48 +118,23 @@ class DAGRunner {
 
 class PipelineLogger {
   - db_connection : Engine
-  - log_table : str = "raw.pipeline_log"
-  + log_ingestion(source: str, inserted: int, dupes: int, errors: int) : void
-  + log_transform(model: str, rows: int, duration: float) : void
+  + log_ingestion(source: str, inserted: int, dupes: int) : void
+  + log_transform(model: str, rows: int) : void
   + log_error(source: str, error: Exception) : void
-  + get_last_run(dag_id: str) : RunLog
 }
 
-class DataSimulator {
-  - nb_clients : int
-  - nb_agents : int
-  - nb_prets : int
-  - default_rate : float = 0.08
-  - faker : Faker
-  + generate_clients() : DataFrame
-  + generate_prets() : DataFrame
-  + generate_transactions_mtn() : DataFrame
-  + generate_transactions_orange() : DataFrame
-  + generate_remboursements(with_defaults: bool) : DataFrame
-  + export_to_csv(output_dir: str) : void
-}
-
-' ===== HÉRITAGES =====
-DataSource <|-- CSVDataSource
-DataSource <|-- ExcelDataSource
-CSVDataSource <|-- MTNDataSource
-CSVDataSource <|-- OrangeDataSource
-CSVDataSource <|-- CBSDataSource
-ExcelDataSource <|-- AgentDataSource
+DataSource <|-- MTNApiSource
+DataSource <|-- OrangeApiSource
+DataSource <|-- CBSDataSource
+DataSource <|-- MobileDataSource
 Transformer <|-- Deduplicator
 Transformer <|-- DbtTransformer
 
-' ===== ASSOCIATIONS =====
-AlertManager --> Alerte : "crée"
-AlertManager --> PARCalculator : "utilise"
-DAGRunner --> DataSource : "orchestre 1..*"
-DAGRunner --> Transformer : "orchestre 1..*"
-DAGRunner --> AlertManager : "orchestre"
-DAGRunner --> PipelineLogger : "utilise"
-ScoreRisqueCalculator --> RegleScoring : "applique 1..*"
-ScoreRisqueCalculator --> AlertManager : "score élevé →\nalerte prioritaire"
-Deduplicator --> SchemaValidator : "utilise"
-MTNDataSource --> Deduplicator : "passe à"
-OrangeDataSource --> Deduplicator : "passe à"
+AlertManager --> AlerteDto : cree
+DAGRunner --> DataSource : orchestre 1..*
+DAGRunner --> Transformer : orchestre 1..*
+DAGRunner --> AlertManager : orchestre
+DAGRunner --> PipelineLogger : utilise
+Deduplicator --> SchemaValidator : utilise
 
 @enduml

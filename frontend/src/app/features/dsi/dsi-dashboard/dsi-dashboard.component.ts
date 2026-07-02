@@ -8,6 +8,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
+import { TranslatePipe } from "@ngx-translate/core";
 
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
@@ -28,7 +29,7 @@ const RING_CIRC = 2 * Math.PI * RING_RADIUS;
   selector: "app-dsi-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent],
+  imports: [CommonModule, RouterLink, StatCardComponent, TranslatePipe],
   templateUrl: "./dsi-dashboard.component.html",
   styleUrls: ["./dsi-dashboard.component.scss"],
 })

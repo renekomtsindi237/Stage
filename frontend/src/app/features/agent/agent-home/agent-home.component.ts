@@ -12,6 +12,7 @@ import { AgentDashboard } from "../../../core/models/client.model";
 import { AuthService } from "../../../core/auth/auth.service";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-agent-home",
@@ -23,6 +24,7 @@ import { AlertBadgeComponent } from "../../../shared/components/alert-badge/aler
     RouterLinkActive,
     FcfaPipe,
     AlertBadgeComponent,
+    TranslatePipe,
   ],
   templateUrl: "./agent-home.component.html",
   styleUrls: ["./agent-home.component.scss"],

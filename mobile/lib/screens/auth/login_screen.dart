@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/auth_provider.dart';
@@ -60,9 +61,10 @@ class _LoginScreenState extends State<LoginScreen>
     if (ok) {
       context.go('/otp');
     } else {
+      final l10n = AppL10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(auth.errorMessage ?? 'Erreur réseau'),
+          content: Text(auth.errorMessage ?? l10n.loginNetworkError),
           behavior: SnackBarBehavior.floating,
           backgroundColor: const Color(0xFFDC2626),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -74,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: _bg,
       body: FadeTransition(
@@ -98,14 +101,14 @@ class _LoginScreenState extends State<LoginScreen>
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: const Color(0xFFE5E7EB)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.arrow_back_rounded, size: 16, color: _navy),
-                              SizedBox(width: 6),
+                              const Icon(Icons.arrow_back_rounded, size: 16, color: _navy),
+                              const SizedBox(width: 6),
                               Text(
-                                'Accueil',
-                                style: TextStyle(
+                                l10n.loginBackHome,
+                                style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -119,13 +122,13 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 32),
                     // Logo
-                    _buildLogo(),
+                    _buildLogo(l10n),
                     const SizedBox(height: 40),
                     // Card
-                    _buildCard(),
+                    _buildCard(l10n),
                     const SizedBox(height: 28),
                     // Footer
-                    _buildFooter(),
+                    _buildFooter(l10n),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -137,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(AppL10n l10n) {
     return Column(
       children: [
         Container(
@@ -167,9 +170,9 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'IMF Cameroun',
-          style: TextStyle(
+        Text(
+          l10n.appImfCameroun,
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 13,
             fontWeight: FontWeight.w500,
@@ -181,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildCard() {
+  Widget _buildCard(AppL10n l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
@@ -200,9 +203,9 @@ class _LoginScreenState extends State<LoginScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Connexion',
-              style: TextStyle(
+            Text(
+              l10n.loginTitle,
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -210,9 +213,9 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Un code de vérification sera envoyé à votre adresse email',
-              style: TextStyle(
+            Text(
+              l10n.loginSubtitle,
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
                 color: _mutedColor,
@@ -220,9 +223,9 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
             const SizedBox(height: 28),
-            const Text(
-              'Adresse email professionnelle',
-              style: TextStyle(
+            Text(
+              l10n.loginEmailLabel,
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -241,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen>
                 color: _navy,
               ),
               decoration: InputDecoration(
-                hintText: 'votre@institution.cm ou exemple@gmail.com',
+                hintText: l10n.loginEmailHint,
                 hintStyle: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
@@ -272,9 +275,9 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Email requis';
+                if (v == null || v.trim().isEmpty) return l10n.loginEmailRequired;
                 final emailReg = RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$');
-                if (!emailReg.hasMatch(v.trim())) return 'Email invalide';
+                if (!emailReg.hasMatch(v.trim())) return l10n.loginEmailInvalid;
                 return null;
               },
             ),
@@ -303,9 +306,9 @@ class _LoginScreenState extends State<LoginScreen>
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Recevoir mon code',
-                        style: TextStyle(
+                    : Text(
+                        l10n.loginSubmitButton,
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -319,13 +322,13 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildFooter(AppL10n l10n) {
     return GestureDetector(
       onTap: () {},
-      child: const Text(
-        'Problème de connexion ? Contacter l\'administrateur',
+      child: Text(
+        l10n.loginFooterHelp,
         textAlign: TextAlign.center,
-        style: TextStyle(
+        style: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 13,
           color: _navy,

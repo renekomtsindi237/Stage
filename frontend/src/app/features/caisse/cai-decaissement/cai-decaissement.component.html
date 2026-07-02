@@ -1,8 +1,8 @@
 <div class="page-content">
   <div class="page-header">
-    <h2>Décaissement de crédit</h2>
+    <h2>{{ 'caisse.decaissement_title' | translate }}</h2>
     <p class="text-muted text-sm">
-      Verser les fonds pour un dossier de crédit validé
+      {{ 'caisse.decaissement_subtitle' | translate }}
     </p>
   </div>
 
@@ -12,26 +12,26 @@
       <div class="success-icon">
         <span class="material-icons-round">check_circle</span>
       </div>
-      <h3>Décaissement effectué !</h3>
-      <p class="text-muted">Les fonds ont été versés avec succès.</p>
+      <h3>{{ 'caisse.decaissement_done' | translate }}</h3>
+      <p class="text-muted">{{ 'caisse.decaissement_done_sub' | translate }}</p>
       <button
         class="btn btn-primary"
         style="margin-top: 24px"
         (click)="reset()"
       >
-        Nouveau décaissement
+        {{ 'caisse.nouveau_decaissement' | translate }}
       </button>
     </div>
   } @else {
     <div class="decaissement-shell" [formGroup]="form">
       <!-- Step 1: Search dossier -->
       <div class="card search-card">
-        <h3>1. Rechercher le dossier de crédit</h3>
+        <h3>{{ 'caisse.step1_title' | translate }}</h3>
         <div class="search-row">
           <input
             class="form-control"
             formControlName="reference"
-            placeholder="Référence ou N° de dossier"
+            [placeholder]="'caisse.reference_placeholder' | translate"
             (keydown.enter)="searchDossier()"
           />
           <button
@@ -61,7 +61,7 @@
               </p>
             </div>
             <span class="amount"
-              >{{ dossierFound()!.montant | number: "1.0-0" }} FCFA</span
+              >{{ dossierFound()!.montant | number: "1.0-0" }} {{ 'common.fcfa' | translate }}</span
             >
           </div>
         }
@@ -70,10 +70,10 @@
       <!-- Step 2: Canal + confirmation -->
       @if (dossierFound()) {
         <div class="card">
-          <h3>2. Modalités de versement</h3>
+          <h3>{{ 'caisse.step2_title' | translate }}</h3>
 
           <div class="form-group" style="margin-bottom: 16px">
-            <label>Canal de paiement *</label>
+            <label>{{ 'caisse.canal_label' | translate }}</label>
             <div class="canal-grid">
               @for (c of canaux; track c) {
                 <button
@@ -105,20 +105,20 @@
           </div>
 
           <div class="form-group" style="margin-bottom: 24px">
-            <label>Observations</label>
+            <label>{{ 'caisse.observations' | translate }}</label>
             <textarea
               class="form-control"
               formControlName="observations"
               rows="2"
-              placeholder="Optionnel..."
+              [placeholder]="'caisse.observations_placeholder' | translate"
             ></textarea>
           </div>
 
           <div class="confirm-row">
             <div>
-              <p class="text-sm text-muted">Montant à décaisser</p>
+              <p class="text-sm text-muted">{{ 'caisse.montant_a_decaisser' | translate }}</p>
               <p class="amount-large">
-                {{ dossierFound()!.montant | number: "1.0-0" }} FCFA
+                {{ dossierFound()!.montant | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
               </p>
             </div>
             <button
@@ -127,10 +127,9 @@
               (click)="submit()"
             >
               @if (submitting()) {
-                <span class="css-spinner-sm"></span> Traitement…
+                <span class="css-spinner-sm"></span> {{ 'common.loading' | translate }}
               } @else {
-                <span class="material-icons-round">send</span> Confirmer le
-                décaissement
+                <span class="material-icons-round">send</span> {{ 'caisse.confirmer_decaissement' | translate }}
               }
             </button>
           </div>

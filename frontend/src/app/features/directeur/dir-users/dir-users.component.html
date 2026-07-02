@@ -16,17 +16,15 @@
 
   <div class="page-header">
     <div>
-      <h2>Équipe de l'agence</h2>
+      <h2>{{ 'dir_users.title' | translate }}</h2>
       <p class="text-muted text-sm">
         {{ page()?.totalElements ?? 0 | number }} membres
       </p>
     </div>
     <div class="header-actions">
       <a [href]="templateAgentsUrl()" download class="btn btn-ghost btn-sm">
-        <span class="material-icons-round" style="font-size: 16px"
-          >download</span
-        >
-        Modèle agents
+        <span class="material-icons-round" style="font-size: 16px">download</span>
+        {{ 'dir_users.template_agents' | translate }}
       </a>
       <button
         class="btn btn-secondary btn-sm"
@@ -34,19 +32,15 @@
         [disabled]="importingType() !== null"
       >
         @if (importingType() === "agents") {
-          <span class="spinner-xs"></span> Import…
+          <span class="spinner-xs"></span> {{ 'dir_users.import_agents_loading' | translate }}
         } @else {
-          <span class="material-icons-round" style="font-size: 16px"
-            >upload_file</span
-          >
-          Agents Excel
+          <span class="material-icons-round" style="font-size: 16px">upload_file</span>
+          {{ 'dir_users.import_agents_btn' | translate }}
         }
       </button>
       <a [href]="templateUsersUrl()" download class="btn btn-ghost btn-sm">
-        <span class="material-icons-round" style="font-size: 16px"
-          >download</span
-        >
-        Modèle utilisateurs
+        <span class="material-icons-round" style="font-size: 16px">download</span>
+        {{ 'dir_users.template_users' | translate }}
       </a>
       <button
         class="btn btn-secondary btn-sm"
@@ -54,16 +48,14 @@
         [disabled]="importingType() !== null"
       >
         @if (importingType() === "utilisateurs") {
-          <span class="spinner-xs"></span> Import…
+          <span class="spinner-xs"></span> {{ 'dir_users.import_users_loading' | translate }}
         } @else {
-          <span class="material-icons-round" style="font-size: 16px"
-            >upload_file</span
-          >
-          Utilisateurs Excel
+          <span class="material-icons-round" style="font-size: 16px">upload_file</span>
+          {{ 'dir_users.import_users_btn' | translate }}
         }
       </button>
       <button class="btn btn-primary" (click)="showModal.set(true)">
-        <span class="material-icons-round">person_add</span> Ajouter
+        <span class="material-icons-round">person_add</span> {{ 'dir_users.add_btn' | translate }}
       </button>
     </div>
   </div>
@@ -73,9 +65,8 @@
       class="import-banner"
       [class.import-banner--error]="importResult()!.erreurs > 0"
     >
-      <strong>Import terminé</strong> — {{ importResult()!.importe }} créé(s),
-      {{ importResult()!.erreurs }} erreur(s) sur
-      {{ importResult()!.totalLignes }} ligne(s).
+      <strong>{{ 'dir_users.import_banner_title' | translate }}</strong> — {{ importResult()!.importe }} {{ 'dir_users.import_banner_created' | translate }},
+      {{ importResult()!.erreurs }} {{ 'dir_users.import_banner_errors' | translate }} {{ 'dir_users.import_banner_lines' | translate: { count: importResult()!.totalLignes } }}
       @if (importResult()!.lignesErreur.length > 0) {
         <ul class="import-errors">
           @for (e of importResult()!.lignesErreur; track $index) {
@@ -93,11 +84,11 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Nom</th>
-          <th>Email</th>
-          <th>Rôle</th>
-          <th>Statut</th>
-          <th>Actions</th>
+          <th>{{ 'dir_users.col_name' | translate }}</th>
+          <th>{{ 'dir_users.col_email' | translate }}</th>
+          <th>{{ 'dir_users.col_role' | translate }}</th>
+          <th>{{ 'dir_users.col_status' | translate }}</th>
+          <th>{{ 'dir_users.col_actions' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -132,7 +123,7 @@
                 <button
                   class="btn btn-ghost btn-sm"
                   (click)="toggle(u.uid, !u.actif)"
-                  [title]="u.actif ? 'Désactiver' : 'Réactiver'"
+                  [title]="u.actif ? ('dir_users.btn_disable' | translate) : ('dir_users.btn_reactivate' | translate)"
                 >
                   <span class="material-icons-round">{{
                     u.actif ? "block" : "check_circle"
@@ -153,9 +144,7 @@
         >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
-        >
+        <span class="text-sm">{{ 'dir_users.page_label' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span>
         <button
           class="btn btn-ghost btn-sm"
           [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
@@ -176,34 +165,34 @@
       [formGroup]="createForm"
     >
       <div class="modal-header">
-        <h3>Ajouter un membre</h3>
+        <h3>{{ 'dir_users.modal_title' | translate }}</h3>
         <button class="btn-icon" (click)="showModal.set(false)">
           <span class="material-icons-round">close</span>
         </button>
       </div>
       <div class="form-grid">
         <div class="form-group">
-          <label>Prénom *</label>
+          <label>{{ 'dir_users.modal_prenom' | translate }} *</label>
           <input
             class="form-control"
             formControlName="prenom"
-            placeholder="Jean"
+            [placeholder]="'dir_users.modal_prenom_placeholder' | translate"
           />
         </div>
         <div class="form-group">
-          <label>Nom *</label>
+          <label>{{ 'dir_users.modal_nom' | translate }} *</label>
           <input
             class="form-control"
             formControlName="nom"
-            placeholder="DUPONT"
+            [placeholder]="'dir_users.modal_nom_placeholder' | translate"
           />
         </div>
         <div class="form-group" style="grid-column: 1/-1">
-          <label>Email *</label>
+          <label>{{ 'dir_users.modal_email' | translate }} *</label>
           <input class="form-control" type="email" formControlName="email" />
         </div>
         <div class="form-group" style="grid-column: 1/-1">
-          <label>Rôle *</label>
+          <label>{{ 'dir_users.modal_role' | translate }} *</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
               <option [value]="r">{{ r }}</option>
@@ -213,7 +202,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">
-          Annuler
+          {{ 'dir_users.modal_cancel' | translate }}
         </button>
         <button
           class="btn btn-primary"
@@ -223,7 +212,7 @@
           @if (creating()) {
             <span class="css-spinner-sm"></span>
           } @else {
-            Ajouter
+            {{ 'dir_users.modal_submit' | translate }}
           }
         </button>
       </div>

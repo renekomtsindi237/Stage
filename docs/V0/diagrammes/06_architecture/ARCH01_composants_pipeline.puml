@@ -1,120 +1,99 @@
 @startuml ARCH01_composants_pipeline
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam componentBackgroundColor #EEF4FF
-skinparam componentBorderColor #4A6CF7
-skinparam componentArrowColor #555555
-skinparam componentArrowThickness 1.5
-skinparam databaseBackgroundColor #E8F5E9
-skinparam databaseBorderColor #2E7D32
-skinparam packageBackgroundColor #FAFAFA
-skinparam packageBorderColor #BDBDBD
-skinparam Padding 8
-
-title ARCH01 — Diagramme de Composants — Pipeline de Données\nCouche Data Engineering (Python · Airflow · dbt · PostgreSQL · Superset)
-
-package "Zone Dépôt Sources" #FFF9C4 {
-  [MTN_YYYYMMDD.csv] as MTN_FILE
-  [ORANGE_YYYYMMDD.csv] as OM_FILE
-  [CBS_export.csv] as CBS_FILE
-  [AGENT_collectes.xlsx] as AGENT_FILE
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam component {
+  BackgroundColor white
+  BorderColor #666666
+}
+skinparam package {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
+skinparam database {
+  BackgroundColor white
+  BorderColor #666666
 }
 
-package "Conteneur Docker — Pipeline" #E3F2FD {
+title ARCH01 - Pipeline de donnees MicroRecouv
 
-  package "Orchestration — Apache Airflow" #EDE7F6 {
-    [Airflow WebServer\n:8080] as AW
-    [Airflow Scheduler] as AS
-    [Airflow Worker\n(LocalExecutor)] as AWK
-  }
-
-  package "Ingestion — Python Scripts" #E8F5E9 {
-    [IngestMTN\n(mtn_source.py)] as IMTN
-    [IngestOrange\n(orange_source.py)] as IOM
-    [IngestCBS\n(cbs_source.py)] as ICBS
-    [IngestAgents\n(agent_source.py)] as IAGT
-    [Deduplicator\n(dedup.py)] as DEDUP
-    [SchemaValidator\n(validator.py)] as VALID
-  }
-
-  package "Transformation — dbt Core" #FCE4EC {
-    [staging models\n(stg_*.sql)] as STG_DBT
-    [intermediate models\n(int_*.sql)] as INT_DBT
-    [mart models\n(fact_*.sql, dim_*.sql)] as MART_DBT
-    [reporting models\n(v_kpi_*.sql)] as RPT_DBT
-    [dbt Tests\n(schema.yml)] as DBT_TEST
-  }
-
-  package "Calcul & Alertes" #FFF3E0 {
-    [PARCalculator\n(par_calc.py)] as PARC
-    [AlertManager\n(alert_mgr.py)] as ALERTM
-    [PipelineLogger\n(logger.py)] as LOG
-  }
-
-  package "Stockage — PostgreSQL :5432" #E8F5E9 {
-    database "Schéma raw\n(données brutes)" as RAW
-    database "Schéma staging\n(données nettoyées)" as STAGING
-    database "Schéma dw\n(entrepôt étoile)" as DW
-    database "Schéma reporting\n(vues matérialisées)" as RPT
-    database "Schéma airflow\n(métadonnées)" as META
-  }
-
-  package "Visualisation — Apache Superset :8088" #E3F2FD {
-    [Superset WebApp] as SUP
-    [Dashboard Collectes] as DASH1
-    [Dashboard Recouvrement] as DASH2
-    [Dashboard Exécutif] as DASH3
-  }
-
+package "Sources" {
+  [MTN MoMo API\n(toutes les 2h)] as MTN
+  [Orange Money API\n(toutes les 2h)] as OM
+  [CBS - Core Banking\n(quotidien 06h00)] as CBS
+  [App Mobile Flutter\n(collectes terrain)] as MOBILE
 }
 
-' ===== Flux Ingestion =====
-MTN_FILE  --> IMTN
-OM_FILE   --> IOM
-CBS_FILE  --> ICBS
-AGENT_FILE --> IAGT
+package "Orchestration - Apache Airflow 2.8.4 (:8089)" {
+  [Airflow Scheduler] as SCHED
+  [dag_ingestion_mtn / dag_ingestion_orange\ndag_ingestion_cbs] as DAG_ING
+  [dag_collectes / dag_collecte_epargne\ndag_donnees_externes] as DAG_COL
+  [dag_kpis_quotidien / dag_alertes_impayes\ndag_recouvrement] as DAG_KPI
+  [dag_ml_scoring / dag_ml_training\ndag_monitoring / dag_backup] as DAG_ML
+}
 
-IMTN  --> DEDUP
-IOM   --> DEDUP
-ICBS  --> DEDUP
-IAGT  --> DEDUP
-DEDUP --> VALID
-VALID --> RAW
+package "Transformation - dbt Core 1.8" {
+  [Couche staging\n(stg_clients, stg_collectes_terrain\nstg_creances, stg_prix_produits)] as DBT_STG
+  [Couche intermediate\n(int_* - agregats metier)] as DBT_INT
+  [Couche mart\n(mart_kpi_collecte\nmart_kpi_recouvrement\nmart_benchmarks_agences)] as DBT_MART
+  [Couche ml\n(ml_feat_* - feature engineering)] as DBT_ML
+  [Tests qualite (schema.yml)] as DBT_TEST
+}
 
-' ===== Flux Transformation =====
-RAW --> STG_DBT
-STG_DBT --> STAGING
-STAGING --> INT_DBT
-INT_DBT --> MART_DBT
-MART_DBT --> DW
-DW --> RPT_DBT
-RPT_DBT --> RPT
-MART_DBT --> DBT_TEST
+package "API ML - FastAPI 0.111 (:8090)" {
+  [MCRSScorer (CRS + RPS + CSI)] as SCORER
+  [SHAPExplainer] as SHAP
+  [PSIMonitor (derive)] as PSI
+}
 
-' ===== Flux Calcul =====
-DW --> PARC
-PARC --> ALERTM
-ALERTM --> STAGING
+package "PostgreSQL 15 (:5432)" {
+  database "raw\n(donnees brutes)" as RAW
+  database "staging\n(stg_* nettoyes)" as STG
+  database "intermediate\n(int_* agreges)" as INT
+  database "dw\n(mart_kpi_*)" as DW
+  database "ml\n(client_scores\nshap_explanations\nmodel_runs)" as ML
+  database "app\n(44 entites operationnelles)" as APP
+}
 
-' ===== Flux Superset =====
-RPT --> SUP
-SUP --> DASH1
-SUP --> DASH2
-SUP --> DASH3
+' -- Flux ingestion --
+MTN    --> DAG_ING
+OM     --> DAG_ING
+CBS    --> DAG_ING
+MOBILE --> DAG_COL
 
-' ===== Orchestration Airflow =====
-AS --> AWK
-AWK --> IMTN
-AWK --> IOM
-AWK --> ICBS
-AWK --> IAGT
-AWK --> STG_DBT
-AWK --> MART_DBT
-AWK --> PARC
-AWK --> ALERTM
-AWK --> LOG
+SCHED --> DAG_ING
+SCHED --> DAG_COL
+SCHED --> DAG_KPI
+SCHED --> DAG_ML
 
-LOG --> META
-AW --> META
+DAG_ING --> RAW
+
+' -- Flux transformation --
+RAW --> DBT_STG
+DBT_STG --> STG
+STG  --> DBT_INT
+DBT_INT --> INT
+INT  --> DBT_MART
+DBT_MART --> DW
+DBT_MART --> DBT_TEST
+STG  --> DBT_ML
+DBT_ML --> ML
+
+' -- Flux ML --
+DAG_ML  --> SCORER
+SCORER  --> ML
+SCORER  --> SHAP
+SHAP    --> ML
+DAG_ML  --> PSI
+PSI     --> ML
+
+' -- Flux KPI/alertes --
+DW     --> DAG_KPI
+APP    --> DAG_KPI
+DAG_KPI --> APP
 
 @enduml

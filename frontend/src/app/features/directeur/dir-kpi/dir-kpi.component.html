@@ -1,10 +1,7 @@
 <div class="page-header">
   <div>
-    <p class="text-muted text-sm">KPI Portefeuille &amp; PAR COBAC</p>
-    <h2 class="page-title">Analyse du Portefeuille</h2>
-    <p class="page-subtitle">
-      Bilan de tous les employés en phase de remboursement
-    </p>
+    <p class="text-muted text-sm">{{ 'dir_kpi.subtitle' | translate }}</p>
+    <h2 class="page-title">{{ 'dir_kpi.title' | translate }}</h2>
   </div>
   <button
     class="btn btn-outline"
@@ -14,31 +11,31 @@
     <span class="material-icons-round">
       {{ downloading() ? "hourglass_empty" : "description" }}
     </span>
-    {{ downloading() ? "Génération..." : "Rapport COBAC" }}
+    {{ downloading() ? ('dir_kpi.cobac_loading' | translate) : ('dir_kpi.cobac_btn' | translate) }}
   </button>
 </div>
 
 <div class="stats-grid">
   <app-stat-card
-    label="Encours Total"
+    [label]="'dir_kpi.kpi_encours' | translate"
     [value]="data()?.encoursTotalFcfa ?? 0"
     [isCurrency]="true"
     [loading]="loading()"
   />
   <app-stat-card
-    label="PAR 30"
+    [label]="'dir_kpi.kpi_par30' | translate"
     [value]="data()?.par30 ?? 0"
     [isPercent]="true"
     [loading]="loading()"
   />
   <app-stat-card
-    label="PAR 90 (COBAC)"
+    [label]="'dir_kpi.kpi_par90' | translate"
     [value]="data()?.par90Cobac ?? 0"
     [isPercent]="true"
     [loading]="loading()"
   />
   <app-stat-card
-    label="Taux Recouvrement"
+    [label]="'dir_kpi.kpi_taux' | translate"
     [value]="data()?.tauxRecouvrement30j ?? 0"
     [isPercent]="true"
     [loading]="loading()"
@@ -47,7 +44,7 @@
 
 <!-- Chart PAR -->
 <div class="card chart-card" style="margin-bottom: 20px">
-  <div class="card-header"><h4>Évolution du PAR (30 derniers jours)</h4></div>
+  <div class="card-header"><h4>{{ 'dir_kpi.chart_title' | translate }}</h4></div>
   <div style="height: 250px; position: relative">
     @if (!loading()) {
       <canvas
@@ -63,17 +60,17 @@
 <div class="content-grid two-col">
   <!-- Répartition par agence -->
   <div class="card">
-    <div class="card-header"><h4>Répartition COBAC par Agence</h4></div>
+    <div class="card-header"><h4>{{ 'dir_kpi.agence_table_title' | translate }}</h4></div>
     @if (loading()) {
       <div class="skeleton" style="height: 200px"></div>
     } @else {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Agence</th>
-            <th>Encours</th>
-            <th>En Souffrance</th>
-            <th>Remboursé</th>
+            <th>{{ 'dir_kpi.col_agence' | translate }}</th>
+            <th>{{ 'dir_kpi.col_encours' | translate }}</th>
+            <th>{{ 'dir_kpi.col_souffrance' | translate }}</th>
+            <th>{{ 'dir_kpi.col_rembourse' | translate }}</th>
             <th>%</th>
           </tr>
         </thead>
@@ -103,18 +100,18 @@
 
   <!-- Provisions COBAC -->
   <div class="card">
-    <div class="card-header"><h4>Détail des Provisions Réglementaires</h4></div>
+    <div class="card-header"><h4>{{ 'dir_kpi.provisions_title' | translate }}</h4></div>
     @if (loading()) {
       <div class="skeleton" style="height: 200px"></div>
     } @else {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Catégorie</th>
-            <th>Nb</th>
-            <th>Encours</th>
-            <th>Type Prov.</th>
-            <th>Prov. Requise</th>
+            <th>{{ 'dir_kpi.prov_col_categorie' | translate }}</th>
+            <th>{{ 'dir_kpi.prov_col_nb' | translate }}</th>
+            <th>{{ 'dir_kpi.prov_col_encours' | translate }}</th>
+            <th>{{ 'dir_kpi.prov_col_type' | translate }}</th>
+            <th>{{ 'dir_kpi.prov_col_req' | translate }}</th>
           </tr>
         </thead>
         <tbody>

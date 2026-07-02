@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { PipelineStatus, DagStatus } from "../../../core/models/analyste.model";
 
@@ -13,7 +14,7 @@ import { PipelineStatus, DagStatus } from "../../../core/models/analyste.model";
   selector: "app-anl-pipeline",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./anl-pipeline.component.html",
   styleUrls: ["./anl-pipeline.component.scss"],
 })

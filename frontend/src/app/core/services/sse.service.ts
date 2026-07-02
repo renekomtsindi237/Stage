@@ -32,15 +32,18 @@ export class SseService implements OnDestroy {
     "MONITORING_UPDATE",
     "TICKET_MISE_A_JOUR",
     "SCORING_UPDATE",
+    "AGENT_POSITION_UPDATED",
   ];
 
   connect(): Observable<SseEvent> {
     this.disconnect();
     if (!this.auth.isLoggedIn()) return this.events$.asObservable();
 
-    this.eventSource = new EventSource("/api/v1/sse/stream", {
-      withCredentials: true,
-    });
+    const token = this.auth.getToken();
+    const url = token
+      ? `/api/v1/sse/stream?token=${encodeURIComponent(token)}`
+      : "/api/v1/sse/stream";
+    this.eventSource = new EventSource(url);
 
     this.eventSource.onmessage = (e) => {
       this.reconnectAttempts = 0;

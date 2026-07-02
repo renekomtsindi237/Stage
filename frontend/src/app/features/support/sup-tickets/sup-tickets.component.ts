@@ -9,6 +9,7 @@ import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 export interface Ticket {
   id: number;
@@ -37,7 +38,7 @@ interface TicketPage {
   selector: "app-sup-tickets",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./sup-tickets.component.html",
   styleUrls: ["./sup-tickets.component.scss"],
 })

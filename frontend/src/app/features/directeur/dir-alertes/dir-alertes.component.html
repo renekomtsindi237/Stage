@@ -1,19 +1,17 @@
 <div class="page-header">
   <div>
-    <h2 class="page-title">Alertes prédictives ML</h2>
-    <p class="page-subtitle">
-      Centre de commande des alertes générées par le modèle MCRS
-    </p>
+    <h2 class="page-title">{{ 'dir_alertes.title' | translate }}</h2>
+    <p class="page-subtitle">{{ 'dir_alertes.subtitle' | translate }}</p>
   </div>
   <div class="alertes-counters">
     <span class="counter counter--critique">
-      <span class="counter__dot"></span> {{ critiques() }} Critiques
+      <span class="counter__dot"></span> {{ critiques() }} {{ 'dir_alertes.counter_critical' | translate }}
     </span>
     <span class="counter counter--haute">
-      <span class="counter__dot"></span> {{ hautes() }} Hautes
+      <span class="counter__dot"></span> {{ hautes() }} {{ 'dir_alertes.counter_high' | translate }}
     </span>
     <span class="counter counter--moyenne">
-      <span class="counter__dot"></span> {{ moyennes() }} Moyennes
+      <span class="counter__dot"></span> {{ moyennes() }} {{ 'dir_alertes.counter_medium' | translate }}
     </span>
   </div>
 </div>
@@ -24,13 +22,13 @@
     <span class="material-icons-round">search</span>
     <input
       type="text"
-      placeholder="Rechercher un client, ID..."
+      [placeholder]="'dir_alertes.search_placeholder' | translate"
       [value]="search()"
       (input)="search.set($any($event.target).value)"
     />
   </div>
   <button class="btn btn-outline btn-sm">
-    <span class="material-icons-round">filter_list</span> Filtres
+    <span class="material-icons-round">filter_list</span> {{ 'dir_alertes.filter_btn' | translate }}
   </button>
 </div>
 
@@ -41,21 +39,21 @@
     [class.active]="tab() === 'NON_TRAITEE'"
     (click)="setTab('NON_TRAITEE')"
   >
-    Non traitées
+    {{ 'dir_alertes.tab_unhandled' | translate }}
   </span>
   <span
     class="tab-item"
     [class.active]="tab() === 'EN_TRAITEMENT'"
     (click)="setTab('EN_TRAITEMENT')"
   >
-    En traitement
+    {{ 'dir_alertes.tab_in_progress' | translate }}
   </span>
   <span
     class="tab-item"
     [class.active]="tab() === 'TOUTES'"
     (click)="setTab('TOUTES')"
   >
-    Toutes
+    {{ 'dir_alertes.tab_all' | translate }}
   </span>
 </div>
 
@@ -77,7 +75,7 @@
       style="font-size: 40px; display: block; margin-bottom: 8px"
       >check_circle</span
     >
-    Aucune alerte dans cette catégorie.
+    {{ 'dir_alertes.empty' | translate }}
   </div>
 } @else {
   @for (a of filtered; track a.id) {
@@ -109,7 +107,7 @@
           [disabled]="treating() === a.id"
           (click)="traiter(a.id)"
         >
-          {{ treating() === a.id ? "..." : "Traiter" }}
+          {{ treating() === a.id ? ('common.loading' | translate) : ('dir_alertes.handle_btn' | translate) }}
         </button>
       }
     </div>

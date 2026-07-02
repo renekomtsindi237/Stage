@@ -81,6 +81,28 @@
     }
   }
 
+  &__theme-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    background: none;
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: var(--color-bg);
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    .material-icons-round { font-size: 20px; }
+  }
+
   &__notif {
     position: relative;
     width: 36px;
@@ -109,12 +131,14 @@
     color: #fff;
     font-size: 10px;
     font-weight: 700;
-    width: 16px;
+    min-width: 16px;
     height: 16px;
-    border-radius: 50%;
+    padding: 0 4px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    line-height: 1;
   }
 
   &__divider {

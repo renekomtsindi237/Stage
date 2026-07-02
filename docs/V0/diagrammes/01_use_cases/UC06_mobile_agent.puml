@@ -1,74 +1,67 @@
 @startuml UC06_mobile_agent
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam actorStyle awesome
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam actorStyle none
 skinparam usecase {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 11
+  BackgroundColor white
+  BorderColor #666666
 }
 skinparam actor {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
+  BackgroundColor white
+  BorderColor #333333
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam rectangle {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
 
-title UC06 — Application Mobile Flutter\n(Agent Terrain + Directeur)\nPlateforme IMF Cameroun
+title UC06 - Application Mobile Flutter 3.24\n(Agent Terrain + Directeur)
 
 left to right direction
 
-actor "Agent de Terrain" as AT
-actor "Directeur Général" as DG
-actor "Responsable\nRecouvrement" as RR
-actor "Spring Boot API" as API <<système>>
-actor "Firebase FCM" as FCM <<système>>
-actor "SQLite Local" as DB <<système>>
+actor "Agent Terrain\n(AGENT_TERRAIN)" as AT
+actor "Directeur\n(DIRECTEUR)" as DIR
+actor "Spring Boot API\n:8080" as API <<systeme>>
+actor "SQLite local\n(sqflite)" as SQLITE <<systeme>>
+actor "Firebase FCM" as FCM <<systeme>>
 
-rectangle "UC06 — Application Mobile Flutter" {
+rectangle "UC06 - Application Mobile Flutter" {
 
-  usecase "UC06.1\nS'authentifier\n(login JWT sécurisé)" as UC0601
-  usecase "UC06.2\nSaisir une collecte\n(formulaire guidé)" as UC0602
-  usecase "UC06.3\nFonctionner\nhors-ligne\n(offline-first)" as UC0603
-  usecase "UC06.4\nSynchroniser\nles collectes\npendantes" as UC0604
-  usecase "UC06.5\nConsulter ses\nclients et créances\nassignées" as UC0605
-  usecase "UC06.6\nConsulter l'historique\nde ses collectes\neffectuées" as UC0606
-  usecase "UC06.7\nConsulter les KPIs\n(PAR30/90, volume\ncollectes)" as UC0607
-  usecase "UC06.8\nRecevoir notification\npush alerte impayé\n(FCM)" as UC0608
-  usecase "UC06.9\nConsulter le détail\nd'une alerte\ndepuis la notif" as UC0609
+  usecase "UC06.1\nS'authentifier\n(email + OTP)" as UC0601
+  usecase "UC06.2\nSaisir une collecte\n(formulaire guide)" as UC0602
+  usecase "UC06.3\nFonctionner hors ligne\n(offline-first)" as UC0603
+  usecase "UC06.4\nSynchroniser collectes\nen attente" as UC0604
+  usecase "UC06.5\nConsulter clients\net creances assignes" as UC0605
+  usecase "UC06.6\nConsulter historique\ndes collectes" as UC0606
+  usecase "UC06.7\nConsulter KPIs\n(PAR30/90, volume)" as UC0607
+  usecase "UC06.8\nRecevoir notification\npush FCM (alerte impaye)" as UC0608
+  usecase "UC06.9\nConsulter detail\nd'une alerte" as UC0609
 
 }
 
-' Agent terrain
-AT --> UC0601
-AT --> UC0602
-AT --> UC0603
-AT --> UC0605
-AT --> UC0606
-AT --> UC0608
+AT  --> UC0601
+AT  --> UC0602
+AT  --> UC0603
+AT  --> UC0605
+AT  --> UC0606
+AT  --> UC0608
 
-' Directeur
-DG --> UC0601
-DG --> UC0607
-DG --> UC0608
-DG --> UC0609
+DIR --> UC0601
+DIR --> UC0607
+DIR --> UC0608
+DIR --> UC0609
 
-' RR
-RR --> UC0608
-RR --> UC0609
-
-' Systèmes
-API <-- UC0602
-DB  <-- UC0603
-DB  --> UC0604
-API <-- UC0604
-FCM --> UC0608
-
-' Inclusions
-UC0601 ..> API    : <<include>>
-UC0602 ..> UC0603 : <<extend>>
-UC0603 ..> UC0604 : <<include>>
-UC0608 ..> UC0609 : <<extend>>
+UC0601 ..> API     : <<include>>
+UC0602 ..> UC0603  : <<extend>>
+UC0603 ..> SQLITE  : <<include>>
+UC0603 ..> UC0604  : <<include>>
+UC0604 ..> API     : <<include>>
+FCM   --> UC0608
+UC0608 ..> UC0609  : <<extend>>
 
 @enduml

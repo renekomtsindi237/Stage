@@ -10,11 +10,14 @@ import { RouterLink } from "@angular/router";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { AuthService } from "../../../core/auth/auth.service";
 import { NotificationService } from "../../../core/services/notification.service";
+import { ThemeService } from "../../../core/services/theme.service";
 import { NotificationPanelComponent } from "../notification-panel/notification-panel.component";
 import { ToastService } from "../../../core/services/toast.service";
 import { ApiService } from "../../../core/http/api.service";
 import { Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
+import { TranslatePipe } from "@ngx-translate/core";
+import { LanguageService } from "../../../core/services/language.service";
 
 @Component({
   selector: "app-topbar",
@@ -26,12 +29,15 @@ import { environment } from "../../../../environments/environment";
     RouterLink,
     NotificationPanelComponent,
     ReactiveFormsModule,
+    TranslatePipe,
   ],
   templateUrl: "./topbar.component.html",
   styleUrls: ["./topbar.component.scss"],
 })
 export class TopbarComponent implements OnInit {
   readonly auth = inject(AuthService);
+  readonly theme = inject(ThemeService);
+  readonly langSvc = inject(LanguageService);
   private readonly toast = inject(ToastService);
   private readonly notifSvc = inject(NotificationService);
   private readonly api = inject(ApiService);
@@ -69,15 +75,15 @@ export class TopbarComponent implements OnInit {
   });
 
   readonly categorieOptions = [
-    { value: "TECHNIQUE", label: "Problème technique" },
-    { value: "FACTURATION", label: "Facturation / Accès" },
-    { value: "AUTRE", label: "Autre" },
+    { value: "TECHNIQUE", label: "topbar.support_modal.cat_technique" },
+    { value: "FACTURATION", label: "topbar.support_modal.cat_facturation" },
+    { value: "AUTRE", label: "topbar.support_modal.cat_autre" },
   ];
 
   readonly prioriteOptions = [
-    { value: "NORMALE", label: "Normale" },
-    { value: "HAUTE", label: "Haute" },
-    { value: "URGENTE", label: "Urgente" },
+    { value: "NORMALE", label: "topbar.support_modal.prio_normale" },
+    { value: "HAUTE", label: "topbar.support_modal.prio_haute" },
+    { value: "URGENTE", label: "topbar.support_modal.prio_urgente" },
   ];
 
   ngOnInit() {

@@ -1,30 +1,30 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Dashboard Plateforme</h2>
-      <p class="text-muted text-sm">Vue globale de toutes les institutions</p>
+      <h2>{{ 'platform.title' | translate }}</h2>
+      <p class="text-muted text-sm">{{ 'platform.subtitle' | translate }}</p>
     </div>
   </div>
 
   <!-- KPI globaux -->
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card
-      label="IMF actives"
+      [label]="'platform.kpi_active_imfs' | translate"
       [value]="stats()?.activeImfs ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="IMF total"
+      [label]="'platform.kpi_total_imfs' | translate"
       [value]="stats()?.totalImfs ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Utilisateurs"
+      [label]="'platform.kpi_users' | translate"
       [value]="stats()?.totalUsers ?? 0"
       [loading]="loading()"
     />
     <app-stat-card
-      label="Nouvelles IMF (mois)"
+      [label]="'platform.kpi_new_imfs' | translate"
       [value]="stats()?.newImfsThisMonth ?? 0"
       [loading]="loading()"
     />
@@ -35,25 +35,18 @@
     <a routerLink="/platform/imfs" class="dash-action-card">
       <span class="material-icons-round dash-action-card__icon">business</span>
       <div>
-        <p class="font-semibold">Gestion IMF</p>
-        <p class="text-sm text-muted">Créer, activer, configurer</p>
+        <p class="font-semibold">{{ 'platform.nav_imf_title' | translate }}</p>
+        <p class="text-sm text-muted">{{ 'platform.nav_imf_desc' | translate }}</p>
       </div>
-      <span class="material-icons-round dash-action-card__arrow"
-        >arrow_forward</span
-      >
+      <span class="material-icons-round dash-action-card__arrow">arrow_forward</span>
     </a>
     <a routerLink="/platform/audit" class="dash-action-card">
-      <span
-        class="material-icons-round dash-action-card__icon dash-action-card__icon--audit"
-        >history_edu</span
-      >
+      <span class="material-icons-round dash-action-card__icon dash-action-card__icon--audit">history_edu</span>
       <div>
-        <p class="font-semibold">Audit Global</p>
-        <p class="text-sm text-muted">Piste d'audit immuable COBAC</p>
+        <p class="font-semibold">{{ 'platform.nav_audit_title' | translate }}</p>
+        <p class="text-sm text-muted">{{ 'platform.nav_audit_desc' | translate }}</p>
       </div>
-      <span class="material-icons-round dash-action-card__arrow"
-        >arrow_forward</span
-      >
+      <span class="material-icons-round dash-action-card__arrow">arrow_forward</span>
     </a>
   </div>
 
@@ -61,26 +54,21 @@
   <div class="card">
     <div
       class="card-header"
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-      "
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px"
     >
-      <h4>Institutions financières</h4>
+      <h4>{{ 'platform.imf_list_title' | translate }}</h4>
       <a routerLink="/platform/imfs" class="btn btn-primary btn-sm">
-        <span class="material-icons-round">add</span> Ajouter une IMF
+        <span class="material-icons-round">add</span> {{ 'platform.add_btn' | translate }}
       </a>
     </div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>Code</th>
-          <th>Institution</th>
-          <th>Statut</th>
-          <th>DSI</th>
-          <th>Pays</th>
+          <th>{{ 'platform.col_code' | translate }}</th>
+          <th>{{ 'platform.col_institution' | translate }}</th>
+          <th>{{ 'platform.col_statut' | translate }}</th>
+          <th>{{ 'platform.col_dsi' | translate }}</th>
+          <th>{{ 'platform.col_pays' | translate }}</th>
           <th></th>
         </tr>
       </thead>
@@ -97,18 +85,9 @@
           }
         } @else if (imfs().length === 0) {
           <tr>
-            <td
-              colspan="6"
-              style="
-                text-align: center;
-                padding: 32px;
-                color: var(--color-text-muted);
-              "
-            >
-              Aucune institution enregistrée —
-              <a routerLink="/platform/imfs" style="color: var(--color-primary)"
-                >créer la première</a
-              >
+            <td colspan="6" style="text-align: center; padding: 32px; color: var(--color-text-muted)">
+              {{ 'platform.empty' | translate }}
+              <a routerLink="/platform/imfs" style="color: var(--color-primary)">{{ 'platform.create_link' | translate }}</a>
             </td>
           </tr>
         } @else {
@@ -122,11 +101,8 @@
                 <p class="text-sm text-muted">{{ imf.denominationSociale }}</p>
               </td>
               <td>
-                <span
-                  class="badge"
-                  [class]="imf.actif ? 'badge-success' : 'badge-muted'"
-                >
-                  {{ imf.actif ? "Actif" : "Suspendu" }}
+                <span class="badge" [class]="imf.actif ? 'badge-success' : 'badge-muted'">
+                  {{ imf.actif ? ('platform.status_active' | translate) : ('platform.status_suspended' | translate) }}
                 </span>
               </td>
               <td>
@@ -134,7 +110,7 @@
                   class="material-icons-round"
                   style="font-size: 18px"
                   [class]="imf.hasDsi ? 'text-success' : 'text-muted'"
-                  [title]="imf.hasDsi ? 'DSI configuré' : 'Aucun DSI'"
+                  [title]="imf.hasDsi ? ('platform.dsi_configured' | translate) : ('platform.dsi_none' | translate)"
                 >
                   {{ imf.hasDsi ? "verified_user" : "person_off" }}
                 </span>
@@ -144,7 +120,7 @@
                 <a
                   [routerLink]="['/platform/imfs']"
                   class="btn btn-ghost btn-sm"
-                  title="Gérer"
+                  [title]="'common.edit' | translate"
                 >
                   <span class="material-icons-round">settings</span>
                 </a>
@@ -155,19 +131,13 @@
       </tbody>
     </table>
     @if (!loading() && imfs().length > 0) {
-      <div
-        style="
-          padding: 12px 16px;
-          border-top: 1px solid var(--color-border);
-          text-align: right;
-        "
-      >
+      <div style="padding: 12px 16px; border-top: 1px solid var(--color-border); text-align: right">
         <a
           routerLink="/platform/imfs"
           class="text-sm"
           style="color: var(--color-primary); font-weight: 600"
         >
-          Voir toutes les IMF →
+          {{ 'platform.see_all' | translate }}
         </a>
       </div>
     }

@@ -9,6 +9,7 @@ import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 interface Contrat {
   uid: string;
@@ -34,7 +35,7 @@ interface ContratPage {
   selector: "app-sai-contrats",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./sai-contrats.component.html",
   styleUrls: ["./sai-contrats.component.scss"],
 })

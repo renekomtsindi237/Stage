@@ -294,6 +294,78 @@ public class EmailService {
         send(to, subject, layout(content, subject));
     }
 
+    /**
+     * Email envoyé au nouvel utilisateur créé par le DSI.
+     * Explique exactement comment se connecter via le flux email + OTP.
+     */
+    @Async("asyncExecutor")
+    public void sendNouvelUtilisateurEmail(String to, String username,
+                                            String roleName, String imfName) {
+        String subject = "Votre compte " + appName + " — Informations de connexion";
+        String roleLabel = formatRole(roleName);
+        String content = block("Votre compte a été créé",
+                """
+                <p style="margin:0 0 16px">Bonjour <strong>%s</strong>,</p>
+                <p style="margin:0 0 16px">
+                  Un compte <strong>%s</strong> vous a été créé sur la plateforme
+                  <strong>%s</strong>%s.
+                </p>
+                <p style="margin:0 0 8px">
+                  <strong>Votre identifiant de connexion est votre adresse email :</strong>
+                </p>
+                """.formatted(
+                        username, roleLabel, appName,
+                        imfName != null && !imfName.isBlank()
+                            ? " pour <strong>" + escapeHtml(imfName) + "</strong>"
+                            : "")
+                + codeBlock(to)
+                + """
+                <h3 style="margin:24px 0 12px;color:#1b2f4b;font-size:15px">
+                  Comment vous connecter ?
+                </h3>
+                """
+                + metaTable(new String[][]{
+                        {"Étape 1", "Accédez à la plateforme en cliquant sur le bouton ci-dessous"},
+                        {"Étape 2", "Saisissez votre adresse email : " + to},
+                        {"Étape 3", "Cliquez sur « Recevoir mon code »"},
+                        {"Étape 4", "Consultez votre boîte mail — vous recevrez un code OTP à 6 chiffres"},
+                        {"Étape 5", "Saisissez ce code sur la page de vérification"},
+                        {"Validité du code", "10 minutes — demandez-en un nouveau si expiré"}
+                })
+                + button("Accéder à la plateforme", appUrl + "/login")
+                + infoBox(
+                        "Ce système utilise une authentification sans mot de passe (OTP). "
+                        + "Chaque connexion génère un code unique envoyé à votre adresse email — "
+                        + "vous n'avez aucun mot de passe à mémoriser.",
+                        "info"),
+                "success");
+        send(to, subject, layout(content, subject));
+    }
+
+    /** Confirmation de réception d'un message de contact public (page de connexion). */
+    @Async("asyncExecutor")
+    public void sendContactSupportConfirmation(String to, String nomExpéditeur,
+                                                String sujet, String reference) {
+        String subject = appName + " — Votre message a bien été reçu";
+        String content = block("Votre message a été transmis",
+                """
+                <p style="margin:0 0 16px">Bonjour <strong>%s</strong>,</p>
+                <p style="margin:0 0 24px">
+                  Nous avons bien reçu votre message concernant : <strong>%s</strong>.
+                </p>
+                """.formatted(escapeHtml(nomExpéditeur), escapeHtml(sujet))
+                + metaTable(new String[][]{
+                        {"Référence", reference},
+                        {"Statut", "En attente de traitement"},
+                        {"Date de réception", today()}
+                })
+                + infoBox(
+                        "Notre équipe support vous répondra dans les meilleurs délais à cette adresse email.",
+                        "info"),
+                "info");
+        send(to, subject, layout(content, subject));
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // TEST — diagnostic de configuration SMTP (synchrone, lève une exception)
     // ══════════════════════════════════════════════════════════════════════════

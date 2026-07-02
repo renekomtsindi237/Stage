@@ -1,191 +1,88 @@
 @startuml SEQ_UC02_portefeuille_creances
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 2
-skinparam sequenceGroupBackgroundColor #F5F5F5
-skinparam sequenceGroupBorderColor #9E9E9E
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceBoxBorderColor #4A6CF7
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ_UC02 — Suivi du Portefeuille de Créances (PAR30 / PAR90)\nFlux : CBS → Pipeline → DW → Spring Boot → Angular + Flutter\n<size:11><color:#555>Architecture conteneurisée Docker Compose</color></size>
+title SEQ_UC02 - Suivi Portefeuille de Creances (PAR30/PAR90)\nCBS -> Airflow -> dbt -> Spring Boot -> Angular + Flutter
 
-' ===== ACTEURS =====
-actor "Responsable\nRecouvrement\n(Web)" as RR
-actor "Directeur\n(Mobile Flutter)" as DG
+actor "Directeur\n(web Angular)" as DIR
+actor "Analyste Credit\n(web Angular)" as ANA
 
-' ===== SOURCE UNIQUE : CBS =====
-boundary "Core Banking System\n[Source données prêts]\n[Export CSV quotidien]" as CBS
+boundary "Core Banking System" as CBS
 
-' ===== CONTENEUR : airflow =====
-box "🐳 airflow-scheduler" #EDE7F6
-  participant "Airflow\nScheduler" as AS
+box "airflow-scheduler"
+  participant "dag_ingestion_cbs\ndag_kpis_quotidien" as DAGS
 end box
 
-' ===== CONTENEUR : python =====
-box "🐳 python-scripts (dags/)" #E8EAF6
-  participant "IngestCBS\n[cbs_source.py]" as ICBS
-  participant "PARCalculator\n[par_calc.py]" as PARC
+box "dbt Core 1.8"
+  participant "stg_creances\nint_* agregats" as DBT_STG
+  participant "mart_kpi_recouvrement" as DBT_MART
 end box
 
-' ===== CONTENEUR : dbt =====
-box "🐳 dbt-runner (dbt_project/)" #FCE4EC
-  participant "dbt stg_prets\n[stg_prets.sql]" as DBT_P
-  participant "dbt stg_echeances\n[stg_echeances.sql]" as DBT_E
-  participant "dbt stg_remboursements\n[stg_remboursements.sql]" as DBT_R
-  participant "dbt fact_par_quotidien\n[fact_par_quotidien.sql]" as DBT_PAR
-  participant "dbt v_kpi_recouvrement\n[reporting model]" as DBT_VUE
+box "postgres:15"
+  database "schema raw" as RAW
+  database "schema dw" as DW
+  database "schema ml" as ML
 end box
 
-' ===== CONTENEUR : postgres-pipeline =====
-box "🐳 postgres-pipeline (:5432)" #E8F5E9
-  database "raw\n(données brutes CBS)" as RAW
-  database "staging\n(prêts, échéances,\nremboursements)" as STG
-  database "dw\nfact_par_quotidien\ndim_*" as DW
-  database "reporting\nv_kpi_recouvrement" as RPT
+box "springboot-api :8080"
+  participant "DirecteurController\nAnalysteController" as SPRING
 end box
 
-' ===== CONTENEUR : springboot =====
-box "🐳 springboot-api (:8080 interne)" #E3F2FD
-  participant "KpiController\n[GET /api/kpi/par]" as CTRL_KPI
-  participant "CollecteController\n[GET /api/prets]" as CTRL_PRET
-  participant "KpiService" as SVC_KPI
-  participant "KpiParRepository\n[lecture DW]" as REPO_PAR
-  participant "PretRepository\n[lecture staging]" as REPO_PRET
+box "ml-api :8090"
+  participant "MCRSScorer\nFastAPI" as ML_API
 end box
 
-' ===== CONTENEUR : nginx =====
-box "🐳 nginx (:80/:443)" #FFF9C4
-  participant "Nginx\n[Proxy + Angular]" as NGINX
-end box
+== Ingestion CBS et calcul PAR ==
 
-' ==================================================
-' ÉTAPE 1 — INGESTION CBS
-' ==================================================
-== 🔄 ÉTAPE 1 — Ingestion CBS (06h20) : prêts + échéances + remboursements ==
+DAGS -> CBS : GET /prets + /creances\n(quotidien 06h00)
+CBS --> DAGS : [{pretsActifs, joursRetard, montants}]
+DAGS -> RAW : INSERT raw.creances, raw.prets
 
-AS -> ICBS : trigger Task: ingest_cbs\n(après ingest_mtn et ingest_orange)
+DAGS -> DBT_STG : dbt run --select staging.*\nintermediate.*
+DBT_STG -> RAW : SELECT * FROM raw.creances\nJOIN raw.prets
+RAW --> DBT_STG : donnees brutes
+DBT_STG -> DW : CREATE stg_creances, int_par_agences
 
-CBS -> ICBS : Lecture CBS_export_20260401.csv\n(colonnes: id_pret, id_client, id_agent,\nmontant_octroye, date_decaissement,\ndate_echeance_finale, statut)
-note right CBS : Source unique des données\nde crédit (prêts, échéances,\nremboursements)
+DAGS -> DBT_MART : dbt run --select mart.mart_kpi_recouvrement
+DBT_MART -> DW : SELECT int_par_agences\nGROUP BY agence, date
+DW --> DBT_MART : agregats PAR
+DBT_MART -> DW : INSERT mart_kpi_recouvrement\n{agence_id, taux_par30, taux_par90,\nencours_par30, encours_par90, ...}
 
-ICBS -> ICBS : parse_dates(format='%d/%m/%Y')\nnormalize_pret_ids()\ncast_types(montant → DECIMAL)
+== Scoring ML des clients ==
 
-ICBS -> RAW : INSERT INTO raw.prets_cbs
-ICBS -> RAW : INSERT INTO raw.echeances_cbs
-ICBS -> RAW : INSERT INTO raw.remboursements_cbs
+DAGS -> ML_API : POST /score/batch\n{clientIds: [...]}
+ML_API -> ML : SELECT ml.features_client\nWHERE date = CURRENT_DATE - 1
+ML --> ML_API : features
+ML_API -> ML_API : CRSCalc + RPSCalc + CSICalc\n-> MCRS = 0.35×(1-CRS) + 0.45×RPS + 0.20×CSI
+ML_API -> ML : INSERT ml.client_scores\n{uid, clientId, scoreMcrs, niveauRisque}
 
-RAW --> AS : {prets: 1250, echeances: 6800,\nremboursements: 4200} insérés
+== Consultation par le Directeur ==
 
-' ==================================================
-' ÉTAPE 2 — TRANSFORMATION dbt (staging)
-' ==================================================
-== 🔄 ÉTAPE 2 — Transformation dbt staging (07h00) ==
+DIR -> SPRING : GET /api/v1/directeur/kpis\n?dateDebut=...&agenceId=...\n[Cookie: imf_access]
+SPRING -> DW : SELECT FROM dw.mart_kpi_recouvrement\nWHERE date_snapshot BETWEEN ? AND ?
+DW --> SPRING : KPIs PAR
+SPRING --> DIR : 200 OK {par30, par90, encours, trendPar30}
 
-AS -> DBT_P : dbt run --select stg_prets
+== Consultation scoring par l'Analyste ==
 
-DBT_P -> RAW : SELECT id_pret, id_client, id_agent,\nid_produit, montant_octroye,\ndate_decaissement, date_echeance_finale,\nnombre_echeances, statut\nFROM raw.prets_cbs\nWHERE ingere_le >= CURRENT_DATE - 1
-RAW --> DBT_P : 1250 prêts
-
-DBT_P -> STG : INSERT INTO staging.prets\n(upsert ON CONFLICT id_pret DO UPDATE\n→ mise à jour du statut si changé)
-
-AS -> DBT_E : dbt run --select stg_echeances
-
-DBT_E -> RAW : SELECT id_echeance, id_pret,\nnumero_echeance, date_echeance,\nmontant_du\nFROM raw.echeances_cbs
-RAW --> DBT_E : 6800 échéances
-
-DBT_E -> STG : INSERT INTO staging.echeances
-
-AS -> DBT_R : dbt run --select stg_remboursements
-
-DBT_R -> RAW : SELECT id_remboursement, id_echeance,\ndate_paiement, montant_paye, canal_paiement\nFROM raw.remboursements_cbs
-note right : Les remboursements CBS\nviennent aussi des transactions\nmobile money (jointure par\nreference_transaction)
-RAW --> DBT_R : 4200 remboursements
-
-DBT_R -> STG : INSERT INTO staging.remboursements
-
-' ==================================================
-' ÉTAPE 3 — CALCUL PAR (dbt mart)
-' ==================================================
-== 🔄 ÉTAPE 3 — Calcul PAR30/PAR90 par dbt (07h30) ==
-
-AS -> DBT_PAR : dbt run --select fact_par_quotidien
-
-DBT_PAR -> STG : CTE [1] encours_prets:\nSELECT p.id_pret, p.id_client,\np.id_produit, z.id_zone,\np.montant_octroye\n- COALESCE(SUM(r.montant_paye), 0)\nAS capital_restant_du\nFROM staging.prets p\nJOIN staging.echeances e ON p.id_pret = e.id_pret\nLEFT JOIN staging.remboursements r ON e.id_echeance = r.id_echeance\nWHERE p.statut IN ('ACTIF','EN_RETARD')\nGROUP BY p.id_pret, z.id_zone, p.id_produit
-STG --> DBT_PAR : Capital restant dû par prêt
-
-DBT_PAR -> STG : CTE [2] retard_par_pret:\nSELECT e.id_pret,\nMAX(CURRENT_DATE - e.date_echeance)\nAS jours_retard_max\nFROM staging.echeances e\nLEFT JOIN staging.remboursements r ON ...\nWHERE e.date_echeance < CURRENT_DATE\nAND (e.montant_du - COALESCE(SUM(r.montant_paye),0)) > 0\nGROUP BY e.id_pret
-STG --> DBT_PAR : Jours de retard max par prêt
-
-DBT_PAR -> DBT_PAR : CTE [3] par_par_zone_produit:\nSUM(capital) WHERE jours_retard > 30 → encours_par30\nSUM(capital) WHERE jours_retard > 90 → encours_par90\nencours_par30 / encours_total → taux_par30\nencours_par90 / encours_total → taux_par90\nGROUP BY zone_id, produit_id
-
-DBT_PAR -> DW : INSERT INTO dw.fact_par_quotidien\n{date_id: 20260401, zone_id, produit_id,\nencours_total, encours_par30: X,\ntaux_par30: 0.083,\nencours_par90: Y, taux_par90: 0.031,\nnb_prets_actifs: 1250, nb_prets_en_retard: 104}
-DW --> AS : fact_par_quotidien mis à jour ✓
-
-AS -> DBT_VUE : dbt run --select reporting.v_kpi_recouvrement
-DBT_VUE -> DW : SELECT fp.*, t.date_complete, t.mois,\nz.nom_zone, p.nom_produit\nFROM dw.fact_par_quotidien fp\nJOIN dw.dim_temps t ON ...\nJOIN dw.dim_zone z ON ...\nJOIN dw.dim_produit p ON ...
-DW --> DBT_VUE : Données enrichies
-DBT_VUE -> RPT : REFRESH MATERIALIZED VIEW\nreporting.v_kpi_recouvrement
-
-' ==================================================
-' ÉTAPE 4 — CONSULTATION WEB (Angular — Responsable Recouvrement)
-' ==================================================
-== 📊 ÉTAPE 4 — Consultation PAR (Angular) | Docker: nginx → springboot → postgres ==
-
-RR -> NGINX : HTTPS GET /api/kpi/par\n?dateDebut=2026-01-01&dateFin=2026-04-01\n&zoneId=3\nAuthorization: Bearer <JWT_RR>
-
-NGINX -> CTRL_KPI : HTTP Proxy /api/kpi/par\n→ springboot:8080
-
-CTRL_KPI -> CTRL_KPI : JwtFilter: valide JWT\n@PreAuthorize: RESPONSABLE_RECOUVREMENT ✓
-CTRL_KPI -> SVC_KPI : getParStats(dateDebut, dateFin, zoneId=3)
-
-SVC_KPI -> REPO_PAR : findParByPeriodAndZone(\n  dateDebut=20260101, dateFin=20260401,\n  zoneId=3)
-
-REPO_PAR -> RPT : SELECT date_complete, nom_zone,\nnom_produit, taux_par30, taux_par90,\nencours_total, nb_prets_actifs,\nnb_prets_en_retard\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete BETWEEN ? AND ?\nAND zone_id = 3\nORDER BY date_complete DESC
-
-RPT --> REPO_PAR : ResultSet 90 lignes
-REPO_PAR --> SVC_KPI : List<FactParQuotidien>
-
-SVC_KPI -> SVC_KPI : mapToDto()\nKpiParResponse {\n  par30Actuel: 0.083 (8.3%),\n  par90Actuel: 0.031 (3.1%),\n  encoursTotal: 625_000_000 XAF,\n  nbPretsActifs: 1250,\n  nbPretsEnRetard: 104,\n  trendPar30: [{date, taux}×90]\n}
-SVC_KPI --> CTRL_KPI : KpiParResponse
-CTRL_KPI --> NGINX : HTTP 200 JSON
-NGINX --> RR : HTTPS 200 JSON
-
-RR -> RR : Angular: Chart.js affiche\ncourbe PAR30/PAR90 sur 90 jours\nAngular Material: tableau créances à risque
-
-RR -> NGINX : HTTPS GET /api/prets\n?statut=EN_RETARD&zoneId=3\nAuthorization: Bearer <JWT_RR>
-NGINX -> CTRL_PRET : Proxy → springboot:8080
-CTRL_PRET -> REPO_PRET : findByStatutAndZone('EN_RETARD', 3)
-REPO_PRET -> STG : SELECT p.id_pret, c.nom, c.telephone,\np.montant_octroye, p.statut,\nMAX(e.date_echeance) AS derniere_echeance,\nCURRENT_DATE - MAX(e.date_echeance) AS jours_retard\nFROM staging.prets p\nJOIN staging.clients c ON ...\nJOIN staging.echeances e ON ...\nWHERE p.statut='EN_RETARD'\nAND c.id_zone = 3\nGROUP BY p.id_pret, c.nom, c.telephone\nORDER BY jours_retard DESC
-STG --> REPO_PRET : 104 prêts en retard
-REPO_PRET --> CTRL_PRET : List<PretResponse>
-CTRL_PRET --> NGINX : HTTP 200
-NGINX --> RR : Liste prêts en retard triés\n(plus grave en premier)
-
-' ==================================================
-' ÉTAPE 5 — CONSULTATION MOBILE (Flutter — Directeur)
-' ==================================================
-== 📱 ÉTAPE 5 — Consultation PAR mobile (Flutter — Directeur) ==
-
-DG -> NGINX : HTTPS GET /api/kpi/dashboard-summary\nAuthorization: Bearer <JWT_DIRECTEUR>
-NGINX -> CTRL_KPI : Proxy
-CTRL_KPI -> CTRL_KPI : @PreAuthorize: DIRECTEUR ✓
-CTRL_KPI -> SVC_KPI : getDashboardSummary()
-SVC_KPI -> REPO_PAR : findLatestPar() + findPar30Trend(30)
-REPO_PAR -> RPT : SELECT taux_par30, taux_par90,\nencours_total, nb_prets_actifs\nFROM reporting.v_kpi_recouvrement\nWHERE date_complete = CURRENT_DATE - 1\nLIMIT 1
-RPT --> REPO_PAR : KPIs du jour
-REPO_PAR --> SVC_KPI : KpiParQuotidien
-SVC_KPI --> CTRL_KPI : DashboardSummaryResponse\n{par30: 0.083, par90: 0.031,\nnbAlertes: 47, trendPar30: [×30]}
-CTRL_KPI --> NGINX : HTTP 200 JSON
-NGINX --> DG : HTTPS 200 JSON
-
-DG -> DG : Flutter: Riverpod met à jour\nDashboardProvider (cache 30min)\nfl_chart affiche courbe PAR\nKpiCard affiche 8.3% / 3.1%
+ANA -> SPRING : GET /api/v1/analyste/scoring/{clientId}\n[Cookie: imf_access]
+SPRING -> ML : SELECT ml.client_scores\nWHERE clientId = ?
+ML --> SPRING : {scoreMcrs, scoreCrs, niveauRisque}
+SPRING -> ML : SELECT ml.shap_explanations\nWHERE scoreId = ?
+ML --> SPRING : [{featureName, shapValue, rang}]
+SPRING --> ANA : 200 OK ScoringResponse
 
 @enduml

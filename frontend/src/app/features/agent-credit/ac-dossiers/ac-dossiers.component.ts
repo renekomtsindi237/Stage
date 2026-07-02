@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 
 interface DossierCredit {
@@ -40,7 +41,7 @@ interface DossierPage {
   selector: "app-ac-dossiers",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: "./ac-dossiers.component.html",
   styleUrls: ["./ac-dossiers.component.scss"],
 })

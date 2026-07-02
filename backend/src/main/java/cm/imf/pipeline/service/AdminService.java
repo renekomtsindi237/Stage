@@ -67,6 +67,7 @@ public class AdminService implements IAdminService {
     private final IUserService     userService;
     private final PasswordEncoder  passwordEncoder;
     private final R2StorageService r2;
+    private final EmailService     emailService;
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
@@ -137,6 +138,14 @@ public class AdminService implements IAdminService {
 
         User saved = userRepository.save(user);
         log.info("Utilisateur créé : {} [{}] — IMF : {}", saved.getUsername(), saved.getRole(), imf.getCode());
+
+        // Email d'accueil avec instructions de connexion (OTP)
+        if (saved.getEmail() != null && !saved.getEmail().isBlank()) {
+            emailService.sendNouvelUtilisateurEmail(
+                    saved.getEmail(), saved.getUsername(),
+                    saved.getRole().name(), imf.getNom());
+        }
+
         return UserResponse.from(saved);
     }
 

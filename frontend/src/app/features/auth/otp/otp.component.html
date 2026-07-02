@@ -1,7 +1,7 @@
 <div class="otp-card">
-  <h2 class="otp-card__title">Vérification</h2>
+  <h2 class="otp-card__title">{{ 'otp.title' | translate }}</h2>
   <p class="otp-card__subtitle">
-    Code envoyé à <strong>{{ email }}</strong>
+    {{ 'otp.subtitle_prefix' | translate }} <strong>{{ email }}</strong>
   </p>
 
   @if (error()) {
@@ -34,16 +34,16 @@
     @if (loading()) {
       <span class="material-icons-round spin">refresh</span>
     } @else {
-      Confirmer
+      {{ 'otp.submit' | translate }}
     }
   </button>
 
   <div class="otp-card__resend">
     @if (countdown() > 0) {
-      <span class="text-muted">Renvoyer dans {{ countdown() }}s</span>
+      <span class="text-muted">{{ 'otp.resend_countdown' | translate }} {{ countdown() }}{{ 'otp.resend_suffix' | translate }}</span>
     } @else {
       <button class="btn btn-ghost" (click)="resend()">
-        <span class="material-icons-round">refresh</span> Renvoyer le code
+        <span class="material-icons-round">refresh</span> {{ 'otp.resend_btn' | translate }}
       </button>
     }
   </div>

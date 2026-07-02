@@ -1,0 +1,637 @@
+<div class="page-content">
+  <div class="page-header">
+    <div>
+      <h2>{{ 'rec_creances.title' | translate }}</h2>
+      <p class="text-muted text-sm">
+        {{ page()?.totalElements ?? 0 }} dossier(s)
+      </p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <span class="material-icons-round">add</span> {{ 'rec_creances.new_btn' | translate }}
+    </button>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="material-icons-round search-icon">search</span>
+      <input
+        type="text"
+        class="form-control search-input"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        [placeholder]="'rec_creances.search_placeholder' | translate"
+      />
+    </div>
+
+    <select
+      class="form-control filter-select"
+      [ngModel]="filterPhase()"
+      (ngModelChange)="filterPhase.set($event); applyFilter()"
+    >
+      <option value="">{{ 'rec_creances.filter_all_phases' | translate }}</option>
+      @for (p of phases; track p) {
+        <option [value]="p">{{ phaseLabels[p] }}</option>
+      }
+    </select>
+
+    <label class="toggle-label">
+      <input
+        type="checkbox"
+        [ngModel]="filterClos()"
+        (ngModelChange)="filterClos.set($event); applyFilter()"
+      />
+      {{ 'rec_creances.filter_show_closed' | translate }}
+    </label>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>{{ 'rec_creances.col_client' | translate }}</th>
+          <th>{{ 'rec_creances.col_id_pret' | translate }}</th>
+          <th class="text-right">{{ 'rec_creances.col_montant' | translate }}</th>
+          <th>{{ 'rec_creances.col_retard' | translate }}</th>
+          <th>{{ 'rec_creances.col_cobac' | translate }}</th>
+          <th>{{ 'rec_creances.col_phase' | translate }}</th>
+          <th>{{ 'rec_creances.col_last_action' | translate }}</th>
+          <th>{{ 'rec_creances.col_statut' | translate }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <tr>
+              @for (__ of [1, 2, 3, 4, 5, 6, 7, 8]; track $index) {
+                <td><div class="skeleton" style="height: 14px; width: 80%"></div></td>
+              }
+            </tr>
+          }
+        } @else {
+          @for (d of filteredContent; track d.uid) {
+            <tr
+              [class.row-selected]="selectedDossier()?.uid === d.uid"
+              (click)="openDetail(d)"
+              style="cursor: pointer"
+            >
+              <td class="font-semibold">{{ d.nomClient || '—' }}</td>
+              <td class="text-muted text-sm">{{ d.idPret }}</td>
+              <td class="text-right text-danger font-semibold">
+                {{ d.montantImpaye | fcfa }}
+              </td>
+              <td>
+                <span
+                  class="retard-chip"
+                  [class.retard-severe]="d.joursRetard > 90"
+                >
+                  {{ d.joursRetard }}j
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="cobacClass(d.categorieCobtac)">
+                  {{ d.categorieCobtac || '—' }} · {{ d.tauxProvision }}%
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="phaseClass(d.phase)">
+                  {{ phaseLabels[d.phase] ?? d.phase }}
+                </span>
+              </td>
+              <td class="text-sm text-muted">
+                {{ d.dateDerniereAction ? (d.dateDerniereAction | date:'dd/MM/yy') : '—' }}
+              </td>
+              <td>
+                @if (d.clos) {
+                  <span class="badge badge-dark">{{ 'rec_creances.status_closed' | translate }}</span>
+                } @else {
+                  <span class="badge badge-basse">{{ 'rec_creances.status_open' | translate }}</span>
+                }
+              </td>
+              <td>
+                <span class="material-icons-round text-muted" style="font-size: 18px; vertical-align: middle">
+                  chevron_right
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9" class="text-center text-muted" style="padding: 32px">
+                {{ 'rec_creances.empty' | translate }}
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    @if ((page()?.totalPages ?? 0) > 1) {
+      <div class="pagination">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 0"
+          (click)="goPage(currentPage() - 1)"
+        >
+          <span class="material-icons-round">chevron_left</span>
+        </button>
+        <span class="text-sm">{{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span>
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+          (click)="goPage(currentPage() + 1)"
+        >
+          <span class="material-icons-round">chevron_right</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PANNEAU DE DÉTAIL
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (selectedDossier()) {
+  <div class="detail-overlay" (click)="closeDetail()"></div>
+  <div class="detail-panel">
+
+    <!-- En-tête -->
+    <div class="detail-header">
+      <div>
+        <h3>{{ selectedDossier()!.nomClient || selectedDossier()!.idPret }}</h3>
+        <p class="text-muted text-sm">
+          {{ 'rec_creances.detail_pret' | translate }} {{ selectedDossier()!.idPret }} {{ 'rec_creances.detail_opened_on' | translate }}
+          {{ selectedDossier()!.dateOuverture | date:'dd/MM/yyyy' }}
+        </p>
+      </div>
+      <button class="btn btn-ghost btn-sm" (click)="closeDetail()">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="detail-kpis">
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'rec_creances.kpi_montant' | translate }}</span>
+        <span class="kpi-value text-danger">{{ selectedDossier()!.montantImpaye | fcfa }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'rec_creances.kpi_jours' | translate }}</span>
+        <span class="kpi-value">{{ selectedDossier()!.joursRetard }}j</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'rec_creances.kpi_phase' | translate }}</span>
+        <span class="badge" [ngClass]="phaseClass(selectedDossier()!.phase)">
+          {{ phaseLabels[selectedDossier()!.phase] ?? selectedDossier()!.phase }}
+        </span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'rec_creances.kpi_cobac' | translate }}</span>
+        <span class="badge" [ngClass]="cobacClass(selectedDossier()!.categorieCobtac)">
+          Classe {{ selectedDossier()!.categorieCobtac || '—' }} · {{ selectedDossier()!.tauxProvision }}%
+        </span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'rec_creances.kpi_provision' | translate }}</span>
+        <span class="kpi-value" style="font-size: 14px">{{ selectedDossier()!.montantProvision | fcfa }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'rec_creances.kpi_frais' | translate }}</span>
+        <span class="kpi-value" style="font-size: 14px">{{ selectedDossier()!.fraisRecouvrement | fcfa }}</span>
+      </div>
+    </div>
+
+    <!-- Caution / Garantie -->
+    @if (selectedDossier()!.nomCaution || selectedDossier()!.typeGarantie) {
+      <div class="info-bloc">
+        <h5>{{ 'rec_creances.caution_title' | translate }}</h5>
+        <div class="info-grid">
+          @if (selectedDossier()!.typeGarantie) {
+            <div class="info-row">
+              <span class="info-label">{{ 'rec_creances.caution_type' | translate }}</span>
+              <span>{{ garantieLabels[selectedDossier()!.typeGarantie!] ?? selectedDossier()!.typeGarantie }}</span>
+            </div>
+          }
+          @if (selectedDossier()!.nomCaution) {
+            <div class="info-row">
+              <span class="info-label">{{ 'rec_creances.caution_nom' | translate }}</span>
+              <span>{{ selectedDossier()!.nomCaution }}</span>
+            </div>
+          }
+          @if (selectedDossier()!.telephoneCaution) {
+            <div class="info-row">
+              <span class="info-label">{{ 'rec_creances.caution_tel' | translate }}</span>
+              <a [href]="'tel:' + selectedDossier()!.telephoneCaution" class="text-primary">
+                {{ selectedDossier()!.telephoneCaution }}
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Clôture info (si clos) -->
+    @if (selectedDossier()!.clos) {
+      <div class="closed-banner">
+        <span class="material-icons-round">lock</span>
+        <div>
+          <strong>{{ 'rec_creances.closed_banner' | translate }}</strong>
+          <p class="text-sm text-muted" style="margin: 2px 0 0">
+            {{ selectedDossier()!.dateCloture | date:'dd/MM/yyyy' }}
+            @if (selectedDossier()!.motifCloture) {
+              · {{ selectedDossier()!.motifCloture }}
+            }
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Actions rapides (si ouvert) -->
+    @if (!selectedDossier()!.clos) {
+      <div class="detail-actions">
+        <a
+          [routerLink]="['/recouvrement/actions']"
+          [queryParams]="{ dossierUid: selectedDossier()!.uid }"
+          class="btn btn-primary btn-sm"
+        >
+          <span class="material-icons-round">add_task</span>
+          {{ 'rec_creances.action_add' | translate }}
+        </a>
+        <button class="btn btn-ghost btn-sm" (click)="openEscalade()">
+          <span class="material-icons-round">arrow_upward</span>
+          {{ 'rec_creances.action_escalate' | translate }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="openAccordForm(); switchDetailTab('accords')">
+          <span class="material-icons-round">handshake</span>
+          {{ 'rec_creances.action_accord' | translate }}
+        </button>
+        <button class="btn btn-ghost btn-sm text-danger" (click)="openCloture()">
+          <span class="material-icons-round">check_circle</span>
+          {{ 'rec_creances.action_close' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- Formulaire d'escalade -->
+    @if (showEscalade()) {
+      <div class="inline-form">
+        <h5>{{ 'rec_creances.escalade_title' | translate }}</h5>
+        <div class="form-group">
+          <label>{{ 'rec_creances.escalade_phase' | translate }}</label>
+          <select
+            class="form-control"
+            [ngModel]="escaladePhase()"
+            (ngModelChange)="escaladePhase.set($event)"
+          >
+            <option value="">{{ 'rec_creances.escalade_phase_choose' | translate }}</option>
+            @for (p of nextPhases(selectedDossier()!.phase); track p) {
+              <option [value]="p">{{ phaseLabels[p] }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>{{ 'rec_creances.escalade_motif' | translate }}</label>
+          <textarea
+            class="form-control"
+            rows="2"
+            [ngModel]="escaladeMotif()"
+            (ngModelChange)="escaladeMotif.set($event)"
+            [placeholder]="'rec_creances.escalade_motif_placeholder' | translate"
+          ></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost btn-sm" (click)="showEscalade.set(false)">{{ 'rec_creances.escalade_cancel' | translate }}</button>
+          <button class="btn btn-primary btn-sm" [disabled]="escalading()" (click)="submitEscalade()">
+            {{ escalading() ? ('rec_creances.escalade_loading' | translate) : ('rec_creances.escalade_confirm' | translate) }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Formulaire de clôture -->
+    @if (showCloture()) {
+      <div class="inline-form">
+        <h5>{{ 'rec_creances.cloture_title' | translate }}</h5>
+        <div class="form-group">
+          <label>{{ 'rec_creances.cloture_motif' | translate }}</label>
+          <textarea
+            class="form-control"
+            rows="2"
+            [ngModel]="clotureMotif()"
+            (ngModelChange)="clotureMotif.set($event)"
+            [placeholder]="'rec_creances.cloture_motif_placeholder' | translate"
+          ></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost btn-sm" (click)="showCloture.set(false)">{{ 'rec_creances.cloture_cancel' | translate }}</button>
+          <button class="btn btn-danger btn-sm" [disabled]="closing()" (click)="submitCloture()">
+            {{ closing() ? ('rec_creances.cloture_loading' | translate) : ('rec_creances.cloture_confirm' | translate) }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Onglets : Actions | Accords -->
+    <div class="detail-tabs">
+      <button
+        class="detail-tab-btn"
+        [class.active]="detailTab() === 'actions'"
+        (click)="switchDetailTab('actions')"
+      >
+        <span class="material-icons-round">history</span>
+        {{ 'rec_creances.tab_actions' | translate }}
+        @if (actions().length > 0) {
+          <span class="tab-badge">{{ actions().length }}</span>
+        }
+      </button>
+      <button
+        class="detail-tab-btn"
+        [class.active]="detailTab() === 'accords'"
+        (click)="switchDetailTab('accords')"
+      >
+        <span class="material-icons-round">handshake</span>
+        {{ 'rec_creances.tab_accords' | translate }}
+        @if (accords().length > 0) {
+          <span class="tab-badge">{{ accords().length }}</span>
+        }
+      </button>
+    </div>
+
+    <!-- ── Onglet Actions ───────────────────────────────────────────────────── -->
+    @if (detailTab() === 'actions') {
+      @if (actionsLoading()) {
+        <div class="text-center text-muted" style="padding: 16px">{{ 'rec_creances.actions_loading' | translate }}</div>
+      } @else if (actions().length === 0) {
+        <div class="empty-tab">
+          <span class="material-icons-round">inbox</span>
+          <p>{{ 'rec_creances.actions_empty' | translate }}</p>
+          @if (!selectedDossier()!.clos) {
+            <a
+              [routerLink]="['/recouvrement/actions']"
+              [queryParams]="{ dossierUid: selectedDossier()!.uid }"
+              class="btn btn-primary btn-sm"
+            >
+              {{ 'rec_creances.add_first_action' | translate }}
+            </a>
+          }
+        </div>
+      } @else {
+        <ul class="timeline">
+          @for (a of actions(); track a.uid) {
+            <li class="timeline-item">
+              <div class="timeline-dot">
+                <span class="material-icons-round" style="font-size: 12px; color: white">
+                  {{ actionIcon(a.typeAction) }}
+                </span>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <strong class="text-sm">{{ a.typeAction | titlecase }}</strong>
+                  <span class="text-muted text-sm">
+                    {{ a.dateAction | date:'dd/MM/yy HH:mm' }}
+                  </span>
+                </div>
+                @if (a.resultat) {
+                  <p class="text-sm" style="margin: 2px 0">{{ a.resultat }}</p>
+                }
+                @if (a.observation) {
+                  <p class="text-sm text-muted" style="margin: 2px 0">{{ a.observation }}</p>
+                }
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px">
+                  @if (a.promesseMontant) {
+                    <span class="badge badge-primary text-sm">
+                      {{ 'rec_creances.promise_prefix' | translate }} {{ a.promesseMontant | fcfa }}
+                    </span>
+                  }
+                  @if (a.canalPaiement) {
+                    <span class="badge badge-basse text-sm">{{ a.canalPaiement }}</span>
+                  }
+                  @if (a.referenceTransaction) {
+                    <span class="badge badge-basse text-sm">{{ 'rec_creances.ref_prefix' | translate }} {{ a.referenceTransaction }}</span>
+                  }
+                  @if (a.fraisEngages) {
+                    <span class="badge badge-moyenne text-sm">{{ 'rec_creances.frais_prefix' | translate }} {{ a.fraisEngages | fcfa }}</span>
+                  }
+                </div>
+                <p class="text-muted" style="font-size: 11px; margin: 4px 0 0">
+                  — {{ a.agentUsername }}
+                </p>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    }
+
+    <!-- ── Onglet Accords rééchelonnement ──────────────────────────────────── -->
+    @if (detailTab() === 'accords') {
+
+      <!-- Formulaire nouvel accord -->
+      @if (showAccordForm() && !selectedDossier()!.clos) {
+        <div class="inline-form">
+          <h5>{{ 'rec_creances.accord_title' | translate }}</h5>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>{{ 'rec_creances.accord_montant' | translate }}</label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="accordForm.nouveauMontantMensuel"
+                [placeholder]="'rec_creances.accord_montant_placeholder' | translate"
+                min="1"
+              />
+            </div>
+            <div class="form-group">
+              <label>{{ 'rec_creances.accord_echeances' | translate }}</label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="accordForm.nombreNouvellesEcheances"
+                [placeholder]="'rec_creances.accord_echeances_placeholder' | translate"
+                min="1"
+              />
+            </div>
+            <div class="form-group">
+              <label>{{ 'rec_creances.accord_date_debut' | translate }}</label>
+              <input
+                type="date"
+                class="form-control"
+                [(ngModel)]="accordForm.dateDebutNouvelEcheancier"
+              />
+            </div>
+            <div class="form-group">
+              <label>{{ 'rec_creances.accord_taux' | translate }}</label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="accordForm.tauxInteretAnnuel"
+                [placeholder]="'rec_creances.accord_taux_placeholder' | translate"
+                min="0"
+                step="0.1"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.accord_observations' | translate }}</label>
+            <textarea
+              class="form-control"
+              rows="2"
+              [(ngModel)]="accordForm.observations"
+              [placeholder]="'rec_creances.accord_obs_placeholder' | translate"
+            ></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost btn-sm" (click)="showAccordForm.set(false)">{{ 'rec_creances.accord_cancel' | translate }}</button>
+            <button class="btn btn-primary btn-sm" [disabled]="accordSaving()" (click)="submitAccord()">
+              {{ accordSaving() ? ('rec_creances.accord_saving' | translate) : ('rec_creances.accord_save' | translate) }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (!showAccordForm() && !selectedDossier()!.clos) {
+        <button class="btn btn-ghost btn-sm" style="margin-bottom: 12px" (click)="openAccordForm()">
+          <span class="material-icons-round">add</span>
+          {{ 'rec_creances.accord_new_btn' | translate }}
+        </button>
+      }
+
+      @if (accordsLoading()) {
+        <div class="text-center text-muted" style="padding: 16px">{{ 'rec_creances.accords_loading' | translate }}</div>
+      } @else if (accords().length === 0) {
+        <div class="empty-tab">
+          <span class="material-icons-round">handshake</span>
+          <p>{{ 'rec_creances.accords_empty' | translate }}</p>
+        </div>
+      } @else {
+        @for (ac of accords(); track ac.uid) {
+          <div class="accord-card" [class.accord-actif]="ac.actif">
+            <div class="accord-header">
+              <strong>{{ ac.nouveauMontantMensuel | fcfa }}{{ 'rec_creances.accord_per_month' | translate }}</strong>
+              @if (ac.actif) {
+                <span class="badge badge-basse">{{ 'rec_creances.accord_active' | translate }}</span>
+              } @else {
+                <span class="badge badge-dark">{{ 'rec_creances.accord_inactive' | translate }}</span>
+              }
+            </div>
+            <div class="accord-details">
+              <span>{{ ac.nombreNouvellesEcheances }} {{ 'rec_creances.accord_echeances_suffix' | translate }}</span>
+              <span>{{ 'rec_creances.accord_debut' | translate }} {{ ac.dateDebutNouvelEcheancier | date:'dd/MM/yyyy' }}</span>
+              @if (ac.tauxInteretAnnuel) {
+                <span>{{ ac.tauxInteretAnnuel }}{{ 'rec_creances.accord_taux_suffix' | translate }}</span>
+              }
+              @if (ac.approuveParUsername) {
+                <span>{{ 'rec_creances.accord_approved_by' | translate }} {{ ac.approuveParUsername }}</span>
+              }
+            </div>
+            @if (ac.observations) {
+              <p class="text-muted text-sm" style="margin: 6px 0 0">{{ ac.observations }}</p>
+            }
+          </div>
+        }
+      }
+    }
+
+  </div><!-- /detail-panel -->
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL NOUVEAU DOSSIER
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="closeCreate()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3>{{ 'rec_creances.modal_title' | translate }}</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeCreate()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_id_pret' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.idPret"
+              [placeholder]="'rec_creances.modal_id_placeholder' | translate"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_nom_client' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.nomClient"
+              [placeholder]="'rec_creances.modal_nom_placeholder' | translate"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_montant' | translate }}</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.montantImpaye"
+              [placeholder]="'rec_creances.modal_montant_placeholder' | translate"
+              min="1"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_jours' | translate }}</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.joursRetard"
+              [placeholder]="'rec_creances.modal_jours_placeholder' | translate"
+              min="1"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_date_echeance' | translate }}</label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.datePremiereEcheanceImpayee"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_garantie' | translate }}</label>
+            <select class="form-control" [(ngModel)]="form.typeGarantie">
+              <option value="">{{ 'rec_creances.modal_garantie_none' | translate }}</option>
+              <option value="NANTISSEMENT">{{ 'rec_creances.modal_garantie_nantissement' | translate }}</option>
+              <option value="HYPOTHEQUE">{{ 'rec_creances.modal_garantie_hypotheque' | translate }}</option>
+              <option value="CAUTION_SOLIDAIRE">{{ 'rec_creances.modal_garantie_caution' | translate }}</option>
+              <option value="AUTRE">{{ 'rec_creances.modal_garantie_autre' | translate }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_nom_caution' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.nomCaution"
+              [placeholder]="'rec_creances.modal_nom_caution_placeholder' | translate"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ 'rec_creances.modal_tel_caution' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.telephoneCaution"
+              [placeholder]="'rec_creances.modal_tel_placeholder' | translate"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn-ghost" (click)="closeCreate()">{{ 'rec_creances.modal_cancel' | translate }}</button>
+        <button class="btn btn-primary" [disabled]="saving()" (click)="submitCreate()">
+          {{ saving() ? ('rec_creances.modal_creating' | translate) : ('rec_creances.modal_open' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

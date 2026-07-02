@@ -10,6 +10,9 @@ import cm.imf.pipeline.enums.CategorieCobtac;
 import cm.imf.pipeline.enums.RecouvrementPhase;
 import cm.imf.pipeline.enums.ResultatActionRecouvrement;
 import cm.imf.pipeline.enums.TypeActionRecouvrement;
+import cm.imf.pipeline.repository.ActionRecouvrementRepository;
+import cm.imf.pipeline.repository.RecouvrementDossierRepository;
+import cm.imf.pipeline.service.IAlertService;
 import cm.imf.pipeline.service.IRecouvrementService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +45,9 @@ class RecouvrementControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper mapper;
     @MockBean  IRecouvrementService recouvrementService;
+    @MockBean  IAlertService alerteService;
+    @MockBean  RecouvrementDossierRepository dossierRepo;
+    @MockBean  ActionRecouvrementRepository actionRepo;
 
     // ── Fixtures ──────────────────────────────────────────────────────────────
 

@@ -1,34 +1,34 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Caisse</h2>
+      <h2>{{ 'caisse.title' | translate }}</h2>
       <p class="text-muted text-sm">{{ today }}</p>
     </div>
     <div style="display: flex; gap: 8px">
       <a routerLink="/caisse/encaissements" class="btn btn-primary">
-        <span class="material-icons-round">add</span> Encaissement
+        <span class="material-icons-round">add</span> {{ 'caisse.encaissement' | translate }}
       </a>
       <a routerLink="/caisse/decaissements" class="btn btn-ghost">
-        <span class="material-icons-round">remove</span> Décaissement
+        <span class="material-icons-round">remove</span> {{ 'caisse.decaissement' | translate }}
       </a>
     </div>
   </div>
 
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card
-      label="Encaissements du jour"
+      [label]="'caisse.encaissements_jour' | translate"
       [value]="data()?.encaissementsJour ?? 0"
       [loading]="loading()"
       [isCurrency]="true"
     />
     <app-stat-card
-      label="Décaissements du jour"
+      [label]="'caisse.decaissements_jour' | translate"
       [value]="data()?.decaissementsJour ?? 0"
       [loading]="loading()"
       [isCurrency]="true"
     />
     <app-stat-card
-      label="Solde net"
+      [label]="'caisse.solde_net' | translate"
       [value]="data()?.soldeNet ?? 0"
       [loading]="loading()"
       [isCurrency]="true"
@@ -39,22 +39,22 @@
     <div
       style="display: flex; justify-content: space-between; margin-bottom: 16px"
     >
-      <h4>Journal du jour</h4>
+      <h4>{{ 'caisse.journal_jour' | translate }}</h4>
       <a
         routerLink="/caisse/journal"
         class="text-sm"
         style="color: var(--color-primary)"
-        >Journal complet</a
+        >{{ 'caisse.journal_complet' | translate }}</a
       >
     </div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>Type</th>
-          <th>Client / Bénéficiaire</th>
-          <th>Montant</th>
-          <th>Canal</th>
-          <th>Heure</th>
+          <th>{{ 'caisse.col_type' | translate }}</th>
+          <th>{{ 'caisse.col_client' | translate }}</th>
+          <th>{{ 'common.amount' | translate }}</th>
+          <th>{{ 'caisse.col_canal' | translate }}</th>
+          <th>{{ 'caisse.col_heure' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -80,8 +80,8 @@
                 >
                   {{
                     op.type === "ENCAISSEMENT"
-                      ? "+ Encaissement"
-                      : "- Décaissement"
+                      ? ("caisse.type_encaissement" | translate)
+                      : ("caisse.type_decaissement" | translate)
                   }}
                 </span>
               </td>

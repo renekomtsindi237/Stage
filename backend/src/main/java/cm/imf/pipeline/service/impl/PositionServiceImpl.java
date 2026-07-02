@@ -119,6 +119,18 @@ public class PositionServiceImpl implements IPositionService {
     @Override
     @Transactional
     public void desactiverPartage(Long agentId, Long imfId) {
+        // Vérifier si la géolocalisation est obligatoire pour cette IMF
+        Boolean gpsObligatoire = jdbc.queryForObject(
+                "SELECT gps_obligatoire FROM app.imf WHERE id = ?",
+                Boolean.class, imfId);
+
+        if (Boolean.TRUE.equals(gpsObligatoire)) {
+            throw new BusinessException(
+                    "La géolocalisation est obligatoire pour les agents de cette institution. "
+                    + "Le partage de position ne peut pas être désactivé.",
+                    org.springframework.http.HttpStatus.FORBIDDEN);
+        }
+
         int updated = jdbc.update("""
                 UPDATE app.utilisateurs
                 SET position_active = FALSE,
@@ -191,6 +203,37 @@ public class PositionServiceImpl implements IPositionService {
                   AND u.latitude IS NOT NULL
                   AND u.position_active = TRUE
                 ORDER BY en_deplacement DESC, u.username
+                """,
+                POSITION_ROW_MAPPER, imfId);
+    }
+
+    // ── Toutes dernières positions (carte complète) ───────────────────────────
+
+    @Override
+    public List<AgentPositionResponse> listerDernieresPositions(Long imfId) {
+        return jdbc.query("""
+                SELECT
+                    u.uid::text      AS agent_uid,
+                    u.id             AS agent_id,
+                    u.username,
+                    u.username       AS nom_complet,
+                    NULL::TEXT       AS nom_agence,
+                    NULL::TEXT       AS ville_agence,
+                    u.latitude,
+                    u.longitude,
+                    u.precision_gps_m,
+                    NULL::NUMERIC    AS altitude_m,
+                    NULL::NUMERIC    AS vitesse_kmh,
+                    (u.derniere_position_at > NOW() - INTERVAL '15 minutes'
+                     AND u.position_active = TRUE)  AS en_deplacement,
+                    'MOBILE'         AS source,
+                    u.derniere_position_at           AS captured_at
+                FROM app.utilisateurs u
+                WHERE u.imf_id  = ?
+                  AND u.role    = 'AGENT'
+                  AND u.actif   = TRUE
+                  AND u.latitude IS NOT NULL
+                ORDER BY u.derniere_position_at DESC NULLS LAST
                 """,
                 POSITION_ROW_MAPPER, imfId);
     }

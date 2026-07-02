@@ -1,111 +1,91 @@
 @startuml SEQ06_saisie_collecte_mobile
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 1.5
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ06 — Saisie Collecte Mobile (Flutter)\nMode Online + Offline-First + Synchronisation
+title SEQ06 - Saisie collecte mobile (offline-first)
 
-actor "Agent de Terrain" as AGENT
-participant "Flutter App\n(SaisieCollecteScreen)" as APP
-participant "CollecteProvider\n(Riverpod)" as PROV
-participant "ApiClient\n(Dio + Auth Interceptor)" as API_CLIENT
-database "SQLite Local\n(sqflite)" as LOCAL
-participant "Spring Boot API\n(:8080)" as SPRING
-database "PostgreSQL\n(staging)" as PG
-participant "SyncService\n(ConnectivityPlus)" as SYNC
+actor "Agent Terrain" as AGENT
+participant "Flutter App\n(CollecteFeature)" as APP
+participant "CollecteProvider\n(Provider 6.1)" as PROV
+database "SQLite local\n(sqflite)" as LOCAL
+participant "Spring Boot API\n/api/v1 - :8080" as API
+database "PostgreSQL 15\n(app.collectes_terrain)" as PG
 
-== Saisie du formulaire ==
+== Saisie ==
 
 AGENT -> APP : Ouvre "Nouvelle collecte"
-APP -> LOCAL : <b>SELECT</b> clients WHERE agent_id = {agent_connecté}
-LOCAL --> APP : Liste clients locaux (chargés au login)
+APP -> LOCAL : SELECT clients WHERE agentId = {uid}
+LOCAL --> APP : liste clients locaux
 
-AGENT -> APP : Remplit formulaire :\nclient, prêt, montant, mode,\nréférence transaction MTN/Orange
+AGENT -> APP : clientId, montant, canal,\nref. transaction, observation
+APP -> PROV : soumettre(form)
+PROV -> PROV : validate()\nGenere uid = UUID.v4()
 
-APP -> PROV : soumettre(collecteForm)
-PROV -> PROV : <b>validate()</b>\nmontant > 0, client non null
+== Mode connecte ==
 
-== Tentative envoi en ligne ==
+alt Reseau disponible
 
-PROV -> API_CLIENT : <b>POST</b> /api/collectes\n{client_id, pret_id, montant, canal,\nreference_transaction, date_collecte}
+  PROV -> API : POST /api/v1/collectes\n{uid, clientId, agentId, montant, canal}
+  activate API
+  API -> API : JwtFilter - valide cookie imf_access\nverifie role AGENT_TERRAIN
+  API -> PG : SELECT uid FROM collectes_terrain WHERE uid = ?\n(deduplication)
+  PG --> API : absent
+  API -> PG : INSERT collectes_terrain {uid, ..., statut=SOUMISE}
+  PG --> API : OK
+  API --> PROV : 201 Created {uid, statut: "SOUMISE"}
+  deactivate API
+  PROV -> LOCAL : INSERT {uid, statut=CONFIRMEE}
+  PROV --> APP : success
+  APP --> AGENT : Collecte enregistree - uid: {uid}
 
-API_CLIENT -> API_CLIENT : Injecte header\nAuthorization: Bearer <JWT>
+else Hors ligne
 
-alt <b>Connexion réseau disponible</b>
+  PROV -> LOCAL : INSERT {uid, statut=PENDING_SYNC}
+  PROV --> APP : saved_offline
+  APP --> AGENT : Sauvegarde hors ligne
 
-  API_CLIENT -> SPRING : <b>HTTP POST</b> /api/collectes
-  activate SPRING
+  note over AGENT, LOCAL
+    Plusieurs collectes peuvent etre
+    saisies hors ligne. Chaque collecte
+    possede un UUID unique.
+  end note
 
-  SPRING -> SPRING : <b>JwtFilter :</b> valide JWT\nVérifie rôle = AGENT
+  == Retour de connectivite ==
 
-  SPRING -> PG : <b>SELECT</b> collectes\nWHERE reference_transaction = ?\nAND date_collecte = TODAY\n(détection doublon)
-  PG --> SPRING : doublon ? non
+  PROV -> PROV : ConnectivityPlus detecte reseau
+  PROV -> LOCAL : SELECT * FROM collectes\nWHERE statut = PENDING_SYNC
+  LOCAL --> PROV : [collecte_1, collecte_2, ...]
 
-  SPRING -> PG : <b>INSERT INTO</b>\nstaging.collectes_terrain\n{...collecte..., statut='CONFIRME'}
-  PG --> SPRING : id_collecte = 789
-
-  SPRING --> API_CLIENT : <b>201 Created</b>\n{"id": "COL-2026-789",\n "statut": "CONFIRME"}
-  deactivate SPRING
-
-  API_CLIENT --> PROV : CollecteResponse
-
-  PROV -> LOCAL : <b>INSERT</b> collecte\navec statut = SYNCED\n(historique local)
-
-  PROV --> APP : state = success
-  APP --> AGENT : ✅ "Collecte enregistrée\nID: COL-2026-789"
-
-else <b>Hors ligne (réseau indisponible)</b>
-
-  API_CLIENT --> PROV : DioException (réseau)
-
-  PROV -> LOCAL : <b>INSERT</b> collecte\n{...données..., statut = PENDING_SYNC}
-  LOCAL --> PROV : id_local = 55
-
-  PROV --> APP : state = saved_offline
-  APP --> AGENT : 📶 "Sauvegardé hors ligne\nSera synchronisé au retour réseau"
-
-  note over AGENT, LOCAL : Agent continue à saisir\nd'autres collectes hors ligne
-
-  == Retour de la connectivité ==
-
-  SYNC -> SYNC : <b>ConnectivityPlus</b> détecte\nretour réseau WiFi ou 4G
-
-  SYNC -> LOCAL : <b>SELECT</b> * FROM collectes\nWHERE statut = PENDING_SYNC\nORDER BY created_at ASC
-
-  LOCAL --> SYNC : [collecte_55, collecte_56, ...]
-
-  loop <b>Pour chaque collecte en attente</b>
-
-    SYNC -> SPRING : <b>POST</b> /api/collectes {collecte}
-    activate SPRING
-
-    alt <b>Succès (201)</b>
-      SPRING --> SYNC : 201 Created
-      SYNC -> LOCAL : <b>UPDATE</b> statut = SYNCED\nsynced_at = NOW()
-
-    else <b>Doublon (409)</b>
-      SPRING --> SYNC : 409 Conflict
-      SYNC -> LOCAL : <b>UPDATE</b> statut = DUPLICATE
-
-    else <b>Erreur serveur (5xx)</b>
-      SPRING --> SYNC : 500 Server Error
-      SYNC -> LOCAL : <b>UPDATE</b> retry_count += 1\n(réessai au prochain check)
+  loop Pour chaque collecte en attente
+    PROV -> API : POST /api/v1/collectes {collecte}
+    activate API
+    alt 201 Created
+      API --> PROV : 201
+      PROV -> LOCAL : UPDATE statut = CONFIRMEE
+    else 409 Conflict (doublon UUID)
+      API --> PROV : 409
+      PROV -> LOCAL : UPDATE statut = DOUBLON
+    else 5xx Erreur serveur
+      API --> PROV : 500
+      PROV -> LOCAL : retryCount += 1
     end
-
-    deactivate SPRING
+    deactivate API
   end
 
-  SYNC -> APP : <b>Notification in-app</b>\n"N collecte(s) synchronisée(s)"
-  APP --> AGENT : 🔔 Toast notification
+  APP --> AGENT : N collecte(s) synchronisee(s)
 
 end
 

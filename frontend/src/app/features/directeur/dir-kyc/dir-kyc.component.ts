@@ -10,6 +10,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import {
   KycDossier,
@@ -89,7 +90,7 @@ const TYPE_LABEL: Record<string, string> = {
   selector: "app-dir-kyc",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: "./dir-kyc.component.html",
   styleUrls: ["./dir-kyc.component.scss"],
 })

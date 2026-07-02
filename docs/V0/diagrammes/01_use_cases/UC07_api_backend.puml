@@ -1,65 +1,68 @@
 @startuml UC07_api_backend
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam actorStyle awesome
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam actorStyle none
 skinparam usecase {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 11
+  BackgroundColor white
+  BorderColor #666666
 }
 skinparam actor {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
+  BackgroundColor white
+  BorderColor #333333
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam rectangle {
+  BackgroundColor #F8F8F8
+  BorderColor #AAAAAA
+}
 
-title UC07 — Backend API Spring Boot\nPlateforme IMF Cameroun
+title UC07 - Backend API Spring Boot 3.3 / Java 21\nGestion contrats et dossiers credit
 
 left to right direction
 
-actor "Angular (Web)" as ANG <<système>>
-actor "Flutter (Mobile)" as FLT <<système>>
-actor "Pipeline Python" as PY <<système>>
-actor "Firebase FCM" as FCM <<système>>
-actor "PostgreSQL DW" as PG <<système>>
+actor "Angular (Web)" as ANG <<systeme>>
+actor "Flutter (Mobile)" as FLT <<systeme>>
+actor "Agent de Saisie\n(AGENT_SAISIE)" as SAI
+actor "PostgreSQL 15" as PG <<systeme>>
 
-rectangle "UC07 — Backend API Spring Boot" {
+rectangle "UC07 - Backend API Spring Boot" {
 
-  usecase "UC07.1\nAuthentifier\nune requête\n(validation JWT)" as UC0701
-  usecase "UC07.2\nAutoriser par\nrôle (RBAC)\n(DIRECTEUR/RR/AGENT...)" as UC0702
-  usecase "UC07.3\nExposer KPIs\n(PAR, collectes,\nrecouvrement)" as UC0703
-  usecase "UC07.4\nEnregistrer\nune collecte\nterrain (POST)" as UC0704
-  usecase "UC07.5\nGérer les alertes\n(liste, clôture,\nescalade)" as UC0705
-  usecase "UC07.6\nEnvoyer push\nnotification FCM\n(sur alerte)" as UC0706
-  usecase "UC07.7\nGérer les\nutilisateurs\n(CRUD + rôles)" as UC0707
-  usecase "UC07.8\nLogger chaque\nappel API\n(audit trail)" as UC0708
-  usecase "UC07.9\nExposerl doc\nAPI Swagger\n(OpenAPI 3.0)" as UC0709
+  usecase "UC07.1\nAuthentifier une requete\n(validation cookie imf_access)" as UC0701
+  usecase "UC07.2\nAutoriser par role\n(RBAC Spring Security)" as UC0702
+  usecase "UC07.3\nExposer KPIs\n(PAR, collectes, recouvrement)" as UC0703
+  usecase "UC07.4\nEnregistrer collecte\nterrain (POST)" as UC0704
+  usecase "UC07.5\nGerer alertes\n(liste, cloture, escalade)" as UC0705
+  usecase "UC07.6\nGerer dossiers credit\net contrats" as UC0706
+  usecase "UC07.7\nGerer utilisateurs\n(CRUD + roles)" as UC0707
+  usecase "UC07.8\nLoguer chaque\nappel API (audit trail)" as UC0708
+  usecase "UC07.9\nExposer doc\nAPI Swagger (OpenAPI 3.0)" as UC0709
+  usecase "UC07.10\nServir stream SSE\n(notifications web temps reel)" as UC0710
 
 }
 
-' Consommateurs de l'API
 ANG --> UC0701
 ANG --> UC0703
 ANG --> UC0705
-ANG --> UC0707
+ANG --> UC0706
+ANG --> UC0710
 FLT --> UC0701
 FLT --> UC0703
 FLT --> UC0704
-FLT --> UC0605
+SAI --> UC0706
 
-' Sources systèmes
 PG  --> UC0703
 UC0704 --> PG
-UC0706 --> FCM
+UC0706 --> PG
 
-' Inclusions
 UC0701 ..> UC0702 : <<include>>
 UC0703 ..> UC0701 : <<include>>
 UC0704 ..> UC0701 : <<include>>
 UC0705 ..> UC0701 : <<include>>
-UC0705 ..> UC0706 : <<extend>>
+UC0706 ..> UC0701 : <<include>>
 UC0703 ..> UC0708 : <<include>>
 UC0704 ..> UC0708 : <<include>>
 

@@ -44,6 +44,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByImfIdAndRoleIn(Long imfId, List<Role> roles);
 
+    Page<User> findByImfIdAndRoleIn(Long imfId, List<Role> roles, Pageable pageable);
+
     List<User> findByImfIdAndZoneIdAndRoleIn(Long imfId, String zoneId, List<Role> roles);
 
     List<User> findByImfIdAndRoleAndFcmTokenIsNotNull(Long imfId, Role role);
@@ -66,6 +68,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT DISTINCT u.imf.id FROM User u WHERE u.role = :role AND u.imf IS NOT NULL")
     java.util.Set<Long> findImfIdsByRole(@org.springframework.data.repository.query.Param("role") Role role);
+
+    long countByImfIdAndRoleIn(Long imfId, List<Role> roles);
 
     @Modifying
     @Query("UPDATE User u SET u.fcmToken = :token WHERE u.id = :userId")

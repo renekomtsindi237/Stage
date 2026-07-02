@@ -53,6 +53,61 @@
   line-height: 1.4;
 }
 
+// ── Onglets ───────────────────────────────────────────────────────────────────
+.notif-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.notif-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  background: none;
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+
+  &.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.notif-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+
+  &--unread {
+    background: var(--color-danger);
+    color: #fff;
+  }
+}
+
+// ── Liste ─────────────────────────────────────────────────────────────────────
 .notif-list {
   flex: 1;
   overflow-y: auto;

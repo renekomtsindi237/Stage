@@ -1,72 +1,70 @@
 @startuml SEQ02_calcul_par
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 1.5
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ02 — Calcul Quotidien PAR30 / PAR90\ndbt Core + PostgreSQL
+title SEQ02 - Calcul quotidien PAR30 / PAR90\ndbt Core 1.8 + PostgreSQL 15
 
 actor "Airflow Scheduler" as SCHED
-participant "DAG\ndag_transform_dw" as DAG
-participant "dbt Core\n(modèles SQL)" as DBT
-database "PostgreSQL\nstaging" as STG
-database "PostgreSQL\ndw" as DW
+participant "DAG\ndag_kpis_quotidien" as DAG
+participant "dbt Core 1.8\n(modeles SQL)" as DBT
+database "PostgreSQL 15\nstaging" as STG
+database "PostgreSQL 15\ndw" as DW
 participant "dbt Tests" as TESTS
 
-SCHED -> DAG : <b>Trigger</b> après succès dag_ingest_*\n(07h00 — ordre de dépendance)
+SCHED -> DAG : Trigger apres succes dag_ingestion_*\n(06h30 - ordre de dependance)
 activate DAG
 
-DAG -> DBT : <b>dbt run</b> --select staging.*\n(modèles de nettoyage)
+DAG -> DBT : dbt run --select staging.*
 activate DBT
 
-DBT -> STG : <b>SELECT</b> prets, echeances, remboursements\n(données ingérées du jour)
-STG --> DBT : Dataset prêts actifs + historique
+DBT -> STG : SELECT creances, echeances, collectes\n(donnees ingeres du jour)
+STG --> DBT : Dataset actif
 
-DBT -> STG : <b>CREATE/REPLACE VIEW</b>\nstg_prets, stg_echeances,\nstg_remboursements
-DBT --> DAG : staging terminé ✓
+DBT -> STG : CREATE TABLE stg_clients,\nstg_collectes_terrain,\nstg_creances, stg_prix_produits
+DBT --> DAG : staging termine
 
-DAG -> DBT : <b>dbt run</b> --select marts.fact_par_quotidien
-note over DBT : Modèle SQL calculant le PAR\npar zone et par produit
+DAG -> DBT : dbt run --select intermediate.*\n(agregats metier)
+DBT -> STG : CTE calcul joursRetard\nSELECT CURRENT_DATE - dateEcheance\nWHERE montantRestant > 0
+STG --> DBT : joursRetard par creance
 
-DBT -> STG : <b>CTE encours_prets :</b>\nSELECT montant_octroye - SUM(remboursements)\n= capital_restant_du par prêt
-STG --> DBT : Encours par prêt
+DBT -> DBT : Calcul PAR30 :\nSUM(encours) WHERE joursRetard > 30\n/ SUM(encours_total) par agence
 
-DBT -> STG : <b>CTE retard_par_pret :</b>\nSELECT MAX(CURRENT_DATE - date_echeance)\nWHERE montant_restant > 0\n= jours_retard_max par prêt
-STG --> DBT : Jours de retard max
+DBT -> DBT : Calcul PAR90 :\nSUM(encours) WHERE joursRetard > 90\n/ SUM(encours_total) par agence
 
-DBT -> DBT : <b>Calcul PAR30 :</b>\nSUM(capital) WHERE jours_retard > 30\n/ SUM(capital_total) par zone/produit
-
-DBT -> DBT : <b>Calcul PAR90 :</b>\nSUM(capital) WHERE jours_retard > 90\n/ SUM(capital_total) par zone/produit
-
-DBT -> DW : <b>INSERT INTO</b> dw.fact_par_quotidien\n(date_id, zone_id, produit_id,\nencours_total, encours_par30, taux_par30,\nencours_par90, taux_par90, nb_prets_actifs)
+DBT -> DW : INSERT INTO dw.mart_kpi_recouvrement\n(agence_id, date_snapshot, encours_par30,\ntaux_par30, encours_par90, taux_par90, ...)
 DW --> DBT : {rows_inserted: Z}
 
 deactivate DBT
 
-DAG -> TESTS : <b>dbt test</b> --select marts.fact_par_quotidien
+DAG -> TESTS : dbt test --select mart.*
 activate TESTS
-TESTS -> DW : Vérifier not_null(date_id, encours_total)
-TESTS -> DW : Vérifier taux_par30 BETWEEN 0 AND 1
-TESTS -> DW : Vérifier taux_par90 <= taux_par30
-DW --> TESTS : Tests results
-TESTS --> DAG : {passed: 3, failed: 0} ✓
+TESTS -> DW : Verifier not_null(agence_id, encours_total)
+TESTS -> DW : Verifier taux_par30 BETWEEN 0 AND 1
+TESTS -> DW : Verifier taux_par90 <= taux_par30
+DW --> TESTS : tests results
+TESTS --> DAG : {passed: N, failed: 0}
 deactivate TESTS
 
-DAG -> DBT : <b>dbt run</b> --select reporting.*\n(Rafraîchir vues matérialisées)
+DAG -> DBT : dbt run --select mart.mart_benchmarks_agences
 activate DBT
-DBT -> DW : <b>REFRESH MATERIALIZED VIEW</b>\nreporting.v_kpi_recouvrement\nreporting.v_kpi_executif
+DBT -> DW : INSERT dw.mart_benchmarks_agences\n(rang_agence, score_performance, ...)
 DW --> DBT : OK
 deactivate DBT
 
-DAG --> SCHED : Task <b>transform_dw</b> → SUCCESS ✓\n(durée ~25 min)
+DAG --> SCHED : Task dag_kpis_quotidien -> SUCCESS\n(duree ~20 min)
 deactivate DAG
 
 @enduml

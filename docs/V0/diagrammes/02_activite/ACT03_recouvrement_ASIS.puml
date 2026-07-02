@@ -1,68 +1,71 @@
 @startuml ACT03_recouvrement_ASIS
-!theme plain
-skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
 skinparam activity {
-  BackgroundColor #FFF8E1
-  BorderColor #F57F17
-  FontSize 12
-  DiamondBackgroundColor #FCE4EC
-  DiamondBorderColor #C62828
+  BackgroundColor white
+  BorderColor #666666
+  DiamondBackgroundColor white
+  DiamondBorderColor #666666
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
+skinparam note {
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
+}
 
-title ACT03 — Processus Recouvrement\nSituation Actuelle (AS-IS)
+title ACT03 - Processus Recouvrement - Situation Actuelle (AS-IS)
 
-|#FCE4EC| Responsable Recouvrement |
-|#E8F5E9| Core Banking System |
-|#FFF9C4| Agent de Terrain |
-|#E3F2FD| Client |
+| Responsable Recouvrement |
+| Core Banking System |
+| Agent de Terrain |
+| Client |
 
 start
 
 |Responsable Recouvrement|
-:<color:#C62828>Consultation manuelle du CBS\nhebdomadaire ou mensuelle</color>;
-note right : <color:#C62828>PD02 — Pas de\ndétection quotidienne</color>
+:Consultation manuelle du CBS\nhebdomadaire ou mensuelle;
+note right : PD02 - Pas de detection quotidienne
 
 |Core Banking System|
-:Export manuel\ndes impayés (Excel);
+:Export manuel des impayes (Excel);
 
 |Responsable Recouvrement|
-:<color:#C62828>Tri et identification\nmanuelle des PAR30+</color>;
-note right : <color:#C62828>PD02 — Calcul\nmanuel PAR</color>
+:Tri et identification\nmanuelle des PAR30+;
+note right : PD02 - Calcul manuel PAR
 
-:<color:#C62828>Appel téléphonique\nmanuel aux agents terrain</color>;
-note right : <color:#C62828>PD06 — Non\ntracé</color>
+:Appel telephonique manuel\naux agents terrain;
+note right : PD06 - Non trace
 
 |Agent de Terrain|
-:Reçoit instruction\nde relancer le client;
+:Recoit instruction\nde relancer le client;
 :Contacte le client;
 
-if (Client dispose\nde fonds ?) then (Oui)
+if (Client dispose de fonds ?) then (Oui)
 
   |Client|
   :Effectue paiement;
 
   |Agent de Terrain|
-  :Collecte le paiement\n(espèces ou mobile);
+  :Collecte le paiement\n(especes ou mobile);
 
   |Core Banking System|
-  :<color:#C62828>Saisie manuelle\npar caissier (délai 1 à 3 jours)</color>;
-  note right : <color:#C62828>Délai de mise\nà jour du solde</color>
+  :Saisie manuelle par caissier\n(delai 1 a 3 jours);
+  note right : Delai de mise a jour du solde
 
   |Responsable Recouvrement|
-  :<color:#C62828>Mise à jour Excel\nregistre de recouvrement</color>;
+  :Mise a jour Excel\nregistre de recouvrement;
 
 else (Non)
 
   |Agent de Terrain|
-  :<color:#C62828>Note dans registre papier / WhatsApp\n(PD06 — Non structuré)</color>;
+  :Note dans registre papier\n(PD06 - non structure);
 
   |Responsable Recouvrement|
-  :<color:#C62828>Analyse du délai de retard</color>;
+  :Analyse du delai de retard;
   if (Retard > 90 jours ?) then (Oui)
-    :<color:#C62828>Réunion mensuelle\npour décision write-off</color>;
+    :Reunion mensuelle\npour decision write-off;
   else (Non)
     :Re-planifier relance;
   endif
@@ -70,8 +73,8 @@ else (Non)
 endif
 
 |Responsable Recouvrement|
-:<color:#C62828>Rapport mensuel\nmanuel (Word/PDF)</color>;
-note right : <color:#C62828>PD05 — Données\nobsolètes, basé sur Excel</color>
+:Rapport mensuel manuel\n(Word/PDF);
+note right : PD05 - Donnees obsoletes
 
 stop
 

@@ -10,6 +10,7 @@ import { RouterLink } from "@angular/router";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import { TranslatePipe } from "@ngx-translate/core";
 
 interface OperationCaisse {
   id: string;
@@ -31,7 +32,7 @@ interface CaiDashboard {
   selector: "app-cai-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe],
+  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
   templateUrl: "./cai-dashboard.component.html",
   styleUrls: ["./cai-dashboard.component.scss"],
 })

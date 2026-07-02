@@ -1,117 +1,176 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Carte des agents</h2>
+      <h2>{{ 'dir_carte.title' | translate }}</h2>
       <p class="text-muted text-sm">
-        Positions GPS en temps réel — actualisation auto 30s
+        {{ allAgents().length }} {{ 'dir_carte.subtitle_agents' | translate }}
+        · {{ activeAgents().length }} {{ 'dir_carte.subtitle_active' | translate }}
       </p>
     </div>
-    <button class="btn btn-ghost" (click)="load()">
-      <span class="material-icons-round">my_location</span> Actualiser
-    </button>
+    <div class="header-actions">
+      <button
+        class="btn btn-ghost"
+        [class.btn-primary]="showAllPositions()"
+        (click)="toggleShowAll()"
+        [title]="'dir_carte.btn_toggle_title' | translate"
+      >
+        <span class="material-icons-round">
+          {{ showAllPositions() ? 'location_on' : 'location_off' }}
+        </span>
+        <span class="btn-label">{{ showAllPositions() ? ('dir_carte.btn_all_positions' | translate) : ('dir_carte.btn_active_only' | translate) }}</span>
+      </button>
+      <button class="btn btn-ghost" (click)="fitAll()" [title]="'dir_carte.btn_see_all_title' | translate">
+        <span class="material-icons-round">zoom_out_map</span>
+        <span class="btn-label">{{ 'dir_carte.btn_see_all' | translate }}</span>
+      </button>
+      <button class="btn btn-ghost" (click)="fitCameroun()">
+        <span class="material-icons-round">public</span>
+        <span class="btn-label">{{ 'dir_carte.btn_cameroun' | translate }}</span>
+      </button>
+      <button class="btn btn-ghost" (click)="load()">
+        <span class="material-icons-round">refresh</span>
+        <span class="btn-label">{{ 'dir_carte.btn_refresh' | translate }}</span>
+      </button>
+    </div>
   </div>
 
+  @if (error()) {
+    <div class="alert alert-danger" style="margin-bottom:12px">
+      <span class="material-icons-round">error_outline</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
   <div class="map-layout">
-    <!-- Agent list -->
+
+    <!-- ── Panneau liste agents ──────────────────────────────── -->
     <div class="agent-list card">
-      <h3 style="margin-bottom: 12px">{{ agents().length }} agents</h3>
+      <div class="list-header">
+        <h3>{{ 'dir_carte.list_title' | translate }}</h3>
+        <div class="legend-row">
+          <span class="legend-dot legend-dot--active"></span><span class="legend-label">{{ 'dir_carte.legend_active' | translate }}</span>
+          <span class="legend-dot legend-dot--inactive"></span><span class="legend-label">{{ 'dir_carte.legend_inactive' | translate }}</span>
+        </div>
+      </div>
 
       @if (loading()) {
         @for (_ of [1, 2, 3, 4]; track $index) {
           <div class="agent-item">
-            <div
-              class="skeleton"
-              style="height: 14px; width: 120px; margin-bottom: 4px"
-            ></div>
-            <div class="skeleton" style="height: 12px; width: 80px"></div>
+            <div class="skeleton" style="width:36px;height:36px;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1">
+              <div class="skeleton" style="height:13px;width:110px;margin-bottom:5px"></div>
+              <div class="skeleton" style="height:11px;width:70px"></div>
+            </div>
           </div>
         }
       } @else {
-        @for (a of agents(); track a.agentUid) {
+        @for (a of displayedAgents; track a.agentUid) {
           <div
             class="agent-item"
             [class.active]="selected()?.agentUid === a.agentUid"
             (click)="select(a)"
           >
-            <div class="agent-avatar">{{ a.prenom[0] }}{{ a.nom[0] }}</div>
-            <div style="flex: 1">
-              <p class="font-semibold text-sm">{{ a.prenom }} {{ a.nom }}</p>
-              <span class="badge badge-sm" [ngClass]="statusClass(a.statut)">{{
-                statusLabel(a.statut)
-              }}</span>
+            <div
+              class="agent-avatar"
+              [class.avatar-active]="a.enDeplacement"
+            >{{ initials(a) }}</div>
+            <div style="flex:1;min-width:0">
+              <p class="agent-name">{{ a.nomComplet || a.username }}</p>
+              @if (a.nomAgence) {
+                <p class="agent-agence">{{ a.nomAgence }}</p>
+              }
+              <span class="badge badge-sm" [ngClass]="statusClass(a)">
+                {{ statusLabel(a) }}
+              </span>
             </div>
-            <span
-              class="material-icons-round text-muted"
-              style="font-size: 16px"
-              >chevron_right</span
-            >
+            <span class="material-icons-round nav-arrow">chevron_right</span>
           </div>
         } @empty {
-          <p class="text-muted text-sm" style="padding: 16px 0">
-            Aucun agent localisé.
-          </p>
+          <div class="empty-state">
+            <span class="material-icons-round">location_off</span>
+            <p>{{ 'dir_carte.empty' | translate }}</p>
+          </div>
         }
       }
     </div>
 
-    <!-- Map placeholder / detail -->
+    <!-- ── Zone carte ────────────────────────────────────────── -->
     <div class="map-area card">
-      @if (selected()) {
-        <div class="agent-detail">
-          <h3>{{ selected()!.prenom }} {{ selected()!.nom }}</h3>
-          <span class="badge" [ngClass]="statusClass(selected()!.statut)">{{
-            statusLabel(selected()!.statut)
-          }}</span>
 
-          <div class="coords">
-            <div>
-              <p class="text-xs text-muted">Latitude</p>
-              <p class="font-semibold">
-                {{ selected()!.latitude | number: "1.6-6" }}
-              </p>
+      <!-- Carte Leaflet (toujours visible, centrée sur le Cameroun) -->
+      <div #mapContainer class="leaflet-container-fill"></div>
+
+      <!-- Panneau info agent sélectionné -->
+      @if (selected()) {
+        <div class="agent-info-panel">
+          <div class="aip-header">
+            <div class="agent-avatar avatar-sm" [class.avatar-active]="selected()!.enDeplacement">
+              {{ initials(selected()!) }}
             </div>
-            <div>
-              <p class="text-xs text-muted">Longitude</p>
-              <p class="font-semibold">
-                {{ selected()!.longitude | number: "1.6-6" }}
-              </p>
+            <div style="flex:1;min-width:0">
+              <strong class="aip-name">{{ selected()!.nomComplet || selected()!.username }}</strong>
+              @if (selected()!.nomAgence) {
+                <div class="text-xs text-muted">{{ selected()!.nomAgence }}</div>
+              }
             </div>
-            <div>
-              <p class="text-xs text-muted">Dernière vue</p>
-              <p class="font-semibold">
-                {{ selected()!.lastSeen | date: "HH:mm:ss" }}
-              </p>
-            </div>
+            <button class="aip-close" (click)="selected.set(null)">
+              <span class="material-icons-round">close</span>
+            </button>
           </div>
 
-          <a
-            class="btn btn-primary"
-            [href]="
-              'https://maps.google.com/?q=' +
-              selected()!.latitude +
-              ',' +
-              selected()!.longitude
-            "
-            target="_blank"
-            rel="noopener"
-          >
-            <span class="material-icons-round">open_in_new</span> Ouvrir dans
-            Google Maps
-          </a>
-        </div>
-      } @else {
-        <div class="map-placeholder">
-          <span
-            class="material-icons-round"
-            style="font-size: 64px; color: var(--color-border)"
-            >map</span
-          >
-          <p class="text-muted">Sélectionnez un agent pour voir sa position</p>
-          <p class="text-xs text-muted" style="margin-top: 4px">
-            Pour une carte interactive, intégrez Leaflet.js ou Google Maps
-          </p>
+          <div class="aip-grid">
+            <div class="aip-cell">
+              <p class="aip-label">{{ 'dir_carte.panel_status' | translate }}</p>
+              <span class="badge" [ngClass]="statusClass(selected()!)">
+                {{ statusLabel(selected()!) }}
+              </span>
+            </div>
+            <div class="aip-cell">
+              <p class="aip-label">{{ 'dir_carte.panel_last_pos' | translate }}</p>
+              <p class="aip-value">{{ formatTime(selected()!.capturedAt) }}</p>
+            </div>
+            <div class="aip-cell">
+              <p class="aip-label">{{ 'dir_carte.panel_latitude' | translate }}</p>
+              <p class="aip-value mono">{{ selected()!.latitude | number:'1.5-5' }}</p>
+            </div>
+            <div class="aip-cell">
+              <p class="aip-label">{{ 'dir_carte.panel_longitude' | translate }}</p>
+              <p class="aip-value mono">{{ selected()!.longitude | number:'1.5-5' }}</p>
+            </div>
+            @if (selected()!.vitesseKmh != null) {
+              <div class="aip-cell">
+                <p class="aip-label">{{ 'dir_carte.panel_speed' | translate }}</p>
+                <p class="aip-value">{{ selected()!.vitesseKmh | number:'1.1-1' }} {{ 'dir_carte.panel_speed_unit' | translate }}</p>
+              </div>
+            }
+            @if (selected()!.precisionMetres != null) {
+              <div class="aip-cell">
+                <p class="aip-label">{{ 'dir_carte.panel_gps_accuracy' | translate }}</p>
+                <p class="aip-value">± {{ selected()!.precisionMetres | number:'1.0-0' }} m</p>
+              </div>
+            }
+          </div>
+
+          <div class="aip-actions">
+            <a
+              class="btn btn-ghost btn-sm"
+              [href]="'https://maps.google.com/?q=' + selected()!.latitude + ',' + selected()!.longitude"
+              target="_blank"
+              rel="noopener"
+            >
+              <span class="material-icons-round" style="font-size:14px">open_in_new</span>
+              {{ 'dir_carte.panel_google_maps' | translate }}
+            </a>
+          </div>
         </div>
       }
+
+      <!-- Badge légende flottant -->
+      <div class="map-legend">
+        <span class="legend-dot legend-dot--active"></span> {{ 'dir_carte.legend_active' | translate }}
+        &nbsp;
+        <span class="legend-dot legend-dot--inactive"></span> {{ 'dir_carte.legend_inactive' | translate }}
+      </div>
     </div>
   </div>
 </div>

@@ -1,202 +1,183 @@
 @startuml ARCH07_DW_Etoile
-title ARCH07 — Schéma en Étoile — Data Warehouse (schéma dw)\nPlateforme Pipeline IMF Cameroun
-
-skinparam linetype ortho
-skinparam backgroundColor #FAFAFA
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
 skinparam entity {
-  BackgroundColor #F3E5F5
-  BorderColor #6A1B9A
-  HeaderBackgroundColor #4A148C
-  HeaderFontColor white
+  BackgroundColor white
+  BorderColor #666666
+  HeaderBackgroundColor #EEEEEE
+  HeaderFontColor #333333
 }
 skinparam note {
-  BackgroundColor #FFF9C4
-  BorderColor #F9A825
+  BackgroundColor #FFFFEE
+  BorderColor #AAAAAA
 }
 
-' ══════════════════════════════════════════════
-' DIMENSIONS
-' ══════════════════════════════════════════════
+title ARCH07 - Schema analytique Data Warehouse\nSchemas dw + ml (PostgreSQL 15 - dbt Core 1.8)
 
-entity "dw.dim_date" as DIM_DATE {
-  <u>date_key</u> : INTEGER PK
-  ' Format YYYYMMDD (ex: 20260401)
-  ==
-  date_valeur : DATE UNIQUE NOT NULL
-  annee : INTEGER NOT NULL
-  trimestre : INTEGER NOT NULL
-  mois : INTEGER NOT NULL
-  semaine : INTEGER NOT NULL
-  jour_mois : INTEGER NOT NULL
-  jour_semaine : INTEGER NOT NULL
-  nom_jour : VARCHAR(20)
-  nom_mois : VARCHAR(20)
-  est_weekend : BOOLEAN
-  est_jour_ferie : BOOLEAN
-  ' (jours fériés Cameroun inclus)
-}
+' ═══════════════════════════════════════
+' Tables dbt mart (schema dw)
+' ═══════════════════════════════════════
 
-entity "dw.dim_client" as DIM_CLIENT {
-  <u>id_client_source</u> : VARCHAR(30) PK
-  ==
-  nom_client : VARCHAR(200) NOT NULL
-  telephone : VARCHAR(20)
-  zone_geographique : VARCHAR(100)
-  date_premiere_op : DATE
-  _dbt_updated_at : TIMESTAMP
-}
-
-entity "dw.dim_agence" as DIM_AGENCE {
-  <u>id_agence</u> : VARCHAR(32) PK
-  ' MD5(nom_agence normalisé)
-  ==
-  nom_agence : VARCHAR(100) NOT NULL
-  _dbt_updated_at : TIMESTAMP
-}
-
-entity "dw.dim_produit" as DIM_PRODUIT {
-  <u>id_produit</u> : VARCHAR(32) PK
-  ' MD5(nom_produit normalisé)
-  ==
-  nom_produit : VARCHAR(100) NOT NULL
-  _dbt_updated_at : TIMESTAMP
-}
-
-entity "dw.dim_agent" as DIM_AGENT {
-  <u>id_agent</u> : VARCHAR(32) PK
-  ' MD5(nom_agent normalisé)
-  ==
-  nom_agent : VARCHAR(100) NOT NULL
-  id_agence : VARCHAR(32)
-  nom_agence : VARCHAR(100)
-  _dbt_updated_at : TIMESTAMP
-}
-
-' ══════════════════════════════════════════════
-' TABLES DE FAITS
-' ══════════════════════════════════════════════
-
-entity "dw.fact_collectes" as FACT_COLLECTES {
-  <u>id_source</u> : VARCHAR(60) PK
-  ' Format : MTN-{id}, ORANGE-{id}, TERRAIN-{id}
-  ==
-  #date_key : INTEGER FK → dim_date
-  #id_client_source : VARCHAR(30) FK → dim_client
-  #id_agence : VARCHAR(32) FK → dim_agence
-  #id_agent : VARCHAR(32) FK → dim_agent
+entity "dw.mart_kpi_collecte" as MART_COL {
+  * imf_id : UUID
+  * agence_id : UUID
+  * agent_id : UUID
+  * date_snapshot : DATE
   --
-  canal : VARCHAR(20) NOT NULL
-  ' CHECK: MTN, ORANGE, TERRAIN_MOBILE, TERRAIN_ESPECES
-  montant : NUMERIC(15,2) NOT NULL
-  reference_transaction : VARCHAR(100)
-  nom_payeur : VARCHAR(200)
-  statut : VARCHAR(20)
-  nom_fichier_source : VARCHAR(255)
+  montant_jour : NUMERIC(15,2)
+  montant_semaine : NUMERIC(15,2)
+  montant_mois : NUMERIC(15,2)
+  nb_transactions_jour : INTEGER
+  montant_mobile_money : NUMERIC(15,2)
+  montant_especes : NUMERIC(15,2)
+  montant_virement : NUMERIC(15,2)
+  variation_vs_semaine_precedente : NUMERIC(6,4)
   _dbt_updated_at : TIMESTAMP
 }
 
-entity "dw.fact_remboursements" as FACT_REMB {
-  <u>id_pret</u> : VARCHAR(30) PK
-  ' Granularité : snapshot quotidien par prêt (1 ligne = dernier état)
-  ==
-  #date_key : INTEGER FK → dim_date
-  ' date du snapshot CBS
-  #id_client_source : VARCHAR(30) FK → dim_client
-  #id_agence : VARCHAR(32) FK → dim_agence
-  #id_produit : VARCHAR(32) FK → dim_produit
-  #id_agent : VARCHAR(32) FK → dim_agent
+entity "dw.mart_kpi_recouvrement" as MART_REC {
+  * imf_id : UUID
+  * agence_id : UUID
+  * date_snapshot : DATE
   --
-  montant_pret : NUMERIC(15,2)
-  date_deblocage : DATE
-  date_echeance : DATE
-  montant_rembourse : NUMERIC(15,2)
-  solde_restant : NUMERIC(15,2)
-  statut_pret : VARCHAR(20)
-  ' CHECK: ACTIF, EN_RETARD, EN_RECOUVREMENT, SOLDE, PERTE
-  jours_retard : INTEGER
+  encours_total : NUMERIC(15,2)
+  encours_par30 : NUMERIC(15,2)
+  encours_par60 : NUMERIC(15,2)
+  encours_par90 : NUMERIC(15,2)
+  taux_par30 : NUMERIC(6,4)
+  taux_par60 : NUMERIC(6,4)
+  taux_par90 : NUMERIC(6,4)
+  nb_creances_actives : INTEGER
+  nb_creances_en_retard : INTEGER
+  taux_recouvrement_global : NUMERIC(6,4)
   _dbt_updated_at : TIMESTAMP
 }
 
-' ══════════════════════════════════════════════
-' TABLE SCORES ML (Phase 5)
-' ══════════════════════════════════════════════
-entity "dw.scores_transactions" as FACT_SCORES {
-  <u>id_pret</u> : VARCHAR(30) PK
-  <u>date_scoring</u> : DATE PK
-  ==
-  score_risque : NUMERIC(4,3) NOT NULL
-  ' [0.000 – 1.000]
+entity "dw.mart_benchmarks_agences" as MART_BEN {
+  * imf_id : UUID
+  * agence_id : UUID
+  * date_snapshot : DATE
+  --
+  rang_agence : INTEGER
+  score_performance : NUMERIC(4,3)
+  taux_collecte_objectif : NUMERIC(6,4)
+  taux_recouvrement : NUMERIC(6,4)
+  par30_agence : NUMERIC(6,4)
+  nb_agents_actifs : INTEGER
+  _dbt_updated_at : TIMESTAMP
+}
+
+' ═══════════════════════════════════════
+' Tables ML (schema ml)
+' ═══════════════════════════════════════
+
+entity "ml.features_client" as ML_FEAT {
+  * clientId : UUID
+  * date_feature : DATE
+  --
+  regularite_collecte_pct : NUMERIC(5,4)
+  nb_collectes_30j : INTEGER
+  taux_remboursement_hist : NUMERIC(5,4)
+  taux_recouvrement_global : NUMERIC(5,4)
+  par_30_jours : NUMERIC(5,4)
+  delai_moyen_recouvrement : INTEGER
+  anciennete_mois : INTEGER
+  score_kyc : NUMERIC(4,3)
+  _dbt_updated_at : TIMESTAMP
+}
+
+entity "ml.client_scores" as ML_SCORES {
+  * uid : UUID
+  * clientId : UUID
+  * date_scoring : DATE
+  --
+  score_mcrs : NUMERIC(4,3)
+  score_crs : NUMERIC(4,3)
+  score_rps : NUMERIC(4,3)
+  score_csi : NUMERIC(4,3)
   niveau_risque : VARCHAR(10)
-  ' GENERATED: FAIBLE / MOYEN / ÉLEVÉ / CRITIQUE
   version_modele : VARCHAR(20)
-  _scored_at : TIMESTAMP DEFAULT NOW()
+  scored_at : TIMESTAMP
 }
 
-' ══════════════════════════════════════════════
-' VUES REPORTING
-' ══════════════════════════════════════════════
-entity "reporting.v_par_par_zone" as V_PAR {
-  date_valeur : DATE
-  nom_agence : VARCHAR
-  encours_total : NUMERIC
-  encours_par30 : NUMERIC
-  encours_par90 : NUMERIC
-  taux_par30 : NUMERIC
-  taux_par90 : NUMERIC
-  nb_prets_actifs : BIGINT
-  nb_prets_en_retard : BIGINT
+entity "ml.shap_explanations" as ML_SHAP {
+  * uid : UUID
+  * scoreId : UUID
+  --
+  feature_name : VARCHAR(100)
+  shap_value : NUMERIC(8,6)
+  feature_value : NUMERIC(15,4)
+  rang_importance : INTEGER
+  created_at : TIMESTAMP
 }
 
-entity "reporting.v_collectes_par_agent" as V_COLLECTES {
-  date_valeur : DATE
-  nom_agence : VARCHAR
-  nom_agent : VARCHAR
-  canal : VARCHAR
-  nb_collectes : BIGINT
-  montant_total : NUMERIC
+entity "ml.model_runs" as ML_RUNS {
+  * uid : UUID
+  --
+  version : VARCHAR(20)
+  actif : BOOLEAN
+  auc_roc : NUMERIC(5,4)
+  precision_val : NUMERIC(5,4)
+  recall_val : NUMERIC(5,4)
+  psi_derive : NUMERIC(6,4)
+  artefact_path : VARCHAR(500)
+  trained_at : TIMESTAMP
 }
 
-' ══════════════════════════════════════════════
-' RELATIONS FAITS → DIMENSIONS
-' ══════════════════════════════════════════════
-DIM_DATE    ||--o{ FACT_COLLECTES : "date_key (N,1)"
-DIM_CLIENT  ||--o{ FACT_COLLECTES : "id_client_source (N,1)"
-DIM_AGENCE  ||--o{ FACT_COLLECTES : "id_agence (N,1)"
-DIM_AGENT   ||--o{ FACT_COLLECTES : "id_agent (N,1)"
+' ═══════════════════════════════════════
+' Sources dbt (schema staging)
+' ═══════════════════════════════════════
 
-DIM_DATE    ||--o{ FACT_REMB : "date_key (N,1)"
-DIM_CLIENT  ||--o{ FACT_REMB : "id_client_source (N,1)"
-DIM_AGENCE  ||--o{ FACT_REMB : "id_agence (N,1)"
-DIM_PRODUIT ||--o{ FACT_REMB : "id_produit (N,1)"
-DIM_AGENT   ||--o{ FACT_REMB : "id_agent (N,1)"
+entity "staging.stg_collectes_terrain" as STG_COL {
+  * uid : UUID
+  --
+  clientId : UUID
+  agentId : UUID
+  montant_collecte : NUMERIC(15,2)
+  date_collecte : DATE
+  canal : VARCHAR(30)
+  statut : VARCHAR(20)
+}
 
-DIM_AGENCE  ||--o{ DIM_AGENT : "id_agence"
+entity "staging.stg_creances" as STG_CRE {
+  * uid : UUID
+  --
+  clientId : UUID
+  montant_total : NUMERIC(15,2)
+  montant_rembourse : NUMERIC(15,2)
+  jours_retard : INTEGER
+  statut : VARCHAR(30)
+  classe_cobac : CHAR(1)
+}
 
-FACT_REMB ||--o{ FACT_SCORES : "id_pret (1,N)"
+' ═══════════════════════════════════════
+' Relations
+' ═══════════════════════════════════════
 
-' Vues issues des faits
-FACT_REMB ..> V_PAR : alimente
-FACT_COLLECTES ..> V_COLLECTES : alimente
+STG_COL   ..> MART_COL  : mart_kpi_collecte.sql
+STG_CRE   ..> MART_REC  : mart_kpi_recouvrement.sql
+MART_COL  ..> MART_BEN  : mart_benchmarks_agences.sql
+MART_REC  ..> MART_BEN  : mart_benchmarks_agences.sql
 
-note bottom of FACT_COLLECTES
-  Granularité : 1 ligne = 1 collecte
-  (MTN, Orange, ou terrain mobile)
-  Stratégie : INCREMENTAL dbt
-  Clé unique : id_source (canal-id)
+ML_FEAT   ||--o{ ML_SCORES : "alimente scoring (1,n)"
+ML_SCORES ||--o{ ML_SHAP   : "explique par SHAP (1,n)"
+ML_RUNS   |o--o{ ML_SCORES : "version modele (0,n)"
+
+note bottom of MART_COL
+  Granularite : 1 ligne = 1 agent x 1 agence x 1 date
+  Strategie dbt : incremental
+  Calcule par : dag_kpis_quotidien (06h30)
 end note
 
-note bottom of FACT_REMB
-  Granularité : 1 ligne = snapshot quotidien
-  par prêt (dernier état CBS du jour)
-  Stratégie : INCREMENTAL dbt
-  Clé unique : id_pret
-end note
-
-note right of FACT_SCORES
-  Alimentée par le DAG ML (Phase 5)
-  Clé composite (id_pret, date_scoring)
-  Permet de suivre l'évolution du score
-  dans le temps pour chaque prêt
+note bottom of ML_SCORES
+  Calcule par : dag_ml_scoring (07h30)
+  Via FastAPI :8090 - POST /score/{clientId}
+  niveau_risque : FAIBLE/MODERE/ELEVE/CRITIQUE
 end note
 
 @enduml

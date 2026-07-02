@@ -8,6 +8,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
+import { TranslatePipe } from "@ngx-translate/core";
 import { BaseChartDirective } from "ng2-charts";
 import { ChartConfiguration } from "chart.js";
 import { ApiService } from "../../../core/http/api.service";
@@ -21,7 +22,7 @@ import { environment } from "../../../../environments/environment";
   selector: "app-dir-kpi",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective, StatCardComponent, FcfaPipe],
+  imports: [CommonModule, BaseChartDirective, StatCardComponent, FcfaPipe, TranslatePipe],
   templateUrl: "./dir-kpi.component.html",
   styleUrls: ["./dir-kpi.component.scss"],
 })

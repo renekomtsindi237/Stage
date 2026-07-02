@@ -1,81 +1,88 @@
 @startuml UC00_global
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam actorStyle awesome
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1
+skinparam Padding 5
+skinparam actorStyle none
 skinparam usecase {
-  BackgroundColor #EEF4FF
-  BorderColor #4A6CF7
-  FontSize 12
+  BackgroundColor white
+  BorderColor #666666
 }
 skinparam actor {
-  BackgroundColor #FFF3E0
-  BorderColor #E65100
+  BackgroundColor white
+  BorderColor #333333
 }
 skinparam rectangle {
-  BackgroundColor #F1F8E9
-  BorderColor #388E3C
+  BackgroundColor #F8F8F8
+  BorderColor #888888
 }
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-skinparam Padding 8
 
-title Diagramme de Use Cases Global\nPlateforme IMF Cameroun — Vue d'ensemble
+title UC00 - Diagramme de cas d'utilisation global\nMicroRecouv - 6 roles
 
 left to right direction
 
-' ===== ACTEURS HUMAINS =====
-actor "Directeur Général" as DG #FFE0B2
-actor "Responsable\nRecouvrement" as RR #FFE0B2
-actor "Analyste Data" as AD #FFE0B2
-actor "DSI / Admin" as DSI #FFE0B2
-actor "Agent de Terrain" as AT #FFE0B2
+actor "Directeur\n(DIRECTEUR)" as DIR
+actor "Analyste Credit\n(ANALYSTE_CREDIT)" as ANA
+actor "Agent Terrain\n(AGENT_TERRAIN)" as AT
+actor "DSI\n(DSI)" as DSI
+actor "Agent de Saisie\n(AGENT_SAISIE)" as SAI
+actor "Administrateur\n(ADMIN_SYSTEME)" as ADM
 
-' ===== ACTEURS SYSTÈMES =====
-actor "Core Banking\nSystem (CBS)" as CBS #E3F2FD
-actor "MTN Mobile\nMoney" as MTN #E3F2FD
-actor "Orange Money" as OM #E3F2FD
-actor "Firebase FCM" as FCM #E3F2FD
-actor "Serveur Email\n(SMTP)" as SMTP #E3F2FD
+actor "MTN MoMo API" as MTN
+actor "Orange Money API" as OM
+actor "CBS Core Banking" as CBS
+actor "SMTP" as SMTP
+actor "GROQ API" as GROQ
 
-' ===== SYSTÈME =====
-rectangle "Plateforme IMF — Système Intégré" {
-
-  usecase "UC01\nGérer les collectes\ndigitales" as UC01
-  usecase "UC02\nSuivre le portefeuille\nde créances (PAR)" as UC02
-  usecase "UC03\nGérer le recouvrement\net les relances" as UC03
-  usecase "UC04\nConsulter les tableaux\nde bord (Web)" as UC04
-  usecase "UC05\nAdministrer\nle pipeline" as UC05
-  usecase "UC06\nSaisir et consulter\nvia app mobile" as UC06
-  usecase "UC07\nS'authentifier\n(JWT)" as UC07
-
+rectangle "MicroRecouv" {
+  usecase "UC01 - Consulter KPI\net alertes (dashboard)" as UC01
+  usecase "UC02 - Suivre portefeuille\nde creances (PAR)" as UC02
+  usecase "UC03 - Gerer recouvrement\net plans d'apurement" as UC03
+  usecase "UC04 - Analyser scoring ML\n(MCRS + SHAP)" as UC04
+  usecase "UC05 - Administrer\nle pipeline" as UC05
+  usecase "UC06 - Saisir collecte\n(mobile offline-first)" as UC06
+  usecase "UC07 - Gerer contrats\net dossiers credit" as UC07
+  usecase "UC08 - S'authentifier\n(email + OTP)" as UC08
+  usecase "UC09 - Importer donnees\n(Excel/CSV)" as UC09
+  usecase "UC10 - Chatbot IA\n(assistant metier)" as UC10
 }
 
-' ===== RELATIONS ACTEURS HUMAINS =====
-DG     --> UC04
-DG     --> UC06
-RR     --> UC02
-RR     --> UC03
-RR     --> UC04
-AD     --> UC01
-AD     --> UC02
-AD     --> UC04
-DSI    --> UC05
-AT     --> UC06
-AT     --> UC01
+DIR --> UC01
+DIR --> UC02
+DIR --> UC03
+DIR --> UC09
+DIR --> UC10
 
-' ===== RELATIONS ACTEURS SYSTÈMES =====
-CBS    --> UC01
-CBS    --> UC02
-MTN    --> UC01
-OM     --> UC01
-UC03   --> SMTP
-UC06   --> FCM
+ANA --> UC02
+ANA --> UC04
+ANA --> UC10
 
-' ===== DÉPENDANCES ENTRE UC =====
-UC01 ..> UC07 : <<include>>
-UC02 ..> UC07 : <<include>>
-UC03 ..> UC07 : <<include>>
-UC04 ..> UC07 : <<include>>
-UC06 ..> UC07 : <<include>>
+AT  --> UC06
+AT  --> UC10
+
+DSI --> UC05
+DSI --> UC01
+DSI --> UC10
+
+SAI --> UC07
+
+ADM --> UC05
+
+MTN --> UC01
+OM  --> UC01
+CBS --> UC02
+UC08 --> SMTP
+UC10 --> GROQ
+
+UC01 ..> UC08 : <<include>>
+UC02 ..> UC08 : <<include>>
+UC03 ..> UC08 : <<include>>
+UC04 ..> UC08 : <<include>>
+UC05 ..> UC08 : <<include>>
+UC06 ..> UC08 : <<include>>
+UC07 ..> UC08 : <<include>>
 
 @enduml

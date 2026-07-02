@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 
 import { ApiService } from "../../../core/http/api.service";
 
@@ -21,7 +22,7 @@ interface RgpdStatus {
   selector: "app-dsi-rgpd",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./dsi-rgpd.component.html",
   styleUrls: ["./dsi-rgpd.component.scss"],
 })

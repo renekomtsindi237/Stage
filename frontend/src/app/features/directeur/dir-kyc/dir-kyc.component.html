@@ -3,9 +3,9 @@
   <div class="kyc-list">
     <div class="page-header">
       <div>
-        <h2>KYC — Conformité clients</h2>
+        <h2>{{ 'dir_kyc.title' | translate }}</h2>
         <p class="text-muted text-sm">
-          Règlement COBAC R-2005/01 · Loi N°2003/008 · Directives BEAC
+          {{ 'dir_kyc.subtitle' | translate }}
         </p>
       </div>
     </div>
@@ -13,26 +13,26 @@
     <!-- Filtres -->
     <div class="filters-bar">
       <div class="filter-group">
-        <label class="filter-label">Statut</label>
+        <label class="filter-label">{{ 'dir_kyc.filter_statut_label' | translate }}</label>
         <select
           class="filter-select"
           [ngModel]="filterStatut()"
           (ngModelChange)="filterStatut.set($event); load(0)"
         >
-          <option value="TOUS">Tous les statuts</option>
+          <option value="TOUS">{{ 'dir_kyc.filter_statut_all' | translate }}</option>
           @for (s of statuts; track s) {
             <option [value]="s">{{ statutLabel(s) }}</option>
           }
         </select>
       </div>
       <div class="filter-group">
-        <label class="filter-label">Niveau KYC</label>
+        <label class="filter-label">{{ 'dir_kyc.filter_niveau_label' | translate }}</label>
         <select
           class="filter-select"
           [ngModel]="filterNiveau()"
           (ngModelChange)="filterNiveau.set($event); load(0)"
         >
-          <option value="TOUS">Tous les niveaux</option>
+          <option value="TOUS">{{ 'dir_kyc.filter_niveau_all' | translate }}</option>
           @for (n of niveaux; track n) {
             <option [value]="n">{{ niveauLabel(n) }}</option>
           }
@@ -48,12 +48,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Client</th>
-            <th>Niveau actuel</th>
-            <th>Niveau demandé</th>
-            <th>Statut</th>
-            <th>Risque</th>
-            <th>Expiration KYC</th>
+            <th>{{ 'dir_kyc.col_client' | translate }}</th>
+            <th>{{ 'dir_kyc.col_niveau_actuel' | translate }}</th>
+            <th>{{ 'dir_kyc.col_niveau_demande' | translate }}</th>
+            <th>{{ 'dir_kyc.col_statut' | translate }}</th>
+            <th>{{ 'dir_kyc.col_risque' | translate }}</th>
+            <th>{{ 'dir_kyc.col_expiration' | translate }}</th>
             <th></th>
           </tr>
         </thead>
@@ -121,7 +121,7 @@
                     class="btn btn-ghost btn-sm"
                     (click)="selectDossier(d); $event.stopPropagation()"
                   >
-                    Détail →
+                    {{ 'dir_kyc.detail_btn' | translate }}
                   </button>
                 </td>
               </tr>
@@ -136,7 +136,7 @@
                     color: var(--color-text-muted);
                   "
                 >
-                  Aucun dossier trouvé
+                  {{ 'dir_kyc.empty' | translate }}
                 </td>
               </tr>
             }
@@ -153,17 +153,17 @@
           [disabled]="currentPage() === 0"
           (click)="prevPage()"
         >
-          ← Préc.
+          {{ 'common.prev' | translate }}
         </button>
         <span class="page-info"
-          >Page {{ currentPage() + 1 }} / {{ page()!.totalPages }}</span
+          >{{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()!.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"
           [disabled]="currentPage() >= page()!.totalPages - 1"
           (click)="nextPage()"
         >
-          Suiv. →
+          {{ 'common.next' | translate }}
         </button>
       </div>
     }
@@ -178,7 +178,7 @@
           <p class="text-muted text-sm">{{ selected()!.clientId }}</p>
         </div>
         <button class="btn btn-ghost btn-sm" (click)="closeDetail()">
-          ✕ Fermer
+          {{ 'dir_kyc.detail_close' | translate }}
         </button>
       </div>
 
@@ -196,18 +196,18 @@
               </div>
               <div class="step-label">
                 <div class="step-name text-sm font-semibold">
-                  Niveau {{ i + 1 }}
+                  {{ 'dir_kyc.level_label' | translate }} {{ i + 1 }}
                 </div>
                 <div class="step-desc text-xs">
                   @switch (n) {
                     @case ("NIVEAU_1") {
-                      Identité de base
+                      {{ 'dir_kyc.level1_desc' | translate }}
                     }
                     @case ("NIVEAU_2") {
-                      Identité renforcée
+                      {{ 'dir_kyc.level2_desc' | translate }}
                     }
                     @case ("NIVEAU_3") {
-                      Diligence renforcée
+                      {{ 'dir_kyc.level3_desc' | translate }}
                     }
                   }
                 </div>
@@ -229,23 +229,23 @@
           statutLabel(selected()!.statut)
         }}</span>
         <span class="badge" [class]="risqueBadge(selected()!.niveauRisque)">
-          Risque {{ selected()!.niveauRisque }}
+          {{ 'dir_kyc.chip_risk' | translate }} {{ selected()!.niveauRisque }}
         </span>
         @if (selected()!.estPep) {
-          <span class="badge badge-critique">⚠ PPE</span>
+          <span class="badge badge-critique">{{ 'dir_kyc.chip_ppe' | translate }}</span>
         }
         @if (selected()!.verifSanctions) {
-          <span class="badge badge-green">Sanctions ✓</span>
+          <span class="badge badge-green">{{ 'dir_kyc.chip_sanctions' | translate }}</span>
         }
         @if (selected()!.verifListesNoires) {
-          <span class="badge badge-green">Listes noires ✓</span>
+          <span class="badge badge-green">{{ 'dir_kyc.chip_blacklist' | translate }}</span>
         }
       </div>
 
       <!-- ── Barre de score risque ───────────────────────── -->
       <div class="risk-gauge-row">
         <span class="text-xs text-muted" style="white-space: nowrap"
-          >Score LBC/FT</span
+          >{{ 'dir_kyc.risk_gauge' | translate }}</span
         >
         <div class="risk-bar-track">
           <div
@@ -264,10 +264,10 @@
 
       <!-- ── Identité ────────────────────────────────────── -->
       <details class="detail-section" open>
-        <summary class="section-title">👤 Identité</summary>
+        <summary class="section-title">{{ 'dir_kyc.section_identity' | translate }}</summary>
         <div class="info-grid">
           <div class="info-row">
-            <span>Date naissance</span
+            <span>{{ 'dir_kyc.identity_dob' | translate }}</span
             ><span>{{
               selected()!.dateNaissance
                 ? (selected()!.dateNaissance | date: "dd/MM/yyyy")
@@ -275,38 +275,38 @@
             }}</span>
           </div>
           <div class="info-row">
-            <span>Lieu naissance</span
+            <span>{{ 'dir_kyc.identity_pob' | translate }}</span
             ><span>{{ selected()!.lieuNaissance || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Nationalité</span
+            <span>{{ 'dir_kyc.identity_nationality' | translate }}</span
             ><span>{{ selected()!.nationalite || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Téléphone</span
+            <span>{{ 'dir_kyc.identity_phone' | translate }}</span
             ><span>{{ selected()!.telephone || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Adresse</span><span>{{ selected()!.adresse || "—" }}</span>
+            <span>{{ 'dir_kyc.identity_address' | translate }}</span><span>{{ selected()!.adresse || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Ville</span><span>{{ selected()!.ville || "—" }}</span>
+            <span>{{ 'dir_kyc.identity_city' | translate }}</span><span>{{ selected()!.ville || "—" }}</span>
           </div>
         </div>
       </details>
 
       <details class="detail-section">
-        <summary class="section-title">🪪 Pièce d'identité</summary>
+        <summary class="section-title">{{ 'dir_kyc.section_id_doc' | translate }}</summary>
         <div class="info-grid">
           <div class="info-row">
-            <span>Type</span
+            <span>{{ 'dir_kyc.id_doc_type' | translate }}</span
             ><span>{{ selected()!.typePieceIdentite || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Numéro</span><span>{{ selected()!.numeroPiece || "—" }}</span>
+            <span>{{ 'dir_kyc.id_doc_number' | translate }}</span><span>{{ selected()!.numeroPiece || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Date émission</span
+            <span>{{ 'dir_kyc.id_doc_issue_date' | translate }}</span
             ><span>{{
               selected()!.dateEmissionPiece
                 ? (selected()!.dateEmissionPiece | date: "dd/MM/yyyy")
@@ -314,7 +314,7 @@
             }}</span>
           </div>
           <div class="info-row">
-            <span>Date expiration</span
+            <span>{{ 'dir_kyc.id_doc_expiry' | translate }}</span
             ><span>{{
               selected()!.dateExpirationPiece
                 ? (selected()!.dateExpirationPiece | date: "dd/MM/yyyy")
@@ -322,25 +322,25 @@
             }}</span>
           </div>
           <div class="info-row">
-            <span>Lieu émission</span
+            <span>{{ 'dir_kyc.id_doc_issue_place' | translate }}</span
             ><span>{{ selected()!.lieuEmissionPiece || "—" }}</span>
           </div>
         </div>
       </details>
 
       <details class="detail-section">
-        <summary class="section-title">💼 Activité économique</summary>
+        <summary class="section-title">{{ 'dir_kyc.section_activity' | translate }}</summary>
         <div class="info-grid">
           <div class="info-row">
-            <span>Profession</span
+            <span>{{ 'dir_kyc.activity_profession' | translate }}</span
             ><span>{{ selected()!.profession || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Employeur</span
+            <span>{{ 'dir_kyc.activity_employer' | translate }}</span
             ><span>{{ selected()!.employeur || "—" }}</span>
           </div>
           <div class="info-row">
-            <span>Revenu mensuel estimé</span>
+            <span>{{ 'dir_kyc.activity_income' | translate }}</span>
             <span>{{
               selected()!.revenuMensuelEstim
                 ? (selected()!.revenuMensuelEstim! | number: "1.0-0") + " FCFA"
@@ -353,19 +353,19 @@
       <!-- ── Documents ──────────────────────────────────── -->
       <details class="detail-section" open>
         <summary class="section-title">
-          📁 Documents
+          {{ 'dir_kyc.section_docs' | translate }}
           <button
             class="btn btn-ghost btn-xs upload-trigger"
             (click)="openUpload(); $event.stopPropagation()"
           >
-            + Ajouter
+            {{ 'dir_kyc.docs_add' | translate }}
           </button>
         </summary>
         @if (docsLoading()) {
           <div class="skeleton" style="height: 60px; border-radius: 8px"></div>
         } @else if (documents().length === 0 && !showUploadPanel()) {
           <p class="text-sm text-muted" style="padding: 12px 0">
-            Aucun document soumis.
+            {{ 'dir_kyc.docs_empty' | translate }}
           </p>
         } @else {
           <div class="doc-list">
@@ -381,7 +381,7 @@
                   </div>
                   @if (doc.dateExpirationDoc) {
                     <div class="text-xs text-muted">
-                      Exp. {{ doc.dateExpirationDoc | date: "dd/MM/yyyy" }}
+                      {{ 'dir_kyc.docs_expiry_prefix' | translate }} {{ doc.dateExpirationDoc | date: "dd/MM/yyyy" }}
                     </div>
                   }
                 </div>
@@ -392,22 +392,22 @@
                       target="_blank"
                       rel="noopener"
                       class="btn btn-xs btn-ghost"
-                      title="Ouvrir le document"
+                      [title]="'Ouvrir le document'"
                     >
-                      {{ isPreviewable(doc) ? "👁 Voir" : "⬇ Télécharger" }}
+                      {{ isPreviewable(doc) ? ('dir_kyc.docs_view' | translate) : ('dir_kyc.docs_download' | translate) }}
                     </a>
                   }
                   @if (doc.valide === true) {
-                    <span class="badge badge-green">✓ Valide</span>
+                    <span class="badge badge-green">{{ 'dir_kyc.docs_valid' | translate }}</span>
                   } @else if (doc.valide === false) {
-                    <span class="badge badge-critique">✗ Rejeté</span>
+                    <span class="badge badge-critique">{{ 'dir_kyc.docs_rejected' | translate }}</span>
                     @if (doc.motifRejet) {
                       <div class="text-xs text-muted doc-motif">
                         {{ doc.motifRejet }}
                       </div>
                     }
                   } @else {
-                    <span class="badge badge-moyenne">En attente</span>
+                    <span class="badge badge-moyenne">{{ 'dir_kyc.docs_pending' | translate }}</span>
                     @if (docValidating() !== doc.uid) {
                       <div class="doc-verif-btns">
                         <button
@@ -432,7 +432,7 @@
                       <textarea
                         class="form-input text-xs"
                         rows="2"
-                        placeholder="Motif de rejet *"
+                        [placeholder]="'dir_kyc.docs_motif_placeholder' | translate"
                         [ngModel]="docMotifRejet()"
                         (ngModelChange)="docMotifRejet.set($event)"
                       ></textarea>
@@ -441,14 +441,14 @@
                           class="btn btn-xs btn-ghost"
                           (click)="showMotifFor.set(null)"
                         >
-                          Annuler
+                          {{ 'dir_kyc.docs_motif_cancel' | translate }}
                         </button>
                         <button
                           class="btn btn-xs btn-danger"
                           [disabled]="!docMotifRejet()"
                           (click)="validerDoc(doc.uid, false)"
                         >
-                          Confirmer
+                          {{ 'dir_kyc.docs_motif_confirm' | translate }}
                         </button>
                       </div>
                     </div>
@@ -463,10 +463,10 @@
         @if (showUploadPanel()) {
           <div class="upload-panel">
             <h5 class="text-sm font-semibold" style="margin-bottom: 10px">
-              📤 Ajouter un document
+              {{ 'dir_kyc.upload_title' | translate }}
             </h5>
             <div class="form-field">
-              <label class="text-xs">Type de document</label>
+              <label class="text-xs">{{ 'dir_kyc.upload_type' | translate }}</label>
               <select
                 class="form-input"
                 [ngModel]="uploadTypeDoc()"
@@ -478,9 +478,7 @@
               </select>
             </div>
             <div class="form-field">
-              <label class="text-xs"
-                >Fichier (PDF / JPG / PNG — max 5 Mo)</label
-              >
+              <label class="text-xs">{{ 'dir_kyc.upload_file' | translate }}</label>
               <input
                 #fileInput
                 type="file"
@@ -504,14 +502,14 @@
                 class="btn btn-ghost btn-sm"
                 (click)="showUploadPanel.set(false)"
               >
-                Annuler
+                {{ 'dir_kyc.upload_cancel' | translate }}
               </button>
               <button
                 class="btn btn-primary btn-sm"
                 [disabled]="uploadSubmitting() || !uploadBase64()"
                 (click)="submitUpload()"
               >
-                {{ uploadSubmitting() ? "Envoi…" : "Envoyer" }}
+                {{ uploadSubmitting() ? ('dir_kyc.upload_sending' | translate) : ('dir_kyc.upload_submit' | translate) }}
               </button>
             </div>
           </div>
@@ -520,18 +518,18 @@
 
       @if (selected()!.motifRisqueEleve) {
         <div class="alert-box alert-critique">
-          <strong>⚠ Motif risque élevé :</strong>
+          <strong>{{ 'dir_kyc.risk_label' | translate }}</strong>
           {{ selected()!.motifRisqueEleve }}
         </div>
       }
       @if (selected()!.observations) {
         <div class="alert-box alert-info">
-          <strong>Observations :</strong> {{ selected()!.observations }}
+          <strong>{{ 'dir_kyc.observations' | translate }}</strong> {{ selected()!.observations }}
         </div>
       }
       @if (selected()!.verificateurUsername) {
         <p class="text-xs text-muted" style="margin-top: 6px">
-          Vérifié par <strong>{{ selected()!.verificateurUsername }}</strong> le
+          {{ 'dir_kyc.verified_by' | translate }} <strong>{{ selected()!.verificateurUsername }}</strong> {{ 'dir_kyc.verified_on' | translate }}
           {{ selected()!.dateVerification | date: "dd/MM/yyyy" }}
         </p>
       }
@@ -544,7 +542,7 @@
             showRisquePanel.set(!showRisquePanel()); showVerifPanel.set(false)
           "
         >
-          🔍 Évaluer risque
+          {{ 'dir_kyc.action_evaluate' | translate }}
         </button>
         <button
           class="btn btn-primary btn-sm"
@@ -552,21 +550,21 @@
             showVerifPanel.set(!showVerifPanel()); showRisquePanel.set(false)
           "
         >
-          ✅ Décision
+          {{ 'dir_kyc.action_decision' | translate }}
         </button>
       </div>
 
       <!-- ── Sous-panneau : Risque ──────────────────────── -->
       @if (showRisquePanel()) {
         <div class="sub-panel">
-          <h4 class="section-title">Évaluation risque LBC/FT</h4>
+          <h4 class="section-title">{{ 'dir_kyc.risque_title' | translate }}</h4>
           <label class="checkbox-row">
             <input
               type="checkbox"
               [ngModel]="risqueEstPep()"
               (ngModelChange)="risqueEstPep.set($event)"
             />
-            Personne Politiquement Exposée (PPE)
+            {{ 'dir_kyc.risque_ppe' | translate }}
           </label>
           <label class="checkbox-row">
             <input
@@ -574,7 +572,7 @@
               [ngModel]="risqueSanctions()"
               (ngModelChange)="risqueSanctions.set($event)"
             />
-            Vérification sanctions effectuée
+            {{ 'dir_kyc.risque_sanctions' | translate }}
           </label>
           <label class="checkbox-row">
             <input
@@ -582,10 +580,10 @@
               [ngModel]="risqueListesNoires()"
               (ngModelChange)="risqueListesNoires.set($event)"
             />
-            Vérification listes noires effectuée
+            {{ 'dir_kyc.risque_blacklist' | translate }}
           </label>
           <div class="form-field">
-            <label>Score manuel (0–100)</label>
+            <label>{{ 'dir_kyc.risque_score' | translate }}</label>
             <input
               type="number"
               min="0"
@@ -596,7 +594,7 @@
             />
           </div>
           <div class="form-field">
-            <label>Motif risque élevé</label>
+            <label>{{ 'dir_kyc.risque_motif' | translate }}</label>
             <textarea
               class="form-input"
               rows="2"
@@ -609,14 +607,14 @@
               class="btn btn-ghost btn-sm"
               (click)="showRisquePanel.set(false)"
             >
-              Annuler
+              {{ 'dir_kyc.risque_cancel' | translate }}
             </button>
             <button
               class="btn btn-primary btn-sm"
               [disabled]="risqueSubmitting()"
               (click)="submitRisque()"
             >
-              {{ risqueSubmitting() ? "Enregistrement…" : "Enregistrer" }}
+              {{ risqueSubmitting() ? ('dir_kyc.risque_saving' | translate) : ('dir_kyc.risque_save' | translate) }}
             </button>
           </div>
         </div>
@@ -625,7 +623,7 @@
       <!-- ── Sous-panneau : Vérification ───────────────── -->
       @if (showVerifPanel()) {
         <div class="sub-panel">
-          <h4 class="section-title">Décision de vérification</h4>
+          <h4 class="section-title">{{ 'dir_kyc.verif_title' | translate }}</h4>
           <div class="verif-choices">
             @for (r of ["APPROUVE", "REJETE", "COMPLEMENT_REQUIS"]; track r) {
               <label
@@ -641,13 +639,13 @@
                 />
                 @switch (r) {
                   @case ("APPROUVE") {
-                    ✅ Approuver
+                    {{ 'dir_kyc.verif_approve' | translate }}
                   }
                   @case ("REJETE") {
-                    ❌ Rejeter
+                    {{ 'dir_kyc.verif_reject' | translate }}
                   }
                   @case ("COMPLEMENT_REQUIS") {
-                    📋 Complément requis
+                    {{ 'dir_kyc.verif_complement' | translate }}
                   }
                 }
               </label>
@@ -655,7 +653,7 @@
           </div>
           @if (verifResultat() === "APPROUVE") {
             <div class="form-field">
-              <label>Niveau approuvé</label>
+              <label>{{ 'dir_kyc.verif_level_approved' | translate }}</label>
               <select
                 class="form-input"
                 [ngModel]="verifNiveauApprouve()"
@@ -669,18 +667,18 @@
           }
           @if (verifResultat() === "REJETE") {
             <div class="form-field">
-              <label>Motif de rejet <span style="color: red">*</span></label>
+              <label>{{ 'dir_kyc.verif_reject_reason' | translate }} <span style="color: red">*</span></label>
               <textarea
                 class="form-input"
                 rows="2"
-                placeholder="Motif obligatoire…"
+                [placeholder]="'dir_kyc.verif_reject_placeholder' | translate"
                 [ngModel]="verifMotifRejet()"
                 (ngModelChange)="verifMotifRejet.set($event)"
               ></textarea>
             </div>
           }
           <div class="form-field">
-            <label>Commentaire (optionnel)</label>
+            <label>{{ 'dir_kyc.verif_comment' | translate }}</label>
             <textarea
               class="form-input"
               rows="2"
@@ -693,7 +691,7 @@
               class="btn btn-ghost btn-sm"
               (click)="showVerifPanel.set(false)"
             >
-              Annuler
+              {{ 'dir_kyc.verif_cancel' | translate }}
             </button>
             <button
               class="btn btn-primary btn-sm"
@@ -703,7 +701,7 @@
               "
               (click)="submitVerification()"
             >
-              {{ verifSubmitting() ? "Enregistrement…" : "Valider décision" }}
+              {{ verifSubmitting() ? ('dir_kyc.verif_saving' | translate) : ('dir_kyc.verif_validate' | translate) }}
             </button>
           </div>
         </div>

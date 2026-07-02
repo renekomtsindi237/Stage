@@ -3,13 +3,13 @@
     <button class="btn btn-ghost" routerLink="/agent">
       <span class="material-icons-round">arrow_back</span>
     </button>
-    <h3>Enregistrer une collecte</h3>
+    <h3>{{ 'collecte.title' | translate }}</h3>
   </header>
 
   @if (saved()) {
     <div class="success-overlay">
       <span class="material-icons-round">check_circle</span>
-      <p>Collecte enregistrée !</p>
+      <p>{{ 'collecte.saved' | translate }}</p>
     </div>
   }
 
@@ -22,13 +22,13 @@
   <div class="collecte-content">
     <!-- Client search -->
     <div class="form-group">
-      <label>Client</label>
+      <label>{{ 'common.name' | translate }}</label>
       @if (!selectedClient()) {
         <div class="search-bar">
           <span class="material-icons-round">search</span>
           <input
             type="text"
-            placeholder="Rechercher un client..."
+            [placeholder]="'collecte.search_client' | translate"
             (input)="search($any($event.target).value)"
           />
         </div>
@@ -38,8 +38,8 @@
               <div class="client-result" (click)="select(c)">
                 <p class="font-semibold">{{ c.nomClient }}</p>
                 <p class="text-sm text-muted">
-                  {{ c.idClient }} · Solde:
-                  {{ c.encours | number: "1.0-0" }} FCFA
+                  {{ c.idClient }} · {{ 'collecte.solde' | translate }}:
+                  {{ c.encours | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
                 </p>
               </div>
             }
@@ -52,15 +52,15 @@
               {{ selectedClient()!.nomClient }}
             </p>
             <p class="text-sm text-muted">
-              {{ selectedClient()!.idClient }} · Solde:
-              {{ selectedClient()!.encours | number: "1.0-0" }} FCFA
+              {{ selectedClient()!.idClient }} · {{ 'collecte.solde' | translate }}:
+              {{ selectedClient()!.encours | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
             </p>
           </div>
           <button
             class="btn btn-ghost btn-sm"
             (click)="selectedClient.set(null)"
           >
-            Changer
+            {{ 'collecte.change' | translate }}
           </button>
         </div>
       }
@@ -69,7 +69,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <!-- Montant -->
       <div class="form-group">
-        <label>Montant (FCFA)</label>
+        <label>{{ 'collecte.montant_label' | translate }}</label>
         <input
           type="number"
           class="form-control montant-input"
@@ -81,7 +81,7 @@
 
       <!-- Type opération -->
       <div class="form-group">
-        <label>Type d'opération</label>
+        <label>{{ 'collecte.type_operation' | translate }}</label>
         <div class="type-toggle">
           <button
             type="button"
@@ -89,7 +89,7 @@
             [class.active]="typeOp === 'EPARGNE'"
             (click)="setType('EPARGNE')"
           >
-            Épargne
+            {{ 'collecte.epargne' | translate }}
           </button>
           <button
             type="button"
@@ -97,7 +97,7 @@
             [class.active]="typeOp === 'REMBOURSEMENT'"
             (click)="setType('REMBOURSEMENT')"
           >
-            Remboursement
+            {{ 'collecte.remboursement' | translate }}
           </button>
         </div>
       </div>
@@ -111,10 +111,10 @@
               style="font-size: 14px; vertical-align: middle"
               >location_on</span
             >
-            Position GPS jointe
+            {{ 'collecte.gps_label' | translate }}
           </p>
           <p class="text-sm text-muted">
-            Utilisée uniquement pour valider l'opération (Loi 2024/017)
+            {{ 'collecte.gps_hint' | translate }}
           </p>
         </div>
         <label class="toggle">
@@ -136,7 +136,7 @@
         @if (loading()) {
           <span class="material-icons-round spin">refresh</span>
         } @else {
-          Enregistrer
+          {{ 'common.save' | translate }}
         }
       </button>
     </form>

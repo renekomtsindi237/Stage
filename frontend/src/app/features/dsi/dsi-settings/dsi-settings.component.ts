@@ -6,9 +6,12 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  OnInit,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
+import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { environment } from "../../../../environments/environment";
@@ -18,25 +21,54 @@ interface UploadState {
   phase: "idle" | "reading" | "uploading" | "done" | "error";
 }
 
+interface PaymentConfigResponse {
+  mtnActif: boolean | null;
+  mtnBaseUrl: string | null;
+  mtnEnvironment: string | null;
+  mtnApiUser: string | null;
+  mtnApiKeyMasked: string | null;
+  mtnSubscriptionKeyCollectionMasked: string | null;
+  mtnSubscriptionKeyDisbursementMasked: string | null;
+  mtnCallbackUrl: string | null;
+  orangeActif: boolean | null;
+  orangeBaseUrl: string | null;
+  orangeEnvironment: string | null;
+  orangeMerchantKeyMasked: string | null;
+  orangeClientId: string | null;
+  orangeClientSecretMasked: string | null;
+  orangeMerchantCode: string | null;
+  orangeReturnUrl: string | null;
+  orangeCancelUrl: string | null;
+  orangeNotifUrl: string | null;
+  updatedAt: string | null;
+}
+
 @Component({
   selector: "app-dsi-settings",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./dsi-settings.component.html",
   styleUrls: ["./dsi-settings.component.scss"],
 })
-export class DsiSettingsComponent {
+export class DsiSettingsComponent implements OnInit {
   private readonly http = inject(HttpClient);
   readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly fb = inject(FormBuilder);
 
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
 
   upload = signal<UploadState>({ progress: 0, phase: "idle" });
   dragOver = signal(false);
   previewUrl = signal<string | null>(null);
+
+  paymentConfig = signal<PaymentConfigResponse | null>(null);
+  paymentSaving = signal(false);
+  showMtnKey = signal(false);
+  showOrangeMerchantKey = signal(false);
+  showOrangeClientSecret = signal(false);
 
   readonly ACCEPTED_TYPES = [
     "image/jpeg",
@@ -45,6 +77,30 @@ export class DsiSettingsComponent {
     "image/gif",
   ];
   readonly MAX_SIZE_MB = 5;
+
+  mtnForm = this.fb.group({
+    mtnActif: [false],
+    mtnBaseUrl: [""],
+    mtnEnvironment: ["sandbox"],
+    mtnApiUser: [""],
+    mtnApiKey: [""],
+    mtnSubscriptionKeyCollection: [""],
+    mtnSubscriptionKeyDisbursement: [""],
+    mtnCallbackUrl: [""],
+  });
+
+  orangeForm = this.fb.group({
+    orangeActif: [false],
+    orangeBaseUrl: [""],
+    orangeEnvironment: ["sandbox"],
+    orangeMerchantKey: [""],
+    orangeClientId: [""],
+    orangeClientSecret: [""],
+    orangeMerchantCode: [""],
+    orangeReturnUrl: [""],
+    orangeCancelUrl: [""],
+    orangeNotifUrl: [""],
+  });
 
   get currentLogoUrl(): string | null {
     return this.auth.imfLogoUrl();
@@ -56,6 +112,128 @@ export class DsiSettingsComponent {
 
   get imfCode(): string {
     return this.auth.currentUser()?.imfCode ?? "—";
+  }
+
+  ngOnInit() {
+    this.loadPaymentConfig();
+  }
+
+  loadPaymentConfig() {
+    this.http
+      .get<{ data: PaymentConfigResponse }>(
+        `${environment.apiUrl}/api/v1/admin/payment-config`,
+      )
+      .subscribe({
+        next: (res) => {
+          const cfg = res.data;
+          this.paymentConfig.set(cfg);
+          this.mtnForm.patchValue({
+            mtnActif: cfg.mtnActif ?? false,
+            mtnBaseUrl: cfg.mtnBaseUrl ?? "",
+            mtnEnvironment: cfg.mtnEnvironment ?? "sandbox",
+            mtnApiUser: cfg.mtnApiUser ?? "",
+            mtnCallbackUrl: cfg.mtnCallbackUrl ?? "",
+          });
+          this.orangeForm.patchValue({
+            orangeActif: cfg.orangeActif ?? false,
+            orangeBaseUrl: cfg.orangeBaseUrl ?? "",
+            orangeEnvironment: cfg.orangeEnvironment ?? "sandbox",
+            orangeClientId: cfg.orangeClientId ?? "",
+            orangeMerchantCode: cfg.orangeMerchantCode ?? "",
+            orangeReturnUrl: cfg.orangeReturnUrl ?? "",
+            orangeCancelUrl: cfg.orangeCancelUrl ?? "",
+            orangeNotifUrl: cfg.orangeNotifUrl ?? "",
+          });
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.toast.showError(
+            "Erreur",
+            "Impossible de charger la configuration paiement.",
+          );
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  saveMtn() {
+    this.paymentSaving.set(true);
+    const v = this.mtnForm.value;
+    const body: Record<string, unknown> = {
+      mtnActif: v.mtnActif,
+      mtnBaseUrl: v.mtnBaseUrl || null,
+      mtnEnvironment: v.mtnEnvironment || null,
+      mtnApiUser: v.mtnApiUser || null,
+      mtnCallbackUrl: v.mtnCallbackUrl || null,
+    };
+    if (v.mtnApiKey) body["mtnApiKey"] = v.mtnApiKey;
+    if (v.mtnSubscriptionKeyCollection)
+      body["mtnSubscriptionKeyCollection"] = v.mtnSubscriptionKeyCollection;
+    if (v.mtnSubscriptionKeyDisbursement)
+      body["mtnSubscriptionKeyDisbursement"] = v.mtnSubscriptionKeyDisbursement;
+
+    this.http
+      .put<{ data: PaymentConfigResponse }>(
+        `${environment.apiUrl}/api/v1/admin/payment-config`,
+        body,
+      )
+      .subscribe({
+        next: (res) => {
+          this.paymentConfig.set(res.data);
+          this.paymentSaving.set(false);
+          this.mtnForm.patchValue({ mtnApiKey: "", mtnSubscriptionKeyCollection: "", mtnSubscriptionKeyDisbursement: "" });
+          this.toast.showSuccess("MTN MoMo", "Configuration enregistrée.");
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.paymentSaving.set(false);
+          this.toast.showError(
+            "Erreur MTN MoMo",
+            err?.error?.message ?? "Erreur lors de la sauvegarde.",
+          );
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  saveOrange() {
+    this.paymentSaving.set(true);
+    const v = this.orangeForm.value;
+    const body: Record<string, unknown> = {
+      orangeActif: v.orangeActif,
+      orangeBaseUrl: v.orangeBaseUrl || null,
+      orangeEnvironment: v.orangeEnvironment || null,
+      orangeClientId: v.orangeClientId || null,
+      orangeMerchantCode: v.orangeMerchantCode || null,
+      orangeReturnUrl: v.orangeReturnUrl || null,
+      orangeCancelUrl: v.orangeCancelUrl || null,
+      orangeNotifUrl: v.orangeNotifUrl || null,
+    };
+    if (v.orangeMerchantKey) body["orangeMerchantKey"] = v.orangeMerchantKey;
+    if (v.orangeClientSecret) body["orangeClientSecret"] = v.orangeClientSecret;
+
+    this.http
+      .put<{ data: PaymentConfigResponse }>(
+        `${environment.apiUrl}/api/v1/admin/payment-config`,
+        body,
+      )
+      .subscribe({
+        next: (res) => {
+          this.paymentConfig.set(res.data);
+          this.paymentSaving.set(false);
+          this.orangeForm.patchValue({ orangeMerchantKey: "", orangeClientSecret: "" });
+          this.toast.showSuccess("Orange Money", "Configuration enregistrée.");
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.paymentSaving.set(false);
+          this.toast.showError(
+            "Erreur Orange Money",
+            err?.error?.message ?? "Erreur lors de la sauvegarde.",
+          );
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   openPicker() {
@@ -92,7 +270,6 @@ export class DsiSettingsComponent {
   }
 
   private processFile(file: File) {
-    // Validation type
     if (!this.ACCEPTED_TYPES.includes(file.type)) {
       this.toast.showError(
         "Format non supporté",
@@ -100,7 +277,6 @@ export class DsiSettingsComponent {
       );
       return;
     }
-    // Validation taille
     if (file.size > this.MAX_SIZE_MB * 1024 * 1024) {
       this.toast.showError(
         "Fichier trop lourd",
@@ -109,7 +285,6 @@ export class DsiSettingsComponent {
       return;
     }
 
-    // Prévisualisation
     const reader = new FileReader();
     this.upload.set({ progress: 10, phase: "reading" });
     this.cdr.markForCheck();
@@ -134,7 +309,6 @@ export class DsiSettingsComponent {
       ? { Authorization: `Bearer ${token}` }
       : {};
 
-    // Simulation de progression pendant l'upload
     const progressInterval = setInterval(() => {
       const cur = this.upload();
       if (cur.phase === "uploading" && cur.progress < 85) {
@@ -159,7 +333,6 @@ export class DsiSettingsComponent {
             "Logo mis à jour",
             "Votre logo est maintenant stocké sur Cloudflare et visible sur toute la plateforme.",
           );
-          // Reset après 2s
           setTimeout(() => {
             this.upload.set({ progress: 0, phase: "idle" });
             this.previewUrl.set(null);

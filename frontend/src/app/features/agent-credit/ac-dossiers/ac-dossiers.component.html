@@ -1,13 +1,13 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>Dossiers de crédit</h2>
+      <h2>{{ 'ac_dossiers.title' | translate }}</h2>
       <p class="text-muted text-sm">
         {{ page()?.totalElements ?? 0 | number }} dossiers
       </p>
     </div>
     <a class="btn btn-primary" routerLink="/credit/nouveau-dossier">
-      <span class="material-icons-round">add</span> Nouveau dossier
+      <span class="material-icons-round">add</span> {{ 'ac_dossiers.new_btn' | translate }}
     </a>
   </div>
 
@@ -27,13 +27,13 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Référence</th>
-          <th>Client</th>
-          <th class="text-right">Montant</th>
-          <th>Durée</th>
-          <th>Score</th>
-          <th>Statut</th>
-          <th>Date</th>
+          <th>{{ 'ac_dossiers.col_reference' | translate }}</th>
+          <th>{{ 'ac_dossiers.col_client' | translate }}</th>
+          <th class="text-right">{{ 'common.amount' | translate }}</th>
+          <th>{{ 'ac_dossiers.col_duree' | translate }}</th>
+          <th>{{ 'ac_dossiers.col_score' | translate }}</th>
+          <th>{{ 'common.status' | translate }}</th>
+          <th>{{ 'common.date' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -55,7 +55,7 @@
                 {{ d.clientPrenom }} {{ d.clientNom }}
               </td>
               <td class="text-right">{{ d.montant | number: "1.0-0" }} F</td>
-              <td class="text-sm">{{ d.duree }} mois</td>
+              <td class="text-sm">{{ d.duree }} {{ 'common.months' | translate }}</td>
               <td>
                 @if (d.scoreCredit) {
                   <span
@@ -83,7 +83,7 @@
                 class="text-center text-muted"
                 style="padding: 32px"
               >
-                Aucun dossier
+                {{ 'ac_dossiers.empty' | translate }}
               </td>
             </tr>
           }
@@ -101,7 +101,7 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+          >{{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"

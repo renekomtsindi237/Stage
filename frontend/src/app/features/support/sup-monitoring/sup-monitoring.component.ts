@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ApiService } from "../../../core/http/api.service";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ToastService } from "../../../core/services/toast.service";
 import { SseService } from "../../../core/services/sse.service";
 import { Subscription } from "rxjs";
@@ -76,7 +77,7 @@ interface LogEntry {
   selector: "app-sup-monitoring",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./sup-monitoring.component.html",
   styleUrls: ["./sup-monitoring.component.scss"],
 })

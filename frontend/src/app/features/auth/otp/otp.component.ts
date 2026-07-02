@@ -13,12 +13,14 @@ import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { NotificationService } from "../../../core/services/notification.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-otp",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./otp.component.html",
   styleUrls: ["./otp.component.scss"],
 })
@@ -26,6 +28,7 @@ export class OtpComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly notifService = inject(NotificationService);
 
   @ViewChildren("digitInput") digitInputs!: QueryList<
     ElementRef<HTMLInputElement>
@@ -84,6 +87,7 @@ export class OtpComponent implements OnInit, OnDestroy {
           "Connexion réussie",
           `Bienvenue, ${this.auth.fullName()} !`,
         );
+        this.notifService.init();
         this.router.navigate([this.auth.defaultRouteForRole()]);
       },
       error: () => {

@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { BaseChartDirective } from "ng2-charts";
 import { ChartConfiguration } from "chart.js";
 import { ApiService } from "../../../core/http/api.service";
@@ -15,7 +16,7 @@ import { MlDrift } from "../../../core/models/analyste.model";
   selector: "app-anl-drift",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, TranslatePipe, BaseChartDirective],
   templateUrl: "./anl-drift.component.html",
   styleUrls: ["./anl-drift.component.scss"],
 })

@@ -57,4 +57,11 @@ public interface IPositionService {
      * @return          Liste chronologique des positions
      */
     List<AgentPositionResponse> historiqueJournalier(Long agentId, Long imfId, LocalDate date);
+
+    /**
+     * Retourne la dernière position connue de TOUS les agents de l'IMF
+     * qui ont au moins une coordonnée GPS (incluant les agents avec partage désactivé).
+     * Utilisé pour afficher la totalité de la carte même sans activité récente.
+     */
+    List<AgentPositionResponse> listerDernieresPositions(Long imfId);
 }

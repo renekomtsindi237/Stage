@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: imf-prometheus
+    access: proxy
+    url: http://127.0.0.1:9100
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      prometheusType: Prometheus
+      prometheusVersion: '2.51.0'
+      timeInterval: '15s'

@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 
 interface ScoreRow {
@@ -57,7 +58,7 @@ interface DriftInfo {
   selector: "app-anl-mcrs-demo",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./anl-mcrs-demo.component.html",
   styleUrls: ["./anl-mcrs-demo.component.scss"],
 })

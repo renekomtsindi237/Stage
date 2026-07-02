@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { Alerte, PageResponse } from "../../../core/models/alerte.model";
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
@@ -25,6 +26,7 @@ type Tab = "NON_TRAITEE" | "EN_TRAITEMENT" | "TOUTES";
     AlertBadgeComponent,
     FcfaPipe,
     TimeAgoPipe,
+    TranslatePipe,
   ],
   templateUrl: "./dir-alertes.component.html",
   styleUrls: ["./dir-alertes.component.scss"],

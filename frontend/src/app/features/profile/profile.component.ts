@@ -11,12 +11,13 @@ import { HttpClient } from "@angular/common/http";
 import { AuthService } from "../../core/auth/auth.service";
 import { ToastService } from "../../core/services/toast.service";
 import { environment } from "../../../environments/environment";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-profile",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./profile.component.html",
   styleUrls: ["./profile.component.scss"],
 })

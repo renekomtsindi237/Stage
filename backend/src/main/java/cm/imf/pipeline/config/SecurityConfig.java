@@ -1,5 +1,6 @@
 package cm.imf.pipeline.config;
 
+import cm.imf.pipeline.filter.ApiKeyAuthenticationFilter;
 import cm.imf.pipeline.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -49,8 +50,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter    jwtAuthFilter;
+    private final ApiKeyAuthenticationFilter apiKeyAuthFilter;
+    private final UserDetailsService         userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -130,6 +132,11 @@ public class SecurityConfig {
                         // Mise à jour d'une échéance : agent, RR ou DSI
                         .requestMatchers(HttpMethod.PUT, "/echeances/**", "/api/v1/echeances/**")
                                 .hasAnyRole("AGENT", "AGENT_CREDIT", "RESPONSABLE_RECOUVREMENT", "DSI")
+                        // External API — authentification par X-Api-Key (filtre ApiKeyAuthenticationFilter)
+                        .requestMatchers("/external/**", "/api/v1/external/**").hasRole("API_CLIENT")
+                        // Gestion des clés API : SUPPORT et SUPER_ADMIN
+                        .requestMatchers("/support/api-clients/**", "/api/v1/support/api-clients/**")
+                                .hasAnyRole("SUPPORT", "SUPER_ADMIN")
                         // Tableau de bord infrastructure SUPPORT (cross-IMF)
                         .requestMatchers("/api/v1/support/**").hasRole("SUPPORT")
                         // Tickets : création par tout utilisateur, lecture/maj par SUPPORT
@@ -173,6 +180,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

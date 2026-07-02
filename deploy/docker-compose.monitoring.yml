@@ -1,0 +1,102 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# IMF Pipeline — Stack Monitoring (Prometheus + Grafana)
+#
+# Usage:
+#   docker compose -f docker-compose.monitoring.yml up -d
+#
+# Endpoints:
+#   Prometheus : http://VPS_IP:9100  (interne, ne pas exposer en prod)
+#   Grafana    : http://VPS_IP:3000  (dashboard principal)
+#
+# Scrape targets (network_mode host):
+#   - Backend Spring Boot  : 127.0.0.1:9200/actuator/prometheus
+#   - ML API FastAPI       : 127.0.0.1:8090/metrics
+#   - Airflow              : 127.0.0.1:9202/metrics (si plugin statsd activé)
+#   - Nginx API Gateway    : 127.0.0.1:9090/metrics (si nginx-prometheus-exporter)
+#
+# Variable requise dans .env.staging :
+#   GRAFANA_ADMIN_PASSWORD=<secret>
+# ══════════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── Prometheus ───────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: imf-prometheus
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.listen-address=0.0.0.0:9100'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9100/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ── Grafana ──────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: imf-grafana
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-MicroRecouv2024!}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_SERVER_ROOT_URL=http://%(domain)s:3000/
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-worldmap-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:3000/api/health | grep -q ok || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ── Node Exporter (métriques OS/VPS) ─────────────────────────────────────────
+  node-exporter:
+    image: prom/node-exporter:v1.8.0
+    container_name: imf-node-exporter
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--web.listen-address=0.0.0.0:9101'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  prometheus-data:
+    name: imf-prometheus-data
+  grafana-data:
+    name: imf-grafana-data

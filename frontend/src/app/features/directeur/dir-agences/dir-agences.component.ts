@@ -8,6 +8,7 @@ import {
   ElementRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 
 interface Agence {
@@ -33,7 +34,7 @@ interface ImportResult {
   selector: "app-dir-agences",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./dir-agences.component.html",
   styleUrls: ["./dir-agences.component.scss"],
 })

@@ -10,12 +10,13 @@ import { Router } from "@angular/router";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { Client } from "../../../core/models/client.model";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-cai-encaissement",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./cai-encaissement.component.html",
   styleUrls: ["./cai-encaissement.component.scss"],
 })

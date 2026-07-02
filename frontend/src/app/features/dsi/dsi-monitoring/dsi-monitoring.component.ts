@@ -7,6 +7,7 @@ import {
   ChangeDetectorRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 
 import { ApiService } from "../../../core/http/api.service";
 
@@ -32,7 +33,7 @@ interface RecentLogin {
   selector: "app-dsi-monitoring",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: "./dsi-monitoring.component.html",
   styleUrls: ["./dsi-monitoring.component.scss"],
 })

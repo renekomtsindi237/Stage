@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -99,15 +100,16 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
   }
 
   Future<void> _onSubmit() async {
+    final l10n = AppL10n.of(context);
     if (_selectedClient == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez sélectionner un client')));
+        SnackBar(content: Text(l10n.nouvelleCollecteNoClient)));
       return;
     }
     final amount = double.tryParse(_amountController.text.replaceAll(RegExp(r'\s'), '')) ?? 0;
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Montant invalide')));
+        SnackBar(content: Text(l10n.nouvelleCollecteInvalidAmount)));
       return;
     }
 
@@ -172,11 +174,12 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: context.bg,
       body: Column(
         children: [
-          _buildTopBar(context),
+          _buildTopBar(context, l10n),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -189,14 +192,14 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
                   _buildSearchResults(),
                 const SizedBox(height: 14),
                 if (_selectedClient != null) ...[
-                  _buildClientCard(),
+                  _buildClientCard(l10n),
                   const SizedBox(height: 20),
                 ],
-                _buildAmountInput(),
+                _buildAmountInput(l10n),
                 const SizedBox(height: 20),
-                _buildCanalSelector(),
+                _buildCanalSelector(l10n),
                 const SizedBox(height: 32),
-                _buildSubmitButton(),
+                _buildSubmitButton(l10n),
                 const SizedBox(height: 24),
               ],
             ),
@@ -206,16 +209,16 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
+  Widget _buildTopBar(BuildContext context, AppL10n l10n) {
     return Container(
       color: AppColors.navyDark,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 8, bottom: 12, left: 4, right: 16),
       child: Row(
         children: [
           IconButton(icon: const Icon(Icons.arrow_back_rounded, color: Colors.white), onPressed: () => Navigator.of(context).pop()),
-          const Expanded(
-            child: Text('Enregistrer une collecte',
-              style: TextStyle(fontFamily: 'Inter', fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white)),
+          Expanded(
+            child: Text(l10n.nouvelleCollecteTitle,
+              style: const TextStyle(fontFamily: 'Inter', fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white)),
           ),
         ],
       ),
@@ -223,13 +226,14 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
   }
 
   Widget _buildSearchField() {
+    final l10n = AppL10n.of(context);
     return Container(
       decoration: BoxDecoration(color: context.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.border)),
       child: TextField(
         controller: _searchController,
         style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.text),
         decoration: InputDecoration(
-          hintText: 'Rechercher un client (nom, téléphone…)',
+          hintText: l10n.nouvelleCollecteSearchHint,
           hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.textSec),
           prefixIcon: Icon(Icons.search_rounded, color: context.textSec, size: 20),
           border: InputBorder.none,
@@ -266,7 +270,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     );
   }
 
-  Widget _buildClientCard() {
+  Widget _buildClientCard(AppL10n l10n) {
     final c = _selectedClient!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -289,20 +293,20 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
           TextButton(
             onPressed: () => setState(() { _selectedClient = null; }),
             style: TextButton.styleFrom(foregroundColor: AppColors.teal),
-            child: const Text('Changer', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+            child: Text(l10n.nouvelleCollecteChangeClient, style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildAmountInput(AppL10n l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: context.cardBoxR(16),
       child: Column(
         children: [
-          Text('Montant', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w500, color: context.textSec)),
+          Text(l10n.nouvelleCollecteAmountLabel, style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w500, color: context.textSec)),
           const SizedBox(height: 8),
           TextField(
             controller: _amountController,
@@ -319,11 +323,11 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     );
   }
 
-  Widget _buildCanalSelector() {
+  Widget _buildCanalSelector(AppL10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Canal de paiement", style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: context.text)),
+        Text(l10n.nouvelleCollecteCanalLabel, style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: context.text)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -348,7 +352,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
     );
   }
 
-  Widget _buildSubmitButton() {
+  Widget _buildSubmitButton(AppL10n l10n) {
     return SizedBox(
       width: double.infinity, height: 52,
       child: ElevatedButton(
@@ -356,7 +360,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.teal, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), elevation: 0),
         child: _submitting
           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-          : const Text('Enregistrer la collecte', style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700)),
+          : Text(l10n.nouvelleCollecteSubmit, style: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700)),
       ),
     );
   }

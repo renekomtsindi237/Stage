@@ -1,84 +1,86 @@
 @startuml SEQ08_consultation_kpi_mobile
-!theme plain
-skinparam backgroundColor #FAFAFA
-skinparam sequenceArrowThickness 1.5
-skinparam sequenceBoxBackgroundColor #EEF4FF
-skinparam sequenceParticipantBackgroundColor #EEF4FF
-skinparam sequenceParticipantBorderColor #4A6CF7
-skinparam sequenceActorBackgroundColor #FFF3E0
-skinparam sequenceActorBorderColor #E65100
-skinparam sequenceLifeLineBorderColor #9E9E9E
-skinparam noteBorderColor #F57F17
-skinparam noteBackgroundColor #FFFDE7
-skinparam Padding 8
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #888888
+  ParticipantBackgroundColor white
+  ParticipantBorderColor #666666
+  ActorBackgroundColor white
+  ActorBorderColor #333333
+  BoxBackgroundColor #F8F8F8
+  BoxBorderColor #AAAAAA
+  NoteBackgroundColor #FFFFEE
+  NoteBorderColor #AAAAAA
+}
 
-title SEQ08 — Consultation KPIs depuis Flutter\n(Dashboard Mobile Directeur / RR)
+title SEQ08 - Consultation KPIs depuis Flutter\nDashboard Mobile Directeur (Provider 6.1)
 
-actor "Directeur Général" as DG
+actor "Directeur" as DG
 participant "Flutter App\n(DashboardScreen)" as APP
-participant "DashboardProvider\n(Riverpod)" as PROV
-participant "ApiClient\n(Dio)" as API_CLIENT
+participant "DashboardProvider\n(Provider 6.1)" as PROV
+participant "ApiClient\n(http package)" as API_CLIENT
 participant "Spring Boot API\nKpiController" as SPRING
-database "PostgreSQL\nreporting" as PG
+database "PostgreSQL 15\nschema dw" as PG
 
 == Chargement du Dashboard ==
 
-DG -> APP : Ouvre l'application\n(après authentification)
-APP -> APP : <b>GoRouter</b> → /dashboard
+DG -> APP : Ouvre l'application
+APP -> APP : GoRouter -> /dashboard
 
-APP -> PROV : <b>ref.watch(dashboardProvider)</b>
-PROV -> PROV : Vérifie si données\ncachées (< 30 min)
+APP -> PROV : Consumer<DashboardProvider>.build()
+PROV -> PROV : Verifie cache\n(< 30 min valide)
 
-alt <b>Données expirées ou première ouverture</b>
+alt Donnees expirees ou premiere ouverture
 
-  PROV -> API_CLIENT : <b>fetchDashboardSummary()</b>
+  PROV -> API_CLIENT : fetchDashboardSummary()
 
-  API_CLIENT -> SPRING : <b>GET</b> /api/kpi/dashboard-summary\nAuthorization: Bearer <JWT>
+  API_CLIENT -> SPRING : GET /api/v1/directeur/kpis-summary\n[Cookie: imf_access]
   activate SPRING
 
-  SPRING -> SPRING : <b>@PreAuthorize</b>\nhasRole('DIRECTEUR') ou hasRole('RR')
+  SPRING -> SPRING : @PreAuthorize\nhasRole('DIRECTEUR')
 
-  SPRING -> PG : <b>SELECT</b>\n  SUM(montant_collecte) AS total_collectes,\n  AVG(taux_par30) AS par30_moyen,\n  AVG(taux_par90) AS par90_moyen,\n  COUNT(alertes actives) AS nb_alertes\nFROM reporting.v_kpi_executif\nWHERE date_complete = CURRENT_DATE - 1
-  note right PG : Vue matérialisée\n→ réponse < 100ms
+  SPRING -> PG : SELECT FROM dw.mart_kpi_recouvrement\nWHERE date_snapshot = CURRENT_DATE - 1\nJOIN dw.mart_kpi_collecte ...
+  note right : Donnees dbt\nreponse < 100ms
 
-  PG --> SPRING : ResultSet agrégé
+  PG --> SPRING : ResultSet agence agence
 
-  SPRING -> PG : <b>SELECT</b> serie PAR30\n(30 derniers jours)\npour graphique tendance
-  PG --> SPRING : [{date, taux_par30}, ...]
+  SPRING -> PG : SELECT serie PAR30\n(30 derniers jours)\npour graphique tendance
+  PG --> SPRING : [{dateSnapshot, tauxPar30}, ...]
 
-  SPRING --> API_CLIENT : <b>200 OK</b>\n{\n  "totalCollectes": 87300000,\n  "par30": 0.083,\n  "par90": 0.031,\n  "nbAlertes": 47,\n  "trendPar30": [...]\n}
+  SPRING --> API_CLIENT : 200 OK\n{totalCollectes, par30, par90,\nnbAlertes, trendPar30: [...]}
   deactivate SPRING
 
   PROV -> PROV : Stocke en cache\n(timestamp = NOW())
   PROV --> APP : DashboardState.loaded(data)
 
-else <b>Données en cache valides</b>
+else Donnees en cache valides
   PROV --> APP : DashboardState.loaded(cachedData)
 end
 
-APP -> APP : <b>Render</b> widgets\n- KpiCard PAR30 : 8,3%\n- KpiCard PAR90 : 3,1%\n- KpiCard Collectes : 87,3M XAF\n- KpiCard Alertes : 47 🔴\n- LineChart tendance PAR30 (fl_chart)
+APP -> APP : Render widgets\n- KpiCard PAR30\n- KpiCard PAR90\n- KpiCard Collectes (XAF)\n- KpiCard Alertes actives\n- LineChart tendance PAR30
 
-APP --> DG : Dashboard affiché\n(< 2 secondes)
+APP --> DG : Dashboard affiche (< 2 secondes)
 
-== Interaction utilisateur — Actualisation ==
+== Pull to Refresh ==
 
-DG -> APP : Swipe down\n(Pull to refresh)
-APP -> PROV : <b>ref.refresh(dashboardProvider)</b>
-PROV -> PROV : Invalide le cache
-PROV -> API_CLIENT : <b>fetchDashboardSummary()</b>
-note right : Même séquence\nque ci-dessus
+DG -> APP : Swipe down
+APP -> PROV : notifyListeners() - invalide cache
+PROV -> API_CLIENT : fetchDashboardSummary()
+note right : Meme sequence que ci-dessus
 
-== Navigation vers détail alertes ==
+== Navigation alertes ==
 
-DG -> APP : Tape sur KpiCard "47 Alertes"
-APP -> APP : <b>GoRouter.go()</b> /alertes
+DG -> APP : Tape sur KpiCard "Alertes"
+APP -> APP : GoRouter.go() /alertes
 
-APP -> API_CLIENT : <b>GET</b> /api/alertes?statut=ACTIVE
-API_CLIENT -> SPRING : <b>HTTP GET</b>
-SPRING -> PG : SELECT alertes actives\nORDER BY jours_retard DESC
-PG --> SPRING : [{alerte1}, {alerte2}, ...]
-SPRING --> APP : <b>200 OK</b> [AlerteResponse]
+APP -> API_CLIENT : GET /api/v1/alertes?statut=ACTIVE
+API_CLIENT -> SPRING : HTTP GET [Cookie: imf_access]
+SPRING -> PG : SELECT alertes_impayes\nWHERE statut = ACTIVE\nORDER BY joursRetard DESC
+PG --> SPRING : [{alertes}]
+SPRING --> APP : 200 OK [AlerteResponse]
 
-APP --> DG : Liste alertes triées\npar gravité (jours_retard DESC)
+APP --> DG : Liste alertes triees\npar gravite (joursRetard DESC)
 
 @enduml
