@@ -1,11 +1,14 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'rec_dashboard.title' | translate }}</h2>
-      <p class="text-muted text-sm">{{ 'rec_dashboard.subtitle' | translate }}</p>
+      <h2>{{ "rec_dashboard.title" | translate }}</h2>
+      <p class="text-muted text-sm">
+        {{ "rec_dashboard.subtitle" | translate }}
+      </p>
     </div>
     <a routerLink="/recouvrement/creances" class="btn btn-primary">
-      <span class="material-icons-round">add</span> {{ 'rec_dashboard.new_btn' | translate }}
+      <span class="material-icons-round">add</span>
+      {{ "rec_dashboard.new_btn" | translate }}
     </a>
   </div>
 
@@ -36,23 +39,28 @@
   </div>
 
   <div class="dashboard-grid">
-
     <!-- Top créances en retard -->
     <div class="card">
       <div class="card-header">
-        <h4>{{ 'rec_dashboard.top_title' | translate }}</h4>
-        <a routerLink="/recouvrement/creances" class="text-sm" style="color: var(--color-primary)">
-          {{ 'rec_dashboard.see_all' | translate }}
+        <h4>{{ "rec_dashboard.top_title" | translate }}</h4>
+        <a
+          routerLink="/recouvrement/creances"
+          class="text-sm"
+          style="color: var(--color-primary)"
+        >
+          {{ "rec_dashboard.see_all" | translate }}
         </a>
       </div>
       <table class="data-table">
         <thead>
           <tr>
-            <th>{{ 'rec_dashboard.col_client' | translate }}</th>
-            <th class="text-right">{{ 'rec_dashboard.col_montant' | translate }}</th>
-            <th>{{ 'rec_dashboard.col_retard' | translate }}</th>
-            <th>{{ 'rec_dashboard.col_cobac' | translate }}</th>
-            <th>{{ 'rec_dashboard.col_phase' | translate }}</th>
+            <th>{{ "rec_dashboard.col_client" | translate }}</th>
+            <th class="text-right">
+              {{ "rec_dashboard.col_montant" | translate }}
+            </th>
+            <th>{{ "rec_dashboard.col_retard" | translate }}</th>
+            <th>{{ "rec_dashboard.col_cobac" | translate }}</th>
+            <th>{{ "rec_dashboard.col_phase" | translate }}</th>
             <th></th>
           </tr>
         </thead>
@@ -61,7 +69,12 @@
             @for (_ of [1, 2, 3, 4, 5]; track $index) {
               <tr>
                 @for (__ of [1, 2, 3, 4, 5]; track $index) {
-                  <td><div class="skeleton" style="height: 14px; width: 80%"></div></td>
+                  <td>
+                    <div
+                      class="skeleton"
+                      style="height: 14px; width: 80%"
+                    ></div>
+                  </td>
                 }
               </tr>
             }
@@ -69,7 +82,9 @@
             @for (c of data()?.creances ?? []; track c.id) {
               <tr>
                 <td class="font-semibold">{{ c.clientNom }}</td>
-                <td class="text-right text-danger font-semibold">{{ c.montant | fcfa }}</td>
+                <td class="text-right text-danger font-semibold">
+                  {{ c.montant | fcfa }}
+                </td>
                 <td>
                   <span
                     class="retard-chip"
@@ -79,7 +94,9 @@
                   </span>
                 </td>
                 <td>
-                  <span class="badge" [ngClass]="cobacClass(c.statut)">{{ c.statut }}</span>
+                  <span class="badge" [ngClass]="cobacClass(c.statut)">{{
+                    c.statut
+                  }}</span>
                 </td>
                 <td>
                   <span class="badge" [ngClass]="phaseClass(c.phase)">
@@ -99,8 +116,12 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="text-center text-muted" style="padding: 32px">
-                  {{ 'rec_dashboard.empty' | translate }}
+                <td
+                  colspan="6"
+                  class="text-center text-muted"
+                  style="padding: 32px"
+                >
+                  {{ "rec_dashboard.empty" | translate }}
                 </td>
               </tr>
             }
@@ -112,9 +133,13 @@
     <!-- Répartition par phase -->
     <div class="card phases-card">
       <div class="card-header">
-        <h4>{{ 'rec_dashboard.phases_title' | translate }}</h4>
-        <a routerLink="/recouvrement/creances" class="text-sm" style="color: var(--color-primary)">
-          {{ 'rec_dashboard.see_all' | translate }}
+        <h4>{{ "rec_dashboard.phases_title" | translate }}</h4>
+        <a
+          routerLink="/recouvrement/creances"
+          class="text-sm"
+          style="color: var(--color-primary)"
+        >
+          {{ "rec_dashboard.see_all" | translate }}
         </a>
       </div>
 
@@ -127,8 +152,14 @@
         }
       } @else if (phaseEntries().length === 0) {
         <div class="text-center text-muted" style="padding: 32px">
-          <span class="material-icons-round" style="font-size: 36px; opacity: 0.4">check_circle</span>
-          <p style="margin: 8px 0 0">{{ 'rec_dashboard.phases_empty' | translate }}</p>
+          <span
+            class="material-icons-round"
+            style="font-size: 36px; opacity: 0.4"
+            >check_circle</span
+          >
+          <p style="margin: 8px 0 0">
+            {{ "rec_dashboard.phases_empty" | translate }}
+          </p>
         </div>
       } @else {
         @for (entry of phaseEntries(); track entry.phase) {
@@ -141,7 +172,9 @@
             <div class="phase-right">
               <div
                 class="phase-bar"
-                [style.width.%]="(entry.count / (data()?.creancesActives || 1)) * 100"
+                [style.width.%]="
+                  (entry.count / (data()?.creancesActives || 1)) * 100
+                "
                 [ngClass]="phaseClass(entry.phase)"
               ></div>
               <span class="phase-count">{{ entry.count }}</span>
@@ -153,15 +186,15 @@
         <div class="quick-links">
           <a routerLink="/recouvrement/alertes" class="quick-link">
             <span class="material-icons-round">warning_amber</span>
-            <span>{{ 'rec_dashboard.quick_alertes' | translate }}</span>
+            <span>{{ "rec_dashboard.quick_alertes" | translate }}</span>
           </a>
           <a routerLink="/recouvrement/actions" class="quick-link">
             <span class="material-icons-round">add_task</span>
-            <span>{{ 'rec_dashboard.quick_action' | translate }}</span>
+            <span>{{ "rec_dashboard.quick_action" | translate }}</span>
           </a>
         </div>
       }
     </div>
-
-  </div><!-- /dashboard-grid -->
+  </div>
+  <!-- /dashboard-grid -->
 </div>

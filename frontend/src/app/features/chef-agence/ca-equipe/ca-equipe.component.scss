@@ -37,11 +37,11 @@
   transition: box-shadow 0.15s;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
   &.inactive {
-    opacity: .55;
+    opacity: 0.55;
   }
 }
 
@@ -105,7 +105,9 @@
   color: var(--color-text-muted);
   margin-top: 3px;
 
-  .material-icons-round { opacity: .7; }
+  .material-icons-round {
+    opacity: 0.7;
+  }
 }
 
 // ── Dernière connexion ────────────────────────────────────────────────────────
@@ -125,7 +127,7 @@
 
   .material-icons-round {
     font-size: 48px;
-    opacity: .4;
+    opacity: 0.4;
   }
 }
 

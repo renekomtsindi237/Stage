@@ -88,7 +88,8 @@ export class SaiDossiersCreditComponent implements OnInit {
 
   load() {
     this.loading.set(true);
-    const statut = this.filterStatut() === "TOUS" ? undefined : this.filterStatut();
+    const statut =
+      this.filterStatut() === "TOUS" ? undefined : this.filterStatut();
     this.api
       .get<Page<DossierRow>>("/api/v1/dossiers-credit", {
         page: this.currentPage(),
@@ -136,7 +137,13 @@ export class SaiDossiersCreditComponent implements OnInit {
 
   submitGenerer() {
     const d = this.selectedDossier();
-    if (!d || !this.genererForm.montantFinal || !this.genererForm.tauxInteret || !this.genererForm.nbEcheances) return;
+    if (
+      !d ||
+      !this.genererForm.montantFinal ||
+      !this.genererForm.tauxInteret ||
+      !this.genererForm.nbEcheances
+    )
+      return;
     this.generating.set(true);
     const body = {
       montantFinal: this.genererForm.montantFinal,
@@ -147,14 +154,20 @@ export class SaiDossiersCreditComponent implements OnInit {
       dateSignature: this.genererForm.dateSignature || null,
     };
     this.api
-      .post<ContratCredit>(`/api/v1/back-office/contrats/dossier/${d.uid}/generer`, body)
+      .post<ContratCredit>(
+        `/api/v1/back-office/contrats/dossier/${d.uid}/generer`,
+        body,
+      )
       .subscribe({
         next: (c) => {
           this.contrat.set(c);
           this.contratAbsent.set(false);
           this.showGenererForm.set(false);
           this.generating.set(false);
-          this.toast.showSuccess("Contrat généré", `Référence : ${c.referenceContrat}`);
+          this.toast.showSuccess(
+            "Contrat généré",
+            `Référence : ${c.referenceContrat}`,
+          );
         },
         error: () => {
           this.generating.set(false);
@@ -172,12 +185,18 @@ export class SaiDossiersCreditComponent implements OnInit {
       .subscribe({
         next: () => {
           this.validating.set(false);
-          this.toast.showSuccess("Signatures validées", "Le contrat est maintenant actif.");
+          this.toast.showSuccess(
+            "Signatures validées",
+            "Le contrat est maintenant actif.",
+          );
           this.loadContrat(this.selectedDossier()!.uid);
         },
         error: () => {
           this.validating.set(false);
-          this.toast.showError("Erreur", "Validation des signatures impossible.");
+          this.toast.showError(
+            "Erreur",
+            "Validation des signatures impossible.",
+          );
         },
       });
   }

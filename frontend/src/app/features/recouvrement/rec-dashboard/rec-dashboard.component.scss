@@ -1,5 +1,11 @@
-.danger { color: var(--color-danger); font-weight: 600; }
-.warning { color: var(--color-warning); font-weight: 600; }
+.danger {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+.warning {
+  color: var(--color-warning);
+  font-weight: 600;
+}
 
 .retard-chip {
   display: inline-block;
@@ -28,7 +34,8 @@
 }
 
 // ── Carte phases ──────────────────────────────────────────────────────────────
-.phases-card {}
+.phases-card {
+}
 
 .phase-row {
   display: flex;
@@ -37,7 +44,9 @@
   padding: 8px 0;
   border-bottom: 1px solid var(--color-border);
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .phase-left {
@@ -58,12 +67,24 @@
   background: var(--color-border);
   transition: width 0.3s ease;
 
-  &.badge-basse      { background: #22c55e; }
-  &.badge-moyenne    { background: #f59e0b; }
-  &.badge-haute      { background: #f97316; }
-  &.badge-critique   { background: #ef4444; }
-  &.badge-primary    { background: var(--color-primary); }
-  &.badge-dark       { background: #475569; }
+  &.badge-basse {
+    background: #22c55e;
+  }
+  &.badge-moyenne {
+    background: #f59e0b;
+  }
+  &.badge-haute {
+    background: #f97316;
+  }
+  &.badge-critique {
+    background: #ef4444;
+  }
+  &.badge-primary {
+    background: var(--color-primary);
+  }
+  &.badge-dark {
+    background: #475569;
+  }
 }
 
 .phase-count {
@@ -96,7 +117,9 @@
   color: var(--color-text);
   font-size: 13px;
   font-weight: 500;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 
   .material-icons-round {
     font-size: 18px;
@@ -108,6 +131,8 @@
     border-color: var(--color-primary);
     color: white;
 
-    .material-icons-round { color: white; }
+    .material-icons-round {
+      color: white;
+    }
   }
 }

@@ -1,8 +1,8 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'dsi_rgpd.title' | translate }}</h2>
-      <p class="text-muted text-sm">{{ 'dsi_rgpd.subtitle' | translate }}</p>
+      <h2>{{ "dsi_rgpd.title" | translate }}</h2>
+      <p class="text-muted text-sm">{{ "dsi_rgpd.subtitle" | translate }}</p>
     </div>
     <button
       class="btn btn-primary"
@@ -11,9 +11,9 @@
     >
       <span class="material-icons-round">download</span>
       @if (exporting()) {
-        {{ 'dsi_rgpd.export_loading' | translate }}
+        {{ "dsi_rgpd.export_loading" | translate }}
       } @else {
-        {{ 'dsi_rgpd.export_btn' | translate }}
+        {{ "dsi_rgpd.export_btn" | translate }}
       }
     </button>
   </div>
@@ -22,14 +22,22 @@
   <div class="conformite-card" [class]="'conformite-card--' + conformiteClass">
     <div class="conformite-card__score">
       @if (loading()) {
-        <span class="skeleton" style="height: 80px; width: 120px; display: block"></span>
+        <span
+          class="skeleton"
+          style="height: 80px; width: 120px; display: block"
+        ></span>
       } @else {
         {{ conformitePct }}<small>%</small>
       }
     </div>
     <div>
-      <p class="conformite-card__label">{{ 'dsi_rgpd.score_label' | translate }}</p>
-      <div class="progress" style="width: 300px; max-width: 100%; margin-top: 8px">
+      <p class="conformite-card__label">
+        {{ "dsi_rgpd.score_label" | translate }}
+      </p>
+      <div
+        class="progress"
+        style="width: 300px; max-width: 100%; margin-top: 8px"
+      >
         <div
           class="progress-bar"
           [class]="conformiteClass"
@@ -37,7 +45,8 @@
         ></div>
       </div>
       <p class="text-sm text-muted" style="margin-top: 4px">
-        {{ 'dsi_rgpd.last_audit' | translate }}: {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
+        {{ "dsi_rgpd.last_audit" | translate }}:
+        {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
       </p>
     </div>
   </div>
@@ -47,24 +56,39 @@
     <div class="card">
       <div class="card-header">
         <span class="material-icons-round">how_to_reg</span>
-        <h4>{{ 'dsi_rgpd.consent_title' | translate }}</h4>
+        <h4>{{ "dsi_rgpd.consent_title" | translate }}</h4>
       </div>
       @if (loading()) {
         @for (_ of [1, 2, 3]; track $index) {
-          <div class="skeleton" style="height: 18px; width: 80%; margin-bottom: 8px"></div>
+          <div
+            class="skeleton"
+            style="height: 18px; width: 80%; margin-bottom: 8px"
+          ></div>
         }
       } @else {
         <div class="stat-row">
-          <span class="text-muted">{{ 'dsi_rgpd.consent_total' | translate }}</span>
-          <span class="font-semibold">{{ data()?.consentements?.total | number }}</span>
+          <span class="text-muted">{{
+            "dsi_rgpd.consent_total" | translate
+          }}</span>
+          <span class="font-semibold">{{
+            data()?.consentements?.total | number
+          }}</span>
         </div>
         <div class="stat-row">
-          <span class="text-muted">{{ 'dsi_rgpd.consent_valid' | translate }}</span>
-          <span class="font-semibold success">{{ data()?.consentements?.valides | number }}</span>
+          <span class="text-muted">{{
+            "dsi_rgpd.consent_valid" | translate
+          }}</span>
+          <span class="font-semibold success">{{
+            data()?.consentements?.valides | number
+          }}</span>
         </div>
         <div class="stat-row">
-          <span class="text-muted">{{ 'dsi_rgpd.consent_expired' | translate }}</span>
-          <span class="font-semibold danger">{{ data()?.consentements?.expires | number }}</span>
+          <span class="text-muted">{{
+            "dsi_rgpd.consent_expired" | translate
+          }}</span>
+          <span class="font-semibold danger">{{
+            data()?.consentements?.expires | number
+          }}</span>
         </div>
       }
     </div>
@@ -73,24 +97,39 @@
     <div class="card">
       <div class="card-header">
         <span class="material-icons-round">manage_accounts</span>
-        <h4>{{ 'dsi_rgpd.rights_title' | translate }}</h4>
+        <h4>{{ "dsi_rgpd.rights_title" | translate }}</h4>
       </div>
       @if (loading()) {
         @for (_ of [1, 2, 3]; track $index) {
-          <div class="skeleton" style="height: 18px; width: 80%; margin-bottom: 8px"></div>
+          <div
+            class="skeleton"
+            style="height: 18px; width: 80%; margin-bottom: 8px"
+          ></div>
         }
       } @else {
         <div class="stat-row">
-          <span class="text-muted">{{ 'dsi_rgpd.rights_requests' | translate }}</span>
-          <span class="font-semibold">{{ data()?.droitsExercices?.demandes | number }}</span>
+          <span class="text-muted">{{
+            "dsi_rgpd.rights_requests" | translate
+          }}</span>
+          <span class="font-semibold">{{
+            data()?.droitsExercices?.demandes | number
+          }}</span>
         </div>
         <div class="stat-row">
-          <span class="text-muted">{{ 'dsi_rgpd.rights_processed' | translate }}</span>
-          <span class="font-semibold success">{{ data()?.droitsExercices?.traitees | number }}</span>
+          <span class="text-muted">{{
+            "dsi_rgpd.rights_processed" | translate
+          }}</span>
+          <span class="font-semibold success">{{
+            data()?.droitsExercices?.traitees | number
+          }}</span>
         </div>
         <div class="stat-row">
-          <span class="text-muted">{{ 'dsi_rgpd.rights_in_progress' | translate }}</span>
-          <span class="font-semibold warning">{{ data()?.droitsExercices?.enCours | number }}</span>
+          <span class="text-muted">{{
+            "dsi_rgpd.rights_in_progress" | translate
+          }}</span>
+          <span class="font-semibold warning">{{
+            data()?.droitsExercices?.enCours | number
+          }}</span>
         </div>
       }
     </div>
@@ -99,15 +138,18 @@
     <div class="card">
       <div class="card-header">
         <span class="material-icons-round">storage</span>
-        <h4>{{ 'dsi_rgpd.retention_title' | translate }}</h4>
+        <h4>{{ "dsi_rgpd.retention_title" | translate }}</h4>
       </div>
       @if (loading()) {
         <div class="skeleton" style="height: 40px; width: 100%"></div>
       } @else {
         @if ((data()?.retentionAnomalies ?? 0) > 0) {
           <div class="alert alert-danger" style="margin: 0">
-            <span class="material-icons-round" style="font-size: 18px">warning</span>
-            {{ data()?.retentionAnomalies }} {{ 'dsi_rgpd.retention_anomaly' | translate }}
+            <span class="material-icons-round" style="font-size: 18px"
+              >warning</span
+            >
+            {{ data()?.retentionAnomalies }}
+            {{ "dsi_rgpd.retention_anomaly" | translate }}
           </div>
         } @else {
           <div
@@ -119,8 +161,10 @@
               color: var(--color-success);
             "
           >
-            <span class="material-icons-round" style="font-size: 18px">check_circle</span>
-            {{ 'dsi_rgpd.retention_ok' | translate }}
+            <span class="material-icons-round" style="font-size: 18px"
+              >check_circle</span
+            >
+            {{ "dsi_rgpd.retention_ok" | translate }}
           </div>
         }
       }
@@ -130,7 +174,7 @@
     <div class="card">
       <div class="card-header">
         <span class="material-icons-round">checklist</span>
-        <h4>{{ 'dsi_rgpd.checklist_title' | translate }}</h4>
+        <h4>{{ "dsi_rgpd.checklist_title" | translate }}</h4>
       </div>
       <div class="checklist">
         @for (item of checklistItems; track item.label) {

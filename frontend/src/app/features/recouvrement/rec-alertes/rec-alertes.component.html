@@ -1,13 +1,14 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'rec_alertes.title' | translate }}</h2>
+      <h2>{{ "rec_alertes.title" | translate }}</h2>
       <p class="text-muted text-sm">
         {{ page()?.totalElements ?? 0 | number }} alerte(s)
       </p>
     </div>
     <button class="btn btn-ghost" (click)="load()">
-      <span class="material-icons-round">refresh</span> {{ 'rec_alertes.refresh_btn' | translate }}
+      <span class="material-icons-round">refresh</span>
+      {{ "rec_alertes.refresh_btn" | translate }}
     </button>
   </div>
 
@@ -27,12 +28,14 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>{{ 'rec_alertes.col_ref' | translate }}</th>
-          <th class="text-right">{{ 'rec_alertes.col_montant' | translate }}</th>
-          <th>{{ 'rec_alertes.col_jours' | translate }}</th>
-          <th>{{ 'rec_alertes.col_statut' | translate }}</th>
-          <th>{{ 'rec_alertes.col_date' | translate }}</th>
-          <th>{{ 'rec_alertes.col_actions' | translate }}</th>
+          <th>{{ "rec_alertes.col_ref" | translate }}</th>
+          <th class="text-right">
+            {{ "rec_alertes.col_montant" | translate }}
+          </th>
+          <th>{{ "rec_alertes.col_jours" | translate }}</th>
+          <th>{{ "rec_alertes.col_statut" | translate }}</th>
+          <th>{{ "rec_alertes.col_date" | translate }}</th>
+          <th>{{ "rec_alertes.col_actions" | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -51,7 +54,8 @@
             <tr>
               <td class="font-semibold">{{ a.idPret }}</td>
               <td class="text-right text-danger font-semibold">
-                {{ a.montantEnRetard | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
+                {{ a.montantEnRetard | number: "1.0-0" }}
+                {{ "common.fcfa" | translate }}
               </td>
               <td>
                 <span class="retard-chip" [class]="retardClass(a.joursRetard)">
@@ -67,7 +71,10 @@
                 {{ a.dateGeneration | date: "dd/MM/yy" }}
               </td>
               <td>
-                @if (a.statutAlerte === "ACTIVE" || a.statutAlerte === "NON_TRAITEE") {
+                @if (
+                  a.statutAlerte === "ACTIVE" ||
+                  a.statutAlerte === "NON_TRAITEE"
+                ) {
                   <button
                     class="btn btn-ghost btn-sm"
                     (click)="prendre(a.uid)"
@@ -76,7 +83,10 @@
                     <span class="material-icons-round">play_arrow</span>
                   </button>
                 }
-                @if (a.statutAlerte === "EN_TRAITEMENT" || a.statutAlerte === "ESCALADEE") {
+                @if (
+                  a.statutAlerte === "EN_TRAITEMENT" ||
+                  a.statutAlerte === "ESCALADEE"
+                ) {
                   <button
                     class="btn btn-ghost btn-sm"
                     (click)="resoudre(a.uid)"
@@ -85,7 +95,9 @@
                     <span class="material-icons-round">check</span>
                   </button>
                 }
-                @if (a.statutAlerte === "RESOLUE" || a.statutAlerte === "CLOTUREE") {
+                @if (
+                  a.statutAlerte === "RESOLUE" || a.statutAlerte === "CLOTUREE"
+                ) {
                   <span class="text-muted text-sm">—</span>
                 }
               </td>
@@ -97,7 +109,7 @@
                 class="text-center text-muted"
                 style="padding: 32px"
               >
-                {{ 'rec_alertes.empty' | translate }}
+                {{ "rec_alertes.empty" | translate }}
               </td>
             </tr>
           }
@@ -115,7 +127,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm">
-          {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}
+          {{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}
         </span>
         <button
           class="btn btn-ghost btn-sm"

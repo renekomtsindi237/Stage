@@ -1,10 +1,9 @@
 <div class="notif-overlay" [@fadeOverlay] (click)="close()">
   <div class="notif-panel" [@slideIn] (click)="$event.stopPropagation()">
-
     <!-- En-tête -->
     <div class="notif-header">
       <div class="notif-header__left">
-        <h3>{{ 'notif.title' | translate }}</h3>
+        <h3>{{ "notif.title" | translate }}</h3>
         @if (unreadCount > 0) {
           <span class="notif-count-badge">{{ unreadCount }}</span>
         }
@@ -12,8 +11,10 @@
       <div style="display: flex; gap: 8px; align-items: center">
         @if (unreadCount > 0) {
           <button class="btn btn-ghost btn-sm" (click)="markAllRead()">
-            <span class="material-icons-round" style="font-size: 15px">done_all</span>
-            {{ 'notif.mark_all_read' | translate }}
+            <span class="material-icons-round" style="font-size: 15px"
+              >done_all</span
+            >
+            {{ "notif.mark_all_read" | translate }}
           </button>
         }
         <button class="btn btn-ghost btn-sm icon-only" (click)="close()">
@@ -29,7 +30,7 @@
         [class.active]="activeTab() === 'tous'"
         (click)="activeTab.set('tous')"
       >
-        {{ 'notif.tab_all' | translate }}
+        {{ "notif.tab_all" | translate }}
         <span class="notif-tab-badge">{{ notifications.length }}</span>
       </button>
       <button
@@ -37,9 +38,11 @@
         [class.active]="activeTab() === 'non-lus'"
         (click)="activeTab.set('non-lus')"
       >
-        {{ 'notif.tab_unread' | translate }}
+        {{ "notif.tab_unread" | translate }}
         @if (unreadCount > 0) {
-          <span class="notif-tab-badge notif-tab-badge--unread">{{ unreadCount }}</span>
+          <span class="notif-tab-badge notif-tab-badge--unread">{{
+            unreadCount
+          }}</span>
         }
       </button>
       <button
@@ -47,7 +50,7 @@
         [class.active]="activeTab() === 'lus'"
         (click)="activeTab.set('lus')"
       >
-        {{ 'notif.tab_read' | translate }}
+        {{ "notif.tab_read" | translate }}
         @if (readCount > 0) {
           <span class="notif-tab-badge">{{ readCount }}</span>
         }
@@ -73,20 +76,19 @@
       } @empty {
         <div class="notif-empty">
           <span class="material-icons-round">
-            {{ activeTab() === 'non-lus' ? 'done_all' : 'notifications_none' }}
+            {{ activeTab() === "non-lus" ? "done_all" : "notifications_none" }}
           </span>
           <p>
-            @if (activeTab() === 'non-lus') {
-              {{ 'notif.empty_unread' | translate }}
-            } @else if (activeTab() === 'lus') {
-              {{ 'notif.empty_read' | translate }}
+            @if (activeTab() === "non-lus") {
+              {{ "notif.empty_unread" | translate }}
+            } @else if (activeTab() === "lus") {
+              {{ "notif.empty_read" | translate }}
             } @else {
-              {{ 'notif.empty_all' | translate }}
+              {{ "notif.empty_all" | translate }}
             }
           </p>
         </div>
       }
     </div>
-
   </div>
 </div>

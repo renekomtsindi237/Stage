@@ -1,45 +1,66 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'rec_actions.title' | translate }}</h2>
-      <p class="text-muted text-sm">{{ 'rec_actions.subtitle' | translate }}</p>
+      <h2>{{ "rec_actions.title" | translate }}</h2>
+      <p class="text-muted text-sm">{{ "rec_actions.subtitle" | translate }}</p>
     </div>
     <a routerLink="/recouvrement/creances" class="btn btn-ghost">
       <span class="material-icons-round">arrow_back</span>
-      {{ 'rec_actions.back_btn' | translate }}
+      {{ "rec_actions.back_btn" | translate }}
     </a>
   </div>
 
   <div class="action-layout">
-
     <!-- Étape 1 : Sélectionner le dossier -->
     <div class="step-card">
       <div class="step-header">
         <span class="step-num">1</span>
-        <h4>{{ 'rec_actions.step1_title' | translate }}</h4>
+        <h4>{{ "rec_actions.step1_title" | translate }}</h4>
       </div>
 
       @if (dossierLoading()) {
-        <div class="text-muted text-sm">{{ 'rec_actions.step1_loading' | translate }}</div>
+        <div class="text-muted text-sm">
+          {{ "rec_actions.step1_loading" | translate }}
+        </div>
       } @else if (selectedDossier()) {
         <div class="dossier-card">
           <div class="dossier-info">
-            <span class="font-semibold">{{ selectedDossier()!.nomClient }}</span>
-            <span class="text-muted text-sm">{{ 'rec_actions.step1_pret' | translate }} {{ selectedDossier()!.idPret }}</span>
-            <div style="display: flex; gap: 8px; margin-top: 4px; align-items: center">
-              <span class="badge" [ngClass]="phaseClass(selectedDossier()!.phase)">
+            <span class="font-semibold">{{
+              selectedDossier()!.nomClient
+            }}</span>
+            <span class="text-muted text-sm"
+              >{{ "rec_actions.step1_pret" | translate }}
+              {{ selectedDossier()!.idPret }}</span
+            >
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                margin-top: 4px;
+                align-items: center;
+              "
+            >
+              <span
+                class="badge"
+                [ngClass]="phaseClass(selectedDossier()!.phase)"
+              >
                 {{ selectedDossier()!.phase }}
               </span>
               <span class="text-sm text-danger font-semibold">
                 {{ selectedDossier()!.montantImpaye | fcfa }}
               </span>
               <span class="text-sm text-muted">
-                ({{ selectedDossier()!.joursRetard }}j {{ 'rec_actions.step1_retard' | translate }})
+                ({{ selectedDossier()!.joursRetard }}j
+                {{ "rec_actions.step1_retard" | translate }})
               </span>
             </div>
           </div>
           @if (!success()) {
-            <button class="btn btn-ghost btn-sm" (click)="clearDossier()" [title]="'rec_actions.step1_change' | translate">
+            <button
+              class="btn btn-ghost btn-sm"
+              (click)="clearDossier()"
+              [title]="'rec_actions.step1_change' | translate"
+            >
               <span class="material-icons-round">swap_horiz</span>
             </button>
           }
@@ -62,7 +83,11 @@
                 <li (click)="selectDossier(d)">
                   <span class="font-semibold">{{ d.nomClient }}</span>
                   <span class="text-muted text-sm"> — {{ d.idPret }}</span>
-                  <span class="badge" [ngClass]="phaseClass(d.phase)" style="float: right">
+                  <span
+                    class="badge"
+                    [ngClass]="phaseClass(d.phase)"
+                    style="float: right"
+                  >
                     {{ d.phase }}
                   </span>
                 </li>
@@ -70,7 +95,9 @@
             </ul>
           }
           @if (showResults() && searchResults().length === 0) {
-            <p class="text-muted text-sm" style="margin-top: 8px">{{ 'rec_actions.step1_empty' | translate }}</p>
+            <p class="text-muted text-sm" style="margin-top: 8px">
+              {{ "rec_actions.step1_empty" | translate }}
+            </p>
           }
         </div>
       }
@@ -81,42 +108,78 @@
       <div class="step-card">
         <div class="step-header">
           <span class="step-num">2</span>
-          <h4>{{ 'rec_actions.step2_title' | translate }}</h4>
+          <h4>{{ "rec_actions.step2_title" | translate }}</h4>
         </div>
 
         <div class="form-grid">
           <div class="form-group" style="grid-column: 1 / -1">
-            <label>{{ 'rec_actions.type_label' | translate }}</label>
+            <label>{{ "rec_actions.type_label" | translate }}</label>
             <select class="form-control" [(ngModel)]="form.typeAction">
-              <option value="">{{ 'rec_actions.type_choose' | translate }}</option>
+              <option value="">
+                {{ "rec_actions.type_choose" | translate }}
+              </option>
               <optgroup [label]="'rec_actions.group_amiable' | translate">
-                <option value="APPEL_TELEPHONIQUE">{{ 'rec_actions.type_appel' | translate }}</option>
-                <option value="SMS_RELANCE">{{ 'rec_actions.type_sms' | translate }}</option>
-                <option value="EMAIL_RELANCE">{{ 'rec_actions.type_email' | translate }}</option>
-                <option value="VISITE_TERRAIN">{{ 'rec_actions.type_visite' | translate }}</option>
+                <option value="APPEL_TELEPHONIQUE">
+                  {{ "rec_actions.type_appel" | translate }}
+                </option>
+                <option value="SMS_RELANCE">
+                  {{ "rec_actions.type_sms" | translate }}
+                </option>
+                <option value="EMAIL_RELANCE">
+                  {{ "rec_actions.type_email" | translate }}
+                </option>
+                <option value="VISITE_TERRAIN">
+                  {{ "rec_actions.type_visite" | translate }}
+                </option>
               </optgroup>
               <optgroup [label]="'rec_actions.group_mediation' | translate">
-                <option value="MEDIATION_CHEF_QUARTIER">{{ 'rec_actions.type_med_quartier' | translate }}</option>
-                <option value="MEDIATION_FAMILLE">{{ 'rec_actions.type_med_famille' | translate }}</option>
+                <option value="MEDIATION_CHEF_QUARTIER">
+                  {{ "rec_actions.type_med_quartier" | translate }}
+                </option>
+                <option value="MEDIATION_FAMILLE">
+                  {{ "rec_actions.type_med_famille" | translate }}
+                </option>
               </optgroup>
               <optgroup [label]="'rec_actions.group_caution' | translate">
-                <option value="CONTACT_CAUTION">{{ 'rec_actions.type_contact_caution' | translate }}</option>
-                <option value="SAISIE_GARANTIE">{{ 'rec_actions.type_saisie' | translate }}</option>
+                <option value="CONTACT_CAUTION">
+                  {{ "rec_actions.type_contact_caution" | translate }}
+                </option>
+                <option value="SAISIE_GARANTIE">
+                  {{ "rec_actions.type_saisie" | translate }}
+                </option>
               </optgroup>
               <optgroup [label]="'rec_actions.group_ohada' | translate">
-                <option value="MISE_EN_DEMEURE_LETTRE">{{ 'rec_actions.type_mise_en_demeure' | translate }}</option>
-                <option value="INTERVENTION_HUISSIER">{{ 'rec_actions.type_huissier' | translate }}</option>
-                <option value="COMITE_RECOUVREMENT">{{ 'rec_actions.type_comite' | translate }}</option>
-                <option value="ASSIGNATION_TRIBUNAL">{{ 'rec_actions.type_assignation' | translate }}</option>
+                <option value="MISE_EN_DEMEURE_LETTRE">
+                  {{ "rec_actions.type_mise_en_demeure" | translate }}
+                </option>
+                <option value="INTERVENTION_HUISSIER">
+                  {{ "rec_actions.type_huissier" | translate }}
+                </option>
+                <option value="COMITE_RECOUVREMENT">
+                  {{ "rec_actions.type_comite" | translate }}
+                </option>
+                <option value="ASSIGNATION_TRIBUNAL">
+                  {{ "rec_actions.type_assignation" | translate }}
+                </option>
               </optgroup>
               <optgroup [label]="'rec_actions.group_encaissements' | translate">
-                <option value="ENCAISSEMENT_PARTIEL">{{ 'rec_actions.type_encaissement_partiel' | translate }}</option>
-                <option value="ENCAISSEMENT_TOTAL">{{ 'rec_actions.type_encaissement_total' | translate }}</option>
+                <option value="ENCAISSEMENT_PARTIEL">
+                  {{ "rec_actions.type_encaissement_partiel" | translate }}
+                </option>
+                <option value="ENCAISSEMENT_TOTAL">
+                  {{ "rec_actions.type_encaissement_total" | translate }}
+                </option>
               </optgroup>
               <optgroup [label]="'rec_actions.group_resolution' | translate">
-                <option value="ACCORD_REECHELONNEMENT">{{ 'rec_actions.type_accord' | translate }}</option>
-                <option value="CESSION_CREANCE">{{ 'rec_actions.type_cession' | translate }}</option>
-                <option value="RADIATION">{{ 'rec_actions.type_radiation' | translate }}</option>
+                <option value="ACCORD_REECHELONNEMENT">
+                  {{ "rec_actions.type_accord" | translate }}
+                </option>
+                <option value="CESSION_CREANCE">
+                  {{ "rec_actions.type_cession" | translate }}
+                </option>
+                <option value="RADIATION">
+                  {{ "rec_actions.type_radiation" | translate }}
+                </option>
               </optgroup>
             </select>
           </div>
@@ -124,30 +187,55 @@
           <!-- Champs versement -->
           @if (isEncaissement) {
             <div class="form-group">
-              <label>{{ 'rec_actions.montant_label' | translate }}</label>
-              <input type="number" class="form-control" [(ngModel)]="form.promesseMontant"
-                [placeholder]="'rec_actions.montant_placeholder' | translate" min="0" />
+              <label>{{ "rec_actions.montant_label" | translate }}</label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="form.promesseMontant"
+                [placeholder]="'rec_actions.montant_placeholder' | translate"
+                min="0"
+              />
             </div>
             <div class="form-group">
-              <label>{{ 'rec_actions.canal_label' | translate }}</label>
+              <label>{{ "rec_actions.canal_label" | translate }}</label>
               <select class="form-control" [(ngModel)]="form.canalPaiement">
-                <option value="">{{ 'rec_actions.canal_choose' | translate }}</option>
-                <option value="ESPECES">{{ 'rec_actions.canal_especes' | translate }}</option>
-                <option value="MTN_MOBILE_MONEY">{{ 'rec_actions.canal_mtn' | translate }}</option>
-                <option value="ORANGE_MONEY">{{ 'rec_actions.canal_orange' | translate }}</option>
-                <option value="VIREMENT">{{ 'rec_actions.canal_virement' | translate }}</option>
+                <option value="">
+                  {{ "rec_actions.canal_choose" | translate }}
+                </option>
+                <option value="ESPECES">
+                  {{ "rec_actions.canal_especes" | translate }}
+                </option>
+                <option value="MTN_MOBILE_MONEY">
+                  {{ "rec_actions.canal_mtn" | translate }}
+                </option>
+                <option value="ORANGE_MONEY">
+                  {{ "rec_actions.canal_orange" | translate }}
+                </option>
+                <option value="VIREMENT">
+                  {{ "rec_actions.canal_virement" | translate }}
+                </option>
               </select>
             </div>
             @if (isMomo) {
               <div class="form-group">
-                <label>{{ 'rec_actions.momo_phone' | translate }}</label>
-                <input type="text" class="form-control" [(ngModel)]="form.numeroTelephonePaiement"
-                  [placeholder]="'rec_actions.momo_phone_placeholder' | translate" />
+                <label>{{ "rec_actions.momo_phone" | translate }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="form.numeroTelephonePaiement"
+                  [placeholder]="
+                    'rec_actions.momo_phone_placeholder' | translate
+                  "
+                />
               </div>
               <div class="form-group">
-                <label>{{ 'rec_actions.momo_ref' | translate }}</label>
-                <input type="text" class="form-control" [(ngModel)]="form.referenceTransaction"
-                  [placeholder]="'rec_actions.momo_ref_placeholder' | translate" />
+                <label>{{ "rec_actions.momo_ref" | translate }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="form.referenceTransaction"
+                  [placeholder]="'rec_actions.momo_ref_placeholder' | translate"
+                />
               </div>
             }
           }
@@ -155,52 +243,100 @@
           <!-- Promesse de paiement (pour appels/visites) -->
           @if (!isEncaissement && form.typeAction) {
             <div class="form-group">
-              <label>{{ 'rec_actions.promise_date' | translate }}</label>
-              <input type="date" class="form-control" [(ngModel)]="form.promesseDate" />
+              <label>{{ "rec_actions.promise_date" | translate }}</label>
+              <input
+                type="date"
+                class="form-control"
+                [(ngModel)]="form.promesseDate"
+              />
             </div>
             <div class="form-group">
-              <label>{{ 'rec_actions.promise_amount' | translate }}</label>
-              <input type="number" class="form-control" [(ngModel)]="form.promesseMontant"
-                [placeholder]="'rec_actions.promise_amount_placeholder' | translate" min="0" />
+              <label>{{ "rec_actions.promise_amount" | translate }}</label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="form.promesseMontant"
+                [placeholder]="
+                  'rec_actions.promise_amount_placeholder' | translate
+                "
+                min="0"
+              />
             </div>
           }
 
           <!-- Frais engagés -->
           <div class="form-group">
-            <label>{{ 'rec_actions.frais' | translate }}</label>
-            <input type="number" class="form-control" [(ngModel)]="form.fraisEngages"
-              [placeholder]="'rec_actions.frais_placeholder' | translate" min="0" />
+            <label>{{ "rec_actions.frais" | translate }}</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.fraisEngages"
+              [placeholder]="'rec_actions.frais_placeholder' | translate"
+              min="0"
+            />
           </div>
 
           <!-- Résultat -->
           <div class="form-group">
-            <label>{{ 'rec_actions.resultat_label' | translate }}</label>
+            <label>{{ "rec_actions.resultat_label" | translate }}</label>
             <select class="form-control" [(ngModel)]="form.resultat">
-              <option value="">{{ 'rec_actions.resultat_choose' | translate }}</option>
-              <option value="CLIENT_CONTACTE">{{ 'rec_actions.res_contacte' | translate }}</option>
-              <option value="CLIENT_ABSENT">{{ 'rec_actions.res_absent' | translate }}</option>
-              <option value="CLIENT_REFUSE">{{ 'rec_actions.res_refuse' | translate }}</option>
-              <option value="PROMESSE_DE_PAIEMENT">{{ 'rec_actions.res_promesse' | translate }}</option>
-              <option value="PAIEMENT_PARTIEL">{{ 'rec_actions.res_partiel' | translate }}</option>
-              <option value="PAIEMENT_TOTAL">{{ 'rec_actions.res_total' | translate }}</option>
-              <option value="ACCORD_OBTENU">{{ 'rec_actions.res_accord' | translate }}</option>
-              <option value="SANS_SUITE">{{ 'rec_actions.res_sans_suite' | translate }}</option>
+              <option value="">
+                {{ "rec_actions.resultat_choose" | translate }}
+              </option>
+              <option value="CLIENT_CONTACTE">
+                {{ "rec_actions.res_contacte" | translate }}
+              </option>
+              <option value="CLIENT_ABSENT">
+                {{ "rec_actions.res_absent" | translate }}
+              </option>
+              <option value="CLIENT_REFUSE">
+                {{ "rec_actions.res_refuse" | translate }}
+              </option>
+              <option value="PROMESSE_DE_PAIEMENT">
+                {{ "rec_actions.res_promesse" | translate }}
+              </option>
+              <option value="PAIEMENT_PARTIEL">
+                {{ "rec_actions.res_partiel" | translate }}
+              </option>
+              <option value="PAIEMENT_TOTAL">
+                {{ "rec_actions.res_total" | translate }}
+              </option>
+              <option value="ACCORD_OBTENU">
+                {{ "rec_actions.res_accord" | translate }}
+              </option>
+              <option value="SANS_SUITE">
+                {{ "rec_actions.res_sans_suite" | translate }}
+              </option>
             </select>
           </div>
 
           <!-- Observation -->
           <div class="form-group" style="grid-column: 1 / -1">
-            <label>{{ 'rec_actions.observation_label' | translate }}</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="form.observation"
-              [placeholder]="'rec_actions.observation_placeholder' | translate"></textarea>
+            <label>{{ "rec_actions.observation_label" | translate }}</label>
+            <textarea
+              class="form-control"
+              rows="3"
+              [(ngModel)]="form.observation"
+              [placeholder]="'rec_actions.observation_placeholder' | translate"
+            ></textarea>
           </div>
         </div>
 
         <div class="form-footer">
-          <button class="btn btn-ghost" (click)="resetForm()">{{ 'rec_actions.reset' | translate }}</button>
-          <button class="btn btn-primary" [disabled]="saving()" (click)="submitAction()">
+          <button class="btn btn-ghost" (click)="resetForm()">
+            {{ "rec_actions.reset" | translate }}
+          </button>
+          <button
+            class="btn btn-primary"
+            [disabled]="saving()"
+            (click)="submitAction()"
+          >
             <span class="material-icons-round">save</span>
-            {{ saving() ? ('rec_actions.saving' | translate) : ('rec_actions.save_btn' | translate) }}
+            {{
+              saving()
+                ? ("rec_actions.saving" | translate)
+                : ("rec_actions.save_btn" | translate)
+            }}
           </button>
         </div>
       </div>
@@ -210,9 +346,9 @@
     @if (selectedDossier()?.clos) {
       <div class="step-card closed-notice">
         <span class="material-icons-round">info</span>
-        <p>{{ 'rec_actions.closed_notice' | translate }}</p>
+        <p>{{ "rec_actions.closed_notice" | translate }}</p>
         <a routerLink="/recouvrement/creances" class="btn btn-primary btn-sm">
-          {{ 'rec_actions.see_open' | translate }}
+          {{ "rec_actions.see_open" | translate }}
         </a>
       </div>
     }
@@ -221,20 +357,20 @@
     @if (success()) {
       <div class="step-card success-card">
         <span class="material-icons-round success-icon">check_circle</span>
-        <h4>{{ 'rec_actions.success_title' | translate }}</h4>
+        <h4>{{ "rec_actions.success_title" | translate }}</h4>
         <p class="text-muted text-sm">
-          {{ 'rec_actions.success_body' | translate }} {{ selectedDossier()!.nomClient }}.
+          {{ "rec_actions.success_body" | translate }}
+          {{ selectedDossier()!.nomClient }}.
         </p>
         <div style="display: flex; gap: 8px; margin-top: 16px">
           <button class="btn btn-primary" (click)="success.set(false)">
-            {{ 'rec_actions.success_add_more' | translate }}
+            {{ "rec_actions.success_add_more" | translate }}
           </button>
           <a routerLink="/recouvrement/creances" class="btn btn-ghost">
-            {{ 'rec_actions.success_back' | translate }}
+            {{ "rec_actions.success_back" | translate }}
           </a>
         </div>
       </div>
     }
-
   </div>
 </div>

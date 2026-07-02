@@ -181,7 +181,11 @@ export class DsiSettingsComponent implements OnInit {
         next: (res) => {
           this.paymentConfig.set(res.data);
           this.paymentSaving.set(false);
-          this.mtnForm.patchValue({ mtnApiKey: "", mtnSubscriptionKeyCollection: "", mtnSubscriptionKeyDisbursement: "" });
+          this.mtnForm.patchValue({
+            mtnApiKey: "",
+            mtnSubscriptionKeyCollection: "",
+            mtnSubscriptionKeyDisbursement: "",
+          });
           this.toast.showSuccess("MTN MoMo", "Configuration enregistrée.");
           this.cdr.markForCheck();
         },
@@ -221,7 +225,10 @@ export class DsiSettingsComponent implements OnInit {
         next: (res) => {
           this.paymentConfig.set(res.data);
           this.paymentSaving.set(false);
-          this.orangeForm.patchValue({ orangeMerchantKey: "", orangeClientSecret: "" });
+          this.orangeForm.patchValue({
+            orangeMerchantKey: "",
+            orangeClientSecret: "",
+          });
           this.toast.showSuccess("Orange Money", "Configuration enregistrée.");
           this.cdr.markForCheck();
         },

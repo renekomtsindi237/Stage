@@ -29,7 +29,10 @@ export class DirAnalyticsComponent implements OnInit {
   drift = signal<MlDrift | null>(null);
   triggering = signal(false);
 
-  psiChartData: ChartConfiguration<"line">["data"] = { labels: [], datasets: [] };
+  psiChartData: ChartConfiguration<"line">["data"] = {
+    labels: [],
+    datasets: [],
+  };
   psiChartOptions: ChartConfiguration<"line">["options"] = {
     responsive: true,
     maintainAspectRatio: false,
@@ -47,7 +50,10 @@ export class DirAnalyticsComponent implements OnInit {
 
   loadPipeline() {
     this.api.get<PipelineStatus>("/api/v1/analyste/pipeline/status").subscribe({
-      next: (d) => { this.pipeline.set(d); this.loadingPipeline.set(false); },
+      next: (d) => {
+        this.pipeline.set(d);
+        this.loadingPipeline.set(false);
+      },
       error: () => this.loadingPipeline.set(false),
     });
   }
@@ -66,7 +72,10 @@ export class DirAnalyticsComponent implements OnInit {
   triggerPipeline() {
     this.triggering.set(true);
     this.api.post("/api/v1/analyste/pipeline/trigger", {}).subscribe({
-      next: () => { this.triggering.set(false); this.loadPipeline(); },
+      next: () => {
+        this.triggering.set(false);
+        this.loadPipeline();
+      },
       error: () => this.triggering.set(false),
     });
   }
@@ -75,36 +84,44 @@ export class DirAnalyticsComponent implements OnInit {
     const evo = d.evolutionPsi ?? [];
     this.psiChartData = {
       labels: evo.map((e) => e.date.slice(5)),
-      datasets: [{
-        label: "PSI",
-        data: evo.map((e) => e.psi),
-        borderColor: "#1b2f4b",
-        backgroundColor: "rgba(27,47,75,.08)",
-        fill: true,
-        tension: 0.5,
-        pointRadius: 2,
-      }],
+      datasets: [
+        {
+          label: "PSI",
+          data: evo.map((e) => e.psi),
+          borderColor: "#1b2f4b",
+          backgroundColor: "rgba(27,47,75,.08)",
+          fill: true,
+          tension: 0.5,
+          pointRadius: 2,
+        },
+      ],
     };
   }
 
   get psiClass(): string {
     const psi = this.drift()?.psiActuel ?? 0;
     if (psi > 0.25) return "critical";
-    if (psi > 0.2)  return "high";
-    if (psi > 0.1)  return "medium";
+    if (psi > 0.2) return "high";
+    if (psi > 0.1) return "medium";
     return "ok";
   }
 
   statutClass(s: string): string {
     const map: Record<string, string> = {
-      SUCCESS: "success", RUNNING: "running", FAILED: "danger", PENDING: "basse",
+      SUCCESS: "success",
+      RUNNING: "running",
+      FAILED: "danger",
+      PENDING: "basse",
     };
     return map[s] ?? "basse";
   }
 
   dagIcon(s: string): string {
     const map: Record<string, string> = {
-      SUCCESS: "check_circle", RUNNING: "autorenew", FAILED: "cancel", PENDING: "schedule",
+      SUCCESS: "check_circle",
+      RUNNING: "autorenew",
+      FAILED: "cancel",
+      PENDING: "schedule",
     };
     return map[s] ?? "circle";
   }

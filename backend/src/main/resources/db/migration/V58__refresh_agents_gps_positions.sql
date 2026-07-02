@@ -52,7 +52,7 @@ BEGIN
             v_agent.longitude,
             COALESCE(v_agent.precision_gps_m, 10.0),
             0.0,
-            'SYSTEM_REFRESH',
+            'MANUEL',
             NOW() - (floor(random() * 8 + 1) || ' minutes')::INTERVAL
         );
 

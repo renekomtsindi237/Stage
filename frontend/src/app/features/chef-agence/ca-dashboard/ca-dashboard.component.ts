@@ -41,7 +41,13 @@ interface CaDashboard {
   selector: "app-ca-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
+  imports: [
+    CommonModule,
+    RouterLink,
+    StatCardComponent,
+    FcfaPipe,
+    TranslatePipe,
+  ],
   templateUrl: "./ca-dashboard.component.html",
   styleUrls: ["./ca-dashboard.component.scss"],
 })

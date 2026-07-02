@@ -39,7 +39,9 @@
     color: var(--color-primary);
   }
 
-  .kpi-success { color: var(--color-success, #22c55e); }
+  .kpi-success {
+    color: var(--color-success, #22c55e);
+  }
 }
 
 .kpi-mini-value {
@@ -74,7 +76,9 @@
   color: var(--color-text);
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 
   .material-icons-round {
     font-size: 20px;
@@ -85,6 +89,8 @@
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: white;
-    .material-icons-round { color: white; }
+    .material-icons-round {
+      color: white;
+    }
   }
 }

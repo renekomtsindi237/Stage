@@ -1,11 +1,14 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'ac_dashboard.title' | translate }}</h2>
-      <p class="text-muted text-sm">{{ 'ac_dashboard.subtitle' | translate }}</p>
+      <h2>{{ "ac_dashboard.title" | translate }}</h2>
+      <p class="text-muted text-sm">
+        {{ "ac_dashboard.subtitle" | translate }}
+      </p>
     </div>
     <a routerLink="/credit/nouveau" class="btn btn-primary">
-      <span class="material-icons-round">add</span> {{ 'ac_dashboard.new_btn' | translate }}
+      <span class="material-icons-round">add</span>
+      {{ "ac_dashboard.new_btn" | translate }}
     </a>
   </div>
 
@@ -41,22 +44,22 @@
         margin-bottom: 16px;
       "
     >
-      <h4>{{ 'ac_dashboard.recent_title' | translate }}</h4>
+      <h4>{{ "ac_dashboard.recent_title" | translate }}</h4>
       <a
         routerLink="/credit/dossiers"
         class="text-sm"
         style="color: var(--color-primary)"
-        >{{ 'ac_dashboard.see_all' | translate }}</a
+        >{{ "ac_dashboard.see_all" | translate }}</a
       >
     </div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>{{ 'ac_dashboard.col_reference' | translate }}</th>
-          <th>{{ 'ac_dashboard.col_client' | translate }}</th>
-          <th>{{ 'common.amount' | translate }}</th>
-          <th>{{ 'ac_dashboard.col_statut' | translate }}</th>
-          <th>{{ 'common.date' | translate }}</th>
+          <th>{{ "ac_dashboard.col_reference" | translate }}</th>
+          <th>{{ "ac_dashboard.col_client" | translate }}</th>
+          <th>{{ "common.amount" | translate }}</th>
+          <th>{{ "ac_dashboard.col_statut" | translate }}</th>
+          <th>{{ "common.date" | translate }}</th>
         </tr>
       </thead>
       <tbody>

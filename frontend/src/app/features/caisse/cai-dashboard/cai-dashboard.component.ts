@@ -32,7 +32,13 @@ interface CaiDashboard {
   selector: "app-cai-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
+  imports: [
+    CommonModule,
+    RouterLink,
+    StatCardComponent,
+    FcfaPipe,
+    TranslatePipe,
+  ],
   templateUrl: "./cai-dashboard.component.html",
   styleUrls: ["./cai-dashboard.component.scss"],
 })

@@ -1,8 +1,10 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'dsi_dashboard.title' | translate }}</h2>
-      <p class="text-muted text-sm">{{ 'dsi_dashboard.subtitle' | translate }}</p>
+      <h2>{{ "dsi_dashboard.title" | translate }}</h2>
+      <p class="text-muted text-sm">
+        {{ "dsi_dashboard.subtitle" | translate }}
+      </p>
     </div>
   </div>
 
@@ -37,7 +39,7 @@
     <div class="chart-card">
       <h3 class="chart-title">
         <span class="material-icons-round">security</span>
-        {{ 'dsi_dashboard.rgpd_gauge_title' | translate }}
+        {{ "dsi_dashboard.rgpd_gauge_title" | translate }}
       </h3>
       @if (loading()) {
         <div class="chart-skeleton"></div>
@@ -70,11 +72,13 @@
             <span class="gauge-value" [style.color]="rgpdColor()">
               {{ data()?.rgpdScore ?? 0 }}%
             </span>
-            <span class="gauge-label">{{ 'dsi_dashboard.rgpd_gauge_label' | translate }}</span>
+            <span class="gauge-label">{{
+              "dsi_dashboard.rgpd_gauge_label" | translate
+            }}</span>
           </div>
         </div>
         <div class="gauge-meta">
-          {{ 'dsi_dashboard.rgpd_last_audit' | translate }}
+          {{ "dsi_dashboard.rgpd_last_audit" | translate }}
           <strong>{{ data()?.dernierAudit | date: "dd/MM/yyyy" }}</strong>
         </div>
       }
@@ -84,7 +88,7 @@
     <div class="chart-card chart-card--bars">
       <h3 class="chart-title">
         <span class="material-icons-round">bar_chart</span>
-        {{ 'dsi_dashboard.bars_title' | translate }}
+        {{ "dsi_dashboard.bars_title" | translate }}
       </h3>
       @if (loading()) {
         <div class="chart-skeleton"></div>
@@ -124,17 +128,19 @@
     <a routerLink="/dsi/users" class="quick-link-card">
       <span class="material-icons-round">manage_accounts</span>
       <div>
-        <h4>{{ 'dsi_dashboard.nav_users_title' | translate }}</h4>
-        <p class="text-sm text-muted">{{ 'dsi_dashboard.nav_users_desc' | translate }}</p>
+        <h4>{{ "dsi_dashboard.nav_users_title" | translate }}</h4>
+        <p class="text-sm text-muted">
+          {{ "dsi_dashboard.nav_users_desc" | translate }}
+        </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
     </a>
     <a routerLink="/dsi/audit" class="quick-link-card">
       <span class="material-icons-round">history_edu</span>
       <div>
-        <h4>{{ 'dsi_dashboard.nav_audit_title' | translate }}</h4>
+        <h4>{{ "dsi_dashboard.nav_audit_title" | translate }}</h4>
         <p class="text-sm text-muted">
-          {{ 'dsi_dashboard.nav_audit_desc' | translate }}
+          {{ "dsi_dashboard.nav_audit_desc" | translate }}
           {{ data()?.dernierAudit | date: "dd/MM/yyyy" }}
         </p>
       </div>
@@ -143,9 +149,10 @@
     <a routerLink="/dsi/rgpd" class="quick-link-card">
       <span class="material-icons-round">security</span>
       <div>
-        <h4>{{ 'dsi_dashboard.nav_rgpd_title' | translate }}</h4>
+        <h4>{{ "dsi_dashboard.nav_rgpd_title" | translate }}</h4>
         <p class="text-sm text-muted">
-          {{ data()?.demandesDroits ?? 0 }} {{ 'dsi_dashboard.nav_rgpd_pending' | translate }}
+          {{ data()?.demandesDroits ?? 0 }}
+          {{ "dsi_dashboard.nav_rgpd_pending" | translate }}
         </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>
@@ -153,9 +160,9 @@
     <a routerLink="/dsi/monitoring" class="quick-link-card">
       <span class="material-icons-round">monitor_heart</span>
       <div>
-        <h4>{{ 'dsi_dashboard.nav_monitoring_title' | translate }}</h4>
+        <h4>{{ "dsi_dashboard.nav_monitoring_title" | translate }}</h4>
         <p class="text-sm text-muted">
-          {{ 'dsi_dashboard.nav_monitoring_desc' | translate }}
+          {{ "dsi_dashboard.nav_monitoring_desc" | translate }}
         </p>
       </div>
       <span class="material-icons-round text-muted">chevron_right</span>

@@ -32,19 +32,25 @@ interface RecDashboard {
 }
 
 const PHASE_LABELS: Record<string, string> = {
-  RELANCE_AMIABLE:   "Relance amiable",
+  RELANCE_AMIABLE: "Relance amiable",
   MEDIATION_AMIABLE: "Médiation amiable",
-  MISE_EN_DEMEURE:   "Mise en demeure",
-  CONTENTIEUX:       "Contentieux",
-  REECHELONNEMENT:   "Rééchelonnement",
-  PERTE:             "Perte",
+  MISE_EN_DEMEURE: "Mise en demeure",
+  CONTENTIEUX: "Contentieux",
+  REECHELONNEMENT: "Rééchelonnement",
+  PERTE: "Perte",
 };
 
 @Component({
   selector: "app-rec-dashboard",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, StatCardComponent, FcfaPipe, TranslatePipe],
+  imports: [
+    CommonModule,
+    RouterLink,
+    StatCardComponent,
+    FcfaPipe,
+    TranslatePipe,
+  ],
   templateUrl: "./rec-dashboard.component.html",
   styleUrls: ["./rec-dashboard.component.scss"],
 })
@@ -72,17 +78,25 @@ export class RecDashboardComponent implements OnInit {
 
   phaseClass(phase: string): string {
     const m: Record<string, string> = {
-      RELANCE_AMIABLE:   "badge-basse",
+      RELANCE_AMIABLE: "badge-basse",
       MEDIATION_AMIABLE: "badge-moyenne",
-      MISE_EN_DEMEURE:   "badge-haute",
-      CONTENTIEUX:       "badge-critique",
-      REECHELONNEMENT:   "badge-primary",
-      PERTE:             "badge-dark",
+      MISE_EN_DEMEURE: "badge-haute",
+      CONTENTIEUX: "badge-critique",
+      REECHELONNEMENT: "badge-primary",
+      PERTE: "badge-dark",
     };
     return m[phase] ?? "badge-moyenne";
   }
 
   cobacClass(cat: string): string {
-    return { A: "badge-basse", B: "badge-moyenne", C: "badge-haute", D: "badge-critique", E: "badge-dark" }[cat] ?? "";
+    return (
+      {
+        A: "badge-basse",
+        B: "badge-moyenne",
+        C: "badge-haute",
+        D: "badge-critique",
+        E: "badge-dark",
+      }[cat] ?? ""
+    );
   }
 }

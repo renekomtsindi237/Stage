@@ -96,8 +96,12 @@
     font-size: 13px;
     border-bottom: 1px solid var(--color-border);
 
-    &:last-child { border-bottom: none; }
-    &:hover { background: var(--color-bg); }
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: var(--color-bg);
+    }
   }
 }
 

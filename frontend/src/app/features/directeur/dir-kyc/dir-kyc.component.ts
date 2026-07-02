@@ -230,9 +230,10 @@ export class DirKycComponent implements OnInit {
         this.verifResultat() === "REJETE" ? this.verifMotifRejet() : null,
     };
     this.api
-      .put<
-        ApiWrapped<KycDossier>
-      >(`/api/v1/kyc/dossiers/${d.uid}/verifier`, body)
+      .put<ApiWrapped<KycDossier>>(
+        `/api/v1/kyc/dossiers/${d.uid}/verifier`,
+        body,
+      )
       .subscribe({
         next: (r) => {
           this.selected.set(r.data ?? (r as unknown as KycDossier));
@@ -287,9 +288,10 @@ export class DirKycComponent implements OnInit {
       tailleOctets: this.uploadTaille(),
     };
     this.api
-      .post<
-        ApiWrapped<KycDocument>
-      >(`/api/v1/kyc/dossiers/${d.uid}/documents`, body)
+      .post<ApiWrapped<KycDocument>>(
+        `/api/v1/kyc/dossiers/${d.uid}/documents`,
+        body,
+      )
       .subscribe({
         next: () => {
           this.uploadSubmitting.set(false);
@@ -316,9 +318,10 @@ export class DirKycComponent implements OnInit {
     this.docValidating.set(docUid);
     const body = { valide, motifRejet: valide ? null : this.docMotifRejet() };
     this.api
-      .put<
-        ApiWrapped<KycDocument>
-      >(`/api/v1/kyc/documents/${docUid}/valider`, body)
+      .put<ApiWrapped<KycDocument>>(
+        `/api/v1/kyc/documents/${docUid}/valider`,
+        body,
+      )
       .subscribe({
         next: () => {
           this.docValidating.set(null);

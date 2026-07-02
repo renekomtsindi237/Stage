@@ -22,7 +22,13 @@ import { environment } from "../../../../environments/environment";
   selector: "app-dir-kpi",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective, StatCardComponent, FcfaPipe, TranslatePipe],
+  imports: [
+    CommonModule,
+    BaseChartDirective,
+    StatCardComponent,
+    FcfaPipe,
+    TranslatePipe,
+  ],
   templateUrl: "./dir-kpi.component.html",
   styleUrls: ["./dir-kpi.component.scss"],
 })

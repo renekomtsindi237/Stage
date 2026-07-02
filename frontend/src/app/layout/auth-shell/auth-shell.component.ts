@@ -11,7 +11,7 @@ import { TranslatePipe } from "@ngx-translate/core";
     <div class="auth-shell">
       <a routerLink="/" class="auth-back">
         <span class="material-icons-round">arrow_back</span>
-        {{ 'auth_shell.back_home' | translate }}
+        {{ "auth_shell.back_home" | translate }}
       </a>
       <div class="auth-logo-wrap">
         <img

@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
-    <h2 class="page-title">{{ 'anl_pipeline.title' | translate }}</h2>
-    <p class="page-subtitle">{{ 'anl_pipeline.subtitle' | translate }}</p>
+    <h2 class="page-title">{{ "anl_pipeline.title" | translate }}</h2>
+    <p class="page-subtitle">{{ "anl_pipeline.subtitle" | translate }}</p>
   </div>
   <button
     class="btn btn-outline"
@@ -9,7 +9,11 @@
     (click)="forceExecution()"
   >
     <span class="material-icons-round">play_arrow</span>
-    {{ forcing() ? ('anl_pipeline.force_loading' | translate) : ('anl_pipeline.force_btn' | translate) }}
+    {{
+      forcing()
+        ? ("anl_pipeline.force_loading" | translate)
+        : ("anl_pipeline.force_btn" | translate)
+    }}
   </button>
 </div>
 
@@ -20,11 +24,15 @@
       <span class="material-icons-round">account_tree</span>
     </div>
     <div>
-      <p class="text-sm text-muted">{{ 'anl_pipeline.last_run' | translate }}</p>
+      <p class="text-sm text-muted">
+        {{ "anl_pipeline.last_run" | translate }}
+      </p>
       <p class="font-semibold text-lg">{{ data()!.derniereExecution }}</p>
     </div>
     <div class="ml-auto text-right">
-      <p class="text-sm text-muted">{{ 'anl_pipeline.global_status' | translate }}</p>
+      <p class="text-sm text-muted">
+        {{ "anl_pipeline.global_status" | translate }}
+      </p>
       <span
         class="badge badge-running"
         [class]="'badge-' + statutClass(data()!.statutGlobal)"
@@ -56,32 +64,52 @@
             <p class="dag-card__name font-semibold">{{ dag.nom }}</p>
             <p class="dag-card__id text-sm text-muted">{{ dag.id }}</p>
           </div>
-          <span class="badge ml-auto" [class]="'badge-' + statutClass(dag.statut)">
+          <span
+            class="badge ml-auto"
+            [class]="'badge-' + statutClass(dag.statut)"
+          >
             {{ dag.statut }}
           </span>
         </div>
 
         <div class="dag-card__metrics">
           <div class="dag-metric">
-            <span class="dag-metric__label">{{ 'anl_pipeline.dag_duration' | translate }}</span>
+            <span class="dag-metric__label">{{
+              "anl_pipeline.dag_duration" | translate
+            }}</span>
             <span class="dag-metric__val">{{ dag.duree ?? "—" }}</span>
           </div>
           <div class="dag-metric">
-            <span class="dag-metric__label">{{ 'anl_pipeline.dag_rows_read' | translate }}</span>
-            <span class="dag-metric__val">{{ formatLines(dag.lignesLues) }}</span>
+            <span class="dag-metric__label">{{
+              "anl_pipeline.dag_rows_read" | translate
+            }}</span>
+            <span class="dag-metric__val">{{
+              formatLines(dag.lignesLues)
+            }}</span>
           </div>
           <div class="dag-metric">
-            <span class="dag-metric__label">{{ 'anl_pipeline.dag_rows_written' | translate }}</span>
-            <span class="dag-metric__val">{{ formatLines(dag.lignesEcrites) }}</span>
+            <span class="dag-metric__label">{{
+              "anl_pipeline.dag_rows_written" | translate
+            }}</span>
+            <span class="dag-metric__val">{{
+              formatLines(dag.lignesEcrites)
+            }}</span>
           </div>
         </div>
 
         <div class="dag-card__footer">
           <span class="text-muted text-sm">{{ dag.derniereExec ?? "" }}</span>
           @if (dag.logUrl) {
-            <a [href]="dag.logUrl" target="_blank" class="btn btn-ghost btn-sm">{{ 'anl_pipeline.dag_logs' | translate }}</a>
+            <a
+              [href]="dag.logUrl"
+              target="_blank"
+              class="btn btn-ghost btn-sm"
+              >{{ "anl_pipeline.dag_logs" | translate }}</a
+            >
           } @else {
-            <button class="btn btn-ghost btn-sm">{{ 'anl_pipeline.dag_logs' | translate }}</button>
+            <button class="btn btn-ghost btn-sm">
+              {{ "anl_pipeline.dag_logs" | translate }}
+            </button>
           }
         </div>
       </div>

@@ -1,13 +1,15 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'sai_contrats.title' | translate }}</h2>
+      <h2>{{ "sai_contrats.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} {{ 'sai_contrats.contrats' | translate }}
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "sai_contrats.contrats" | translate }}
       </p>
     </div>
     <button class="btn btn-primary" (click)="showModal.set(true)">
-      <span class="material-icons-round">add</span> {{ 'sai_contrats.nouveau' | translate }}
+      <span class="material-icons-round">add</span>
+      {{ "sai_contrats.nouveau" | translate }}
     </button>
   </div>
 
@@ -27,14 +29,14 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>{{ 'sai_contrats.col_numero' | translate }}</th>
-          <th>{{ 'common.name' | translate }}</th>
-          <th>{{ 'sai_contrats.col_type' | translate }}</th>
-          <th>{{ 'common.amount' | translate }}</th>
-          <th>{{ 'sai_contrats.col_debut' | translate }}</th>
-          <th>{{ 'sai_contrats.col_fin' | translate }}</th>
-          <th>{{ 'common.status' | translate }}</th>
-          <th>{{ 'common.actions' | translate }}</th>
+          <th>{{ "sai_contrats.col_numero" | translate }}</th>
+          <th>{{ "common.name" | translate }}</th>
+          <th>{{ "sai_contrats.col_type" | translate }}</th>
+          <th>{{ "common.amount" | translate }}</th>
+          <th>{{ "sai_contrats.col_debut" | translate }}</th>
+          <th>{{ "sai_contrats.col_fin" | translate }}</th>
+          <th>{{ "common.status" | translate }}</th>
+          <th>{{ "common.actions" | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -61,7 +63,10 @@
               <td>
                 <span class="badge badge-info">{{ c.typeContrat }}</span>
               </td>
-              <td class="text-right">{{ c.montant | number: "1.0-0" }} {{ 'common.fcfa' | translate }}</td>
+              <td class="text-right">
+                {{ c.montant | number: "1.0-0" }}
+                {{ "common.fcfa" | translate }}
+              </td>
               <td class="text-sm">{{ c.dateDebut | date: "dd/MM/yyyy" }}</td>
               <td class="text-sm">{{ c.dateFin | date: "dd/MM/yyyy" }}</td>
               <td>
@@ -88,7 +93,7 @@
                 class="text-center text-muted"
                 style="padding: 32px"
               >
-                {{ 'common.empty' | translate }}
+                {{ "common.empty" | translate }}
               </td>
             </tr>
           }
@@ -106,7 +111,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm"
-          >{{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"
@@ -128,7 +134,7 @@
       [formGroup]="createForm"
     >
       <div class="modal-header">
-        <h3>{{ 'sai_contrats.nouveau' | translate }}</h3>
+        <h3>{{ "sai_contrats.nouveau" | translate }}</h3>
         <button class="btn-icon" (click)="showModal.set(false)">
           <span class="material-icons-round">close</span>
         </button>
@@ -136,7 +142,7 @@
 
       <div class="form-grid">
         <div class="form-group" style="grid-column: 1/-1">
-          <label>{{ 'sai_contrats.client_id' | translate }} *</label>
+          <label>{{ "sai_contrats.client_id" | translate }} *</label>
           <input
             class="form-control"
             formControlName="clientId"
@@ -144,7 +150,7 @@
           />
         </div>
         <div class="form-group">
-          <label>{{ 'sai_contrats.col_type' | translate }} *</label>
+          <label>{{ "sai_contrats.col_type" | translate }} *</label>
           <select class="form-select" formControlName="typeContrat">
             @for (t of types; track t) {
               <option [value]="t">{{ t }}</option>
@@ -152,7 +158,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>{{ 'sai_contrats.montant_fcfa' | translate }} *</label>
+          <label>{{ "sai_contrats.montant_fcfa" | translate }} *</label>
           <input
             class="form-control"
             type="number"
@@ -161,15 +167,15 @@
           />
         </div>
         <div class="form-group">
-          <label>{{ 'sai_contrats.col_debut' | translate }} *</label>
+          <label>{{ "sai_contrats.col_debut" | translate }} *</label>
           <input class="form-control" type="date" formControlName="dateDebut" />
         </div>
         <div class="form-group">
-          <label>{{ 'sai_contrats.col_fin' | translate }} *</label>
+          <label>{{ "sai_contrats.col_fin" | translate }} *</label>
           <input class="form-control" type="date" formControlName="dateFin" />
         </div>
         <div class="form-group" style="grid-column: 1/-1">
-          <label>{{ 'sai_contrats.observations' | translate }}</label>
+          <label>{{ "sai_contrats.observations" | translate }}</label>
           <textarea
             class="form-control"
             formControlName="observations"
@@ -180,7 +186,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">
-          {{ 'common.cancel' | translate }}
+          {{ "common.cancel" | translate }}
         </button>
         <button
           class="btn btn-primary"
@@ -190,7 +196,7 @@
           @if (submitting()) {
             <span class="css-spinner-sm"></span>
           } @else {
-            {{ 'common.save' | translate }}
+            {{ "common.save" | translate }}
           }
         </button>
       </div>

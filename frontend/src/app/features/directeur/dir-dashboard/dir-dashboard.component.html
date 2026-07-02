@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
-    <h2 class="page-title">{{ 'dir_dashboard.title' | translate }}</h2>
-    <p class="page-subtitle">{{ 'dir_dashboard.subtitle' | translate }}</p>
+    <h2 class="page-title">{{ "dir_dashboard.title" | translate }}</h2>
+    <p class="page-subtitle">{{ "dir_dashboard.subtitle" | translate }}</p>
   </div>
 </div>
 
@@ -43,9 +43,9 @@
   <!-- Alertes prédictives -->
   <div class="card">
     <div class="card-header">
-      <h4>{{ 'dir_dashboard.alertes_title' | translate }}</h4>
+      <h4>{{ "dir_dashboard.alertes_title" | translate }}</h4>
       <a routerLink="/directeur/alertes" class="btn btn-ghost btn-sm">
-        {{ 'dir_dashboard.alertes_see_all' | translate }}
+        {{ "dir_dashboard.alertes_see_all" | translate }}
         <span class="material-icons-round" style="font-size: 14px"
           >arrow_forward</span
         >
@@ -60,7 +60,9 @@
         ></div>
       }
     } @else if (!data()?.alertesActives?.length) {
-      <p class="text-muted" style="font-size: 13px">{{ 'dir_dashboard.alertes_empty' | translate }}</p>
+      <p class="text-muted" style="font-size: 13px">
+        {{ "dir_dashboard.alertes_empty" | translate }}
+      </p>
     } @else {
       @for (a of (data()?.alertesActives ?? []).slice(0, 4); track a.id) {
         <div
@@ -76,9 +78,9 @@
           <p class="alerte-item__msg">{{ a.message }}</p>
           <div class="alerte-item__footer">
             <span class="text-muted text-sm">{{ a.createdAt | timeAgo }}</span>
-            <a routerLink="/directeur/alertes" class="btn btn-ghost btn-sm"
-              >{{ 'dir_dashboard.alertes_handle' | translate }}</a
-            >
+            <a routerLink="/directeur/alertes" class="btn btn-ghost btn-sm">{{
+              "dir_dashboard.alertes_handle" | translate
+            }}</a>
           </div>
         </div>
       }
@@ -88,8 +90,10 @@
   <!-- Activité récente -->
   <div class="card">
     <div class="card-header">
-      <h4>{{ 'dir_dashboard.activity_title' | translate }}</h4>
-      <button class="btn btn-ghost btn-sm">{{ 'dir_dashboard.activity_history' | translate }}</button>
+      <h4>{{ "dir_dashboard.activity_title" | translate }}</h4>
+      <button class="btn btn-ghost btn-sm">
+        {{ "dir_dashboard.activity_history" | translate }}
+      </button>
     </div>
 
     @if (loading()) {
@@ -130,7 +134,7 @@
 <!-- PAR Chart -->
 <div class="card chart-card" style="margin-top: 20px">
   <div class="card-header">
-    <h4>{{ 'dir_dashboard.par_chart_title' | translate }}</h4>
+    <h4>{{ "dir_dashboard.par_chart_title" | translate }}</h4>
   </div>
   <div style="height: 240px; position: relative">
     @if (!loading()) {

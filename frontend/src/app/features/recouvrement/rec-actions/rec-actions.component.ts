@@ -50,7 +50,12 @@ const ACTION_TYPES = [
   "RADIATION",
 ];
 
-const CANAUX_PAIEMENT = ["ESPECES", "MTN_MOBILE_MONEY", "ORANGE_MONEY", "VIREMENT"];
+const CANAUX_PAIEMENT = [
+  "ESPECES",
+  "MTN_MOBILE_MONEY",
+  "ORANGE_MONEY",
+  "VIREMENT",
+];
 
 @Component({
   selector: "app-rec-actions",
@@ -114,13 +119,15 @@ export class RecActionsComponent implements OnInit {
 
   loadDossier(uid: string) {
     this.dossierLoading.set(true);
-    this.api.get<DossierSummary>(`/api/v1/recouvrement/dossiers/${uid}`).subscribe({
-      next: (d) => {
-        this.selectedDossier.set(d);
-        this.dossierLoading.set(false);
-      },
-      error: () => this.dossierLoading.set(false),
-    });
+    this.api
+      .get<DossierSummary>(`/api/v1/recouvrement/dossiers/${uid}`)
+      .subscribe({
+        next: (d) => {
+          this.selectedDossier.set(d);
+          this.dossierLoading.set(false);
+        },
+        error: () => this.dossierLoading.set(false),
+      });
   }
 
   searchDossiers() {
@@ -179,20 +186,26 @@ export class RecActionsComponent implements OnInit {
     if (this.form.promesseDate) body["promesseDate"] = this.form.promesseDate;
     if (this.form.promesseMontant)
       body["promesseMontant"] = parseFloat(this.form.promesseMontant);
-    if (this.form.canalPaiement) body["canalPaiement"] = this.form.canalPaiement;
+    if (this.form.canalPaiement)
+      body["canalPaiement"] = this.form.canalPaiement;
     if (this.form.referenceTransaction)
       body["referenceTransaction"] = this.form.referenceTransaction.trim();
     if (this.form.numeroTelephonePaiement)
-      body["numeroTelephonePaiement"] = this.form.numeroTelephonePaiement.trim();
+      body["numeroTelephonePaiement"] =
+        this.form.numeroTelephonePaiement.trim();
     if (this.form.fraisEngages)
       body["fraisEngages"] = parseFloat(this.form.fraisEngages);
-    if (this.form.observation) body["observation"] = this.form.observation.trim();
+    if (this.form.observation)
+      body["observation"] = this.form.observation.trim();
 
     this.api
       .post<unknown>(`/api/v1/recouvrement/dossiers/${d.uid}/actions`, body)
       .subscribe({
         next: () => {
-          this.toast.showSuccess("Action enregistrée", "L'action a été enregistrée.");
+          this.toast.showSuccess(
+            "Action enregistrée",
+            "L'action a été enregistrée.",
+          );
           this.saving.set(false);
           this.success.set(true);
           this.resetForm();

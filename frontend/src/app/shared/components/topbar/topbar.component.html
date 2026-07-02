@@ -29,7 +29,9 @@
           [alt]="'topbar.support_label' | translate"
           class="topbar__support-icon"
         />
-        <span class="topbar__support-label">{{ 'topbar.support_label' | translate }}</span>
+        <span class="topbar__support-label">{{
+          "topbar.support_label" | translate
+        }}</span>
       </button>
     }
 
@@ -39,23 +41,30 @@
         class="topbar__lang-btn"
         [class.topbar__lang-btn--active]="langSvc.lang() === 'fr'"
         (click)="langSvc.setLang('fr')"
-      >FR</button>
+      >
+        FR
+      </button>
       <button
         class="topbar__lang-btn"
         [class.topbar__lang-btn--active]="langSvc.lang() === 'en'"
         (click)="langSvc.setLang('en')"
-      >EN</button>
+      >
+        EN
+      </button>
     </div>
 
     <!-- Thème dark/light -->
     <button
       class="topbar__theme-btn"
       (click)="theme.toggle()"
-      [title]="(theme.isDark() ? 'topbar.theme_to_light' : 'topbar.theme_to_dark') | translate"
+      [title]="
+        (theme.isDark() ? 'topbar.theme_to_light' : 'topbar.theme_to_dark')
+          | translate
+      "
       [attr.aria-label]="'topbar.theme_aria' | translate"
     >
       <span class="material-icons-round">
-        {{ theme.isDark() ? 'light_mode' : 'dark_mode' }}
+        {{ theme.isDark() ? "light_mode" : "dark_mode" }}
       </span>
     </button>
 
@@ -84,7 +93,9 @@
       [title]="'topbar.logout_title' | translate"
     >
       <span class="material-icons-round">logout</span>
-      <span class="topbar__logout-label">{{ 'topbar.logout_label' | translate }}</span>
+      <span class="topbar__logout-label">{{
+        "topbar.logout_label" | translate
+      }}</span>
     </button>
 
     <!-- User menu -->
@@ -114,14 +125,16 @@
           routerLink="/profile"
           (click)="showUserMenu.set(false)"
         >
-          <span class="material-icons-round">person</span> {{ 'topbar.menu_profile' | translate }}
+          <span class="material-icons-round">person</span>
+          {{ "topbar.menu_profile" | translate }}
         </a>
         <div class="topbar__dropdown-divider"></div>
         <button
           class="topbar__dropdown-item topbar__dropdown-item--danger"
           (click)="logout()"
         >
-          <span class="material-icons-round">logout</span> {{ 'topbar.menu_logout' | translate }}
+          <span class="material-icons-round">logout</span>
+          {{ "topbar.menu_logout" | translate }}
         </button>
       </div>
     }
@@ -143,9 +156,9 @@
             <span class="material-icons-round">support_agent</span>
           </div>
           <div>
-            <h3>{{ 'topbar.support_modal.title' | translate }}</h3>
+            <h3>{{ "topbar.support_modal.title" | translate }}</h3>
             <p class="text-muted text-sm">
-              {{ 'topbar.support_modal.subtitle' | translate }}
+              {{ "topbar.support_modal.subtitle" | translate }}
             </p>
           </div>
         </div>
@@ -160,7 +173,10 @@
         class="support-modal__body"
       >
         <div class="form-group">
-          <label>{{ 'topbar.support_modal.objet_label' | translate }} <span class="req">*</span></label>
+          <label
+            >{{ "topbar.support_modal.objet_label" | translate }}
+            <span class="req">*</span></label
+          >
           <input
             type="text"
             class="form-control"
@@ -171,13 +187,15 @@
             supportForm.get("titre")?.invalid &&
             supportForm.get("titre")?.touched
           ) {
-            <span class="field-error">{{ 'topbar.support_modal.objet_error' | translate }}</span>
+            <span class="field-error">{{
+              "topbar.support_modal.objet_error" | translate
+            }}</span>
           }
         </div>
 
         <div class="support-modal__row">
           <div class="form-group">
-            <label>{{ 'topbar.support_modal.categorie' | translate }}</label>
+            <label>{{ "topbar.support_modal.categorie" | translate }}</label>
             <select class="form-control" formControlName="categorie">
               @for (opt of categorieOptions; track opt.value) {
                 <option [value]="opt.value">{{ opt.label | translate }}</option>
@@ -185,7 +203,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>{{ 'topbar.support_modal.priorite' | translate }}</label>
+            <label>{{ "topbar.support_modal.priorite" | translate }}</label>
             <select class="form-control" formControlName="priorite">
               @for (opt of prioriteOptions; track opt.value) {
                 <option [value]="opt.value">{{ opt.label | translate }}</option>
@@ -195,7 +213,10 @@
         </div>
 
         <div class="form-group">
-          <label>{{ 'topbar.support_modal.desc_label' | translate }} <span class="req">*</span></label>
+          <label
+            >{{ "topbar.support_modal.desc_label" | translate }}
+            <span class="req">*</span></label
+          >
           <textarea
             class="form-control support-modal__textarea"
             formControlName="description"
@@ -206,9 +227,9 @@
             supportForm.get("description")?.invalid &&
             supportForm.get("description")?.touched
           ) {
-            <span class="field-error"
-              >{{ 'topbar.support_modal.desc_error' | translate }}</span
-            >
+            <span class="field-error">{{
+              "topbar.support_modal.desc_error" | translate
+            }}</span>
           }
           <span class="field-hint"
             >{{ supportForm.get("description")?.value?.length ?? 0 }} /
@@ -219,7 +240,7 @@
 
       <div class="support-modal__footer">
         <button class="btn btn-ghost" (click)="closeSupportModal()">
-          {{ 'topbar.support_modal.cancel' | translate }}
+          {{ "topbar.support_modal.cancel" | translate }}
         </button>
         <button
           class="btn btn-primary"
@@ -227,9 +248,11 @@
           [disabled]="sendingTicket()"
         >
           @if (sendingTicket()) {
-            <span class="material-icons-round spin">refresh</span> {{ 'topbar.support_modal.sending' | translate }}
+            <span class="material-icons-round spin">refresh</span>
+            {{ "topbar.support_modal.sending" | translate }}
           } @else {
-            <span class="material-icons-round">send</span> {{ 'topbar.support_modal.send_btn' | translate }}
+            <span class="material-icons-round">send</span>
+            {{ "topbar.support_modal.send_btn" | translate }}
           }
         </button>
       </div>

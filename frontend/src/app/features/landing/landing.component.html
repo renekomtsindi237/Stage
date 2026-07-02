@@ -11,14 +11,18 @@
     <div class="landing__nav-actions">
       <a routerLink="/login" class="landing__nav-link landing__nav-link--ghost">
         <span class="material-icons-round">login</span>
-        <span class="landing__nav-label">{{ 'landing.nav_login' | translate }}</span>
+        <span class="landing__nav-label">{{
+          "landing.nav_login" | translate
+        }}</span>
       </a>
       <a
         routerLink="/admin/login"
         class="landing__nav-link landing__nav-link--outline"
       >
         <span class="material-icons-round">admin_panel_settings</span>
-        <span class="landing__nav-label">{{ 'landing.nav_admin' | translate }}</span>
+        <span class="landing__nav-label">{{
+          "landing.nav_admin" | translate
+        }}</span>
       </a>
     </div>
   </nav>
@@ -28,16 +32,18 @@
     <div class="landing__hero-inner">
       <div class="landing__hero-badge">
         <span class="material-icons-round">verified</span>
-        {{ 'landing.hero_badge' | translate }}
+        {{ "landing.hero_badge" | translate }}
       </div>
 
       <h1 class="landing__hero-title">
-        {{ 'landing.hero_title_1' | translate }}<br class="landing__hero-br" />
-        <span class="landing__hero-accent">{{ 'landing.hero_title_accent' | translate }}</span>
+        {{ "landing.hero_title_1" | translate }}<br class="landing__hero-br" />
+        <span class="landing__hero-accent">{{
+          "landing.hero_title_accent" | translate
+        }}</span>
       </h1>
 
       <p class="landing__hero-subtitle">
-        {{ 'landing.hero_subtitle' | translate }}
+        {{ "landing.hero_subtitle" | translate }}
       </p>
 
       <!-- Deux boutons principaux -->
@@ -50,19 +56,21 @@
             <span class="material-icons-round">badge</span>
           </div>
           <div class="landing__login-card__body">
-            <h3>{{ 'landing.card_user_title' | translate }}</h3>
-            <p>{{ 'landing.card_user_desc' | translate }}</p>
+            <h3>{{ "landing.card_user_title" | translate }}</h3>
+            <p>{{ "landing.card_user_desc" | translate }}</p>
             <ul class="landing__login-card__list">
               <li>
-                <span class="material-icons-round">check</span> {{ 'landing.card_user_feat1' | translate }}
+                <span class="material-icons-round">check</span>
+                {{ "landing.card_user_feat1" | translate }}
               </li>
               <li>
-                <span class="material-icons-round">check</span> {{ 'landing.card_user_feat2' | translate }}
+                <span class="material-icons-round">check</span>
+                {{ "landing.card_user_feat2" | translate }}
               </li>
             </ul>
           </div>
           <div class="landing__login-card__cta">
-            {{ 'landing.card_user_cta' | translate }}
+            {{ "landing.card_user_cta" | translate }}
             <span class="material-icons-round">arrow_forward</span>
           </div>
         </a>
@@ -75,19 +83,21 @@
             <span class="material-icons-round">admin_panel_settings</span>
           </div>
           <div class="landing__login-card__body">
-            <h3>{{ 'landing.card_admin_title' | translate }}</h3>
-            <p>{{ 'landing.card_admin_desc' | translate }}</p>
+            <h3>{{ "landing.card_admin_title" | translate }}</h3>
+            <p>{{ "landing.card_admin_desc" | translate }}</p>
             <ul class="landing__login-card__list">
               <li>
-                <span class="material-icons-round">check</span> {{ 'landing.card_admin_feat1' | translate }}
+                <span class="material-icons-round">check</span>
+                {{ "landing.card_admin_feat1" | translate }}
               </li>
               <li>
-                <span class="material-icons-round">check</span> {{ 'landing.card_admin_feat2' | translate }}
+                <span class="material-icons-round">check</span>
+                {{ "landing.card_admin_feat2" | translate }}
               </li>
             </ul>
           </div>
           <div class="landing__login-card__cta">
-            {{ 'landing.card_admin_cta' | translate }}
+            {{ "landing.card_admin_cta" | translate }}
             <span class="material-icons-round">arrow_forward</span>
           </div>
         </a>
@@ -119,9 +129,11 @@
   <!-- ── Fonctionnalités ── -->
   <section class="landing__features">
     <div class="landing__section-inner">
-      <h2 class="landing__section-title">{{ 'landing.features_title' | translate }}</h2>
+      <h2 class="landing__section-title">
+        {{ "landing.features_title" | translate }}
+      </h2>
       <p class="landing__section-sub">
-        {{ 'landing.features_subtitle' | translate }}
+        {{ "landing.features_subtitle" | translate }}
       </p>
       <div class="landing__features-grid">
         @for (f of features; track f.title) {
@@ -140,9 +152,11 @@
   <!-- ── Comment ça marche ── -->
   <section class="landing__steps">
     <div class="landing__section-inner">
-      <h2 class="landing__section-title">{{ 'landing.steps_title' | translate }}</h2>
+      <h2 class="landing__section-title">
+        {{ "landing.steps_title" | translate }}
+      </h2>
       <p class="landing__section-sub">
-        {{ 'landing.steps_subtitle' | translate }}
+        {{ "landing.steps_subtitle" | translate }}
       </p>
       <div class="landing__steps-grid">
         @for (s of steps; track s.num) {
@@ -165,16 +179,16 @@
       <span class="material-icons-round landing__bottom-cta__icon"
         >rocket_launch</span
       >
-      <h2>{{ 'landing.cta_title' | translate }}</h2>
-      <p>{{ 'landing.cta_subtitle' | translate }}</p>
+      <h2>{{ "landing.cta_title" | translate }}</h2>
+      <p>{{ "landing.cta_subtitle" | translate }}</p>
       <div class="landing__bottom-btns">
         <a routerLink="/login" class="landing__btn-user">
           <span class="material-icons-round">login</span>
-          {{ 'landing.cta_btn_user' | translate }}
+          {{ "landing.cta_btn_user" | translate }}
         </a>
         <a routerLink="/admin/login" class="landing__btn-admin">
           <span class="material-icons-round">admin_panel_settings</span>
-          {{ 'landing.cta_btn_admin' | translate }}
+          {{ "landing.cta_btn_admin" | translate }}
         </a>
       </div>
     </div>
@@ -185,10 +199,10 @@
     <div class="landing__footer-inner">
       <div class="landing__footer-brand">
         <span class="material-icons-round">account_balance</span>
-        {{ 'landing.footer_brand' | translate }}
+        {{ "landing.footer_brand" | translate }}
       </div>
       <p class="landing__footer-copy">
-        {{ 'landing.footer_copy' | translate }}
+        {{ "landing.footer_copy" | translate }}
       </p>
     </div>
   </footer>

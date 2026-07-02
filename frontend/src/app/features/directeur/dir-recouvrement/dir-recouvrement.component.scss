@@ -32,7 +32,9 @@
 
   &--danger {
     color: var(--color-danger);
-    .material-icons-round { color: var(--color-danger); }
+    .material-icons-round {
+      color: var(--color-danger);
+    }
   }
 }
 
@@ -49,5 +51,9 @@
   padding: 16px 0 0;
 }
 
-.text-danger { color: var(--color-danger); }
-.text-warning { color: var(--color-warning); }
+.text-danger {
+  color: var(--color-danger);
+}
+.text-warning {
+  color: var(--color-warning);
+}

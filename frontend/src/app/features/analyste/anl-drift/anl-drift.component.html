@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
-    <h2 class="page-title">{{ 'anl_drift.title' | translate }}</h2>
-    <p class="page-subtitle">{{ 'anl_drift.subtitle' | translate }}</p>
+    <h2 class="page-title">{{ "anl_drift.title" | translate }}</h2>
+    <p class="page-subtitle">{{ "anl_drift.subtitle" | translate }}</p>
   </div>
 </div>
 
@@ -10,10 +10,10 @@
   <div class="alert alert-danger">
     <span class="material-icons-round">warning</span>
     <div>
-      <p class="alert-title">{{ 'anl_drift.alert_title' | translate }}</p>
+      <p class="alert-title">{{ "anl_drift.alert_title" | translate }}</p>
       <p class="alert-body">
-        {{ 'anl_drift.alert_body' | translate }} {{ data()!.seuilCritique }}.
-        {{ 'anl_drift.alert_retrain' | translate }}
+        {{ "anl_drift.alert_body" | translate }} {{ data()!.seuilCritique }}.
+        {{ "anl_drift.alert_retrain" | translate }}
       </p>
     </div>
   </div>
@@ -23,32 +23,42 @@
   <!-- PSI Card -->
   <div class="card psi-card">
     <p class="text-muted text-sm text-center" style="margin-bottom: 8px">
-      {{ 'anl_drift.psi_label' | translate }}
+      {{ "anl_drift.psi_label" | translate }}
     </p>
     <div class="psi-value" [class]="psiClass">
       {{ data()?.psiActuel ?? 0 | number: "1.2-2" }}
     </div>
     @if (data()?.driftDetecte) {
-      <div class="psi-badge">{{ 'anl_drift.psi_drift' | translate }}</div>
+      <div class="psi-badge">{{ "anl_drift.psi_drift" | translate }}</div>
     } @else {
-      <div class="psi-badge psi-badge--ok">{{ 'anl_drift.psi_stable' | translate }}</div>
+      <div class="psi-badge psi-badge--ok">
+        {{ "anl_drift.psi_stable" | translate }}
+      </div>
     }
 
     <div class="psi-meta">
       <div class="psi-meta__row">
-        <span class="text-muted text-sm">{{ 'anl_drift.psi_model' | translate }}</span>
+        <span class="text-muted text-sm">{{
+          "anl_drift.psi_model" | translate
+        }}</span>
         <span class="font-semibold">{{ data()?.modeleActif ?? "—" }}</span>
       </div>
       <div class="psi-meta__row">
-        <span class="text-muted text-sm">{{ 'anl_drift.psi_last_train' | translate }}</span>
-        <span class="font-semibold">{{ data()?.dernierEntrainement ?? "—" }}</span>
+        <span class="text-muted text-sm">{{
+          "anl_drift.psi_last_train" | translate
+        }}</span>
+        <span class="font-semibold">{{
+          data()?.dernierEntrainement ?? "—"
+        }}</span>
       </div>
     </div>
   </div>
 
   <!-- Features contribution -->
   <div class="card">
-    <h4 style="margin-bottom: 16px">{{ 'anl_drift.features_title' | translate }}</h4>
+    <h4 style="margin-bottom: 16px">
+      {{ "anl_drift.features_title" | translate }}
+    </h4>
     @if (loading()) {
       @for (_ of [1, 2, 3, 4, 5]; track $index) {
         <div class="skeleton" style="height: 32px; margin-bottom: 10px"></div>
@@ -58,8 +68,13 @@
         <div class="feature-row">
           <div class="feature-row__header">
             <code class="feature-row__name">{{ f.nom }}</code>
-            <span class="text-sm text-muted">PSI: <strong>{{ f.psi | number: "1.2-2" }}</strong></span>
-            <span class="text-sm font-semibold ml-auto">{{ 'anl_drift.features_contrib' | translate }}: {{ f.contribution }}%</span>
+            <span class="text-sm text-muted"
+              >PSI: <strong>{{ f.psi | number: "1.2-2" }}</strong></span
+            >
+            <span class="text-sm font-semibold ml-auto"
+              >{{ "anl_drift.features_contrib" | translate }}:
+              {{ f.contribution }}%</span
+            >
           </div>
           <div class="progress" style="margin-top: 4px">
             <div
@@ -82,7 +97,9 @@
 
 <!-- PSI Chart -->
 <div class="card chart-card">
-  <div class="card-header"><h4>{{ 'anl_drift.psi_chart_title' | translate }}</h4></div>
+  <div class="card-header">
+    <h4>{{ "anl_drift.psi_chart_title" | translate }}</h4>
+  </div>
   <div style="height: 250px; position: relative">
     @if (!loading()) {
       <canvas

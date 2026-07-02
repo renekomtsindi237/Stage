@@ -1,8 +1,8 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'ca_dossiers.title' | translate }}</h2>
-      <p class="text-muted text-sm">{{ 'ca_dossiers.subtitle' | translate }}</p>
+      <h2>{{ "ca_dossiers.title" | translate }}</h2>
+      <p class="text-muted text-sm">{{ "ca_dossiers.subtitle" | translate }}</p>
     </div>
   </div>
 
@@ -24,21 +24,25 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>{{ 'ca_dossiers.col_client' | translate }}</th>
-          <th>{{ 'ca_dossiers.col_objet' | translate }}</th>
-          <th class="text-right">{{ 'ca_dossiers.col_montant' | translate }}</th>
-          <th>{{ 'ca_dossiers.col_duree' | translate }}</th>
-          <th>{{ 'ca_dossiers.col_statut' | translate }}</th>
-          <th>{{ 'ca_dossiers.col_soumis' | translate }}</th>
+          <th>{{ "ca_dossiers.col_client" | translate }}</th>
+          <th>{{ "ca_dossiers.col_objet" | translate }}</th>
+          <th class="text-right">
+            {{ "ca_dossiers.col_montant" | translate }}
+          </th>
+          <th>{{ "ca_dossiers.col_duree" | translate }}</th>
+          <th>{{ "ca_dossiers.col_statut" | translate }}</th>
+          <th>{{ "ca_dossiers.col_soumis" | translate }}</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5]; track $index) {
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
             <tr>
-              @for (__ of [1,2,3,4,5,6,7]; track $index) {
-                <td><div class="skeleton" style="height:14px;width:80%"></div></td>
+              @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 80%"></div>
+                </td>
               }
             </tr>
           }
@@ -56,10 +60,15 @@
                 <div class="text-sm">{{ d.objetFinancement }}</div>
                 <div class="text-sm text-muted">{{ d.secteurActivite }}</div>
               </td>
-              <td class="text-right font-semibold" style="color: var(--color-primary)">
+              <td
+                class="text-right font-semibold"
+                style="color: var(--color-primary)"
+              >
                 {{ d.montantDemande | fcfa }}
               </td>
-              <td class="text-sm text-muted">{{ d.dureeMois }} {{ 'common.months' | translate }}</td>
+              <td class="text-sm text-muted">
+                {{ d.dureeMois }} {{ "common.months" | translate }}
+              </td>
               <td>
                 <span class="badge" [ngClass]="statutClass(d.statut)">
                   {{ statutLabel(d.statut) }}
@@ -70,15 +79,27 @@
               </td>
               <td>
                 @if (canValidate(d)) {
-                  <span class="badge badge-primary" style="font-size:10px">{{ 'ca_dossiers.badge_to_validate' | translate }}</span>
+                  <span class="badge badge-primary" style="font-size: 10px">{{
+                    "ca_dossiers.badge_to_validate" | translate
+                  }}</span>
                 }
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="text-center text-muted" style="padding: 40px">
-                <span class="material-icons-round" style="font-size:36px;opacity:.4">folder_off</span>
-                <p style="margin:8px 0 0">{{ 'ca_dossiers.empty' | translate }}</p>
+              <td
+                colspan="7"
+                class="text-center text-muted"
+                style="padding: 40px"
+              >
+                <span
+                  class="material-icons-round"
+                  style="font-size: 36px; opacity: 0.4"
+                  >folder_off</span
+                >
+                <p style="margin: 8px 0 0">
+                  {{ "ca_dossiers.empty" | translate }}
+                </p>
               </td>
             </tr>
           }
@@ -98,7 +119,8 @@
         <span class="material-icons-round">chevron_left</span>
       </button>
       <span class="text-sm text-muted">
-        {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ pageData()?.totalPages }}
+        {{ "common.page" | translate }} {{ currentPage() + 1 }} /
+        {{ pageData()?.totalPages }}
       </span>
       <button
         class="btn btn-ghost btn-sm"
@@ -132,48 +154,76 @@
     <!-- KPIs -->
     <div class="detail-kpis">
       <div class="kpi-item">
-        <span class="kpi-label">{{ 'ca_dossiers.kpi_montant' | translate }}</span>
-        <span class="kpi-value text-primary">{{ selected()!.montantDemande | fcfa }}</span>
+        <span class="kpi-label">{{
+          "ca_dossiers.kpi_montant" | translate
+        }}</span>
+        <span class="kpi-value text-primary">{{
+          selected()!.montantDemande | fcfa
+        }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">{{ 'ca_dossiers.kpi_duree' | translate }}</span>
-        <span class="kpi-value">{{ selected()!.dureeMois }} {{ 'common.months' | translate }}</span>
+        <span class="kpi-label">{{ "ca_dossiers.kpi_duree" | translate }}</span>
+        <span class="kpi-value"
+          >{{ selected()!.dureeMois }} {{ "common.months" | translate }}</span
+        >
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">{{ 'ca_dossiers.kpi_revenu' | translate }}</span>
-        <span class="kpi-value">{{ selected()!.revenuEstime != null ? (selected()!.revenuEstime | fcfa) : '—' }}</span>
+        <span class="kpi-label">{{
+          "ca_dossiers.kpi_revenu" | translate
+        }}</span>
+        <span class="kpi-value">{{
+          selected()!.revenuEstime != null
+            ? (selected()!.revenuEstime | fcfa)
+            : "—"
+        }}</span>
       </div>
       <div class="kpi-item">
-        <span class="kpi-label">{{ 'ca_dossiers.kpi_capacite' | translate }}</span>
-        <span class="kpi-value">{{ selected()!.capaciteRemboursement != null ? (selected()!.capaciteRemboursement | fcfa) : '—' }}</span>
+        <span class="kpi-label">{{
+          "ca_dossiers.kpi_capacite" | translate
+        }}</span>
+        <span class="kpi-value">{{
+          selected()!.capaciteRemboursement != null
+            ? (selected()!.capaciteRemboursement | fcfa)
+            : "—"
+        }}</span>
       </div>
     </div>
 
     <!-- Infos -->
     <div class="info-bloc">
-      <h5>{{ 'ca_dossiers.project_title' | translate }}</h5>
+      <h5>{{ "ca_dossiers.project_title" | translate }}</h5>
       <div class="info-grid">
         <div class="info-row">
-          <span class="info-label">{{ 'ca_dossiers.project_objet' | translate }}</span>
+          <span class="info-label">{{
+            "ca_dossiers.project_objet" | translate
+          }}</span>
           <span>{{ selected()!.objetFinancement }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">{{ 'ca_dossiers.project_secteur' | translate }}</span>
-          <span>{{ selected()!.secteurActivite || '—' }}</span>
+          <span class="info-label">{{
+            "ca_dossiers.project_secteur" | translate
+          }}</span>
+          <span>{{ selected()!.secteurActivite || "—" }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">{{ 'ca_dossiers.project_soumis' | translate }}</span>
+          <span class="info-label">{{
+            "ca_dossiers.project_soumis" | translate
+          }}</span>
           <span>{{ selected()!.dateSoumission | date: "dd/MM/yyyy" }}</span>
         </div>
         @if (selected()!.dateDecision) {
           <div class="info-row">
-            <span class="info-label">{{ 'ca_dossiers.project_decision' | translate }}</span>
+            <span class="info-label">{{
+              "ca_dossiers.project_decision" | translate
+            }}</span>
             <span>{{ selected()!.dateDecision | date: "dd/MM/yyyy" }}</span>
           </div>
         }
         @if (selected()!.noteAnalyse) {
           <div class="info-row">
-            <span class="info-label">{{ 'ca_dossiers.project_note' | translate }}</span>
+            <span class="info-label">{{
+              "ca_dossiers.project_note" | translate
+            }}</span>
             <span class="text-sm">{{ selected()!.noteAnalyse }}</span>
           </div>
         }
@@ -189,7 +239,7 @@
           (click)="valider('VALIDE')"
         >
           <span class="material-icons-round">check_circle</span>
-          {{ 'ca_dossiers.action_validate' | translate }}
+          {{ "ca_dossiers.action_validate" | translate }}
         </button>
         <button
           class="btn btn-ghost danger"
@@ -197,21 +247,18 @@
           (click)="valider('REJETE')"
         >
           <span class="material-icons-round">cancel</span>
-          {{ 'ca_dossiers.action_reject' | translate }}
+          {{ "ca_dossiers.action_reject" | translate }}
         </button>
-        <button
-          class="btn btn-ghost"
-          (click)="openReassign()"
-        >
+        <button class="btn btn-ghost" (click)="openReassign()">
           <span class="material-icons-round">swap_horiz</span>
-          {{ 'ca_dossiers.action_reassign' | translate }}
+          {{ "ca_dossiers.action_reassign" | translate }}
         </button>
       </div>
 
       <!-- Champ motif rejet -->
       @if (showMotif()) {
         <div class="inline-form">
-          <h5>{{ 'ca_dossiers.motif_title' | translate }}</h5>
+          <h5>{{ "ca_dossiers.motif_title" | translate }}</h5>
           <textarea
             class="form-control"
             rows="3"
@@ -220,12 +267,16 @@
             (ngModelChange)="motifRejeter.set($event)"
           ></textarea>
           <div class="form-actions">
-            <button class="btn btn-ghost btn-sm" (click)="showMotif.set(false)">{{ 'ca_dossiers.motif_cancel' | translate }}</button>
+            <button class="btn btn-ghost btn-sm" (click)="showMotif.set(false)">
+              {{ "ca_dossiers.motif_cancel" | translate }}
+            </button>
             <button
               class="btn btn-danger btn-sm"
               [disabled]="!motifRejeter() || validating()"
               (click)="valider('REJETE')"
-            >{{ 'ca_dossiers.motif_confirm' | translate }}</button>
+            >
+              {{ "ca_dossiers.motif_confirm" | translate }}
+            </button>
           </div>
         </div>
       }
@@ -233,7 +284,7 @@
       <div class="detail-actions">
         <button class="btn btn-ghost" (click)="openReassign()">
           <span class="material-icons-round">swap_horiz</span>
-          {{ 'ca_dossiers.action_reassign' | translate }}
+          {{ "ca_dossiers.action_reassign" | translate }}
         </button>
       </div>
     }
@@ -245,7 +296,7 @@
   <div class="modal-overlay" (click)="closeReassign()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
-        <h3>{{ 'ca_dossiers.reassign_title' | translate }}</h3>
+        <h3>{{ "ca_dossiers.reassign_title" | translate }}</h3>
         <button class="btn btn-ghost btn-sm" (click)="closeReassign()">
           <span class="material-icons-round">close</span>
         </button>
@@ -254,27 +305,37 @@
         @if (agentsLoading()) {
           <div class="skeleton" style="height: 40px; margin-bottom: 12px"></div>
         } @else if (agents().length === 0) {
-          <p class="text-muted text-sm">{{ 'ca_dossiers.reassign_empty' | translate }}</p>
+          <p class="text-muted text-sm">
+            {{ "ca_dossiers.reassign_empty" | translate }}
+          </p>
         } @else {
           <div class="form-group">
-            <label class="form-label">{{ 'ca_dossiers.reassign_agent' | translate }}</label>
+            <label class="form-label">{{
+              "ca_dossiers.reassign_agent" | translate
+            }}</label>
             <select
               class="form-control"
               [ngModel]="selectedAgentUid()"
               (ngModelChange)="selectedAgentUid.set($event)"
             >
-              <option value="">{{ 'ca_dossiers.reassign_choose' | translate }}</option>
+              <option value="">
+                {{ "ca_dossiers.reassign_choose" | translate }}
+              </option>
               @for (a of agents(); track a.uid) {
                 <option [value]="a.uid">{{ a.username }}</option>
               }
             </select>
           </div>
           <div class="form-group" style="margin-top: 12px">
-            <label class="form-label">{{ 'ca_dossiers.reassign_motif' | translate }}</label>
+            <label class="form-label">{{
+              "ca_dossiers.reassign_motif" | translate
+            }}</label>
             <textarea
               class="form-control"
               rows="2"
-              [placeholder]="'ca_dossiers.reassign_motif_placeholder' | translate"
+              [placeholder]="
+                'ca_dossiers.reassign_motif_placeholder' | translate
+              "
               [ngModel]="reassignMotif()"
               (ngModelChange)="reassignMotif.set($event)"
             ></textarea>
@@ -282,14 +343,18 @@
         }
       </div>
       <div class="modal__footer">
-        <button class="btn btn-ghost" (click)="closeReassign()">{{ 'ca_dossiers.reassign_cancel' | translate }}</button>
+        <button class="btn btn-ghost" (click)="closeReassign()">
+          {{ "ca_dossiers.reassign_cancel" | translate }}
+        </button>
         <button
           class="btn btn-primary"
           [disabled]="!selectedAgentUid() || reassigning()"
           (click)="submitReassign()"
         >
-          @if (reassigning()) { <span class="material-icons-round spin">refresh</span> }
-          {{ 'ca_dossiers.reassign_submit' | translate }}
+          @if (reassigning()) {
+            <span class="material-icons-round spin">refresh</span>
+          }
+          {{ "ca_dossiers.reassign_submit" | translate }}
         </button>
       </div>
     </div>

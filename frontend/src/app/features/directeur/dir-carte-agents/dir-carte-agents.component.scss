@@ -17,7 +17,9 @@
 }
 
 .btn-label {
-  @media (max-width: 860px) { display: none; }
+  @media (max-width: 860px) {
+    display: none;
+  }
 }
 
 .map-layout {
@@ -41,7 +43,9 @@
   flex-direction: column;
   padding: 16px;
 
-  @media (max-width: 768px) { max-height: 260px; }
+  @media (max-width: 768px) {
+    max-height: 260px;
+  }
 }
 
 .list-header {
@@ -50,7 +54,10 @@
   justify-content: space-between;
   margin-bottom: 10px;
 
-  h3 { font-size: 14px; font-weight: 700; }
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+  }
 }
 
 .legend-row {
@@ -67,13 +74,19 @@
   height: 10px;
   border-radius: 50%;
   border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
-  &--active   { background: #22c55e; }
-  &--inactive { background: #94a3b8; }
+  &--active {
+    background: #22c55e;
+  }
+  &--inactive {
+    background: #94a3b8;
+  }
 }
 
-.legend-label { font-size: 11px; }
+.legend-label {
+  font-size: 11px;
+}
 
 .agent-item {
   display: flex;
@@ -85,9 +98,15 @@
   border-radius: 8px;
   transition: background 0.12s;
 
-  &:hover   { background: var(--color-bg); }
-  &.active  { background: rgba(99, 102, 241, 0.08); }
-  &:last-child { border-bottom: none; }
+  &:hover {
+    background: var(--color-bg);
+  }
+  &.active {
+    background: rgba(99, 102, 241, 0.08);
+  }
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .agent-avatar {
@@ -105,23 +124,53 @@
   text-transform: uppercase;
   transition: background 0.2s;
 
-  &.avatar-active { background: #22c55e; }
-  &.avatar-sm     { width: 28px; height: 28px; font-size: 10px; }
+  &.avatar-active {
+    background: #22c55e;
+  }
+  &.avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
 }
 
-.agent-name   { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.agent-agence { font-size: 11px; color: var(--color-text-muted); margin-bottom: 2px; }
-.nav-arrow    { font-size: 16px; color: var(--color-text-muted); flex-shrink: 0; }
+.agent-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agent-agence {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+.nav-arrow {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
 
-.badge-sm { font-size: 10px; padding: 2px 6px; }
+.badge-sm {
+  font-size: 10px;
+  padding: 2px 6px;
+}
 
 .empty-state {
   text-align: center;
   padding: 32px 0;
   color: var(--color-text-muted);
 
-  .material-icons-round { font-size: 40px; color: var(--color-border); display: block; margin-bottom: 8px; }
-  p { font-size: 13px; }
+  .material-icons-round {
+    font-size: 40px;
+    color: var(--color-border);
+    display: block;
+    margin-bottom: 8px;
+  }
+  p {
+    font-size: 13px;
+  }
 }
 
 // ── Zone carte ────────────────────────────────────────────────────────────────
@@ -131,7 +180,9 @@
   overflow: hidden;
   padding: 0 !important;
 
-  @media (max-width: 768px) { min-height: 400px; }
+  @media (max-width: 768px) {
+    min-height: 400px;
+  }
 }
 
 .leaflet-container-fill {
@@ -145,7 +196,7 @@
 
 .agent-info-panel {
   position: absolute;
-  bottom: 40px;    // au-dessus de la légende
+  bottom: 40px; // au-dessus de la légende
   right: 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -171,7 +222,10 @@
   margin-bottom: 10px;
 }
 
-.aip-name { font-size: 13px; font-weight: 700; }
+.aip-name {
+  font-size: 13px;
+  font-weight: 700;
+}
 
 .aip-close {
   background: none;
@@ -184,8 +238,12 @@
   align-items: center;
   border-radius: 4px;
 
-  &:hover { background: var(--color-bg); }
-  .material-icons-round { font-size: 16px; }
+  &:hover {
+    background: var(--color-bg);
+  }
+  .material-icons-round {
+    font-size: 16px;
+  }
 }
 
 .aip-grid {
@@ -195,10 +253,25 @@
   margin-bottom: 10px;
 }
 
-.aip-cell {}
-.aip-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin: 0 0 2px; }
-.aip-value { font-size: 12px; font-weight: 600; color: var(--color-text); margin: 0; }
-.aip-value.mono { font-family: monospace; font-size: 11px; }
+.aip-cell {
+}
+.aip-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin: 0 0 2px;
+}
+.aip-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+.aip-value.mono {
+  font-family: monospace;
+  font-size: 11px;
+}
 
 .aip-actions {
   display: flex;

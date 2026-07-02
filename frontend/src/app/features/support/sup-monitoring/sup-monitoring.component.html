@@ -2,16 +2,20 @@
   <!-- Header -->
   <div class="page-header">
     <div>
-      <h2>{{ 'dsi_monitoring.title' | translate }}</h2>
+      <h2>{{ "dsi_monitoring.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ 'dsi_monitoring.infrastructure' | translate }} —
+        {{ "dsi_monitoring.infrastructure" | translate }} —
         @if (sseConnected()) {
           <span class="sse-badge sse-live">
-            <span class="live-dot"></span> {{ 'dsi_monitoring.live' | translate }} · {{ 'dsi_monitoring.maj' | translate }}
+            <span class="live-dot"></span>
+            {{ "dsi_monitoring.live" | translate }} ·
+            {{ "dsi_monitoring.maj" | translate }}
             {{ lastUpdate() | date: "HH:mm:ss" }}
           </span>
         } @else {
-          <span class="sse-badge">{{ 'dsi_monitoring.sse_pending' | translate }}</span>
+          <span class="sse-badge">{{
+            "dsi_monitoring.sse_pending" | translate
+          }}</span>
         }
       </p>
     </div>
@@ -23,7 +27,8 @@
         <span class="material-icons-round">data_thresholding</span> Prometheus
       </a>
       <button class="btn btn-primary btn-sm" (click)="loadAll()">
-        <span class="material-icons-round">refresh</span> {{ 'dsi_monitoring.refresh' | translate }}
+        <span class="material-icons-round">refresh</span>
+        {{ "dsi_monitoring.refresh" | translate }}
       </button>
     </div>
   </div>
@@ -46,7 +51,9 @@
           <span class="material-icons-round">business</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.imf_actives' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.imf_actives" | translate }}
+          </div>
           <div class="kpi-value">{{ overview()!.nbImfs }}</div>
         </div>
       </div>
@@ -55,7 +62,9 @@
           <span class="material-icons-round">dns</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.containers' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.containers" | translate }}
+          </div>
           <div class="kpi-value">
             {{ overview()!.containersActifs
             }}<span class="kpi-sub">/{{ overview()!.containersTotal }}</span>
@@ -67,7 +76,9 @@
           <span class="material-icons-round">memory</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.cpu_vps' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.cpu_vps" | translate }}
+          </div>
           <div class="kpi-value">
             {{ overview()!.cpuVps }}<span class="kpi-sub">%</span>
           </div>
@@ -78,7 +89,7 @@
           <span class="material-icons-round">storage</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.disque' | translate }}</div>
+          <div class="kpi-label">{{ "dsi_monitoring.disque" | translate }}</div>
           <div class="kpi-value">
             {{ overview()!.disqueUtilise }}<span class="kpi-sub">%</span>
           </div>
@@ -89,7 +100,9 @@
           <span class="material-icons-round">account_tree</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.dags_echoues' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.dags_echoues" | translate }}
+          </div>
           <div class="kpi-value">{{ overview()!.dagsEchoues }}</div>
         </div>
       </div>
@@ -98,7 +111,9 @@
           <span class="material-icons-round">people</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.utilisateurs' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.utilisateurs" | translate }}
+          </div>
           <div class="kpi-value">{{ overview()!.utilisateursConnectes }}</div>
         </div>
       </div>
@@ -110,7 +125,9 @@
           <span class="material-icons-round">warning_amber</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.alertes_critiques' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.alertes_critiques" | translate }}
+          </div>
           <div class="kpi-value">{{ overview()!.alertesCritiques }}</div>
         </div>
       </div>
@@ -122,7 +139,9 @@
           <span class="material-icons-round">confirmation_number</span>
         </span>
         <div>
-          <div class="kpi-label">{{ 'dsi_monitoring.tickets_ouverts' | translate }}</div>
+          <div class="kpi-label">
+            {{ "dsi_monitoring.tickets_ouverts" | translate }}
+          </div>
           <div class="kpi-value">{{ overview()!.ticketsOuverts ?? "—" }}</div>
         </div>
       </div>
@@ -135,7 +154,7 @@
     <div class="card services-card">
       <h3 class="card-title">
         <span class="material-icons-round">layers</span>
-        {{ 'dsi_monitoring.etat_couches' | translate }}
+        {{ "dsi_monitoring.etat_couches" | translate }}
       </h3>
       @if (loading()) {
         @for (_ of [1, 2, 3, 4]; track $index) {
@@ -214,7 +233,7 @@
           </div>
           <div class="metric-bar-item">
             <div class="metric-bar-label">
-              <span>{{ 'dsi_monitoring.disque' | translate }}</span>
+              <span>{{ "dsi_monitoring.disque" | translate }}</span>
               <strong>{{ vps()!.disk }} / {{ vps()!.diskTotal }} Go</strong>
             </div>
             <div class="metric-bar-track">
@@ -228,14 +247,18 @@
             </div>
           </div>
           <div class="metric-bar-item load-avg">
-            <span class="text-sm text-muted">{{ 'dsi_monitoring.load_avg' | translate }} :</span>
+            <span class="text-sm text-muted"
+              >{{ "dsi_monitoring.load_avg" | translate }} :</span
+            >
             @for (v of vps()!.loadAvg; track $index) {
               <span class="load-chip">{{ v }}</span>
             }
           </div>
         </div>
       } @else if (!loading()) {
-        <p class="text-muted text-sm">{{ 'dsi_monitoring.vps_unavailable' | translate }}</p>
+        <p class="text-muted text-sm">
+          {{ "dsi_monitoring.vps_unavailable" | translate }}
+        </p>
       }
     </div>
   </div>
@@ -244,7 +267,7 @@
   <div class="card" style="margin-top: 20px">
     <h3 class="card-title">
       <span class="material-icons-round">view_in_ar</span>
-      {{ 'dsi_monitoring.containers_docker' | translate }}
+      {{ "dsi_monitoring.containers_docker" | translate }}
       <span class="badge badge-info" style="margin-left: 8px">{{
         containers().length
       }}</span>
@@ -256,9 +279,9 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>{{ 'common.name' | translate }}</th>
-              <th>{{ 'dsi_monitoring.col_image' | translate }}</th>
-              <th>{{ 'common.status' | translate }}</th>
+              <th>{{ "common.name" | translate }}</th>
+              <th>{{ "dsi_monitoring.col_image" | translate }}</th>
+              <th>{{ "common.status" | translate }}</th>
               <th>Uptime</th>
               <th>CPU%</th>
               <th>RAM (Mo)</th>
@@ -298,7 +321,7 @@
                   class="text-center text-muted"
                   style="padding: 24px"
                 >
-                  {{ 'dsi_monitoring.no_container' | translate }}
+                  {{ "dsi_monitoring.no_container" | translate }}
                 </td>
               </tr>
             }
@@ -312,7 +335,7 @@
   <div class="card" style="margin-top: 20px">
     <h3 class="card-title">
       <span class="material-icons-round">account_tree</span>
-      {{ 'dsi_monitoring.dags_airflow' | translate }}
+      {{ "dsi_monitoring.dags_airflow" | translate }}
     </h3>
     @if (loading()) {
       <div class="skeleton" style="height: 100px; margin-top: 8px"></div>
@@ -322,12 +345,12 @@
           <thead>
             <tr>
               <th>DAG</th>
-              <th>{{ 'common.status' | translate }}</th>
-              <th>{{ 'dsi_monitoring.col_planification' | translate }}</th>
-              <th>{{ 'dsi_monitoring.col_derniere_exec' | translate }}</th>
-              <th>{{ 'dsi_monitoring.col_duree' | translate }}</th>
-              <th>{{ 'dsi_monitoring.col_tentatives' | translate }}</th>
-              <th>{{ 'common.actions' | translate }}</th>
+              <th>{{ "common.status" | translate }}</th>
+              <th>{{ "dsi_monitoring.col_planification" | translate }}</th>
+              <th>{{ "dsi_monitoring.col_derniere_exec" | translate }}</th>
+              <th>{{ "dsi_monitoring.col_duree" | translate }}</th>
+              <th>{{ "dsi_monitoring.col_tentatives" | translate }}</th>
+              <th>{{ "common.actions" | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -376,7 +399,7 @@
                   class="text-center text-muted"
                   style="padding: 24px"
                 >
-                  {{ 'dsi_monitoring.no_dag' | translate }}
+                  {{ "dsi_monitoring.no_dag" | translate }}
                 </td>
               </tr>
             }
@@ -391,7 +414,7 @@
     <div class="card" style="margin-top: 20px">
       <h3 class="card-title">
         <span class="material-icons-round">article</span>
-        {{ 'dsi_monitoring.logs_recents' | translate }}
+        {{ "dsi_monitoring.logs_recents" | translate }}
       </h3>
       <div class="log-list">
         @for (l of logs(); track l.id) {

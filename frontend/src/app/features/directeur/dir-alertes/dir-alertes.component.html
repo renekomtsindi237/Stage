@@ -1,17 +1,20 @@
 <div class="page-header">
   <div>
-    <h2 class="page-title">{{ 'dir_alertes.title' | translate }}</h2>
-    <p class="page-subtitle">{{ 'dir_alertes.subtitle' | translate }}</p>
+    <h2 class="page-title">{{ "dir_alertes.title" | translate }}</h2>
+    <p class="page-subtitle">{{ "dir_alertes.subtitle" | translate }}</p>
   </div>
   <div class="alertes-counters">
     <span class="counter counter--critique">
-      <span class="counter__dot"></span> {{ critiques() }} {{ 'dir_alertes.counter_critical' | translate }}
+      <span class="counter__dot"></span> {{ critiques() }}
+      {{ "dir_alertes.counter_critical" | translate }}
     </span>
     <span class="counter counter--haute">
-      <span class="counter__dot"></span> {{ hautes() }} {{ 'dir_alertes.counter_high' | translate }}
+      <span class="counter__dot"></span> {{ hautes() }}
+      {{ "dir_alertes.counter_high" | translate }}
     </span>
     <span class="counter counter--moyenne">
-      <span class="counter__dot"></span> {{ moyennes() }} {{ 'dir_alertes.counter_medium' | translate }}
+      <span class="counter__dot"></span> {{ moyennes() }}
+      {{ "dir_alertes.counter_medium" | translate }}
     </span>
   </div>
 </div>
@@ -28,7 +31,8 @@
     />
   </div>
   <button class="btn btn-outline btn-sm">
-    <span class="material-icons-round">filter_list</span> {{ 'dir_alertes.filter_btn' | translate }}
+    <span class="material-icons-round">filter_list</span>
+    {{ "dir_alertes.filter_btn" | translate }}
   </button>
 </div>
 
@@ -39,21 +43,21 @@
     [class.active]="tab() === 'NON_TRAITEE'"
     (click)="setTab('NON_TRAITEE')"
   >
-    {{ 'dir_alertes.tab_unhandled' | translate }}
+    {{ "dir_alertes.tab_unhandled" | translate }}
   </span>
   <span
     class="tab-item"
     [class.active]="tab() === 'EN_TRAITEMENT'"
     (click)="setTab('EN_TRAITEMENT')"
   >
-    {{ 'dir_alertes.tab_in_progress' | translate }}
+    {{ "dir_alertes.tab_in_progress" | translate }}
   </span>
   <span
     class="tab-item"
     [class.active]="tab() === 'TOUTES'"
     (click)="setTab('TOUTES')"
   >
-    {{ 'dir_alertes.tab_all' | translate }}
+    {{ "dir_alertes.tab_all" | translate }}
   </span>
 </div>
 
@@ -75,7 +79,7 @@
       style="font-size: 40px; display: block; margin-bottom: 8px"
       >check_circle</span
     >
-    {{ 'dir_alertes.empty' | translate }}
+    {{ "dir_alertes.empty" | translate }}
   </div>
 } @else {
   @for (a of filtered; track a.id) {
@@ -107,7 +111,11 @@
           [disabled]="treating() === a.id"
           (click)="traiter(a.id)"
         >
-          {{ treating() === a.id ? ('common.loading' | translate) : ('dir_alertes.handle_btn' | translate) }}
+          {{
+            treating() === a.id
+              ? ("common.loading" | translate)
+              : ("dir_alertes.handle_btn" | translate)
+          }}
         </button>
       }
     </div>

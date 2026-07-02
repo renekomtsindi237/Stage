@@ -61,13 +61,15 @@ export class DirRecouvrementComponent implements OnInit {
     if (phase) params["phase"] = phase;
     if (clos !== "") params["clos"] = clos;
 
-    this.api.get<{ data: DossierPage }>("/api/v1/recouvrement/dossiers", params).subscribe({
-      next: (r: any) => {
-        this.page.set(r?.data ?? r);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.api
+      .get<{ data: DossierPage }>("/api/v1/recouvrement/dossiers", params)
+      .subscribe({
+        next: (r: any) => {
+          this.page.set(r?.data ?? r);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
   goPage(n: number) {
@@ -77,24 +79,24 @@ export class DirRecouvrementComponent implements OnInit {
 
   phaseLabel(p: string): string {
     const map: Record<string, string> = {
-      RELANCE_AMIABLE:   "Relance amiable",
+      RELANCE_AMIABLE: "Relance amiable",
       MEDIATION_AMIABLE: "Médiation amiable",
-      MISE_EN_DEMEURE:   "Mise en demeure",
-      CONTENTIEUX:       "Contentieux",
-      REECHELONNEMENT:   "Rééchelonnement",
-      PERTE:             "Perte",
+      MISE_EN_DEMEURE: "Mise en demeure",
+      CONTENTIEUX: "Contentieux",
+      REECHELONNEMENT: "Rééchelonnement",
+      PERTE: "Perte",
     };
     return map[p] ?? p;
   }
 
   phaseClass(p: string): string {
     const map: Record<string, string> = {
-      RELANCE_AMIABLE:   "badge-basse",
+      RELANCE_AMIABLE: "badge-basse",
       MEDIATION_AMIABLE: "badge-moyenne",
-      MISE_EN_DEMEURE:   "badge-haute",
-      CONTENTIEUX:       "badge-critique",
-      REECHELONNEMENT:   "badge-info",
-      PERTE:             "badge-muted",
+      MISE_EN_DEMEURE: "badge-haute",
+      CONTENTIEUX: "badge-critique",
+      REECHELONNEMENT: "badge-info",
+      PERTE: "badge-muted",
     };
     return map[p] ?? "";
   }

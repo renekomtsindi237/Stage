@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
-    <p class="text-muted text-sm">{{ 'dir_kpi.subtitle' | translate }}</p>
-    <h2 class="page-title">{{ 'dir_kpi.title' | translate }}</h2>
+    <p class="text-muted text-sm">{{ "dir_kpi.subtitle" | translate }}</p>
+    <h2 class="page-title">{{ "dir_kpi.title" | translate }}</h2>
   </div>
   <button
     class="btn btn-outline"
@@ -11,7 +11,11 @@
     <span class="material-icons-round">
       {{ downloading() ? "hourglass_empty" : "description" }}
     </span>
-    {{ downloading() ? ('dir_kpi.cobac_loading' | translate) : ('dir_kpi.cobac_btn' | translate) }}
+    {{
+      downloading()
+        ? ("dir_kpi.cobac_loading" | translate)
+        : ("dir_kpi.cobac_btn" | translate)
+    }}
   </button>
 </div>
 
@@ -44,7 +48,9 @@
 
 <!-- Chart PAR -->
 <div class="card chart-card" style="margin-bottom: 20px">
-  <div class="card-header"><h4>{{ 'dir_kpi.chart_title' | translate }}</h4></div>
+  <div class="card-header">
+    <h4>{{ "dir_kpi.chart_title" | translate }}</h4>
+  </div>
   <div style="height: 250px; position: relative">
     @if (!loading()) {
       <canvas
@@ -60,17 +66,19 @@
 <div class="content-grid two-col">
   <!-- Répartition par agence -->
   <div class="card">
-    <div class="card-header"><h4>{{ 'dir_kpi.agence_table_title' | translate }}</h4></div>
+    <div class="card-header">
+      <h4>{{ "dir_kpi.agence_table_title" | translate }}</h4>
+    </div>
     @if (loading()) {
       <div class="skeleton" style="height: 200px"></div>
     } @else {
       <table class="data-table">
         <thead>
           <tr>
-            <th>{{ 'dir_kpi.col_agence' | translate }}</th>
-            <th>{{ 'dir_kpi.col_encours' | translate }}</th>
-            <th>{{ 'dir_kpi.col_souffrance' | translate }}</th>
-            <th>{{ 'dir_kpi.col_rembourse' | translate }}</th>
+            <th>{{ "dir_kpi.col_agence" | translate }}</th>
+            <th>{{ "dir_kpi.col_encours" | translate }}</th>
+            <th>{{ "dir_kpi.col_souffrance" | translate }}</th>
+            <th>{{ "dir_kpi.col_rembourse" | translate }}</th>
             <th>%</th>
           </tr>
         </thead>
@@ -100,18 +108,20 @@
 
   <!-- Provisions COBAC -->
   <div class="card">
-    <div class="card-header"><h4>{{ 'dir_kpi.provisions_title' | translate }}</h4></div>
+    <div class="card-header">
+      <h4>{{ "dir_kpi.provisions_title" | translate }}</h4>
+    </div>
     @if (loading()) {
       <div class="skeleton" style="height: 200px"></div>
     } @else {
       <table class="data-table">
         <thead>
           <tr>
-            <th>{{ 'dir_kpi.prov_col_categorie' | translate }}</th>
-            <th>{{ 'dir_kpi.prov_col_nb' | translate }}</th>
-            <th>{{ 'dir_kpi.prov_col_encours' | translate }}</th>
-            <th>{{ 'dir_kpi.prov_col_type' | translate }}</th>
-            <th>{{ 'dir_kpi.prov_col_req' | translate }}</th>
+            <th>{{ "dir_kpi.prov_col_categorie" | translate }}</th>
+            <th>{{ "dir_kpi.prov_col_nb" | translate }}</th>
+            <th>{{ "dir_kpi.prov_col_encours" | translate }}</th>
+            <th>{{ "dir_kpi.prov_col_type" | translate }}</th>
+            <th>{{ "dir_kpi.prov_col_req" | translate }}</th>
           </tr>
         </thead>
         <tbody>

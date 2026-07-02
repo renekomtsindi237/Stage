@@ -51,8 +51,8 @@ const TILES_DARK = {
 // ── Cameroun — bounds et centre ──────────────────────────────────────────────
 const CAMEROUN_CENTER: L.LatLngExpression = [5.5, 12.3];
 const CAMEROUN_BOUNDS: L.LatLngBoundsExpression = [
-  [1.65, 8.3],   // SW — Kribi / Ebolowa
-  [13.1, 16.2],  // NE — Maroua / Ngaoundéré
+  [1.65, 8.3], // SW — Kribi / Ebolowa
+  [13.1, 16.2], // NE — Maroua / Ngaoundéré
 ];
 
 // ── Icônes agents ─────────────────────────────────────────────────────────────
@@ -69,8 +69,8 @@ function makeIcon(color: string, size: number): L.DivIcon {
     popupAnchor: [0, -(size / 2) - 4],
   });
 }
-const ICON_ACTIVE   = makeIcon("#22c55e", 18);  // vert — en déplacement
-const ICON_INACTIVE = makeIcon("#94a3b8", 14);  // gris — dernière position connue
+const ICON_ACTIVE = makeIcon("#22c55e", 18); // vert — en déplacement
+const ICON_INACTIVE = makeIcon("#94a3b8", 14); // gris — dernière position connue
 
 @Component({
   selector: "app-dir-carte-agents",
@@ -80,7 +80,9 @@ const ICON_INACTIVE = makeIcon("#94a3b8", 14);  // gris — dernière position c
   templateUrl: "./dir-carte-agents.component.html",
   styleUrls: ["./dir-carte-agents.component.scss"],
 })
-export class DirCarteAgentsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DirCarteAgentsComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   private readonly api = inject(ApiService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sse = inject(SseService);
@@ -95,10 +97,10 @@ export class DirCarteAgentsComponent implements OnInit, AfterViewInit, OnDestroy
   private sseSub?: Subscription;
 
   loading = signal(true);
-  activeAgents   = signal<AgentPositionResponse[]>([]);
-  allAgents      = signal<AgentPositionResponse[]>([]);
-  selected       = signal<AgentPositionResponse | null>(null);
-  error          = signal("");
+  activeAgents = signal<AgentPositionResponse[]>([]);
+  allAgents = signal<AgentPositionResponse[]>([]);
+  selected = signal<AgentPositionResponse | null>(null);
+  error = signal("");
   showAllPositions = signal(true);
 
   get displayedAgents(): AgentPositionResponse[] {
@@ -142,10 +144,7 @@ export class DirCarteAgentsComponent implements OnInit, AfterViewInit, OnDestroy
       center: CAMEROUN_CENTER,
       zoom: 6,
       zoomControl: true,
-      maxBounds: L.latLngBounds(
-        [0.5, 7.0],
-        [14.0, 17.5],
-      ),
+      maxBounds: L.latLngBounds([0.5, 7.0], [14.0, 17.5]),
       maxBoundsViscosity: 0.7,
     });
 
@@ -308,7 +307,9 @@ export class DirCarteAgentsComponent implements OnInit, AfterViewInit, OnDestroy
     this.selected.set(agent);
     const marker = this.markers.get(agent.agentUid);
     if (marker && this.map) {
-      this.map.setView([agent.latitude, agent.longitude], 14, { animate: true });
+      this.map.setView([agent.latitude, agent.longitude], 14, {
+        animate: true,
+      });
       marker.openPopup();
     }
   }

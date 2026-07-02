@@ -1,9 +1,10 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'sup_tickets.title' | translate }}</h2>
+      <h2>{{ "sup_tickets.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} {{ 'sup_tickets.title' | translate | lowercase }}
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "sup_tickets.title" | translate | lowercase }}
       </p>
     </div>
   </div>
@@ -27,12 +28,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>{{ 'sup_tickets.col_id' | translate }}</th>
-            <th>{{ 'sup_tickets.col_titre' | translate }}</th>
-            <th>{{ 'sup_tickets.col_auteur' | translate }}</th>
-            <th>{{ 'sup_tickets.col_priorite' | translate }}</th>
-            <th>{{ 'sup_tickets.col_statut' | translate }}</th>
-            <th>{{ 'sup_tickets.col_date' | translate }}</th>
+            <th>{{ "sup_tickets.col_id" | translate }}</th>
+            <th>{{ "sup_tickets.col_titre" | translate }}</th>
+            <th>{{ "sup_tickets.col_auteur" | translate }}</th>
+            <th>{{ "sup_tickets.col_priorite" | translate }}</th>
+            <th>{{ "sup_tickets.col_statut" | translate }}</th>
+            <th>{{ "sup_tickets.col_date" | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -82,7 +83,7 @@
                   class="text-center text-muted"
                   style="padding: 32px"
                 >
-                  {{ 'sup_tickets.empty' | translate }}
+                  {{ "sup_tickets.empty" | translate }}
                 </td>
               </tr>
             }
@@ -100,7 +101,8 @@
             <span class="material-icons-round">chevron_left</span>
           </button>
           <span class="text-sm">
-            {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}
+            {{ "common.page" | translate }} {{ currentPage() + 1 }} /
+            {{ page()?.totalPages }}
           </span>
           <button
             class="btn btn-ghost btn-sm"
@@ -118,7 +120,11 @@
       <div class="card detail-panel">
         <div class="detail-header">
           <div>
-            <h3>{{ 'sup_tickets.detail_ticket' | translate }} #{{ selected()!.id }}</h3>
+            <h3>
+              {{ "sup_tickets.detail_ticket" | translate }} #{{
+                selected()!.id
+              }}
+            </h3>
             <p class="text-sm text-muted" style="margin: 2px 0 0">
               {{ selected()!.titre }}
             </p>
@@ -131,7 +137,9 @@
         <!-- Méta -->
         <div class="detail-meta-grid">
           <div class="meta-row">
-            <span class="meta-label">{{ 'sup_tickets.meta_auteur' | translate }}</span>
+            <span class="meta-label">{{
+              "sup_tickets.meta_auteur" | translate
+            }}</span>
             <span class="meta-value">
               {{ selected()!.auteurUsername ?? "—" }}
               @if (selected()!.auteurRole) {
@@ -145,23 +153,31 @@
             </span>
           </div>
           <div class="meta-row">
-            <span class="meta-label">{{ 'sup_tickets.meta_categorie' | translate }}</span>
+            <span class="meta-label">{{
+              "sup_tickets.meta_categorie" | translate
+            }}</span>
             <span class="meta-value">{{ selected()!.categorie }}</span>
           </div>
           <div class="meta-row">
-            <span class="meta-label">{{ 'sup_tickets.meta_priorite' | translate }}</span>
+            <span class="meta-label">{{
+              "sup_tickets.meta_priorite" | translate
+            }}</span>
             <span class="badge" [ngClass]="prioriteClass(selected()!.priorite)">
               {{ selected()!.priorite }}
             </span>
           </div>
           <div class="meta-row">
-            <span class="meta-label">{{ 'sup_tickets.meta_statut' | translate }}</span>
+            <span class="meta-label">{{
+              "sup_tickets.meta_statut" | translate
+            }}</span>
             <span class="badge" [ngClass]="statutClass(selected()!.statut)">
               {{ selected()!.statut }}
             </span>
           </div>
           <div class="meta-row">
-            <span class="meta-label">{{ 'sup_tickets.meta_soumis' | translate }}</span>
+            <span class="meta-label">{{
+              "sup_tickets.meta_soumis" | translate
+            }}</span>
             <span class="meta-value">
               {{ selected()!.createdAt | date: "dd/MM/yyyy HH:mm" }}
             </span>
@@ -170,7 +186,9 @@
 
         <!-- Description -->
         <div class="detail-section">
-          <h4 class="detail-section__title">{{ 'sup_tickets.description' | translate }}</h4>
+          <h4 class="detail-section__title">
+            {{ "sup_tickets.description" | translate }}
+          </h4>
           <div class="detail-description">{{ selected()!.description }}</div>
         </div>
 
@@ -179,12 +197,13 @@
           <div class="detail-section">
             <h4 class="detail-section__title resolution-title">
               <span class="material-icons-round">check_circle</span>
-              {{ 'sup_tickets.response_title' | translate }}
+              {{ "sup_tickets.response_title" | translate }}
             </h4>
             <div class="resolution-box">{{ selected()!.resolution }}</div>
             @if (selected()!.traiteParUsername) {
               <p class="text-sm text-muted" style="margin-top: 8px">
-                {{ 'sup_tickets.response_by' | translate }} <strong>{{ selected()!.traiteParUsername }}</strong>
+                {{ "sup_tickets.response_by" | translate }}
+                <strong>{{ selected()!.traiteParUsername }}</strong>
                 @if (selected()!.dateTraitement) {
                   · {{ selected()!.dateTraitement | date: "dd/MM/yyyy HH:mm" }}
                 }
@@ -201,7 +220,7 @@
               (click)="prendreEnCharge(selected()!.id)"
             >
               <span class="material-icons-round">play_arrow</span>
-              {{ 'sup_tickets.take_charge' | translate }}
+              {{ "sup_tickets.take_charge" | translate }}
             </button>
           }
 
@@ -209,7 +228,7 @@
             <div class="response-form" [formGroup]="responseForm">
               <label class="response-label">
                 <span class="material-icons-round">reply</span>
-                {{ 'sup_tickets.reply_label' | translate }}
+                {{ "sup_tickets.reply_label" | translate }}
               </label>
               <textarea
                 class="form-control response-textarea"
@@ -222,13 +241,13 @@
                 responseForm.get("resolution")?.invalid
               ) {
                 <p class="field-error">
-                  {{ 'sup_tickets.reply_error' | translate }}
+                  {{ "sup_tickets.reply_error" | translate }}
                 </p>
               }
               <div class="response-footer">
                 <span class="notif-hint">
                   <span class="material-icons-round">notifications_active</span>
-                  {{ 'sup_tickets.notif_hint' | translate }}
+                  {{ "sup_tickets.notif_hint" | translate }}
                 </span>
                 <button
                   class="btn btn-primary btn-sm"
@@ -237,10 +256,10 @@
                 >
                   @if (submittingResponse()) {
                     <span class="css-spinner-sm"></span>
-                    {{ 'sup_tickets.send_loading' | translate }}
+                    {{ "sup_tickets.send_loading" | translate }}
                   } @else {
                     <span class="material-icons-round">send</span>
-                    {{ 'sup_tickets.send_btn' | translate }}
+                    {{ "sup_tickets.send_btn" | translate }}
                   }
                 </button>
               </div>
@@ -253,7 +272,7 @@
               (click)="fermer(selected()!.id)"
             >
               <span class="material-icons-round">do_not_disturb</span>
-              {{ 'sup_tickets.close_btn' | translate }}
+              {{ "sup_tickets.close_btn" | translate }}
             </button>
           }
         </div>

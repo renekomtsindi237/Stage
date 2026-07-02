@@ -1,8 +1,8 @@
 <div class="page-content">
   <div class="page-header">
-    <h2>{{ 'dir_rapports.title' | translate }}</h2>
+    <h2>{{ "dir_rapports.title" | translate }}</h2>
     <p class="text-muted text-sm">
-      {{ 'dir_rapports.subtitle' | translate }}
+      {{ "dir_rapports.subtitle" | translate }}
     </p>
   </div>
 
@@ -23,7 +23,8 @@
             <span class="badge" [class]="typeClass(r.type)">{{ r.type }}</span>
             @if (r.dateDernier) {
               <span class="text-sm text-muted"
-                >{{ 'dir_rapports.last' | translate }} {{ r.dateDernier | date: "dd/MM/yyyy" }}</span
+                >{{ "dir_rapports.last" | translate }}
+                {{ r.dateDernier | date: "dd/MM/yyyy" }}</span
               >
             }
           </div>
@@ -36,7 +37,11 @@
           <span class="material-icons-round">
             {{ generating() === r.id ? "hourglass_empty" : "download" }}
           </span>
-          {{ generating() === r.id ? ('dir_rapports.generating' | translate) : ('dir_rapports.generate_btn' | translate) }}
+          {{
+            generating() === r.id
+              ? ("dir_rapports.generating" | translate)
+              : ("dir_rapports.generate_btn" | translate)
+          }}
         </button>
       </div>
     }

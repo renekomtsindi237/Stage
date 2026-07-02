@@ -134,7 +134,7 @@ export class RecAlertesComponent implements OnInit {
 
   retardClass(jours: number): string {
     if (jours >= 180) return "retard-severe";
-    if (jours >= 90)  return "retard-eleve";
+    if (jours >= 90) return "retard-eleve";
     return "";
   }
 }

@@ -1,9 +1,9 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2 class="page-title">{{ 'dir_recouvrement.title' | translate }}</h2>
+      <h2 class="page-title">{{ "dir_recouvrement.title" | translate }}</h2>
       <p class="page-subtitle">
-        {{ 'dir_recouvrement.subtitle' | translate }}
+        {{ "dir_recouvrement.subtitle" | translate }}
       </p>
     </div>
   </div>
@@ -12,44 +12,76 @@
   <div class="phase-pipeline">
     <div class="phase-step">
       <span class="material-icons-round">phone_in_talk</span>
-      <span>{{ 'dir_recouvrement.phase_amiable' | translate }}</span>
+      <span>{{ "dir_recouvrement.phase_amiable" | translate }}</span>
     </div>
     <span class="material-icons-round phase-arrow">arrow_forward</span>
     <div class="phase-step">
       <span class="material-icons-round">handshake</span>
-      <span>{{ 'dir_recouvrement.phase_mediation' | translate }}</span>
+      <span>{{ "dir_recouvrement.phase_mediation" | translate }}</span>
     </div>
     <span class="material-icons-round phase-arrow">arrow_forward</span>
     <div class="phase-step">
       <span class="material-icons-round">gavel</span>
-      <span>{{ 'dir_recouvrement.phase_mise_en_demeure' | translate }}</span>
+      <span>{{ "dir_recouvrement.phase_mise_en_demeure" | translate }}</span>
     </div>
     <span class="material-icons-round phase-arrow">arrow_forward</span>
     <div class="phase-step phase-step--danger">
       <span class="material-icons-round">balance</span>
-      <span>{{ 'dir_recouvrement.phase_contentieux' | translate }}</span>
+      <span>{{ "dir_recouvrement.phase_contentieux" | translate }}</span>
     </div>
   </div>
 
   <!-- Filtres -->
-  <div class="card filter-bar" [formGroup]="filterForm" style="margin-bottom:16px">
-    <select class="form-control" formControlName="phase" style="width:auto" (change)="load()">
-      <option value="">{{ 'dir_recouvrement.filter_all_phases' | translate }}</option>
-      <option value="RELANCE_AMIABLE">{{ 'dir_recouvrement.filter_relance' | translate }}</option>
-      <option value="MEDIATION_AMIABLE">{{ 'dir_recouvrement.filter_mediation' | translate }}</option>
-      <option value="MISE_EN_DEMEURE">{{ 'dir_recouvrement.filter_med_form' | translate }}</option>
-      <option value="CONTENTIEUX">{{ 'dir_recouvrement.filter_contentieux' | translate }}</option>
-      <option value="REECHELONNEMENT">{{ 'dir_recouvrement.filter_reechelonnement' | translate }}</option>
-      <option value="PERTE">{{ 'dir_recouvrement.filter_perte' | translate }}</option>
+  <div
+    class="card filter-bar"
+    [formGroup]="filterForm"
+    style="margin-bottom: 16px"
+  >
+    <select
+      class="form-control"
+      formControlName="phase"
+      style="width: auto"
+      (change)="load()"
+    >
+      <option value="">
+        {{ "dir_recouvrement.filter_all_phases" | translate }}
+      </option>
+      <option value="RELANCE_AMIABLE">
+        {{ "dir_recouvrement.filter_relance" | translate }}
+      </option>
+      <option value="MEDIATION_AMIABLE">
+        {{ "dir_recouvrement.filter_mediation" | translate }}
+      </option>
+      <option value="MISE_EN_DEMEURE">
+        {{ "dir_recouvrement.filter_med_form" | translate }}
+      </option>
+      <option value="CONTENTIEUX">
+        {{ "dir_recouvrement.filter_contentieux" | translate }}
+      </option>
+      <option value="REECHELONNEMENT">
+        {{ "dir_recouvrement.filter_reechelonnement" | translate }}
+      </option>
+      <option value="PERTE">
+        {{ "dir_recouvrement.filter_perte" | translate }}
+      </option>
     </select>
-    <select class="form-control" formControlName="clos" style="width:auto" (change)="load()">
-      <option value="false">{{ 'dir_recouvrement.filter_open' | translate }}</option>
-      <option value="true">{{ 'dir_recouvrement.filter_closed' | translate }}</option>
-      <option value="">{{ 'dir_recouvrement.filter_all' | translate }}</option>
+    <select
+      class="form-control"
+      formControlName="clos"
+      style="width: auto"
+      (change)="load()"
+    >
+      <option value="false">
+        {{ "dir_recouvrement.filter_open" | translate }}
+      </option>
+      <option value="true">
+        {{ "dir_recouvrement.filter_closed" | translate }}
+      </option>
+      <option value="">{{ "dir_recouvrement.filter_all" | translate }}</option>
     </select>
     <button class="btn btn-primary" (click)="load()">
-      <span class="material-icons-round" style="font-size:16px">search</span>
-      {{ 'dir_recouvrement.filter_btn' | translate }}
+      <span class="material-icons-round" style="font-size: 16px">search</span>
+      {{ "dir_recouvrement.filter_btn" | translate }}
     </button>
   </div>
 
@@ -57,28 +89,41 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>{{ 'dir_recouvrement.col_client' | translate }}</th>
-          <th>{{ 'dir_recouvrement.col_montant' | translate }}</th>
-          <th>{{ 'dir_recouvrement.col_jours' | translate }}</th>
-          <th>{{ 'dir_recouvrement.col_phase' | translate }}</th>
-          <th>{{ 'dir_recouvrement.col_statut' | translate }}</th>
-          <th>{{ 'dir_recouvrement.col_updated' | translate }}</th>
+          <th>{{ "dir_recouvrement.col_client" | translate }}</th>
+          <th>{{ "dir_recouvrement.col_montant" | translate }}</th>
+          <th>{{ "dir_recouvrement.col_jours" | translate }}</th>
+          <th>{{ "dir_recouvrement.col_phase" | translate }}</th>
+          <th>{{ "dir_recouvrement.col_statut" | translate }}</th>
+          <th>{{ "dir_recouvrement.col_updated" | translate }}</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+          @for (_ of [1, 2, 3, 4, 5, 6, 7, 8]; track $index) {
             <tr>
-              @for (__ of [1,2,3,4,5,6]; track $index) {
-                <td><div class="skeleton" style="height:14px;width:75%"></div></td>
+              @for (__ of [1, 2, 3, 4, 5, 6]; track $index) {
+                <td>
+                  <div class="skeleton" style="height: 14px; width: 75%"></div>
+                </td>
               }
             </tr>
           }
         } @else if ((page()?.content ?? []).length === 0) {
           <tr>
-            <td colspan="6" style="text-align:center;padding:40px;color:var(--color-text-muted)">
-              <span class="material-icons-round" style="font-size:40px;display:block;margin-bottom:8px">folder_open</span>
-              {{ 'dir_recouvrement.empty' | translate }}
+            <td
+              colspan="6"
+              style="
+                text-align: center;
+                padding: 40px;
+                color: var(--color-text-muted);
+              "
+            >
+              <span
+                class="material-icons-round"
+                style="font-size: 40px; display: block; margin-bottom: 8px"
+                >folder_open</span
+              >
+              {{ "dir_recouvrement.empty" | translate }}
             </td>
           </tr>
         } @else {
@@ -87,7 +132,10 @@
               <td class="font-semibold">{{ d.clientNom }}</td>
               <td class="font-semibold">{{ d.montantDu | fcfa }}</td>
               <td>
-                <span [class]="retardClass(d.joursRetard)" class="font-semibold">
+                <span
+                  [class]="retardClass(d.joursRetard)"
+                  class="font-semibold"
+                >
                   {{ d.joursRetard }} j
                 </span>
               </td>
@@ -98,12 +146,18 @@
               </td>
               <td>
                 @if (d.clos) {
-                  <span class="badge badge-basse">{{ 'dir_recouvrement.status_closed' | translate }}</span>
+                  <span class="badge badge-basse">{{
+                    "dir_recouvrement.status_closed" | translate
+                  }}</span>
                 } @else {
-                  <span class="badge badge-moyenne">{{ 'dir_recouvrement.status_open' | translate }}</span>
+                  <span class="badge badge-moyenne">{{
+                    "dir_recouvrement.status_open" | translate
+                  }}</span>
                 }
               </td>
-              <td class="text-sm text-muted">{{ d.updatedAt | date:'dd/MM/yyyy' }}</td>
+              <td class="text-sm text-muted">
+                {{ d.updatedAt | date: "dd/MM/yyyy" }}
+              </td>
             </tr>
           }
         }
@@ -119,7 +173,10 @@
         >
           <span class="material-icons-round">chevron_left</span>
         </button>
-        <span class="text-sm">{{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span>
+        <span class="text-sm"
+          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}</span
+        >
         <button
           class="btn btn-ghost btn-sm"
           [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"

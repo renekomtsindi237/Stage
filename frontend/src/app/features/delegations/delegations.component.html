@@ -5,10 +5,10 @@
       <div class="del-header__left">
         <h1 class="del-header__title">
           <span class="material-icons-round del-header__icon">swap_horiz</span>
-          {{ 'del.title' | translate }}
+          {{ "del.title" | translate }}
         </h1>
         <p class="del-header__sub">
-          {{ 'del.subtitle' | translate }}
+          {{ "del.subtitle" | translate }}
         </p>
       </div>
 
@@ -18,7 +18,7 @@
           (click)="openAutoriteModal()"
         >
           <span class="material-icons-round">person_add</span>
-          {{ 'del.delegate_btn' | translate }}
+          {{ "del.delegate_btn" | translate }}
         </button>
       }
     </div>
@@ -31,7 +31,7 @@
         (click)="activeTab.set('delegations')"
       >
         <span class="material-icons-round">assignment_ind</span>
-        {{ 'del.tab_delegations' | translate }}
+        {{ "del.tab_delegations" | translate }}
         @if (totalDelegations() > 0) {
           <span class="del-tab__badge">{{ totalDelegations() }}</span>
         }
@@ -42,7 +42,7 @@
         (click)="activeTab.set('dossiers')"
       >
         <span class="material-icons-round">folder_open</span>
-        {{ 'del.tab_dossiers' | translate }}
+        {{ "del.tab_dossiers" | translate }}
         @if (totalDossiers() > 0) {
           <span class="del-tab__badge">{{ totalDossiers() }}</span>
         }
@@ -54,15 +54,15 @@
       @if (loadingDelegations()) {
         <div class="del-loading">
           <span class="material-icons-round del-spin">refresh</span>
-          {{ 'del.loading_delegations' | translate }}
+          {{ "del.loading_delegations" | translate }}
         </div>
       } @else if (delegations().length === 0) {
         <div class="del-empty">
           <span class="material-icons-round del-empty__icon">swap_horiz</span>
-          <p>{{ 'del.empty_delegations' | translate }}</p>
+          <p>{{ "del.empty_delegations" | translate }}</p>
           @if (isDirecteur()) {
             <button class="btn btn-primary" (click)="openAutoriteModal()">
-              {{ 'del.create_btn' | translate }}
+              {{ "del.create_btn" | translate }}
             </button>
           }
         </div>
@@ -94,7 +94,10 @@
                   [class.del-status--active]="d.actif"
                   [class.del-status--inactive]="!d.actif"
                 >
-                  {{ (d.actif ? 'del.status_active' : 'del.status_revoked') | translate }}
+                  {{
+                    (d.actif ? "del.status_active" : "del.status_revoked")
+                      | translate
+                  }}
                 </span>
               </div>
 
@@ -103,7 +106,9 @@
                   <span class="material-icons-round del-card__row-icon"
                     >person</span
                   >
-                  <span class="del-card__row-label">{{ 'del.col_delegant' | translate }}</span>
+                  <span class="del-card__row-label">{{
+                    "del.col_delegant" | translate
+                  }}</span>
                   <span class="del-card__row-value"
                     >Agent #{{ d.delegantId }}</span
                   >
@@ -112,7 +117,9 @@
                   <span class="material-icons-round del-card__row-icon"
                     >person_outline</span
                   >
-                  <span class="del-card__row-label">{{ 'del.col_delegataire' | translate }}</span>
+                  <span class="del-card__row-label">{{
+                    "del.col_delegataire" | translate
+                  }}</span>
                   <span class="del-card__row-value"
                     >Agent #{{ d.delegataireId }}</span
                   >
@@ -122,7 +129,9 @@
                     <span class="material-icons-round del-card__row-icon"
                       >badge</span
                     >
-                    <span class="del-card__row-label">{{ 'del.col_role_delegue' | translate }}</span>
+                    <span class="del-card__row-label">{{
+                      "del.col_role_delegue" | translate
+                    }}</span>
                     <span class="del-card__row-value">{{ d.roleDelegue }}</span>
                   </div>
                 }
@@ -131,7 +140,9 @@
                     <span class="material-icons-round del-card__row-icon"
                       >payments</span
                     >
-                    <span class="del-card__row-label">{{ 'del.col_plafond' | translate }}</span>
+                    <span class="del-card__row-label">{{
+                      "del.col_plafond" | translate
+                    }}</span>
                     <span
                       class="del-card__row-value del-card__row-value--amount"
                     >
@@ -162,7 +173,7 @@
                     [title]="'del.revoke_btn' | translate"
                   >
                     <span class="material-icons-round">block</span>
-                    {{ 'del.revoke_btn' | translate }}
+                    {{ "del.revoke_btn" | translate }}
                   </button>
                 }
               </div>
@@ -177,25 +188,25 @@
       @if (loadingDossiers()) {
         <div class="del-loading">
           <span class="material-icons-round del-spin">refresh</span>
-          {{ 'del.loading_dossiers' | translate }}
+          {{ "del.loading_dossiers" | translate }}
         </div>
       } @else if (dossiers().length === 0) {
         <div class="del-empty">
           <span class="material-icons-round del-empty__icon">folder_open</span>
-          <p>{{ 'del.empty_dossiers' | translate }}</p>
+          <p>{{ "del.empty_dossiers" | translate }}</p>
         </div>
       } @else {
         <div class="del-table-wrap">
           <table class="del-table">
             <thead>
               <tr>
-                <th>{{ 'del.col_client' | translate }}</th>
-                <th>{{ 'del.col_objet' | translate }}</th>
-                <th>{{ 'common.amount' | translate }}</th>
-                <th>{{ 'del.col_duree' | translate }}</th>
-                <th>{{ 'common.status' | translate }}</th>
-                <th>{{ 'del.col_soumis' | translate }}</th>
-                <th>{{ 'common.actions' | translate }}</th>
+                <th>{{ "del.col_client" | translate }}</th>
+                <th>{{ "del.col_objet" | translate }}</th>
+                <th>{{ "common.amount" | translate }}</th>
+                <th>{{ "del.col_duree" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th>{{ "del.col_soumis" | translate }}</th>
+                <th>{{ "common.actions" | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -220,7 +231,7 @@
                   <td class="del-table__montant">
                     {{ formatMontant(d.montantDemande) }}
                   </td>
-                  <td>{{ d.dureeMois }} {{ 'common.months' | translate }}</td>
+                  <td>{{ d.dureeMois }} {{ "common.months" | translate }}</td>
                   <td>
                     <span class="badge" [class]="statutColor(d.statut)">{{
                       statutLabel(d.statut)
@@ -238,7 +249,7 @@
                         (click)="openReassignModal(d)"
                       >
                         <span class="material-icons-round">swap_horiz</span>
-                        {{ 'del.reassign_btn' | translate }}
+                        {{ "del.reassign_btn" | translate }}
                       </button>
                     }
                   </td>
@@ -259,7 +270,7 @@
       <div class="modal__header">
         <h3 class="modal__title">
           <span class="material-icons-round">folder_shared</span>
-          {{ 'del.modal_reassign_title' | translate }}
+          {{ "del.modal_reassign_title" | translate }}
         </h3>
         <button class="modal__close" (click)="closeReassignModal()">
           <span class="material-icons-round">close</span>
@@ -282,16 +293,20 @@
         class="modal__form"
       >
         <div class="form-group">
-          <label class="form-label">{{ 'del.modal_agent_label' | translate }}</label>
+          <label class="form-label">{{
+            "del.modal_agent_label" | translate
+          }}</label>
           @if (loadingAgents()) {
-            <div class="form-loading">{{ 'del.loading_agents' | translate }}</div>
+            <div class="form-loading">
+              {{ "del.loading_agents" | translate }}
+            </div>
           } @else if (agents().length === 0) {
             <div class="form-empty">
-              {{ 'del.empty_agents' | translate }}
+              {{ "del.empty_agents" | translate }}
             </div>
           } @else {
             <select class="form-control" formControlName="nouvelAgentUid">
-              <option value="">{{ 'del.select_agent' | translate }}</option>
+              <option value="">{{ "del.select_agent" | translate }}</option>
               @for (a of agents(); track a.uid) {
                 <option [value]="a.uid">{{ a.username }} ({{ a.role }})</option>
               }
@@ -300,7 +315,9 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">{{ 'del.motif_reassign' | translate }}</label>
+          <label class="form-label">{{
+            "del.motif_reassign" | translate
+          }}</label>
           <textarea
             class="form-control"
             formControlName="motif"
@@ -315,7 +332,7 @@
             class="btn btn-ghost"
             (click)="closeReassignModal()"
           >
-            {{ 'common.cancel' | translate }}
+            {{ "common.cancel" | translate }}
           </button>
           <button
             type="submit"
@@ -325,7 +342,7 @@
             @if (submitting()) {
               <span class="material-icons-round del-spin">refresh</span>
             }
-            {{ 'del.confirm_reassign' | translate }}
+            {{ "del.confirm_reassign" | translate }}
           </button>
         </div>
       </form>
@@ -340,7 +357,7 @@
       <div class="modal__header">
         <h3 class="modal__title">
           <span class="material-icons-round">supervisor_account</span>
-          {{ 'del.modal_autorite_title' | translate }}
+          {{ "del.modal_autorite_title" | translate }}
         </h3>
         <button class="modal__close" (click)="closeAutoriteModal()">
           <span class="material-icons-round">close</span>
@@ -353,14 +370,18 @@
         class="modal__form"
       >
         <div class="form-group">
-          <label class="form-label">{{ 'del.delegataire_label' | translate }}</label>
+          <label class="form-label">{{
+            "del.delegataire_label" | translate
+          }}</label>
           @if (loadingAgents()) {
-            <div class="form-loading">{{ 'del.loading_users' | translate }}</div>
+            <div class="form-loading">
+              {{ "del.loading_users" | translate }}
+            </div>
           } @else if (agents().length === 0) {
-            <div class="form-empty">{{ 'del.empty_users' | translate }}</div>
+            <div class="form-empty">{{ "del.empty_users" | translate }}</div>
           } @else {
             <select class="form-control" formControlName="delegataireUid">
-              <option value="">{{ 'del.select_user' | translate }}</option>
+              <option value="">{{ "del.select_user" | translate }}</option>
               @for (a of agents(); track a.uid) {
                 <option [value]="a.uid">{{ a.username }} — {{ a.role }}</option>
               }
@@ -369,7 +390,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">{{ 'del.role_label' | translate }}</label>
+          <label class="form-label">{{ "del.role_label" | translate }}</label>
           <select class="form-control" formControlName="roleDelegue">
             @for (r of rolesAutorites; track r) {
               <option [value]="r">{{ r }}</option>
@@ -379,7 +400,9 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">{{ 'del.plafond_label' | translate }}</label>
+            <label class="form-label">{{
+              "del.plafond_label" | translate
+            }}</label>
             <input
               type="number"
               class="form-control"
@@ -389,13 +412,17 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">{{ 'del.end_date_label' | translate }}</label>
+            <label class="form-label">{{
+              "del.end_date_label" | translate
+            }}</label>
             <input type="date" class="form-control" formControlName="dateFin" />
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">{{ 'del.motif_required' | translate }}</label>
+          <label class="form-label">{{
+            "del.motif_required" | translate
+          }}</label>
           <textarea
             class="form-control"
             formControlName="motif"
@@ -410,7 +437,7 @@
             class="btn btn-ghost"
             (click)="closeAutoriteModal()"
           >
-            {{ 'common.cancel' | translate }}
+            {{ "common.cancel" | translate }}
           </button>
           <button
             type="submit"
@@ -420,7 +447,7 @@
             @if (submitting()) {
               <span class="material-icons-round del-spin">refresh</span>
             }
-            {{ 'del.create_delegation' | translate }}
+            {{ "del.create_delegation" | translate }}
           </button>
         </div>
       </form>

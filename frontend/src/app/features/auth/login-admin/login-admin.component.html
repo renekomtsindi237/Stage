@@ -10,9 +10,9 @@
       <span class="material-icons-round admin-card__shield"
         >admin_panel_settings</span
       >
-      <h2 class="admin-card__title">{{ 'login_admin.title' | translate }}</h2>
+      <h2 class="admin-card__title">{{ "login_admin.title" | translate }}</h2>
       <p class="admin-card__subtitle">
-        {{ 'login_admin.subtitle' | translate }}
+        {{ "login_admin.subtitle" | translate }}
       </p>
     </div>
 
@@ -27,7 +27,7 @@
     <!-- Formulaire email + mot de passe -->
     <form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
       <div class="form-group">
-        <label for="email">{{ 'login_admin.email_label' | translate }}</label>
+        <label for="email">{{ "login_admin.email_label" | translate }}</label>
         <input
           id="email"
           type="email"
@@ -39,7 +39,7 @@
       </div>
 
       <div class="form-group">
-        <label for="pwd">{{ 'login_admin.pwd_label' | translate }}</label>
+        <label for="pwd">{{ "login_admin.pwd_label" | translate }}</label>
         <div class="input-group">
           <input
             id="pwd"
@@ -57,23 +57,23 @@
       <button type="submit" class="btn-admin-submit" [disabled]="loading()">
         @if (loading()) {
           <span class="material-icons-round spin">refresh</span>
-          {{ 'login_admin.submit_loading' | translate }}
+          {{ "login_admin.submit_loading" | translate }}
         } @else {
           <span class="material-icons-round">lock_open</span>
-          {{ 'login_admin.submit' | translate }}
+          {{ "login_admin.submit" | translate }}
         }
       </button>
     </form>
 
     <!-- Lien retour -->
     <div class="admin-card__back">
-      <a routerLink="/login">{{ 'login_admin.back' | translate }}</a>
+      <a routerLink="/login">{{ "login_admin.back" | translate }}</a>
     </div>
   </div>
 
   <!-- Badge sécurité -->
   <div class="admin-security-badge">
     <span class="material-icons-round">https</span>
-    {{ 'login_admin.security_badge' | translate }}
+    {{ "login_admin.security_badge" | translate }}
   </div>
 </div>

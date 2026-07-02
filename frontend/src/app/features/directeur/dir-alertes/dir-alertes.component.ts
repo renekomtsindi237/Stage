@@ -57,9 +57,11 @@ export class DirAlertesComponent implements OnInit {
     this.loading.set(true);
     const statut = this.tab() === "TOUTES" ? "" : this.tab();
     this.api
-      .get<
-        PageResponse<Alerte>
-      >("/api/v1/alertes", { page: 0, size: 50, ...(statut ? { statut } : {}) })
+      .get<PageResponse<Alerte>>("/api/v1/alertes", {
+        page: 0,
+        size: 50,
+        ...(statut ? { statut } : {}),
+      })
       .subscribe({
         next: (res) => {
           this.alertes.set(res.content);

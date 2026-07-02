@@ -2,14 +2,14 @@
   <!-- En-tête -->
   <div class="page-header">
     <div>
-      <h2>{{ 'platform.nav_imf_title' | translate }}</h2>
+      <h2>{{ "platform.nav_imf_title" | translate }}</h2>
       <p class="text-muted text-sm">
         {{ imfs().length }} institution(s) enregistrée(s)
       </p>
     </div>
     <button class="btn btn-primary" (click)="openCreate()">
       <span class="material-icons-round">add</span>
-      {{ 'platform.add_btn' | translate }}
+      {{ "platform.add_btn" | translate }}
     </button>
   </div>
 
@@ -24,9 +24,9 @@
       } @else if (imfs().length === 0) {
         <div class="empty-state">
           <span class="material-icons-round">domain_disabled</span>
-          <p>{{ 'platform.empty' | translate }}</p>
+          <p>{{ "platform.empty" | translate }}</p>
           <button class="btn btn-primary btn-sm" (click)="openCreate()">
-            {{ 'platform.create_link' | translate }}
+            {{ "platform.create_link" | translate }}
           </button>
         </div>
       } @else {
@@ -44,23 +44,40 @@
                   class="badge badge-sm"
                   [class]="imf.actif ? 'badge-success' : 'badge-muted'"
                 >
-                  {{ imf.actif ? ('platform.status_active' | translate) : ('platform.status_suspended' | translate) }}
+                  {{
+                    imf.actif
+                      ? ("platform.status_active" | translate)
+                      : ("platform.status_suspended" | translate)
+                  }}
                 </span>
               </div>
               <p class="imf-row__nom">{{ imf.nom }}</p>
               <p class="imf-row__pays text-muted text-sm">
-                <span class="material-icons-round" style="font-size: 12px; vertical-align: middle">place</span>
+                <span
+                  class="material-icons-round"
+                  style="font-size: 12px; vertical-align: middle"
+                  >place</span
+                >
                 {{ imf.pays }}
                 @if (imf.hasDsi) {
                   &nbsp;·&nbsp;
-                  <span class="text-success" style="font-size: 11px; font-weight: 600">
-                    <span class="material-icons-round" style="font-size: 12px; vertical-align: middle">verified_user</span>
-                    {{ 'platform.dsi_configured' | translate }}
+                  <span
+                    class="text-success"
+                    style="font-size: 11px; font-weight: 600"
+                  >
+                    <span
+                      class="material-icons-round"
+                      style="font-size: 12px; vertical-align: middle"
+                      >verified_user</span
+                    >
+                    {{ "platform.dsi_configured" | translate }}
                   </span>
                 }
               </p>
             </div>
-            <span class="material-icons-round imf-row__chevron">chevron_right</span>
+            <span class="material-icons-round imf-row__chevron"
+              >chevron_right</span
+            >
           </div>
         }
       }
@@ -88,13 +105,31 @@
 
         <!-- Badges statut -->
         <div class="imf-detail__badges">
-          <span class="badge badge-lg" [class]="imf.actif ? 'badge-success' : 'badge-muted'">
-            <span class="material-icons-round">{{ imf.actif ? "check_circle" : "pause_circle" }}</span>
-            {{ imf.actif ? ('common.active' | translate) : ('platform.status_suspended' | translate) }}
+          <span
+            class="badge badge-lg"
+            [class]="imf.actif ? 'badge-success' : 'badge-muted'"
+          >
+            <span class="material-icons-round">{{
+              imf.actif ? "check_circle" : "pause_circle"
+            }}</span>
+            {{
+              imf.actif
+                ? ("common.active" | translate)
+                : ("platform.status_suspended" | translate)
+            }}
           </span>
-          <span class="badge badge-lg" [class]="imf.hasDsi ? 'badge-info' : 'badge-warning'">
-            <span class="material-icons-round">{{ imf.hasDsi ? "verified_user" : "person_off" }}</span>
-            {{ imf.hasDsi ? ('platform.dsi_configured' | translate) : ('platform.dsi_none' | translate) }}
+          <span
+            class="badge badge-lg"
+            [class]="imf.hasDsi ? 'badge-info' : 'badge-warning'"
+          >
+            <span class="material-icons-round">{{
+              imf.hasDsi ? "verified_user" : "person_off"
+            }}</span>
+            {{
+              imf.hasDsi
+                ? ("platform.dsi_configured" | translate)
+                : ("platform.dsi_none" | translate)
+            }}
           </span>
           <span class="badge badge-lg badge-neutral">
             <span class="material-icons-round">calendar_today</span>
@@ -125,7 +160,9 @@
             </div>
             <div class="detail-field">
               <label>Capital social</label>
-              <p class="detail-field__value--money">{{ formatCapital(imf.capitalSocial) }}</p>
+              <p class="detail-field__value--money">
+                {{ formatCapital(imf.capitalSocial) }}
+              </p>
             </div>
             @if (imf.numAgrement) {
               <div class="detail-field">
@@ -141,7 +178,7 @@
             }
             @if (imf.email) {
               <div class="detail-field">
-                <label>{{ 'common.email' | translate }}</label>
+                <label>{{ "common.email" | translate }}</label>
                 <p>{{ imf.email }}</p>
               </div>
             }
@@ -159,19 +196,25 @@
           <div class="detail-grid">
             <div class="detail-field">
               <label>Taux d'intérêt annuel</label>
-              <p class="detail-field__value--rate">{{ imf.tauxInteretAnnuel }}%</p>
+              <p class="detail-field__value--rate">
+                {{ imf.tauxInteretAnnuel }}%
+              </p>
             </div>
             <div class="detail-field">
               <label>Durée max crédit</label>
-              <p>{{ imf.dureeMaxCreditMois }} {{ 'common.months' | translate }}</p>
+              <p>
+                {{ imf.dureeMaxCreditMois }} {{ "common.months" | translate }}
+              </p>
             </div>
             <div class="detail-field">
               <label>Taux pénalité retard</label>
-              <p class="detail-field__value--rate">{{ imf.tauxPenaliteRetard }}%</p>
+              <p class="detail-field__value--rate">
+                {{ imf.tauxPenaliteRetard }}%
+              </p>
             </div>
             <div class="detail-field">
               <label>Seuil de relance</label>
-              <p>{{ imf.seuilRelanceJours }} {{ 'common.days' | translate }}</p>
+              <p>{{ imf.seuilRelanceJours }} {{ "common.days" | translate }}</p>
             </div>
           </div>
         </div>
@@ -211,50 +254,79 @@
 
           @if (!imf.hasDsi) {
             <p class="text-muted text-sm" style="margin-bottom: 12px">
-              Aucun compte DSI associé. Créez-en un pour permettre l'administration de cette IMF.
+              Aucun compte DSI associé. Créez-en un pour permettre
+              l'administration de cette IMF.
             </p>
             @if (!showDsiForm()) {
               <button class="btn btn-secondary btn-sm" (click)="openDsiForm()">
-                <span class="material-icons-round">person_add</span> Créer le compte DSI
+                <span class="material-icons-round">person_add</span> Créer le
+                compte DSI
               </button>
             } @else {
-              <form [formGroup]="dsiForm" (ngSubmit)="submitDsi()" class="dsi-form">
+              <form
+                [formGroup]="dsiForm"
+                (ngSubmit)="submitDsi()"
+                class="dsi-form"
+              >
                 <div class="dsi-form__title">Nouveau compte DSI</div>
                 <div class="form-grid-2">
                   <div class="form-group">
-                    <label>{{ 'common.username' | translate }} <span class="req">*</span></label>
+                    <label
+                      >{{ "common.username" | translate }}
+                      <span class="req">*</span></label
+                    >
                     <input
                       type="text"
                       class="form-control"
                       formControlName="username"
                       placeholder="dsi_cameroun"
                     />
-                    @if (dsiForm.get("username")?.invalid && dsiForm.get("username")?.touched) {
-                      <span class="field-error">Nom requis (3-50 caractères)</span>
+                    @if (
+                      dsiForm.get("username")?.invalid &&
+                      dsiForm.get("username")?.touched
+                    ) {
+                      <span class="field-error"
+                        >Nom requis (3-50 caractères)</span
+                      >
                     }
                   </div>
                   <div class="form-group">
-                    <label>{{ 'common.email' | translate }} <span class="req">*</span></label>
+                    <label
+                      >{{ "common.email" | translate }}
+                      <span class="req">*</span></label
+                    >
                     <input
                       type="email"
                       class="form-control"
                       formControlName="email"
                       placeholder="dsi@imf.cm"
                     />
-                    @if (dsiForm.get("email")?.invalid && dsiForm.get("email")?.touched) {
+                    @if (
+                      dsiForm.get("email")?.invalid &&
+                      dsiForm.get("email")?.touched
+                    ) {
                       <span class="field-error">Email valide requis</span>
                     }
                   </div>
                 </div>
                 <div class="form-actions">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="closeDsiForm()">
-                    {{ 'common.cancel' | translate }}
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    (click)="closeDsiForm()"
+                  >
+                    {{ "common.cancel" | translate }}
                   </button>
-                  <button type="submit" class="btn btn-primary btn-sm" [disabled]="submitting()">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="submitting()"
+                  >
                     @if (submitting()) {
                       <span class="material-icons-round spin">refresh</span>
                     } @else {
-                      <span class="material-icons-round">send</span> Créer &amp; envoyer OTP
+                      <span class="material-icons-round">send</span> Créer &amp;
+                      envoyer OTP
                     }
                   </button>
                 </div>
@@ -262,38 +334,61 @@
             }
           } @else {
             <div class="dsi-status">
-              <span class="material-icons-round text-success">verified_user</span>
-              <span class="text-sm" style="font-weight: 600">Compte DSI actif</span>
+              <span class="material-icons-round text-success"
+                >verified_user</span
+              >
+              <span class="text-sm" style="font-weight: 600"
+                >Compte DSI actif</span
+              >
             </div>
 
             @if (!showDsiEditForm() && !showDsiDeleteConfirm()) {
               <div class="dsi-actions">
-                <button class="btn btn-ghost btn-sm" (click)="openDsiEditForm()">
-                  <span class="material-icons-round">edit</span> {{ 'common.edit' | translate }}
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="openDsiEditForm()"
+                >
+                  <span class="material-icons-round">edit</span>
+                  {{ "common.edit" | translate }}
                 </button>
                 <button class="btn btn-ghost btn-sm" (click)="suspendDsi()">
                   <span class="material-icons-round">pause</span> Suspendre
                 </button>
-                <button class="btn btn-danger btn-sm" (click)="confirmDsiDelete()">
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="confirmDsiDelete()"
+                >
                   <span class="material-icons-round">delete</span> Supprimer DSI
                 </button>
               </div>
             }
 
             @if (showDsiEditForm()) {
-              <form [formGroup]="dsiEditForm" (ngSubmit)="submitDsiEdit()" class="dsi-form">
+              <form
+                [formGroup]="dsiEditForm"
+                (ngSubmit)="submitDsiEdit()"
+                class="dsi-form"
+              >
                 <div class="dsi-form__title">Modifier le compte DSI</div>
                 <div class="form-grid-2">
                   <div class="form-group">
-                    <label>Nouveau nom d'utilisateur <span class="req">*</span></label>
+                    <label
+                      >Nouveau nom d'utilisateur
+                      <span class="req">*</span></label
+                    >
                     <input
                       type="text"
                       class="form-control"
                       formControlName="username"
                       placeholder="dsi_cameroun"
                     />
-                    @if (dsiEditForm.get("username")?.invalid && dsiEditForm.get("username")?.touched) {
-                      <span class="field-error">Nom requis (3-50 caractères)</span>
+                    @if (
+                      dsiEditForm.get("username")?.invalid &&
+                      dsiEditForm.get("username")?.touched
+                    ) {
+                      <span class="field-error"
+                        >Nom requis (3-50 caractères)</span
+                      >
                     }
                   </div>
                   <div class="form-group">
@@ -304,20 +399,32 @@
                       formControlName="email"
                       placeholder="dsi@imf.cm"
                     />
-                    @if (dsiEditForm.get("email")?.invalid && dsiEditForm.get("email")?.touched) {
+                    @if (
+                      dsiEditForm.get("email")?.invalid &&
+                      dsiEditForm.get("email")?.touched
+                    ) {
                       <span class="field-error">Email valide requis</span>
                     }
                   </div>
                 </div>
                 <div class="form-actions">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="closeDsiEditForm()">
-                    {{ 'common.cancel' | translate }}
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    (click)="closeDsiEditForm()"
+                  >
+                    {{ "common.cancel" | translate }}
                   </button>
-                  <button type="submit" class="btn btn-primary btn-sm" [disabled]="submitting()">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="submitting()"
+                  >
                     @if (submitting()) {
                       <span class="material-icons-round spin">refresh</span>
                     } @else {
-                      <span class="material-icons-round">save</span> {{ 'common.save' | translate }}
+                      <span class="material-icons-round">save</span>
+                      {{ "common.save" | translate }}
                     }
                   </button>
                 </div>
@@ -326,22 +433,33 @@
 
             @if (showDsiDeleteConfirm()) {
               <div class="confirm-danger">
-                <span class="material-icons-round" style="color: var(--color-danger); font-size: 20px">warning</span>
+                <span
+                  class="material-icons-round"
+                  style="color: var(--color-danger); font-size: 20px"
+                  >warning</span
+                >
                 <div>
-                  <p class="text-sm" style="font-weight: 600; color: var(--color-danger)">
+                  <p
+                    class="text-sm"
+                    style="font-weight: 600; color: var(--color-danger)"
+                  >
                     Supprimer le compte DSI ?
                   </p>
                   <p class="text-sm text-muted">
-                    Cette action est irréversible. Vous pourrez créer un nouveau DSI ensuite.
+                    Cette action est irréversible. Vous pourrez créer un nouveau
+                    DSI ensuite.
                   </p>
                 </div>
                 <div class="form-actions" style="margin-top: 8px">
-                  <button class="btn btn-ghost btn-sm" (click)="cancelDsiDelete()">
-                    {{ 'common.cancel' | translate }}
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    (click)="cancelDsiDelete()"
+                  >
+                    {{ "common.cancel" | translate }}
                   </button>
                   <button class="btn btn-danger btn-sm" (click)="deleteDsi()">
                     <span class="material-icons-round">delete_forever</span>
-                    {{ 'common.confirm' | translate }}
+                    {{ "common.confirm" | translate }}
                   </button>
                 </div>
               </div>
@@ -356,19 +474,29 @@
             [class]="imf.actif ? 'btn-warning' : 'btn-success'"
             (click)="toggleActif(imf)"
           >
-            <span class="material-icons-round">{{ imf.actif ? "pause_circle" : "play_circle" }}</span>
+            <span class="material-icons-round">{{
+              imf.actif ? "pause_circle" : "play_circle"
+            }}</span>
             {{ imf.actif ? "Suspendre l'IMF" : "Réactiver l'IMF" }}
           </button>
 
           @if (!showDeleteConfirm()) {
             <button class="btn btn-danger btn-sm" (click)="confirmDelete()">
-              <span class="material-icons-round">delete_forever</span> {{ 'common.delete' | translate }} l'IMF
+              <span class="material-icons-round">delete_forever</span>
+              {{ "common.delete" | translate }} l'IMF
             </button>
           } @else {
             <div class="confirm-danger">
-              <span class="material-icons-round" style="color: var(--color-danger); font-size: 20px">warning</span>
+              <span
+                class="material-icons-round"
+                style="color: var(--color-danger); font-size: 20px"
+                >warning</span
+              >
               <div>
-                <p class="text-sm" style="font-weight: 600; color: var(--color-danger)">
+                <p
+                  class="text-sm"
+                  style="font-weight: 600; color: var(--color-danger)"
+                >
                   Supprimer définitivement <strong>{{ imf.nom }}</strong> ?
                 </p>
                 <p class="text-sm text-muted">
@@ -377,7 +505,7 @@
               </div>
               <div class="form-actions" style="margin-top: 8px">
                 <button class="btn btn-ghost btn-sm" (click)="cancelDelete()">
-                  {{ 'common.cancel' | translate }}
+                  {{ "common.cancel" | translate }}
                 </button>
                 <button class="btn btn-danger btn-sm" (click)="deleteImf()">
                   <span class="material-icons-round">delete_forever</span>
@@ -432,7 +560,9 @@
                 (input)="uppercaseCode($event)"
               />
               @if (isStepFieldInvalid("code")) {
-                <span class="field-error">Code requis (2-20 lettres majuscules/chiffres)</span>
+                <span class="field-error"
+                  >Code requis (2-20 lettres majuscules/chiffres)</span
+                >
               }
             </div>
             <div class="form-group">
@@ -489,15 +619,28 @@
             </div>
             <div class="form-group">
               <label>N° agrément</label>
-              <input type="text" class="form-control" formControlName="numAgrement" />
+              <input
+                type="text"
+                class="form-control"
+                formControlName="numAgrement"
+              />
             </div>
             <div class="form-group">
               <label>Téléphone</label>
-              <input type="tel" class="form-control" formControlName="telephone" placeholder="+237 6XX XXX XXX" />
+              <input
+                type="tel"
+                class="form-control"
+                formControlName="telephone"
+                placeholder="+237 6XX XXX XXX"
+              />
             </div>
             <div class="form-group form-group--full">
-              <label>{{ 'common.email' | translate }} institutionnel</label>
-              <input type="email" class="form-control" formControlName="email" />
+              <label>{{ "common.email" | translate }} institutionnel</label>
+              <input
+                type="email"
+                class="form-control"
+                formControlName="email"
+              />
             </div>
           </div>
         }
@@ -505,7 +648,10 @@
         @if (step() === 2) {
           <div class="form-grid">
             <div class="form-group form-group--full">
-              <label>Capital social ({{ 'common.fcfa' | translate }}) <span class="req">*</span></label>
+              <label
+                >Capital social ({{ "common.fcfa" | translate }})
+                <span class="req">*</span></label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -514,7 +660,9 @@
                 min="1"
               />
               @if (isStepFieldInvalid("capitalSocial")) {
-                <span class="field-error">Capital social requis (valeur positive)</span>
+                <span class="field-error"
+                  >Capital social requis (valeur positive)</span
+                >
               }
             </div>
             <div class="form-group form-group--full">
@@ -541,7 +689,9 @@
         @if (step() === 3) {
           <div class="form-grid">
             <div class="form-group">
-              <label>Taux d'intérêt annuel (%) <span class="req">*</span></label>
+              <label
+                >Taux d'intérêt annuel (%) <span class="req">*</span></label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -556,7 +706,10 @@
               }
             </div>
             <div class="form-group">
-              <label>Durée max crédit ({{ 'common.months' | translate }}) <span class="req">*</span></label>
+              <label
+                >Durée max crédit ({{ "common.months" | translate }})
+                <span class="req">*</span></label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -584,7 +737,10 @@
               }
             </div>
             <div class="form-group">
-              <label>Seuil de relance ({{ 'common.days' | translate }}) <span class="req">*</span></label>
+              <label
+                >Seuil de relance ({{ "common.days" | translate }})
+                <span class="req">*</span></label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -608,7 +764,9 @@
               />
             </div>
             <div class="form-group">
-              <label>Solde minimum épargne ({{ 'common.fcfa' | translate }})</label>
+              <label
+                >Solde minimum épargne ({{ "common.fcfa" | translate }})</label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -618,7 +776,11 @@
               />
             </div>
             <div class="form-group">
-              <label>Frais tenue de compte ({{ 'common.fcfa' | translate }}/mois)</label>
+              <label
+                >Frais tenue de compte ({{
+                  "common.fcfa" | translate
+                }}/mois)</label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -667,7 +829,11 @@
       </form>
 
       <div class="modal__footer">
-        <button class="btn btn-ghost" (click)="prevStep()" [disabled]="step() === 1">
+        <button
+          class="btn btn-ghost"
+          (click)="prevStep()"
+          [disabled]="step() === 1"
+        >
           <span class="material-icons-round">arrow_back</span> Précédent
         </button>
         <span class="steps__counter">Étape {{ step() }} / 4</span>
@@ -676,11 +842,16 @@
             Suivant <span class="material-icons-round">arrow_forward</span>
           </button>
         } @else {
-          <button class="btn btn-primary" (click)="submitCreate()" [disabled]="submitting()">
+          <button
+            class="btn btn-primary"
+            (click)="submitCreate()"
+            [disabled]="submitting()"
+          >
             @if (submitting()) {
               <span class="material-icons-round spin">refresh</span>
             } @else {
-              <span class="material-icons-round">check</span> {{ 'common.create' | translate }} l'IMF
+              <span class="material-icons-round">check</span>
+              {{ "common.create" | translate }} l'IMF
             }
           </button>
         }

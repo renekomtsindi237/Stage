@@ -79,19 +79,19 @@ const PHASES = [
 ];
 
 const PHASE_LABELS: Record<string, string> = {
-  RELANCE_AMIABLE:   "Relance amiable",
+  RELANCE_AMIABLE: "Relance amiable",
   MEDIATION_AMIABLE: "Médiation amiable",
-  MISE_EN_DEMEURE:   "Mise en demeure",
-  CONTENTIEUX:       "Contentieux",
-  REECHELONNEMENT:   "Rééchelonnement",
-  PERTE:             "Perte",
+  MISE_EN_DEMEURE: "Mise en demeure",
+  CONTENTIEUX: "Contentieux",
+  REECHELONNEMENT: "Rééchelonnement",
+  PERTE: "Perte",
 };
 
 const GARANTIE_LABELS: Record<string, string> = {
-  NANTISSEMENT:      "Nantissement",
-  HYPOTHEQUE:        "Hypothèque",
+  NANTISSEMENT: "Nantissement",
+  HYPOTHEQUE: "Hypothèque",
   CAUTION_SOLIDAIRE: "Caution solidaire",
-  AUTRE:             "Autre",
+  AUTRE: "Autre",
 };
 
 @Component({
@@ -177,13 +177,15 @@ export class RecCreancesComponent implements OnInit {
     };
     if (this.filterPhase()) params["phase"] = this.filterPhase();
 
-    this.api.get<Page<DossierRow>>("/api/v1/recouvrement/dossiers", params).subscribe({
-      next: (p) => {
-        this.page.set(p);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.api
+      .get<Page<DossierRow>>("/api/v1/recouvrement/dossiers", params)
+      .subscribe({
+        next: (p) => {
+          this.page.set(p);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
   get filteredContent(): DossierRow[] {
@@ -228,35 +230,42 @@ export class RecCreancesComponent implements OnInit {
     this.detailTab.set(tab);
     const d = this.selectedDossier();
     if (!d) return;
-    if (tab === "actions" && this.actions().length === 0) this.loadActions(d.uid);
+    if (tab === "actions" && this.actions().length === 0)
+      this.loadActions(d.uid);
     if (tab === "accords") this.loadAccords(d.uid);
   }
 
   loadActions(uid: string) {
     this.actionsLoading.set(true);
-    this.api.get<ActionRow[]>(`/api/v1/recouvrement/dossiers/${uid}/actions`).subscribe({
-      next: (a) => {
-        this.actions.set(a);
-        this.actionsLoading.set(false);
-      },
-      error: () => this.actionsLoading.set(false),
-    });
+    this.api
+      .get<ActionRow[]>(`/api/v1/recouvrement/dossiers/${uid}/actions`)
+      .subscribe({
+        next: (a) => {
+          this.actions.set(a);
+          this.actionsLoading.set(false);
+        },
+        error: () => this.actionsLoading.set(false),
+      });
   }
 
   loadAccords(uid: string) {
     this.accordsLoading.set(true);
-    this.api.get<AccordRow[]>(`/api/v1/recouvrement/dossiers/${uid}/accords`).subscribe({
-      next: (a) => {
-        this.accords.set(a);
-        this.accordsLoading.set(false);
-      },
-      error: () => this.accordsLoading.set(false),
-    });
+    this.api
+      .get<AccordRow[]>(`/api/v1/recouvrement/dossiers/${uid}/accords`)
+      .subscribe({
+        next: (a) => {
+          this.accords.set(a);
+          this.accordsLoading.set(false);
+        },
+        error: () => this.accordsLoading.set(false),
+      });
   }
 
   // ── Nouveau dossier ─────────────────────────────────────────────────────────
 
-  openCreate() { this.showCreate.set(true); }
+  openCreate() {
+    this.showCreate.set(true);
+  }
 
   closeCreate() {
     this.showCreate.set(false);
@@ -265,14 +274,27 @@ export class RecCreancesComponent implements OnInit {
 
   resetForm() {
     this.form = {
-      idPret: "", nomClient: "", montantImpaye: "", joursRetard: "",
-      datePremiereEcheanceImpayee: "", nomCaution: "", telephoneCaution: "", typeGarantie: "",
+      idPret: "",
+      nomClient: "",
+      montantImpaye: "",
+      joursRetard: "",
+      datePremiereEcheanceImpayee: "",
+      nomCaution: "",
+      telephoneCaution: "",
+      typeGarantie: "",
     };
   }
 
   submitCreate() {
-    if (!this.form.idPret || !this.form.montantImpaye || !this.form.joursRetard) {
-      this.toast.showError("Champs requis", "ID prêt, montant et jours de retard sont obligatoires.");
+    if (
+      !this.form.idPret ||
+      !this.form.montantImpaye ||
+      !this.form.joursRetard
+    ) {
+      this.toast.showError(
+        "Champs requis",
+        "ID prêt, montant et jours de retard sont obligatoires.",
+      );
       return;
     }
     this.saving.set(true);
@@ -281,15 +303,23 @@ export class RecCreancesComponent implements OnInit {
       montantImpaye: parseFloat(this.form.montantImpaye),
       joursRetard: parseInt(this.form.joursRetard, 10),
     };
-    if (this.form.nomClient.trim())               body["nomClient"]                    = this.form.nomClient.trim();
-    if (this.form.datePremiereEcheanceImpayee)    body["datePremiereEcheanceImpayee"]  = this.form.datePremiereEcheanceImpayee;
-    if (this.form.nomCaution.trim())              body["nomCaution"]                   = this.form.nomCaution.trim();
-    if (this.form.telephoneCaution.trim())        body["telephoneCaution"]             = this.form.telephoneCaution.trim();
-    if (this.form.typeGarantie)                   body["typeGarantie"]                 = this.form.typeGarantie;
+    if (this.form.nomClient.trim())
+      body["nomClient"] = this.form.nomClient.trim();
+    if (this.form.datePremiereEcheanceImpayee)
+      body["datePremiereEcheanceImpayee"] =
+        this.form.datePremiereEcheanceImpayee;
+    if (this.form.nomCaution.trim())
+      body["nomCaution"] = this.form.nomCaution.trim();
+    if (this.form.telephoneCaution.trim())
+      body["telephoneCaution"] = this.form.telephoneCaution.trim();
+    if (this.form.typeGarantie) body["typeGarantie"] = this.form.typeGarantie;
 
     this.api.post<DossierRow>("/api/v1/recouvrement/dossiers", body).subscribe({
       next: () => {
-        this.toast.showSuccess("Dossier ouvert", "Le dossier de recouvrement a été créé.");
+        this.toast.showSuccess(
+          "Dossier ouvert",
+          "Le dossier de recouvrement a été créé.",
+        );
         this.saving.set(false);
         this.closeCreate();
         this.load();
@@ -318,22 +348,27 @@ export class RecCreancesComponent implements OnInit {
       return;
     }
     this.escalading.set(true);
-    this.api.put<DossierRow>(`/api/v1/recouvrement/dossiers/${d.uid}/escalader`, {
-      nouvellePhase: this.escaladePhase(),
-      motif: this.escaladeMotif() || undefined,
-    }).subscribe({
-      next: () => {
-        this.toast.showSuccess("Phase mise à jour", `Dossier passé en ${this.phaseLabels[this.escaladePhase()] ?? this.escaladePhase()}.`);
-        this.escalading.set(false);
-        this.showEscalade.set(false);
-        this.closeDetail();
-        this.load();
-      },
-      error: () => {
-        this.toast.showError("Erreur", "Escalade impossible.");
-        this.escalading.set(false);
-      },
-    });
+    this.api
+      .put<DossierRow>(`/api/v1/recouvrement/dossiers/${d.uid}/escalader`, {
+        nouvellePhase: this.escaladePhase(),
+        motif: this.escaladeMotif() || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.toast.showSuccess(
+            "Phase mise à jour",
+            `Dossier passé en ${this.phaseLabels[this.escaladePhase()] ?? this.escaladePhase()}.`,
+          );
+          this.escalading.set(false);
+          this.showEscalade.set(false);
+          this.closeDetail();
+          this.load();
+        },
+        error: () => {
+          this.toast.showError("Erreur", "Escalade impossible.");
+          this.escalading.set(false);
+        },
+      });
   }
 
   // ── Clôture ─────────────────────────────────────────────────────────────────
@@ -350,19 +385,26 @@ export class RecCreancesComponent implements OnInit {
     if (!d) return;
     this.closing.set(true);
     const motif = encodeURIComponent(this.clotureMotif());
-    this.api.put<DossierRow>(`/api/v1/recouvrement/dossiers/${d.uid}/clore?motif=${motif}`).subscribe({
-      next: () => {
-        this.toast.showSuccess("Dossier clôturé", "Le dossier a été clôturé.");
-        this.closing.set(false);
-        this.showCloture.set(false);
-        this.closeDetail();
-        this.load();
-      },
-      error: () => {
-        this.toast.showError("Erreur", "Clôture impossible.");
-        this.closing.set(false);
-      },
-    });
+    this.api
+      .put<DossierRow>(
+        `/api/v1/recouvrement/dossiers/${d.uid}/clore?motif=${motif}`,
+      )
+      .subscribe({
+        next: () => {
+          this.toast.showSuccess(
+            "Dossier clôturé",
+            "Le dossier a été clôturé.",
+          );
+          this.closing.set(false);
+          this.showCloture.set(false);
+          this.closeDetail();
+          this.load();
+        },
+        error: () => {
+          this.toast.showError("Erreur", "Clôture impossible.");
+          this.closing.set(false);
+        },
+      });
   }
 
   // ── Accord de rééchelonnement ───────────────────────────────────────────────
@@ -383,14 +425,24 @@ export class RecCreancesComponent implements OnInit {
   submitAccord() {
     const d = this.selectedDossier();
     if (!d) return;
-    if (!this.accordForm.nouveauMontantMensuel || !this.accordForm.nombreNouvellesEcheances || !this.accordForm.dateDebutNouvelEcheancier) {
-      this.toast.showError("Champs requis", "Montant mensuel, nombre d'échéances et date de début sont obligatoires.");
+    if (
+      !this.accordForm.nouveauMontantMensuel ||
+      !this.accordForm.nombreNouvellesEcheances ||
+      !this.accordForm.dateDebutNouvelEcheancier
+    ) {
+      this.toast.showError(
+        "Champs requis",
+        "Montant mensuel, nombre d'échéances et date de début sont obligatoires.",
+      );
       return;
     }
     this.accordSaving.set(true);
     const body: Record<string, unknown> = {
-      nouveauMontantMensuel:    parseFloat(this.accordForm.nouveauMontantMensuel),
-      nombreNouvellesEcheances: parseInt(this.accordForm.nombreNouvellesEcheances, 10),
+      nouveauMontantMensuel: parseFloat(this.accordForm.nouveauMontantMensuel),
+      nombreNouvellesEcheances: parseInt(
+        this.accordForm.nombreNouvellesEcheances,
+        10,
+      ),
       dateDebutNouvelEcheancier: this.accordForm.dateDebutNouvelEcheancier,
     };
     if (this.accordForm.tauxInteretAnnuel)
@@ -398,30 +450,35 @@ export class RecCreancesComponent implements OnInit {
     if (this.accordForm.observations.trim())
       body["observations"] = this.accordForm.observations.trim();
 
-    this.api.post<AccordRow>(`/api/v1/recouvrement/dossiers/${d.uid}/accords`, body).subscribe({
-      next: () => {
-        this.toast.showSuccess("Accord enregistré", "L'accord de rééchelonnement a été créé.");
-        this.accordSaving.set(false);
-        this.showAccordForm.set(false);
-        this.loadAccords(d.uid);
-      },
-      error: () => {
-        this.toast.showError("Erreur", "Impossible de créer l'accord.");
-        this.accordSaving.set(false);
-      },
-    });
+    this.api
+      .post<AccordRow>(`/api/v1/recouvrement/dossiers/${d.uid}/accords`, body)
+      .subscribe({
+        next: () => {
+          this.toast.showSuccess(
+            "Accord enregistré",
+            "L'accord de rééchelonnement a été créé.",
+          );
+          this.accordSaving.set(false);
+          this.showAccordForm.set(false);
+          this.loadAccords(d.uid);
+        },
+        error: () => {
+          this.toast.showError("Erreur", "Impossible de créer l'accord.");
+          this.accordSaving.set(false);
+        },
+      });
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
   phaseClass(phase: string): string {
     const m: Record<string, string> = {
-      RELANCE_AMIABLE:   "badge-basse",
+      RELANCE_AMIABLE: "badge-basse",
       MEDIATION_AMIABLE: "badge-moyenne",
-      MISE_EN_DEMEURE:   "badge-haute",
-      CONTENTIEUX:       "badge-critique",
-      REECHELONNEMENT:   "badge-primary",
-      PERTE:             "badge-dark",
+      MISE_EN_DEMEURE: "badge-haute",
+      CONTENTIEUX: "badge-critique",
+      REECHELONNEMENT: "badge-primary",
+      PERTE: "badge-dark",
     };
     return m[phase] ?? "badge-moyenne";
   }
@@ -445,23 +502,23 @@ export class RecCreancesComponent implements OnInit {
 
   actionIcon(type: string): string {
     const m: Record<string, string> = {
-      APPEL_TELEPHONIQUE:     "call",
-      SMS_RELANCE:            "sms",
-      EMAIL_RELANCE:          "email",
-      VISITE_TERRAIN:         "directions_walk",
-      MEDIATION_CHEF_QUARTIER:"groups",
-      MEDIATION_FAMILLE:      "family_restroom",
-      CONTACT_CAUTION:        "person_search",
-      SAISIE_GARANTIE:        "gavel",
+      APPEL_TELEPHONIQUE: "call",
+      SMS_RELANCE: "sms",
+      EMAIL_RELANCE: "email",
+      VISITE_TERRAIN: "directions_walk",
+      MEDIATION_CHEF_QUARTIER: "groups",
+      MEDIATION_FAMILLE: "family_restroom",
+      CONTACT_CAUTION: "person_search",
+      SAISIE_GARANTIE: "gavel",
       MISE_EN_DEMEURE_LETTRE: "mail",
-      INTERVENTION_HUISSIER:  "account_balance",
-      COMITE_RECOUVREMENT:    "meeting_room",
-      ASSIGNATION_TRIBUNAL:   "balance",
-      ENCAISSEMENT_PARTIEL:   "payments",
-      ENCAISSEMENT_TOTAL:     "check_circle",
+      INTERVENTION_HUISSIER: "account_balance",
+      COMITE_RECOUVREMENT: "meeting_room",
+      ASSIGNATION_TRIBUNAL: "balance",
+      ENCAISSEMENT_PARTIEL: "payments",
+      ENCAISSEMENT_TOTAL: "check_circle",
       ACCORD_REECHELONNEMENT: "handshake",
-      CESSION_CREANCE:        "swap_horiz",
-      RADIATION:              "remove_circle",
+      CESSION_CREANCE: "swap_horiz",
+      RADIATION: "remove_circle",
     };
     return m[type] ?? "task_alt";
   }

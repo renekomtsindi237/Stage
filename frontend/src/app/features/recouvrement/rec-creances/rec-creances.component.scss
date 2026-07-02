@@ -74,7 +74,9 @@
   padding-top: 16px;
 }
 
-.text-danger { color: var(--color-danger); }
+.text-danger {
+  color: var(--color-danger);
+}
 
 // ── Panneau de détail ─────────────────────────────────────────────────────────
 .detail-overlay {
@@ -106,7 +108,10 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  h3 { margin: 0 0 4px; font-size: 18px; }
+  h3 {
+    margin: 0 0 4px;
+    font-size: 18px;
+  }
 }
 
 .detail-kpis {
@@ -154,7 +159,11 @@
   }
 }
 
-.info-grid { display: flex; flex-direction: column; gap: 6px; }
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .info-row {
   display: flex;
@@ -245,9 +254,13 @@
   color: var(--color-text-muted);
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
-  .material-icons-round { font-size: 16px; }
+  .material-icons-round {
+    font-size: 16px;
+  }
 
   &.active {
     color: var(--color-primary);
@@ -276,8 +289,14 @@
   color: var(--color-text-muted);
   text-align: center;
 
-  .material-icons-round { font-size: 40px; opacity: 0.5; }
-  p { margin: 0; font-size: 13px; }
+  .material-icons-round {
+    font-size: 40px;
+    opacity: 0.5;
+  }
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
 }
 
 .timeline {
@@ -326,7 +345,9 @@
   gap: 8px;
 }
 
-.timeline-content p { margin: 2px 0; }
+.timeline-content p {
+  margin: 2px 0;
+}
 
 // ── Accords rééchelonnement ───────────────────────────────────────────────────
 .accord-card {
@@ -348,7 +369,9 @@
   align-items: center;
   margin-bottom: 8px;
 
-  strong { font-size: 15px; }
+  strong {
+    font-size: 15px;
+  }
 }
 
 .accord-details {
@@ -386,7 +409,10 @@
     align-items: center;
     padding: 20px 24px 16px;
     border-bottom: 1px solid var(--color-border);
-    h3 { margin: 0; font-size: 16px; }
+    h3 {
+      margin: 0;
+      font-size: 16px;
+    }
   }
 
   &__body {
@@ -409,12 +435,20 @@
   gap: 16px;
 }
 
-.req { color: var(--color-danger); margin-left: 2px; }
+.req {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
 
 .btn-danger {
   background: var(--color-danger);
   color: white;
-  &:hover { opacity: 0.9; }
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
-.text-primary { color: var(--color-primary); text-decoration: none; }
+.text-primary {
+  color: var(--color-primary);
+  text-decoration: none;
+}

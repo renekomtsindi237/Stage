@@ -32,12 +32,12 @@ interface TeamPage {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  AGENT:                  "Agent terrain",
-  AGENT_CREDIT:           "Chargé de clientèle",
-  CHEF_AGENCE:            "Chef d'agence",
-  CAISSIER:               "Caissier",
-  AGENT_SAISIE:           "Agent de saisie",
-  ANALYSTE_ENGAGEMENTS:   "Analyste engagements",
+  AGENT: "Agent terrain",
+  AGENT_CREDIT: "Chargé de clientèle",
+  CHEF_AGENCE: "Chef d'agence",
+  CAISSIER: "Caissier",
+  AGENT_SAISIE: "Agent de saisie",
+  ANALYSTE_ENGAGEMENTS: "Analyste engagements",
 };
 
 @Component({
@@ -53,8 +53,8 @@ export class CaEquipeComponent implements OnInit {
 
   readonly roleLabels = ROLE_LABELS;
 
-  loading     = signal(true);
-  pageData    = signal<TeamPage | null>(null);
+  loading = signal(true);
+  pageData = signal<TeamPage | null>(null);
   currentPage = signal(0);
   searchQuery = signal("");
 
@@ -99,14 +99,16 @@ export class CaEquipeComponent implements OnInit {
   }
 
   roleClass(role: string): string {
-    return {
-      AGENT:                "badge-basse",
-      AGENT_CREDIT:         "badge-primary",
-      CHEF_AGENCE:          "badge-dark",
-      CAISSIER:             "badge-moyenne",
-      AGENT_SAISIE:         "badge-moyenne",
-      ANALYSTE_ENGAGEMENTS: "badge-haute",
-    }[role] ?? "badge-moyenne";
+    return (
+      {
+        AGENT: "badge-basse",
+        AGENT_CREDIT: "badge-primary",
+        CHEF_AGENCE: "badge-dark",
+        CAISSIER: "badge-moyenne",
+        AGENT_SAISIE: "badge-moyenne",
+        ANALYSTE_ENGAGEMENTS: "badge-haute",
+      }[role] ?? "badge-moyenne"
+    );
   }
 
   initials(username: string): string {

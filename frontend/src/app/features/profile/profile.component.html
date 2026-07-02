@@ -40,10 +40,10 @@
     <div class="profile-card">
       <h3 class="profile-section-title">
         <span class="material-icons-round">photo_camera</span>
-        {{ 'profile.photo_title' | translate }}
+        {{ "profile.photo_title" | translate }}
       </h3>
       <p class="profile-section-desc">
-        {{ 'profile.photo_desc' | translate }}
+        {{ "profile.photo_desc" | translate }}
       </p>
       <div class="profile-photo-actions">
         <button
@@ -52,12 +52,16 @@
           [disabled]="uploading()"
         >
           <span class="material-icons-round">upload</span>
-          {{ uploading() ? ('profile.photo_loading' | translate) : ('profile.photo_upload_btn' | translate) }}
+          {{
+            uploading()
+              ? ("profile.photo_loading" | translate)
+              : ("profile.photo_upload_btn" | translate)
+          }}
         </button>
         @if (auth.avatarUrl()) {
           <button class="btn btn-danger-outline" (click)="removeAvatar()">
             <span class="material-icons-round">delete</span>
-            {{ 'profile.photo_delete_btn' | translate }}
+            {{ "profile.photo_delete_btn" | translate }}
           </button>
         }
       </div>
@@ -75,10 +79,10 @@
       <div class="profile-card">
         <h3 class="profile-section-title">
           <span class="material-icons-round">domain</span>
-          {{ 'profile.imf_logo_title' | translate }}
+          {{ "profile.imf_logo_title" | translate }}
         </h3>
         <p class="profile-section-desc">
-          {{ 'profile.imf_logo_desc' | translate }}
+          {{ "profile.imf_logo_desc" | translate }}
         </p>
         <div class="profile-imf-logo-preview">
           <img
@@ -96,7 +100,11 @@
             [disabled]="uploadingImfLogo()"
           >
             <span class="material-icons-round">upload</span>
-            {{ uploadingImfLogo() ? ('profile.imf_logo_uploading' | translate) : ('profile.imf_logo_btn' | translate) }}
+            {{
+              uploadingImfLogo()
+                ? ("profile.imf_logo_uploading" | translate)
+                : ("profile.imf_logo_btn" | translate)
+            }}
           </button>
         </div>
         <input
@@ -113,20 +121,26 @@
     <div class="profile-card">
       <h3 class="profile-section-title">
         <span class="material-icons-round">person</span>
-        {{ 'profile.info_title' | translate }}
+        {{ "profile.info_title" | translate }}
       </h3>
       <div class="profile-info-grid">
         <div class="profile-info-item">
-          <span class="profile-info-label">{{ 'profile.info_username' | translate }}</span>
+          <span class="profile-info-label">{{
+            "profile.info_username" | translate
+          }}</span>
           <span class="profile-info-value">{{ user?.username }}</span>
         </div>
         <div class="profile-info-item">
-          <span class="profile-info-label">{{ 'profile.info_role' | translate }}</span>
+          <span class="profile-info-label">{{
+            "profile.info_role" | translate
+          }}</span>
           <span class="profile-info-value">{{ roleLabel }}</span>
         </div>
         @if (user?.imfCode) {
           <div class="profile-info-item">
-            <span class="profile-info-label">{{ 'profile.info_imf_code' | translate }}</span>
+            <span class="profile-info-label">{{
+              "profile.info_imf_code" | translate
+            }}</span>
             <span class="profile-info-value profile-info-value--badge">{{
               user?.imfCode
             }}</span>
@@ -134,7 +148,9 @@
         }
         @if (user?.imfNom) {
           <div class="profile-info-item">
-            <span class="profile-info-label">{{ 'profile.info_institution' | translate }}</span>
+            <span class="profile-info-label">{{
+              "profile.info_institution" | translate
+            }}</span>
             <span class="profile-info-value">{{ user?.imfNom }}</span>
           </div>
         }
@@ -145,14 +161,14 @@
     <div class="profile-card profile-card--danger">
       <h3 class="profile-section-title profile-section-title--danger">
         <span class="material-icons-round">logout</span>
-        {{ 'profile.logout_title' | translate }}
+        {{ "profile.logout_title" | translate }}
       </h3>
       <p class="profile-section-desc">
-        {{ 'profile.logout_desc' | translate }}
+        {{ "profile.logout_desc" | translate }}
       </p>
       <button class="btn btn-danger" (click)="logout()">
         <span class="material-icons-round">logout</span>
-        {{ 'profile.logout_btn' | translate }}
+        {{ "profile.logout_btn" | translate }}
       </button>
     </div>
   </div>

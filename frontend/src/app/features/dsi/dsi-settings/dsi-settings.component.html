@@ -2,9 +2,11 @@
   <!-- Header -->
   <div class="page-header">
     <div>
-      <h2>{{ 'dsi_settings.title' | translate }}</h2>
+      <h2>{{ "dsi_settings.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ 'dsi_settings.imf_info_desc' | translate }} — {{ imfName }} ({{ imfCode }})
+        {{ "dsi_settings.imf_info_desc" | translate }} — {{ imfName }} ({{
+          imfCode
+        }})
       </p>
     </div>
   </div>
@@ -16,9 +18,9 @@
         <span class="material-icons-round">image</span>
       </div>
       <div>
-        <h3>{{ 'dsi_settings.logo_title' | translate }}</h3>
+        <h3>{{ "dsi_settings.logo_title" | translate }}</h3>
         <p class="text-muted text-sm">
-          {{ 'dsi_settings.logo_desc' | translate }} · max {{ MAX_SIZE_MB }} Mo
+          {{ "dsi_settings.logo_desc" | translate }} · max {{ MAX_SIZE_MB }} Mo
         </p>
       </div>
     </div>
@@ -26,7 +28,9 @@
     <div class="logo-layout">
       <!-- Aperçu courant -->
       <div class="logo-preview-col">
-        <div class="logo-preview-label">{{ 'dsi_settings.logo_preview' | translate }}</div>
+        <div class="logo-preview-label">
+          {{ "dsi_settings.logo_preview" | translate }}
+        </div>
         <div class="logo-preview-frame">
           <img
             [src]="previewUrl() ?? currentLogoUrl ?? 'assets/bank.png'"
@@ -50,7 +54,7 @@
               style="font-size: 13px; color: #6366f1"
               >cloud_done</span
             >
-            {{ 'dsi_settings.logo_cdn' | translate }}
+            {{ "dsi_settings.logo_cdn" | translate }}
           </div>
         }
       </div>
@@ -85,11 +89,14 @@
                 <span class="material-icons-round">cloud_upload</span>
               </div>
               <p class="drop-title">
-                {{ 'dsi_settings.logo_drop_title' | translate }}
-                <span class="drop-link">{{ 'dsi_settings.logo_drop_link' | translate }}</span>
+                {{ "dsi_settings.logo_drop_title" | translate }}
+                <span class="drop-link">{{
+                  "dsi_settings.logo_drop_link" | translate
+                }}</span>
               </p>
               <p class="drop-hint">
-                {{ 'dsi_settings.logo_drop_hint' | translate }} {{ MAX_SIZE_MB }} Mo
+                {{ "dsi_settings.logo_drop_hint" | translate }}
+                {{ MAX_SIZE_MB }} Mo
               </p>
               @if (upload().phase === "error") {
                 <p class="drop-error-msg">
@@ -98,7 +105,7 @@
                     style="font-size: 14px; vertical-align: middle"
                     >error_outline</span
                   >
-                  {{ 'dsi_settings.logo_drop_error' | translate }}
+                  {{ "dsi_settings.logo_drop_error" | translate }}
                 </p>
               }
             </div>
@@ -127,8 +134,8 @@
               <p class="drop-title" style="margin-top: 12px">
                 {{
                   upload().phase === "reading"
-                    ? ('dsi_settings.logo_reading' | translate)
-                    : ('dsi_settings.logo_uploading' | translate)
+                    ? ("dsi_settings.logo_reading" | translate)
+                    : ("dsi_settings.logo_uploading" | translate)
                 }}
               </p>
             </div>
@@ -138,7 +145,7 @@
                 <span class="material-icons-round">check_circle</span>
               </div>
               <p class="drop-title" style="color: #059669">
-                {{ 'dsi_settings.logo_done' | translate }}
+                {{ "dsi_settings.logo_done" | translate }}
               </p>
             </div>
           }
@@ -148,15 +155,15 @@
         <div class="tech-info">
           <div class="tech-row">
             <span class="material-icons-round">storage</span>
-            <span>{{ 'dsi_settings.logo_tech_storage' | translate }}</span>
+            <span>{{ "dsi_settings.logo_tech_storage" | translate }}</span>
           </div>
           <div class="tech-row">
             <span class="material-icons-round">autorenew</span>
-            <span>{{ 'dsi_settings.logo_tech_visible' | translate }}</span>
+            <span>{{ "dsi_settings.logo_tech_visible" | translate }}</span>
           </div>
           <div class="tech-row">
             <span class="material-icons-round">aspect_ratio</span>
-            <span>{{ 'dsi_settings.logo_tech_size' | translate }}</span>
+            <span>{{ "dsi_settings.logo_tech_size" | translate }}</span>
           </div>
         </div>
       </div>
@@ -170,25 +177,31 @@
         <span class="material-icons-round">business</span>
       </div>
       <div>
-        <h3>{{ 'dsi_settings.imf_info_title' | translate }}</h3>
+        <h3>{{ "dsi_settings.imf_info_title" | translate }}</h3>
         <p class="text-muted text-sm">
-          {{ 'dsi_settings.imf_info_desc' | translate }}
+          {{ "dsi_settings.imf_info_desc" | translate }}
         </p>
       </div>
     </div>
     <div class="info-grid">
       <div class="info-row">
-        <span class="info-label">{{ 'dsi_settings.imf_info_name' | translate }}</span>
+        <span class="info-label">{{
+          "dsi_settings.imf_info_name" | translate
+        }}</span>
         <span class="info-value">{{ imfName }}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">{{ 'dsi_settings.imf_info_code' | translate }}</span>
+        <span class="info-label">{{
+          "dsi_settings.imf_info_code" | translate
+        }}</span>
         <span class="info-value">
           <code>{{ imfCode }}</code>
         </span>
       </div>
       <div class="info-row">
-        <span class="info-label">{{ 'dsi_settings.imf_info_role' | translate }}</span>
+        <span class="info-label">{{
+          "dsi_settings.imf_info_role" | translate
+        }}</span>
         <span class="info-value">
           <span class="role-badge">DSI</span>
         </span>
@@ -203,20 +216,32 @@
         <span class="material-icons-round">phone_android</span>
       </div>
       <div>
-        <h3>{{ 'dsi_settings.mtn_title' | translate }}</h3>
+        <h3>{{ "dsi_settings.mtn_title" | translate }}</h3>
         <p class="text-muted text-sm">
-          {{ 'dsi_settings.mtn_desc' | translate }}
+          {{ "dsi_settings.mtn_desc" | translate }}
         </p>
       </div>
     </div>
 
     @if (paymentConfig()) {
       <div class="payment-status-row">
-        <span class="badge" [ngClass]="paymentConfig()!.mtnActif ? 'badge-success' : 'badge-secondary'">
-          {{ paymentConfig()!.mtnActif ? ('dsi_settings.mtn_status_active' | translate) : ('dsi_settings.mtn_status_inactive' | translate) }}
+        <span
+          class="badge"
+          [ngClass]="
+            paymentConfig()!.mtnActif ? 'badge-success' : 'badge-secondary'
+          "
+        >
+          {{
+            paymentConfig()!.mtnActif
+              ? ("dsi_settings.mtn_status_active" | translate)
+              : ("dsi_settings.mtn_status_inactive" | translate)
+          }}
         </span>
         @if (paymentConfig()!.updatedAt) {
-          <span class="text-muted text-xs">Mis à jour le {{ paymentConfig()!.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="text-muted text-xs"
+            >Mis à jour le
+            {{ paymentConfig()!.updatedAt | date: "dd/MM/yyyy HH:mm" }}</span
+          >
         }
       </div>
 
@@ -224,19 +249,26 @@
         @if (paymentConfig()!.mtnApiKeyMasked) {
           <div class="masked-key-chip">
             <span class="material-icons-round">vpn_key</span>
-            {{ 'dsi_settings.mtn_api_key' | translate }} : <code>{{ paymentConfig()!.mtnApiKeyMasked }}</code>
+            {{ "dsi_settings.mtn_api_key" | translate }} :
+            <code>{{ paymentConfig()!.mtnApiKeyMasked }}</code>
           </div>
         }
         @if (paymentConfig()!.mtnSubscriptionKeyCollectionMasked) {
           <div class="masked-key-chip">
             <span class="material-icons-round">vpn_key</span>
-            {{ 'dsi_settings.mtn_coll_key' | translate }} : <code>{{ paymentConfig()!.mtnSubscriptionKeyCollectionMasked }}</code>
+            {{ "dsi_settings.mtn_coll_key" | translate }} :
+            <code>{{
+              paymentConfig()!.mtnSubscriptionKeyCollectionMasked
+            }}</code>
           </div>
         }
         @if (paymentConfig()!.mtnSubscriptionKeyDisbursementMasked) {
           <div class="masked-key-chip">
             <span class="material-icons-round">vpn_key</span>
-            {{ 'dsi_settings.mtn_disb_key' | translate }} : <code>{{ paymentConfig()!.mtnSubscriptionKeyDisbursementMasked }}</code>
+            {{ "dsi_settings.mtn_disb_key" | translate }} :
+            <code>{{
+              paymentConfig()!.mtnSubscriptionKeyDisbursementMasked
+            }}</code>
           </div>
         }
       </div>
@@ -245,68 +277,121 @@
     <form [formGroup]="mtnForm" (ngSubmit)="saveMtn()" class="payment-form">
       <div class="form-row-3">
         <div class="form-group">
-          <label>{{ 'dsi_settings.mtn_form_env' | translate }}</label>
+          <label>{{ "dsi_settings.mtn_form_env" | translate }}</label>
           <select class="form-control" formControlName="mtnEnvironment">
-            <option value="sandbox">{{ 'dsi_settings.mtn_sandbox' | translate }}</option>
-            <option value="production">{{ 'dsi_settings.mtn_production' | translate }}</option>
+            <option value="sandbox">
+              {{ "dsi_settings.mtn_sandbox" | translate }}
+            </option>
+            <option value="production">
+              {{ "dsi_settings.mtn_production" | translate }}
+            </option>
           </select>
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.mtn_base_url' | translate }}</label>
-          <input type="url" class="form-control" formControlName="mtnBaseUrl"
-                 placeholder="https://sandbox.momodeveloper.mtn.com" />
+          <label>{{ "dsi_settings.mtn_base_url" | translate }}</label>
+          <input
+            type="url"
+            class="form-control"
+            formControlName="mtnBaseUrl"
+            placeholder="https://sandbox.momodeveloper.mtn.com"
+          />
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.mtn_api_user' | translate }}</label>
-          <input type="text" class="form-control" formControlName="mtnApiUser"
-                 placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+          <label>{{ "dsi_settings.mtn_api_user" | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="mtnApiUser"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          />
         </div>
       </div>
 
       <div class="form-row-3">
         <div class="form-group">
-          <label>{{ 'dsi_settings.mtn_api_key_label' | translate }} <span class="text-muted text-xs">({{ 'dsi_settings.mtn_keep_hint' | translate }})</span></label>
+          <label
+            >{{ "dsi_settings.mtn_api_key_label" | translate }}
+            <span class="text-muted text-xs"
+              >({{ "dsi_settings.mtn_keep_hint" | translate }})</span
+            ></label
+          >
           <div class="input-secret-wrap">
-            <input [type]="showMtnKey() ? 'text' : 'password'" class="form-control"
-                   formControlName="mtnApiKey" [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate" />
-            <button type="button" class="btn-reveal" (click)="showMtnKey.set(!showMtnKey())">
-              <span class="material-icons-round">{{ showMtnKey() ? 'visibility_off' : 'visibility' }}</span>
+            <input
+              [type]="showMtnKey() ? 'text' : 'password'"
+              class="form-control"
+              formControlName="mtnApiKey"
+              [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate"
+            />
+            <button
+              type="button"
+              class="btn-reveal"
+              (click)="showMtnKey.set(!showMtnKey())"
+            >
+              <span class="material-icons-round">{{
+                showMtnKey() ? "visibility_off" : "visibility"
+              }}</span>
             </button>
           </div>
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.mtn_coll_key_label' | translate }} <span class="text-muted text-xs">({{ 'dsi_settings.mtn_keep_hint' | translate }})</span></label>
-          <input type="password" class="form-control"
-                 formControlName="mtnSubscriptionKeyCollection" [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate" />
+          <label
+            >{{ "dsi_settings.mtn_coll_key_label" | translate }}
+            <span class="text-muted text-xs"
+              >({{ "dsi_settings.mtn_keep_hint" | translate }})</span
+            ></label
+          >
+          <input
+            type="password"
+            class="form-control"
+            formControlName="mtnSubscriptionKeyCollection"
+            [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate"
+          />
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.mtn_disb_key_label' | translate }} <span class="text-muted text-xs">({{ 'dsi_settings.mtn_keep_hint' | translate }})</span></label>
-          <input type="password" class="form-control"
-                 formControlName="mtnSubscriptionKeyDisbursement" [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate" />
+          <label
+            >{{ "dsi_settings.mtn_disb_key_label" | translate }}
+            <span class="text-muted text-xs"
+              >({{ "dsi_settings.mtn_keep_hint" | translate }})</span
+            ></label
+          >
+          <input
+            type="password"
+            class="form-control"
+            formControlName="mtnSubscriptionKeyDisbursement"
+            [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate"
+          />
         </div>
       </div>
 
       <div class="form-group">
-        <label>{{ 'dsi_settings.mtn_callback' | translate }}</label>
-        <input type="url" class="form-control" formControlName="mtnCallbackUrl"
-               placeholder="https://votre-domaine.cm/api/v1/callbacks/mtn" />
+        <label>{{ "dsi_settings.mtn_callback" | translate }}</label>
+        <input
+          type="url"
+          class="form-control"
+          formControlName="mtnCallbackUrl"
+          placeholder="https://votre-domaine.cm/api/v1/callbacks/mtn"
+        />
       </div>
 
       <div class="form-group toggle-row">
         <label class="toggle-label">
           <input type="checkbox" formControlName="mtnActif" />
-          <span>{{ 'dsi_settings.mtn_activate' | translate }}</span>
+          <span>{{ "dsi_settings.mtn_activate" | translate }}</span>
         </label>
       </div>
 
       <div class="payment-form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="paymentSaving()">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="paymentSaving()"
+        >
           @if (paymentSaving()) {
             <span class="material-icons-round spin">refresh</span>
           } @else {
             <span class="material-icons-round">save</span>
           }
-          {{ 'dsi_settings.mtn_save_btn' | translate }}
+          {{ "dsi_settings.mtn_save_btn" | translate }}
         </button>
       </div>
     </form>
@@ -319,17 +404,26 @@
         <span class="material-icons-round">phone_android</span>
       </div>
       <div>
-        <h3>{{ 'dsi_settings.orange_title' | translate }}</h3>
+        <h3>{{ "dsi_settings.orange_title" | translate }}</h3>
         <p class="text-muted text-sm">
-          {{ 'dsi_settings.orange_desc' | translate }}
+          {{ "dsi_settings.orange_desc" | translate }}
         </p>
       </div>
     </div>
 
     @if (paymentConfig()) {
       <div class="payment-status-row">
-        <span class="badge" [ngClass]="paymentConfig()!.orangeActif ? 'badge-success' : 'badge-secondary'">
-          {{ paymentConfig()!.orangeActif ? ('dsi_settings.mtn_status_active' | translate) : ('dsi_settings.mtn_status_inactive' | translate) }}
+        <span
+          class="badge"
+          [ngClass]="
+            paymentConfig()!.orangeActif ? 'badge-success' : 'badge-secondary'
+          "
+        >
+          {{
+            paymentConfig()!.orangeActif
+              ? ("dsi_settings.mtn_status_active" | translate)
+              : ("dsi_settings.mtn_status_inactive" | translate)
+          }}
         </span>
       </div>
 
@@ -337,100 +431,168 @@
         @if (paymentConfig()!.orangeMerchantKeyMasked) {
           <div class="masked-key-chip">
             <span class="material-icons-round">vpn_key</span>
-            {{ 'dsi_settings.orange_merchant_key' | translate }} : <code>{{ paymentConfig()!.orangeMerchantKeyMasked }}</code>
+            {{ "dsi_settings.orange_merchant_key" | translate }} :
+            <code>{{ paymentConfig()!.orangeMerchantKeyMasked }}</code>
           </div>
         }
         @if (paymentConfig()!.orangeClientSecretMasked) {
           <div class="masked-key-chip">
             <span class="material-icons-round">vpn_key</span>
-            {{ 'dsi_settings.orange_client_secret' | translate }} : <code>{{ paymentConfig()!.orangeClientSecretMasked }}</code>
+            {{ "dsi_settings.orange_client_secret" | translate }} :
+            <code>{{ paymentConfig()!.orangeClientSecretMasked }}</code>
           </div>
         }
       </div>
     }
 
-    <form [formGroup]="orangeForm" (ngSubmit)="saveOrange()" class="payment-form">
+    <form
+      [formGroup]="orangeForm"
+      (ngSubmit)="saveOrange()"
+      class="payment-form"
+    >
       <div class="form-row-3">
         <div class="form-group">
-          <label>{{ 'dsi_settings.orange_env' | translate }}</label>
+          <label>{{ "dsi_settings.orange_env" | translate }}</label>
           <select class="form-control" formControlName="orangeEnvironment">
-            <option value="sandbox">{{ 'dsi_settings.mtn_sandbox' | translate }}</option>
-            <option value="production">{{ 'dsi_settings.mtn_production' | translate }}</option>
+            <option value="sandbox">
+              {{ "dsi_settings.mtn_sandbox" | translate }}
+            </option>
+            <option value="production">
+              {{ "dsi_settings.mtn_production" | translate }}
+            </option>
           </select>
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.orange_base_url' | translate }}</label>
-          <input type="url" class="form-control" formControlName="orangeBaseUrl"
-                 placeholder="https://api.orange.com/orange-money-webpay/cm/v1" />
+          <label>{{ "dsi_settings.orange_base_url" | translate }}</label>
+          <input
+            type="url"
+            class="form-control"
+            formControlName="orangeBaseUrl"
+            placeholder="https://api.orange.com/orange-money-webpay/cm/v1"
+          />
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.orange_client_id' | translate }}</label>
-          <input type="text" class="form-control" formControlName="orangeClientId"
-                 placeholder="votre_client_id" />
-        </div>
-      </div>
-
-      <div class="form-row-3">
-        <div class="form-group">
-          <label>{{ 'dsi_settings.orange_merchant_key_label' | translate }} <span class="text-muted text-xs">({{ 'dsi_settings.mtn_keep_hint' | translate }})</span></label>
-          <div class="input-secret-wrap">
-            <input [type]="showOrangeMerchantKey() ? 'text' : 'password'" class="form-control"
-                   formControlName="orangeMerchantKey" [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate" />
-            <button type="button" class="btn-reveal" (click)="showOrangeMerchantKey.set(!showOrangeMerchantKey())">
-              <span class="material-icons-round">{{ showOrangeMerchantKey() ? 'visibility_off' : 'visibility' }}</span>
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>{{ 'dsi_settings.orange_secret' | translate }} <span class="text-muted text-xs">({{ 'dsi_settings.mtn_keep_hint' | translate }})</span></label>
-          <div class="input-secret-wrap">
-            <input [type]="showOrangeClientSecret() ? 'text' : 'password'" class="form-control"
-                   formControlName="orangeClientSecret" [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate" />
-            <button type="button" class="btn-reveal" (click)="showOrangeClientSecret.set(!showOrangeClientSecret())">
-              <span class="material-icons-round">{{ showOrangeClientSecret() ? 'visibility_off' : 'visibility' }}</span>
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>{{ 'dsi_settings.orange_merchant_code' | translate }}</label>
-          <input type="text" class="form-control" formControlName="orangeMerchantCode"
-                 placeholder="CM-XXXXXX" />
+          <label>{{ "dsi_settings.orange_client_id" | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="orangeClientId"
+            placeholder="votre_client_id"
+          />
         </div>
       </div>
 
       <div class="form-row-3">
         <div class="form-group">
-          <label>{{ 'dsi_settings.orange_return_url' | translate }}</label>
-          <input type="url" class="form-control" formControlName="orangeReturnUrl"
-                 placeholder="https://votre-domaine.cm/paiement/retour" />
+          <label
+            >{{ "dsi_settings.orange_merchant_key_label" | translate }}
+            <span class="text-muted text-xs"
+              >({{ "dsi_settings.mtn_keep_hint" | translate }})</span
+            ></label
+          >
+          <div class="input-secret-wrap">
+            <input
+              [type]="showOrangeMerchantKey() ? 'text' : 'password'"
+              class="form-control"
+              formControlName="orangeMerchantKey"
+              [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate"
+            />
+            <button
+              type="button"
+              class="btn-reveal"
+              (click)="showOrangeMerchantKey.set(!showOrangeMerchantKey())"
+            >
+              <span class="material-icons-round">{{
+                showOrangeMerchantKey() ? "visibility_off" : "visibility"
+              }}</span>
+            </button>
+          </div>
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.orange_cancel_url' | translate }}</label>
-          <input type="url" class="form-control" formControlName="orangeCancelUrl"
-                 placeholder="https://votre-domaine.cm/paiement/annule" />
+          <label
+            >{{ "dsi_settings.orange_secret" | translate }}
+            <span class="text-muted text-xs"
+              >({{ "dsi_settings.mtn_keep_hint" | translate }})</span
+            ></label
+          >
+          <div class="input-secret-wrap">
+            <input
+              [type]="showOrangeClientSecret() ? 'text' : 'password'"
+              class="form-control"
+              formControlName="orangeClientSecret"
+              [placeholder]="'dsi_settings.mtn_api_key_placeholder' | translate"
+            />
+            <button
+              type="button"
+              class="btn-reveal"
+              (click)="showOrangeClientSecret.set(!showOrangeClientSecret())"
+            >
+              <span class="material-icons-round">{{
+                showOrangeClientSecret() ? "visibility_off" : "visibility"
+              }}</span>
+            </button>
+          </div>
         </div>
         <div class="form-group">
-          <label>{{ 'dsi_settings.orange_notif_url' | translate }}</label>
-          <input type="url" class="form-control" formControlName="orangeNotifUrl"
-                 placeholder="https://votre-domaine.cm/api/v1/callbacks/orange" />
+          <label>{{ "dsi_settings.orange_merchant_code" | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="orangeMerchantCode"
+            placeholder="CM-XXXXXX"
+          />
+        </div>
+      </div>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label>{{ "dsi_settings.orange_return_url" | translate }}</label>
+          <input
+            type="url"
+            class="form-control"
+            formControlName="orangeReturnUrl"
+            placeholder="https://votre-domaine.cm/paiement/retour"
+          />
+        </div>
+        <div class="form-group">
+          <label>{{ "dsi_settings.orange_cancel_url" | translate }}</label>
+          <input
+            type="url"
+            class="form-control"
+            formControlName="orangeCancelUrl"
+            placeholder="https://votre-domaine.cm/paiement/annule"
+          />
+        </div>
+        <div class="form-group">
+          <label>{{ "dsi_settings.orange_notif_url" | translate }}</label>
+          <input
+            type="url"
+            class="form-control"
+            formControlName="orangeNotifUrl"
+            placeholder="https://votre-domaine.cm/api/v1/callbacks/orange"
+          />
         </div>
       </div>
 
       <div class="form-group toggle-row">
         <label class="toggle-label">
           <input type="checkbox" formControlName="orangeActif" />
-          <span>{{ 'dsi_settings.orange_activate' | translate }}</span>
+          <span>{{ "dsi_settings.orange_activate" | translate }}</span>
         </label>
       </div>
 
       <div class="payment-form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="paymentSaving()">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="paymentSaving()"
+        >
           @if (paymentSaving()) {
             <span class="material-icons-round spin">refresh</span>
           } @else {
             <span class="material-icons-round">save</span>
           }
-          {{ 'dsi_settings.orange_save_btn' | translate }}
+          {{ "dsi_settings.orange_save_btn" | translate }}
         </button>
       </div>
     </form>

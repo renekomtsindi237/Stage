@@ -3,13 +3,13 @@
     <button class="btn btn-ghost" routerLink="/agent">
       <span class="material-icons-round">arrow_back</span>
     </button>
-    <h3>{{ 'collecte.title' | translate }}</h3>
+    <h3>{{ "collecte.title" | translate }}</h3>
   </header>
 
   @if (saved()) {
     <div class="success-overlay">
       <span class="material-icons-round">check_circle</span>
-      <p>{{ 'collecte.saved' | translate }}</p>
+      <p>{{ "collecte.saved" | translate }}</p>
     </div>
   }
 
@@ -22,7 +22,7 @@
   <div class="collecte-content">
     <!-- Client search -->
     <div class="form-group">
-      <label>{{ 'common.name' | translate }}</label>
+      <label>{{ "common.name" | translate }}</label>
       @if (!selectedClient()) {
         <div class="search-bar">
           <span class="material-icons-round">search</span>
@@ -38,8 +38,9 @@
               <div class="client-result" (click)="select(c)">
                 <p class="font-semibold">{{ c.nomClient }}</p>
                 <p class="text-sm text-muted">
-                  {{ c.idClient }} · {{ 'collecte.solde' | translate }}:
-                  {{ c.encours | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
+                  {{ c.idClient }} · {{ "collecte.solde" | translate }}:
+                  {{ c.encours | number: "1.0-0" }}
+                  {{ "common.fcfa" | translate }}
                 </p>
               </div>
             }
@@ -52,15 +53,17 @@
               {{ selectedClient()!.nomClient }}
             </p>
             <p class="text-sm text-muted">
-              {{ selectedClient()!.idClient }} · {{ 'collecte.solde' | translate }}:
-              {{ selectedClient()!.encours | number: "1.0-0" }} {{ 'common.fcfa' | translate }}
+              {{ selectedClient()!.idClient }} ·
+              {{ "collecte.solde" | translate }}:
+              {{ selectedClient()!.encours | number: "1.0-0" }}
+              {{ "common.fcfa" | translate }}
             </p>
           </div>
           <button
             class="btn btn-ghost btn-sm"
             (click)="selectedClient.set(null)"
           >
-            {{ 'collecte.change' | translate }}
+            {{ "collecte.change" | translate }}
           </button>
         </div>
       }
@@ -69,7 +72,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <!-- Montant -->
       <div class="form-group">
-        <label>{{ 'collecte.montant_label' | translate }}</label>
+        <label>{{ "collecte.montant_label" | translate }}</label>
         <input
           type="number"
           class="form-control montant-input"
@@ -81,7 +84,7 @@
 
       <!-- Type opération -->
       <div class="form-group">
-        <label>{{ 'collecte.type_operation' | translate }}</label>
+        <label>{{ "collecte.type_operation" | translate }}</label>
         <div class="type-toggle">
           <button
             type="button"
@@ -89,7 +92,7 @@
             [class.active]="typeOp === 'EPARGNE'"
             (click)="setType('EPARGNE')"
           >
-            {{ 'collecte.epargne' | translate }}
+            {{ "collecte.epargne" | translate }}
           </button>
           <button
             type="button"
@@ -97,7 +100,7 @@
             [class.active]="typeOp === 'REMBOURSEMENT'"
             (click)="setType('REMBOURSEMENT')"
           >
-            {{ 'collecte.remboursement' | translate }}
+            {{ "collecte.remboursement" | translate }}
           </button>
         </div>
       </div>
@@ -111,10 +114,10 @@
               style="font-size: 14px; vertical-align: middle"
               >location_on</span
             >
-            {{ 'collecte.gps_label' | translate }}
+            {{ "collecte.gps_label" | translate }}
           </p>
           <p class="text-sm text-muted">
-            {{ 'collecte.gps_hint' | translate }}
+            {{ "collecte.gps_hint" | translate }}
           </p>
         </div>
         <label class="toggle">
@@ -136,7 +139,7 @@
         @if (loading()) {
           <span class="material-icons-round spin">refresh</span>
         } @else {
-          {{ 'common.save' | translate }}
+          {{ "common.save" | translate }}
         }
       </button>
     </form>

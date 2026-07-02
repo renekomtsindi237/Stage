@@ -1,9 +1,10 @@
 <div class="page-content">
   <div class="page-header">
     <div>
-      <h2>{{ 'ca_equipe.title' | translate }}</h2>
+      <h2>{{ "ca_equipe.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ loading() ? '…' : (pageData()?.totalElements ?? 0) }} {{ 'ca_equipe.subtitle' | translate }}
+        {{ loading() ? "…" : (pageData()?.totalElements ?? 0) }}
+        {{ "ca_equipe.subtitle" | translate }}
       </p>
     </div>
   </div>
@@ -23,12 +24,15 @@
   <!-- Grille membres -->
   @if (loading()) {
     <div class="members-grid">
-      @for (_ of [1,2,3,4,5,6]; track $index) {
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
         <div class="member-card skeleton-card">
           <div class="skeleton avatar-skeleton"></div>
-          <div style="flex:1">
-            <div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div>
-            <div class="skeleton" style="height:12px;width:80%"></div>
+          <div style="flex: 1">
+            <div
+              class="skeleton"
+              style="height: 14px; width: 60%; margin-bottom: 8px"
+            ></div>
+            <div class="skeleton" style="height: 12px; width: 80%"></div>
           </div>
         </div>
       }
@@ -36,7 +40,7 @@
   } @else if (members().length === 0) {
     <div class="empty-state">
       <span class="material-icons-round">group_off</span>
-      <p>{{ 'ca_equipe.empty' | translate }}</p>
+      <p>{{ "ca_equipe.empty" | translate }}</p>
     </div>
   } @else {
     <div class="members-grid">
@@ -53,19 +57,25 @@
                 {{ roleLabel(m.role) }}
               </span>
               @if (!m.actif) {
-                <span class="badge badge-sm badge-critique">{{ 'ca_equipe.inactive' | translate }}</span>
+                <span class="badge badge-sm badge-critique">{{
+                  "ca_equipe.inactive" | translate
+                }}</span>
               }
             </div>
             @if (m.email) {
               <div class="member-email">
-                <span class="material-icons-round" style="font-size:13px">mail</span>
+                <span class="material-icons-round" style="font-size: 13px"
+                  >mail</span
+                >
                 {{ m.email }}
               </div>
             }
             @if (m.zoneId) {
               <div class="member-zone">
-                <span class="material-icons-round" style="font-size:13px">location_on</span>
-                {{ 'ca_equipe.zone_prefix' | translate }} {{ m.zoneId }}
+                <span class="material-icons-round" style="font-size: 13px"
+                  >location_on</span
+                >
+                {{ "ca_equipe.zone_prefix" | translate }} {{ m.zoneId }}
               </div>
             }
           </div>
@@ -74,10 +84,13 @@
           <div class="member-login">
             @if (m.lastLogin) {
               <span class="text-sm text-muted">
-                {{ 'ca_equipe.last_login' | translate }} {{ m.lastLogin | date: "dd/MM/yy" }}
+                {{ "ca_equipe.last_login" | translate }}
+                {{ m.lastLogin | date: "dd/MM/yy" }}
               </span>
             } @else {
-              <span class="text-sm text-muted">{{ 'ca_equipe.never' | translate }}</span>
+              <span class="text-sm text-muted">{{
+                "ca_equipe.never" | translate
+              }}</span>
             }
           </div>
         </div>
@@ -95,7 +108,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm text-muted">
-          {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ pageData()?.totalPages }}
+          {{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ pageData()?.totalPages }}
         </span>
         <button
           class="btn btn-ghost btn-sm"

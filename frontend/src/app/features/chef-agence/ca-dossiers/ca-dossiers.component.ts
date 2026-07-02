@@ -57,22 +57,22 @@ interface AgentPage {
 }
 
 const STATUT_LABELS: Record<string, string> = {
-  INSTRUCTION:  "Instruction",
-  EN_COMITE:    "En comité",
-  VALIDE:       "Validé",
-  APPROUVE:     "Approuvé",
-  REJETE:       "Rejeté",
-  AJOURNE:      "Ajourné",
-  DEBLOQUE:     "Débloqué",
+  INSTRUCTION: "Instruction",
+  EN_COMITE: "En comité",
+  VALIDE: "Validé",
+  APPROUVE: "Approuvé",
+  REJETE: "Rejeté",
+  AJOURNE: "Ajourné",
+  DEBLOQUE: "Débloqué",
 };
 
 const STATUT_TABS = [
-  { label: "Tous",        value: "" },
-  { label: "En comité",   value: "EN_COMITE" },
-  { label: "Validés",     value: "VALIDE" },
+  { label: "Tous", value: "" },
+  { label: "En comité", value: "EN_COMITE" },
+  { label: "Validés", value: "VALIDE" },
   { label: "Instruction", value: "INSTRUCTION" },
-  { label: "Rejetés",     value: "REJETE" },
-  { label: "Débloqués",   value: "DEBLOQUE" },
+  { label: "Rejetés", value: "REJETE" },
+  { label: "Débloqués", value: "DEBLOQUE" },
 ];
 
 @Component({
@@ -84,35 +84,35 @@ const STATUT_TABS = [
   styleUrls: ["./ca-dossiers.component.scss"],
 })
 export class CaDossiersComponent implements OnInit {
-  private readonly api   = inject(ApiService);
+  private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
 
-  readonly tabs       = STATUT_TABS;
+  readonly tabs = STATUT_TABS;
   readonly statutLabels = STATUT_LABELS;
 
   // ── List state ─────────────────────────────────────────────────────────────
-  loading     = signal(true);
-  pageData    = signal<DossierPage | null>(null);
-  activeTab   = signal("");
+  loading = signal(true);
+  pageData = signal<DossierPage | null>(null);
+  activeTab = signal("");
   currentPage = signal(0);
   searchQuery = signal("");
 
   readonly rows = computed(() => this.pageData()?.content ?? []);
 
   // ── Detail panel ───────────────────────────────────────────────────────────
-  selected     = signal<DossierRow | null>(null);
-  validating   = signal(false);
+  selected = signal<DossierRow | null>(null);
+  validating = signal(false);
   motifRejeter = signal("");
-  showMotif    = signal(false);
+  showMotif = signal(false);
 
   // ── Réassignation modal ────────────────────────────────────────────────────
-  showReassign    = signal(false);
-  agents          = signal<AgentItem[]>([]);
-  agentsLoading   = signal(false);
+  showReassign = signal(false);
+  agents = signal<AgentItem[]>([]);
+  agentsLoading = signal(false);
   selectedAgentUid = signal("");
-  reassignMotif   = signal("");
-  reassigning     = signal(false);
+  reassignMotif = signal("");
+  reassigning = signal(false);
 
   ngOnInit() {
     // Lire le paramètre ?statut= de l'URL (lien depuis dashboard)
@@ -124,11 +124,12 @@ export class CaDossiersComponent implements OnInit {
 
   load() {
     this.loading.set(true);
-    const params: Record<string, string | number | boolean | null | undefined> = {
-      page: this.currentPage(),
-      size: 20,
-      statut: this.activeTab() || undefined,
-    };
+    const params: Record<string, string | number | boolean | null | undefined> =
+      {
+        page: this.currentPage(),
+        size: 20,
+        statut: this.activeTab() || undefined,
+      };
 
     this.api.get<DossierPage>("/api/v1/dossiers-credit", params).subscribe({
       next: (p) => {
@@ -182,7 +183,9 @@ export class CaDossiersComponent implements OnInit {
         next: () => {
           this.toast.showSuccess(
             "Décision enregistrée",
-            decision === "VALIDE" ? "Dossier validé avec succès." : "Dossier rejeté.",
+            decision === "VALIDE"
+              ? "Dossier validé avec succès."
+              : "Dossier rejeté.",
           );
           this.validating.set(false);
           this.showMotif.set(false);
@@ -204,15 +207,17 @@ export class CaDossiersComponent implements OnInit {
 
   loadAgents() {
     this.agentsLoading.set(true);
-    this.api.get<AgentPage>("/api/v1/chef-agence/equipe", { size: 100 }).subscribe({
-      next: (p) => {
-        this.agents.set(
-          p.content.filter((a) => a.role === "AGENT_CREDIT" && a.actif),
-        );
-        this.agentsLoading.set(false);
-      },
-      error: () => this.agentsLoading.set(false),
-    });
+    this.api
+      .get<AgentPage>("/api/v1/chef-agence/equipe", { size: 100 })
+      .subscribe({
+        next: (p) => {
+          this.agents.set(
+            p.content.filter((a) => a.role === "AGENT_CREDIT" && a.actif),
+          );
+          this.agentsLoading.set(false);
+        },
+        error: () => this.agentsLoading.set(false),
+      });
   }
 
   submitReassign() {
@@ -227,7 +232,10 @@ export class CaDossiersComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.toast.showSuccess("Réassignation", "Dossier réassigné avec succès.");
+          this.toast.showSuccess(
+            "Réassignation",
+            "Dossier réassigné avec succès.",
+          );
           this.reassigning.set(false);
           this.showReassign.set(false);
           this.selected.set(null);
@@ -252,15 +260,17 @@ export class CaDossiersComponent implements OnInit {
   }
 
   statutClass(s: string): string {
-    return {
-      INSTRUCTION: "badge-moyenne",
-      EN_COMITE:   "badge-primary",
-      VALIDE:      "badge-basse",
-      APPROUVE:    "badge-basse",
-      REJETE:      "badge-critique",
-      AJOURNE:     "badge-haute",
-      DEBLOQUE:    "badge-dark",
-    }[s] ?? "badge-moyenne";
+    return (
+      {
+        INSTRUCTION: "badge-moyenne",
+        EN_COMITE: "badge-primary",
+        VALIDE: "badge-basse",
+        APPROUVE: "badge-basse",
+        REJETE: "badge-critique",
+        AJOURNE: "badge-haute",
+        DEBLOQUE: "badge-dark",
+      }[s] ?? "badge-moyenne"
+    );
   }
 
   canValidate(d: DossierRow): boolean {

@@ -15,11 +15,7 @@
 DO $$
 DECLARE
     v_imf_id   BIGINT;
-    v_ag_yde   BIGINT;
     v_uid      BIGINT;
-
-    -- Tableau des agents à créer
-    v_agents   TEXT[][];
 
 BEGIN
     SELECT id INTO v_imf_id FROM app.imf WHERE code = 'FINANCE';
@@ -28,15 +24,11 @@ BEGIN
         RETURN;
     END IF;
 
-    SELECT id INTO v_ag_yde FROM app.agences
-        WHERE imf_id = v_imf_id ORDER BY id LIMIT 1;
-
     -- ── 1. Créer les 5 agents ──────────────────────────────────────────────
 
     -- agent.melen — Melen, autour du marché central
     INSERT INTO app.utilisateurs
         (username, password_hash, role, email, imf_id, actif,
-         nom_complet, agence_id,
          latitude, longitude, precision_gps_m,
          derniere_position_at, position_active,
          must_change_password, created_at, updated_at)
@@ -44,7 +36,6 @@ BEGIN
            '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
            'AGENT', 'agent.melen@finance-sarl.cm',
            v_imf_id, TRUE,
-           'NKEMENI Paul', v_ag_yde,
            3.8603, 11.5189, 8.0,
            NOW() - INTERVAL '4 minutes', TRUE,
            FALSE, NOW(), NOW()
@@ -55,7 +46,6 @@ BEGIN
     -- agent.bastos — Bastos, rue du marché
     INSERT INTO app.utilisateurs
         (username, password_hash, role, email, imf_id, actif,
-         nom_complet, agence_id,
          latitude, longitude, precision_gps_m,
          derniere_position_at, position_active,
          must_change_password, created_at, updated_at)
@@ -63,7 +53,6 @@ BEGIN
            '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
            'AGENT', 'agent.bastos@finance-sarl.cm',
            v_imf_id, TRUE,
-           'OYONO Marie-Claire', v_ag_yde,
            3.8821, 11.5102, 10.5,
            NOW() - INTERVAL '11 minutes', TRUE,
            FALSE, NOW(), NOW()
@@ -74,7 +63,6 @@ BEGIN
     -- agent.mvogada — Mvog-Ada, marché populaire
     INSERT INTO app.utilisateurs
         (username, password_hash, role, email, imf_id, actif,
-         nom_complet, agence_id,
          latitude, longitude, precision_gps_m,
          derniere_position_at, position_active,
          must_change_password, created_at, updated_at)
@@ -82,7 +70,6 @@ BEGIN
            '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
            'AGENT', 'agent.mvogada@finance-sarl.cm',
            v_imf_id, TRUE,
-           'ABESSOLO Bernadette', v_ag_yde,
            3.8462, 11.5247, 14.0,
            NOW() - INTERVAL '22 minutes', FALSE,
            FALSE, NOW(), NOW()
@@ -93,7 +80,6 @@ BEGIN
     -- agent.omnisport — Omnisport, zone commerciale Warda
     INSERT INTO app.utilisateurs
         (username, password_hash, role, email, imf_id, actif,
-         nom_complet, agence_id,
          latitude, longitude, precision_gps_m,
          derniere_position_at, position_active,
          must_change_password, created_at, updated_at)
@@ -101,7 +87,6 @@ BEGIN
            '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
            'AGENT', 'agent.omnisport@finance-sarl.cm',
            v_imf_id, TRUE,
-           'BIYA Roger', v_ag_yde,
            3.8553, 11.5318, 6.5,
            NOW() - INTERVAL '7 minutes', TRUE,
            FALSE, NOW(), NOW()
@@ -112,7 +97,6 @@ BEGIN
     -- agent.briqueterie — Briqueterie, marché Islam
     INSERT INTO app.utilisateurs
         (username, password_hash, role, email, imf_id, actif,
-         nom_complet, agence_id,
          latitude, longitude, precision_gps_m,
          derniere_position_at, position_active,
          must_change_password, created_at, updated_at)
@@ -120,7 +104,6 @@ BEGIN
            '$2a$10$q2VY3tvpvfCV4R5WRr7BReWFXbyvcnOp3Hv1Y.jTYa7T06bzuDpGW',
            'AGENT', 'agent.briqueterie@finance-sarl.cm',
            v_imf_id, TRUE,
-           'TCHAMOU Fatima', v_ag_yde,
            3.8735, 11.5154, 11.0,
            NOW() - INTERVAL '3 minutes', TRUE,
            FALSE, NOW(), NOW()

@@ -2,7 +2,7 @@
   <!-- En-tête -->
   <div class="page-header">
     <div>
-      <h2>{{ 'dsi_audit.title' | translate }}</h2>
+      <h2>{{ "dsi_audit.title" | translate }}</h2>
       <p class="text-muted text-sm">
         Piste d'audit immuable · {{ totalElements() | number }} entrée(s)
       </p>
@@ -17,9 +17,9 @@
   >
     <div class="audit-filters__grid">
       <div class="form-group">
-        <label>{{ 'dsi_audit.filter_action' | translate }}</label>
+        <label>{{ "dsi_audit.filter_action" | translate }}</label>
         <select class="form-control" formControlName="entiteType">
-          <option value="">{{ 'common.all' | translate }}</option>
+          <option value="">{{ "common.all" | translate }}</option>
           @for (t of entiteTypes; track t) {
             <option [value]="t">{{ t }}</option>
           }
@@ -27,9 +27,9 @@
       </div>
 
       <div class="form-group">
-        <label>{{ 'dsi_audit.col_action' | translate }}</label>
+        <label>{{ "dsi_audit.col_action" | translate }}</label>
         <select class="form-control" formControlName="action">
-          <option value="">{{ 'common.all' | translate }}</option>
+          <option value="">{{ "common.all" | translate }}</option>
           @for (a of actions; track a) {
             <option [value]="a">{{ a }}</option>
           }
@@ -37,7 +37,7 @@
       </div>
 
       <div class="form-group">
-        <label>{{ 'dsi_audit.col_user' | translate }}</label>
+        <label>{{ "dsi_audit.col_user" | translate }}</label>
         <input
           type="text"
           class="form-control"
@@ -58,7 +58,8 @@
 
       <div class="audit-filters__actions">
         <button type="submit" class="btn btn-primary">
-          <span class="material-icons-round">search</span> {{ 'common.search' | translate }}
+          <span class="material-icons-round">search</span>
+          {{ "common.search" | translate }}
         </button>
         <button type="button" class="btn btn-ghost" (click)="reset()">
           <span class="material-icons-round">clear</span>
@@ -74,12 +75,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>{{ 'dsi_audit.col_timestamp' | translate }}</th>
-            <th>{{ 'dsi_audit.col_user' | translate }}</th>
-            <th>{{ 'common.role' | translate }}</th>
-            <th>{{ 'dsi_audit.col_action' | translate }}</th>
-            <th>{{ 'dsi_audit.col_entity' | translate }}</th>
-            <th>{{ 'common.status' | translate }}</th>
+            <th>{{ "dsi_audit.col_timestamp" | translate }}</th>
+            <th>{{ "dsi_audit.col_user" | translate }}</th>
+            <th>{{ "common.role" | translate }}</th>
+            <th>{{ "dsi_audit.col_action" | translate }}</th>
+            <th>{{ "dsi_audit.col_entity" | translate }}</th>
+            <th>{{ "common.status" | translate }}</th>
             <th></th>
           </tr>
         </thead>
@@ -89,7 +90,10 @@
               <tr>
                 @for (__ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
                   <td>
-                    <div class="skeleton" style="height: 14px; width: 80%"></div>
+                    <div
+                      class="skeleton"
+                      style="height: 14px; width: 80%"
+                    ></div>
                   </td>
                 }
               </tr>
@@ -98,7 +102,7 @@
             <tr>
               <td colspan="7" class="audit-empty">
                 <span class="material-icons-round">manage_search</span>
-                <p>{{ 'common.empty' | translate }}</p>
+                <p>{{ "common.empty" | translate }}</p>
               </td>
             </tr>
           } @else {
@@ -114,25 +118,42 @@
                 <td class="font-semibold">{{ entry.acteurUsername }}</td>
                 <td class="text-sm text-muted">{{ entry.acteurRole }}</td>
                 <td>
-                  <span class="badge" [class]="actionBadgeClass(entry.action)">{{ entry.action }}</span>
+                  <span
+                    class="badge"
+                    [class]="actionBadgeClass(entry.action)"
+                    >{{ entry.action }}</span
+                  >
                 </td>
                 <td>
                   <span class="audit-entite">{{ entry.entiteType }}</span>
                   @if (entry.entiteId) {
-                    <span class="text-sm text-muted">#{{ entry.entiteId }}</span>
+                    <span class="text-sm text-muted"
+                      >#{{ entry.entiteId }}</span
+                    >
                   }
                 </td>
                 <td>
                   <span
                     class="badge"
-                    [class]="entry.statut === 'SUCCES' ? 'badge-success' : 'badge-danger'"
+                    [class]="
+                      entry.statut === 'SUCCES'
+                        ? 'badge-success'
+                        : 'badge-danger'
+                    "
                   >
                     {{ entry.statut }}
                   </span>
                 </td>
                 <td>
-                  <span class="material-icons-round text-muted" style="font-size: 18px">
-                    {{ selected()?.id === entry.id ? "expand_less" : "expand_more" }}
+                  <span
+                    class="material-icons-round text-muted"
+                    style="font-size: 18px"
+                  >
+                    {{
+                      selected()?.id === entry.id
+                        ? "expand_less"
+                        : "expand_more"
+                    }}
                   </span>
                 </td>
               </tr>
@@ -160,15 +181,23 @@
                         </div>
                       }
                       @if (entry.ancienneValeur) {
-                        <div class="audit-detail__item audit-detail__item--full">
+                        <div
+                          class="audit-detail__item audit-detail__item--full"
+                        >
                           <label>Ancienne valeur</label>
-                          <pre class="audit-json">{{ jsonPreview(entry.ancienneValeur) }}</pre>
+                          <pre class="audit-json">{{
+                            jsonPreview(entry.ancienneValeur)
+                          }}</pre>
                         </div>
                       }
                       @if (entry.nouvelleValeur) {
-                        <div class="audit-detail__item audit-detail__item--full">
+                        <div
+                          class="audit-detail__item audit-detail__item--full"
+                        >
                           <label>Nouvelle valeur</label>
-                          <pre class="audit-json">{{ jsonPreview(entry.nouvelleValeur) }}</pre>
+                          <pre class="audit-json">{{
+                            jsonPreview(entry.nouvelleValeur)
+                          }}</pre>
                         </div>
                       }
                     </div>
@@ -207,8 +236,8 @@
             <span class="material-icons-round">chevron_right</span>
           </button>
           <span class="audit-pagination__info">
-            {{ 'common.page' | translate }} {{ currentPage() + 1 }} / {{ totalPages() }} ·
-            {{ totalElements() | number }} résultats
+            {{ "common.page" | translate }} {{ currentPage() + 1 }} /
+            {{ totalPages() }} · {{ totalElements() | number }} résultats
           </span>
         </div>
       }
