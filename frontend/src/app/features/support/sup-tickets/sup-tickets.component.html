@@ -17,7 +17,7 @@
         [class.active]="activeTab() === tab"
         (click)="switchTab(tab)"
       >
-        {{ tab }}
+        {{ "sup_tickets.tab_" + tab | translate }}
       </button>
     }
   </div>
