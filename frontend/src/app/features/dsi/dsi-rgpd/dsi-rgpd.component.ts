@@ -55,12 +55,12 @@ export class DsiRgpdComponent implements OnInit {
     return this.data()?.conformite ?? 0;
   }
   readonly checklistItems = [
-    { label: "Registre de traitement des données à jour", ok: true },
-    { label: "DPO désigné et notifié à l'autorité compétente", ok: true },
-    { label: "Analyses d'impact réalisées (DPIA)", ok: false },
-    { label: "Procédure de gestion des violations", ok: true },
-    { label: "Clauses contractuelles sous-traitants", ok: true },
-    { label: "Mécanisme de portabilité des données", ok: false },
+    { label: "dsi_rgpd.checklist_registre", ok: true },
+    { label: "dsi_rgpd.checklist_dpo", ok: true },
+    { label: "dsi_rgpd.checklist_dpia", ok: false },
+    { label: "dsi_rgpd.checklist_violations", ok: true },
+    { label: "dsi_rgpd.checklist_clauses", ok: true },
+    { label: "dsi_rgpd.checklist_portabilite", ok: false },
   ];
 
   get conformiteClass() {

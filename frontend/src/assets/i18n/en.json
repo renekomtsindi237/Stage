@@ -555,7 +555,11 @@
     "nav_rgpd_title": "GDPR Compliance",
     "nav_rgpd_pending": "pending requests",
     "nav_monitoring_title": "Monitoring",
-    "nav_monitoring_desc": "Service health and recent connections"
+    "nav_monitoring_desc": "Service health and recent connections",
+    "ind_users": "Active users",
+    "ind_violations": "Open violations",
+    "ind_rgpd": "GDPR requests",
+    "ind_alertes": "System alerts"
   },
   "dsi_settings": {
     "title": "MFI Settings",
@@ -613,7 +617,8 @@
     "orange_cancel_url": "Cancel URL",
     "orange_notif_url": "Notification URL",
     "orange_activate": "Activate Orange Money for this institution",
-    "orange_save_btn": "Save Orange Money"
+    "orange_save_btn": "Save Orange Money",
+    "updated_at": "Updated on"
   },
   "dsi_users": {
     "title": "User management",
@@ -649,7 +654,8 @@
     "modal_delete_body": "Do you really want to delete the account",
     "modal_delete_irreversible": "? This action is irreversible.",
     "modal_delete_cancel": "Cancel",
-    "modal_delete_confirm": "Delete"
+    "modal_delete_confirm": "Delete",
+    "users_suffix": "user(s)"
   },
   "dsi_audit": {
     "title": "Audit Trail",
@@ -661,7 +667,8 @@
     "col_user": "User",
     "col_action": "Action",
     "col_entity": "Entity",
-    "col_entity_id": "Entity ID"
+    "col_entity_id": "Entity ID",
+    "events_suffix": "event(s) recorded"
   },
   "dsi_monitoring": {
     "title": "System Monitoring",
@@ -696,7 +703,26 @@
     "trigger_title": "Trigger this DAG",
     "no_dag": "No DAG found",
     "logs_recents": "Recent logs",
-    "load_avg": "Load avg."
+    "load_avg": "Load avg.",
+    "subtitle": "MFI health",
+    "refresh_btn": "Refresh",
+    "kpi_users": "Active users",
+    "kpi_connections": "Today's connections",
+    "kpi_failed": "Failed attempts",
+    "kpi_storage": "Storage used",
+    "status_label": "Overall status",
+    "status_last_sync": "Last synchronisation:",
+    "storage_label": "Disk space",
+    "empty": "Health data unavailable",
+    "logins_title": "Recent logins",
+    "col_user": "User",
+    "col_role": "Role",
+    "col_time": "Time",
+    "col_ip": "IP address",
+    "col_result": "Result",
+    "login_success": "Success",
+    "login_failure": "Failed",
+    "logins_empty": "No recent logins"
   },
   "dsi_rgpd": {
     "title": "GDPR / Law 2024/017 Compliance",
@@ -716,7 +742,13 @@
     "retention_title": "Data retention",
     "retention_anomaly": "retention anomaly(ies) detected. Some data exceeds the legal retention period.",
     "retention_ok": "All data is within legal retention periods.",
-    "checklist_title": "COBAC Checklist"
+    "checklist_title": "COBAC Checklist",
+    "checklist_registre": "Data processing register up to date",
+    "checklist_dpo": "DPO designated and notified to the competent authority",
+    "checklist_dpia": "Impact assessments completed (DPIA)",
+    "checklist_violations": "Violation management procedure",
+    "checklist_clauses": "Contractual clauses for sub-processors",
+    "checklist_portabilite": "Data portability mechanism"
   },
   "anl_dashboard": {
     "title": "Analyst Dashboard",

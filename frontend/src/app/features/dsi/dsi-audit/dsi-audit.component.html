@@ -3,7 +3,8 @@
     <div>
       <h2>{{ "dsi_audit.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} événements enregistrés
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "dsi_audit.events_suffix" | translate }}
       </p>
     </div>
     <button class="btn btn-ghost" (click)="exportCsv()">
@@ -86,7 +87,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"

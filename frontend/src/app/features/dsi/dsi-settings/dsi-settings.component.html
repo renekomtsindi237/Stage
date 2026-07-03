@@ -154,10 +154,6 @@
         <!-- Infos techniques -->
         <div class="tech-info">
           <div class="tech-row">
-            <span class="material-icons-round">storage</span>
-            <span>{{ "dsi_settings.logo_tech_storage" | translate }}</span>
-          </div>
-          <div class="tech-row">
             <span class="material-icons-round">autorenew</span>
             <span>{{ "dsi_settings.logo_tech_visible" | translate }}</span>
           </div>
@@ -239,7 +235,7 @@
         </span>
         @if (paymentConfig()!.updatedAt) {
           <span class="text-muted text-xs"
-            >Mis à jour le
+            >{{ "dsi_settings.updated_at" | translate }}
             {{ paymentConfig()!.updatedAt | date: "dd/MM/yyyy HH:mm" }}</span
           >
         }

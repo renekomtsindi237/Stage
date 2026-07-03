@@ -3,7 +3,8 @@
     <div>
       <h2>{{ "dsi_users.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} utilisateurs
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "dsi_users.users_suffix" | translate }}
       </p>
     </div>
     <button class="btn btn-primary" (click)="showModal.set(true)">
@@ -67,8 +68,8 @@
                 >
                   {{
                     u.actif
-                      ? ("dsi_users.btn_reactivate" | translate)
-                      : ("dsi_users.btn_disable" | translate)
+                      ? ("common.active" | translate)
+                      : ("common.inactive" | translate)
                   }}
                 </span>
               </td>
@@ -117,7 +118,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"

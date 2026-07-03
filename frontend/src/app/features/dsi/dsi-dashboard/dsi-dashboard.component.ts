@@ -63,28 +63,28 @@ export class DsiDashboardComponent implements OnInit {
     );
     return [
       {
-        label: "Utilisateurs actifs",
+        label: "dsi_dashboard.ind_users",
         value: d.utilisateursActifs,
         pct: Math.round((d.utilisateursActifs / max) * 100),
         color: "#4f46e5",
         icon: "group",
       },
       {
-        label: "Violations ouvertes",
+        label: "dsi_dashboard.ind_violations",
         value: d.violationsOuvertes,
         pct: Math.round((d.violationsOuvertes / max) * 100),
         color: d.violationsOuvertes > 0 ? "#dc2626" : "#059669",
         icon: "warning",
       },
       {
-        label: "Demandes RGPD",
+        label: "dsi_dashboard.ind_rgpd",
         value: d.demandesDroits,
         pct: Math.round((d.demandesDroits / max) * 100),
         color: d.demandesDroits > 0 ? "#d97706" : "#059669",
         icon: "gavel",
       },
       {
-        label: "Alertes système",
+        label: "dsi_dashboard.ind_alertes",
         value: d.alertesSysteme,
         pct:
           d.alertesSysteme > 0

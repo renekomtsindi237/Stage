@@ -555,7 +555,11 @@
     "nav_rgpd_title": "Conformité RGPD",
     "nav_rgpd_pending": "demandes en attente",
     "nav_monitoring_title": "Monitoring",
-    "nav_monitoring_desc": "Santé des services et connexions récentes"
+    "nav_monitoring_desc": "Santé des services et connexions récentes",
+    "ind_users": "Utilisateurs actifs",
+    "ind_violations": "Violations ouvertes",
+    "ind_rgpd": "Demandes RGPD",
+    "ind_alertes": "Alertes système"
   },
   "dsi_settings": {
     "title": "Paramètres IMF",
@@ -613,7 +617,8 @@
     "orange_cancel_url": "Cancel URL",
     "orange_notif_url": "Notification URL",
     "orange_activate": "Activer Orange Money pour cette institution",
-    "orange_save_btn": "Enregistrer Orange Money"
+    "orange_save_btn": "Enregistrer Orange Money",
+    "updated_at": "Mis à jour le"
   },
   "dsi_users": {
     "title": "Gestion des utilisateurs",
@@ -649,7 +654,8 @@
     "modal_delete_body": "Voulez-vous vraiment supprimer le compte",
     "modal_delete_irreversible": "? Cette action est irréversible.",
     "modal_delete_cancel": "Annuler",
-    "modal_delete_confirm": "Supprimer"
+    "modal_delete_confirm": "Supprimer",
+    "users_suffix": "utilisateur(s)"
   },
   "dsi_audit": {
     "title": "Audit Trail",
@@ -661,7 +667,8 @@
     "col_user": "Utilisateur",
     "col_action": "Action",
     "col_entity": "Entité",
-    "col_entity_id": "ID Entité"
+    "col_entity_id": "ID Entité",
+    "events_suffix": "événement(s) enregistré(s)"
   },
   "dsi_monitoring": {
     "title": "Monitoring Système",
@@ -696,7 +703,26 @@
     "trigger_title": "Déclencher ce DAG",
     "no_dag": "Aucun DAG trouvé",
     "logs_recents": "Logs récents",
-    "load_avg": "Charge moy."
+    "load_avg": "Charge moy.",
+    "subtitle": "Santé de l'IMF",
+    "refresh_btn": "Actualiser",
+    "kpi_users": "Utilisateurs actifs",
+    "kpi_connections": "Connexions aujourd'hui",
+    "kpi_failed": "Tentatives échouées",
+    "kpi_storage": "Stockage utilisé",
+    "status_label": "Statut global",
+    "status_last_sync": "Dernière synchronisation :",
+    "storage_label": "Espace disque",
+    "empty": "Données de santé indisponibles",
+    "logins_title": "Connexions récentes",
+    "col_user": "Utilisateur",
+    "col_role": "Rôle",
+    "col_time": "Heure",
+    "col_ip": "Adresse IP",
+    "col_result": "Résultat",
+    "login_success": "Succès",
+    "login_failure": "Échec",
+    "logins_empty": "Aucune connexion récente"
   },
   "dsi_rgpd": {
     "title": "Conformité RGPD / Loi 2024/017",
@@ -716,7 +742,13 @@
     "retention_title": "Rétention des données",
     "retention_anomaly": "anomalie(s) de rétention détectée(s). Des données dépassent la durée légale de conservation.",
     "retention_ok": "Toutes les données sont dans les délais légaux de conservation.",
-    "checklist_title": "Checklist COBAC"
+    "checklist_title": "Checklist COBAC",
+    "checklist_registre": "Registre de traitement des données à jour",
+    "checklist_dpo": "DPO désigné et notifié à l'autorité compétente",
+    "checklist_dpia": "Analyses d'impact réalisées (DPIA)",
+    "checklist_violations": "Procédure de gestion des violations",
+    "checklist_clauses": "Clauses contractuelles sous-traitants",
+    "checklist_portabilite": "Mécanisme de portabilité des données"
   },
   "anl_dashboard": {
     "title": "Dashboard Analyste",
