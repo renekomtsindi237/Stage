@@ -4,7 +4,9 @@
     <div>
       <h2>{{ "dsi_audit.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        Piste d'audit immuable · {{ totalElements() | number }} entrée(s)
+        {{ "platform_audit.subtitle" | translate }} ·
+        {{ totalElements() | number }}
+        {{ "platform_audit.entries_suffix" | translate }}
       </p>
     </div>
   </div>
@@ -47,12 +49,12 @@
       </div>
 
       <div class="form-group">
-        <label>Date début</label>
+        <label>{{ "platform_audit.label_date_debut" | translate }}</label>
         <input type="date" class="form-control" formControlName="debut" />
       </div>
 
       <div class="form-group">
-        <label>Date fin</label>
+        <label>{{ "platform_audit.label_date_fin" | translate }}</label>
         <input type="date" class="form-control" formControlName="fin" />
       </div>
 
@@ -164,19 +166,25 @@
                     <div class="audit-detail">
                       @if (entry.motif) {
                         <div class="audit-detail__item">
-                          <label>Motif</label>
+                          <label>{{
+                            "platform_audit.detail_motif" | translate
+                          }}</label>
                           <p>{{ entry.motif }}</p>
                         </div>
                       }
                       @if (entry.ipClient) {
                         <div class="audit-detail__item">
-                          <label>IP client</label>
+                          <label>{{
+                            "platform_audit.detail_ip" | translate
+                          }}</label>
                           <p>{{ entry.ipClient }}</p>
                         </div>
                       }
                       @if (entry.imfId) {
                         <div class="audit-detail__item">
-                          <label>IMF ID</label>
+                          <label>{{
+                            "platform_audit.detail_imf_id" | translate
+                          }}</label>
                           <p>{{ entry.imfId }}</p>
                         </div>
                       }
@@ -184,7 +192,9 @@
                         <div
                           class="audit-detail__item audit-detail__item--full"
                         >
-                          <label>Ancienne valeur</label>
+                          <label>{{
+                            "platform_audit.detail_ancienne_val" | translate
+                          }}</label>
                           <pre class="audit-json">{{
                             jsonPreview(entry.ancienneValeur)
                           }}</pre>
@@ -194,7 +204,9 @@
                         <div
                           class="audit-detail__item audit-detail__item--full"
                         >
-                          <label>Nouvelle valeur</label>
+                          <label>{{
+                            "platform_audit.detail_nouvelle_val" | translate
+                          }}</label>
                           <pre class="audit-json">{{
                             jsonPreview(entry.nouvelleValeur)
                           }}</pre>
@@ -237,7 +249,8 @@
           </button>
           <span class="audit-pagination__info">
             {{ "common.page" | translate }} {{ currentPage() + 1 }} /
-            {{ totalPages() }} · {{ totalElements() | number }} résultats
+            {{ totalPages() }} · {{ totalElements() | number }}
+            {{ "platform_audit.results_suffix" | translate }}
           </span>
         </div>
       }

@@ -4,7 +4,8 @@
     <div>
       <h2>{{ "platform.nav_imf_title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ imfs().length }} institution(s) enregistrée(s)
+        {{ imfs().length }}
+        {{ "platform_imfs.institutions_suffix" | translate }}
       </p>
     </div>
     <button class="btn btn-primary" (click)="openCreate()">
@@ -143,36 +144,40 @@
             <span class="detail-section__icon" style="background: #4f46e5">
               <span class="material-icons-round">apartment</span>
             </span>
-            Constitution
+            {{ "platform_imfs.section_constitution" | translate }}
           </div>
           <div class="detail-grid">
             <div class="detail-field">
-              <label>Dénomination sociale</label>
+              <label>{{
+                "platform_imfs.field_denomination" | translate
+              }}</label>
               <p>{{ imf.denominationSociale }}</p>
             </div>
             <div class="detail-field">
-              <label>Forme juridique</label>
+              <label>{{
+                "platform_imfs.field_forme_juridique" | translate
+              }}</label>
               <p>{{ imf.formeJuridique }}</p>
             </div>
             <div class="detail-field">
-              <label>Adresse du siège</label>
+              <label>{{ "platform_imfs.field_adresse" | translate }}</label>
               <p>{{ imf.adresseSiege }}</p>
             </div>
             <div class="detail-field">
-              <label>Capital social</label>
+              <label>{{ "platform_imfs.field_capital" | translate }}</label>
               <p class="detail-field__value--money">
                 {{ formatCapital(imf.capitalSocial) }}
               </p>
             </div>
             @if (imf.numAgrement) {
               <div class="detail-field">
-                <label>N° agrément</label>
+                <label>{{ "platform_imfs.field_agrement" | translate }}</label>
                 <p>{{ imf.numAgrement }}</p>
               </div>
             }
             @if (imf.telephone) {
               <div class="detail-field">
-                <label>Téléphone</label>
+                <label>{{ "platform_imfs.field_telephone" | translate }}</label>
                 <p>{{ imf.telephone }}</p>
               </div>
             }
@@ -191,29 +196,35 @@
             <span class="detail-section__icon" style="background: #0891b2">
               <span class="material-icons-round">account_balance</span>
             </span>
-            Paramètres crédit
+            {{ "platform_imfs.section_credit" | translate }}
           </div>
           <div class="detail-grid">
             <div class="detail-field">
-              <label>Taux d'intérêt annuel</label>
+              <label>{{
+                "platform_imfs.field_taux_interet" | translate
+              }}</label>
               <p class="detail-field__value--rate">
                 {{ imf.tauxInteretAnnuel }}%
               </p>
             </div>
             <div class="detail-field">
-              <label>Durée max crédit</label>
+              <label>{{ "platform_imfs.field_duree_max" | translate }}</label>
               <p>
                 {{ imf.dureeMaxCreditMois }} {{ "common.months" | translate }}
               </p>
             </div>
             <div class="detail-field">
-              <label>Taux pénalité retard</label>
+              <label>{{
+                "platform_imfs.field_taux_penalite" | translate
+              }}</label>
               <p class="detail-field__value--rate">
                 {{ imf.tauxPenaliteRetard }}%
               </p>
             </div>
             <div class="detail-field">
-              <label>Seuil de relance</label>
+              <label>{{
+                "platform_imfs.field_seuil_relance" | translate
+              }}</label>
               <p>{{ imf.seuilRelanceJours }} {{ "common.days" | translate }}</p>
             </div>
           </div>
@@ -225,19 +236,19 @@
             <span class="detail-section__icon" style="background: #059669">
               <span class="material-icons-round">settings</span>
             </span>
-            Paramètres opérationnels
+            {{ "platform_imfs.section_ops" | translate }}
           </div>
           <div class="detail-grid">
             <div class="detail-field">
-              <label>Taille max KYC</label>
+              <label>{{ "platform_imfs.field_max_kyc" | translate }}</label>
               <p>{{ formatBytes(imf.maxDocumentKycOctets) }}</p>
             </div>
             <div class="detail-field">
-              <label>Niveau KYC minimal</label>
+              <label>{{ "platform_imfs.field_niveau_kyc" | translate }}</label>
               <p>{{ imf.niveauKycMinimal ?? "NIVEAU_1" }}</p>
             </div>
             <div class="detail-field">
-              <label>Max tentatives connexion</label>
+              <label>{{ "platform_imfs.field_max_login" | translate }}</label>
               <p>{{ imf.maxTentativesConnexion ?? 5 }}</p>
             </div>
           </div>
@@ -249,18 +260,17 @@
             <span class="detail-section__icon" style="background: #7c3aed">
               <span class="material-icons-round">manage_accounts</span>
             </span>
-            Administrateur DSI
+            {{ "platform_imfs.section_dsi" | translate }}
           </div>
 
           @if (!imf.hasDsi) {
             <p class="text-muted text-sm" style="margin-bottom: 12px">
-              Aucun compte DSI associé. Créez-en un pour permettre
-              l'administration de cette IMF.
+              {{ "platform_imfs.dsi_none_msg" | translate }}
             </p>
             @if (!showDsiForm()) {
               <button class="btn btn-secondary btn-sm" (click)="openDsiForm()">
-                <span class="material-icons-round">person_add</span> Créer le
-                compte DSI
+                <span class="material-icons-round">person_add</span>
+                {{ "platform_imfs.dsi_create_btn" | translate }}
               </button>
             } @else {
               <form
@@ -268,7 +278,9 @@
                 (ngSubmit)="submitDsi()"
                 class="dsi-form"
               >
-                <div class="dsi-form__title">Nouveau compte DSI</div>
+                <div class="dsi-form__title">
+                  {{ "platform_imfs.dsi_form_title" | translate }}
+                </div>
                 <div class="form-grid-2">
                   <div class="form-group">
                     <label
@@ -285,9 +297,9 @@
                       dsiForm.get("username")?.invalid &&
                       dsiForm.get("username")?.touched
                     ) {
-                      <span class="field-error"
-                        >Nom requis (3-50 caractères)</span
-                      >
+                      <span class="field-error">{{
+                        "platform_imfs.dsi_username_error" | translate
+                      }}</span>
                     }
                   </div>
                   <div class="form-group">
@@ -305,7 +317,9 @@
                       dsiForm.get("email")?.invalid &&
                       dsiForm.get("email")?.touched
                     ) {
-                      <span class="field-error">Email valide requis</span>
+                      <span class="field-error">{{
+                        "platform_imfs.dsi_email_error" | translate
+                      }}</span>
                     }
                   </div>
                 </div>
@@ -325,8 +339,8 @@
                     @if (submitting()) {
                       <span class="material-icons-round spin">refresh</span>
                     } @else {
-                      <span class="material-icons-round">send</span> Créer &amp;
-                      envoyer OTP
+                      <span class="material-icons-round">send</span>
+                      {{ "platform_imfs.dsi_create_otp_btn" | translate }}
                     }
                   </button>
                 </div>
@@ -337,9 +351,9 @@
               <span class="material-icons-round text-success"
                 >verified_user</span
               >
-              <span class="text-sm" style="font-weight: 600"
-                >Compte DSI actif</span
-              >
+              <span class="text-sm" style="font-weight: 600">{{
+                "platform_imfs.dsi_active" | translate
+              }}</span>
             </div>
 
             @if (!showDsiEditForm() && !showDsiDeleteConfirm()) {
@@ -352,13 +366,15 @@
                   {{ "common.edit" | translate }}
                 </button>
                 <button class="btn btn-ghost btn-sm" (click)="suspendDsi()">
-                  <span class="material-icons-round">pause</span> Suspendre
+                  <span class="material-icons-round">pause</span>
+                  {{ "platform_imfs.dsi_suspend_btn" | translate }}
                 </button>
                 <button
                   class="btn btn-danger btn-sm"
                   (click)="confirmDsiDelete()"
                 >
-                  <span class="material-icons-round">delete</span> Supprimer DSI
+                  <span class="material-icons-round">delete</span>
+                  {{ "platform_imfs.dsi_delete_btn" | translate }}
                 </button>
               </div>
             }
@@ -369,11 +385,13 @@
                 (ngSubmit)="submitDsiEdit()"
                 class="dsi-form"
               >
-                <div class="dsi-form__title">Modifier le compte DSI</div>
+                <div class="dsi-form__title">
+                  {{ "platform_imfs.dsi_edit_title" | translate }}
+                </div>
                 <div class="form-grid-2">
                   <div class="form-group">
                     <label
-                      >Nouveau nom d'utilisateur
+                      >{{ "platform_imfs.dsi_new_username" | translate }}
                       <span class="req">*</span></label
                     >
                     <input
@@ -386,13 +404,16 @@
                       dsiEditForm.get("username")?.invalid &&
                       dsiEditForm.get("username")?.touched
                     ) {
-                      <span class="field-error"
-                        >Nom requis (3-50 caractères)</span
-                      >
+                      <span class="field-error">{{
+                        "platform_imfs.dsi_username_error" | translate
+                      }}</span>
                     }
                   </div>
                   <div class="form-group">
-                    <label>Nouvel email <span class="req">*</span></label>
+                    <label
+                      >{{ "platform_imfs.dsi_new_email" | translate }}
+                      <span class="req">*</span></label
+                    >
                     <input
                       type="email"
                       class="form-control"
@@ -403,7 +424,9 @@
                       dsiEditForm.get("email")?.invalid &&
                       dsiEditForm.get("email")?.touched
                     ) {
-                      <span class="field-error">Email valide requis</span>
+                      <span class="field-error">{{
+                        "platform_imfs.dsi_email_error" | translate
+                      }}</span>
                     }
                   </div>
                 </div>
@@ -443,11 +466,10 @@
                     class="text-sm"
                     style="font-weight: 600; color: var(--color-danger)"
                   >
-                    Supprimer le compte DSI ?
+                    {{ "platform_imfs.dsi_delete_confirm_title" | translate }}
                   </p>
                   <p class="text-sm text-muted">
-                    Cette action est irréversible. Vous pourrez créer un nouveau
-                    DSI ensuite.
+                    {{ "platform_imfs.dsi_delete_confirm_body" | translate }}
                   </p>
                 </div>
                 <div class="form-actions" style="margin-top: 8px">
@@ -477,13 +499,17 @@
             <span class="material-icons-round">{{
               imf.actif ? "pause_circle" : "play_circle"
             }}</span>
-            {{ imf.actif ? "Suspendre l'IMF" : "Réactiver l'IMF" }}
+            {{
+              imf.actif
+                ? ("platform_imfs.imf_suspend_btn" | translate)
+                : ("platform_imfs.imf_activate_btn" | translate)
+            }}
           </button>
 
           @if (!showDeleteConfirm()) {
             <button class="btn btn-danger btn-sm" (click)="confirmDelete()">
               <span class="material-icons-round">delete_forever</span>
-              {{ "common.delete" | translate }} l'IMF
+              {{ "platform_imfs.imf_delete_btn" | translate }}
             </button>
           } @else {
             <div class="confirm-danger">
@@ -497,10 +523,11 @@
                   class="text-sm"
                   style="font-weight: 600; color: var(--color-danger)"
                 >
-                  Supprimer définitivement <strong>{{ imf.nom }}</strong> ?
+                  {{ "platform_imfs.imf_delete_confirm_title" | translate }}
+                  <strong>{{ imf.nom }}</strong> ?
                 </p>
                 <p class="text-sm text-muted">
-                  Tous les utilisateurs et données de cette IMF seront perdus.
+                  {{ "platform_imfs.imf_delete_confirm_body" | translate }}
                 </p>
               </div>
               <div class="form-actions" style="margin-top: 8px">
@@ -509,7 +536,7 @@
                 </button>
                 <button class="btn btn-danger btn-sm" (click)="deleteImf()">
                   <span class="material-icons-round">delete_forever</span>
-                  Confirmer la suppression
+                  {{ "platform_imfs.imf_delete_confirm_btn" | translate }}
                 </button>
               </div>
             </div>
@@ -525,7 +552,7 @@
   <div class="modal-overlay" (click)="closeCreate()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
-        <h3>Nouvelle institution financière</h3>
+        <h3>{{ "platform_imfs.modal_title" | translate }}</h3>
         <button class="btn btn-ghost btn-sm" (click)="closeCreate()">
           <span class="material-icons-round">close</span>
         </button>
@@ -541,7 +568,9 @@
             <div class="steps__dot">
               {{ step() > $index + 1 ? "✓" : $index + 1 }}
             </div>
-            <span class="steps__label">{{ label }}</span>
+            <span class="steps__label">{{
+              "platform_imfs.step_" + ($index + 1) | translate
+            }}</span>
           </div>
         }
       </div>
@@ -550,7 +579,10 @@
         @if (step() === 1) {
           <div class="form-grid">
             <div class="form-group">
-              <label>Code IMF <span class="req">*</span></label>
+              <label
+                >{{ "platform_imfs.label_code" | translate }}
+                <span class="req">*</span></label
+              >
               <input
                 type="text"
                 class="form-control"
@@ -560,13 +592,16 @@
                 (input)="uppercaseCode($event)"
               />
               @if (isStepFieldInvalid("code")) {
-                <span class="field-error"
-                  >Code requis (2-20 lettres majuscules/chiffres)</span
-                >
+                <span class="field-error">{{
+                  "platform_imfs.error_code" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
-              <label>Nom de l'IMF <span class="req">*</span></label>
+              <label
+                >{{ "platform_imfs.label_nom" | translate }}
+                <span class="req">*</span></label
+              >
               <input
                 type="text"
                 class="form-control"
@@ -574,11 +609,16 @@
                 placeholder="Crédit Communautaire"
               />
               @if (isStepFieldInvalid("nom")) {
-                <span class="field-error">Nom requis (min. 3 caractères)</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_nom" | translate
+                }}</span>
               }
             </div>
             <div class="form-group form-group--full">
-              <label>Dénomination sociale <span class="req">*</span></label>
+              <label
+                >{{ "platform_imfs.label_denomination" | translate }}
+                <span class="req">*</span></label
+              >
               <input
                 type="text"
                 class="form-control"
@@ -586,39 +626,53 @@
                 placeholder="Société Coopérative de Crédit..."
               />
               @if (isStepFieldInvalid("denominationSociale")) {
-                <span class="field-error">Dénomination requise</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_denomination" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
-              <label>Forme juridique <span class="req">*</span></label>
+              <label
+                >{{ "platform_imfs.label_forme_juridique" | translate }}
+                <span class="req">*</span></label
+              >
               <select class="form-control" formControlName="formeJuridique">
-                <option value="">Choisir...</option>
+                <option value="">
+                  {{ "platform_imfs.placeholder_choose" | translate }}
+                </option>
                 @for (fj of formeJuridiqueOptions; track fj) {
                   <option [value]="fj">{{ fj }}</option>
                 }
               </select>
               @if (isStepFieldInvalid("formeJuridique")) {
-                <span class="field-error">Forme juridique requise</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_forme_juridique" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
-              <label>Pays</label>
+              <label>{{ "platform_imfs.label_pays" | translate }}</label>
               <input type="text" class="form-control" formControlName="pays" />
             </div>
             <div class="form-group form-group--full">
-              <label>Adresse du siège <span class="req">*</span></label>
+              <label
+                >{{ "platform_imfs.label_adresse_siege" | translate }}
+                <span class="req">*</span></label
+              >
               <input
                 type="text"
                 class="form-control"
                 formControlName="adresseSiege"
-                placeholder="Rue, quartier, ville"
+                [placeholder]="'platform_imfs.ph_adresse_siege' | translate"
               />
               @if (isStepFieldInvalid("adresseSiege")) {
-                <span class="field-error">Adresse requise</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_adresse_siege" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
-              <label>N° agrément</label>
+              <label>{{ "platform_imfs.label_agrement" | translate }}</label>
               <input
                 type="text"
                 class="form-control"
@@ -626,7 +680,7 @@
               />
             </div>
             <div class="form-group">
-              <label>Téléphone</label>
+              <label>{{ "platform_imfs.label_telephone" | translate }}</label>
               <input
                 type="tel"
                 class="form-control"
@@ -635,7 +689,7 @@
               />
             </div>
             <div class="form-group form-group--full">
-              <label>{{ "common.email" | translate }} institutionnel</label>
+              <label>{{ "platform_imfs.label_email_inst" | translate }}</label>
               <input
                 type="email"
                 class="form-control"
@@ -649,8 +703,9 @@
           <div class="form-grid">
             <div class="form-group form-group--full">
               <label
-                >Capital social ({{ "common.fcfa" | translate }})
-                <span class="req">*</span></label
+                >{{ "platform_imfs.label_capital" | translate }} ({{
+                  "common.fcfa" | translate
+                }}) <span class="req">*</span></label
               >
               <input
                 type="number"
@@ -660,27 +715,27 @@
                 min="1"
               />
               @if (isStepFieldInvalid("capitalSocial")) {
-                <span class="field-error"
-                  >Capital social requis (valeur positive)</span
-                >
+                <span class="field-error">{{
+                  "platform_imfs.error_capital" | translate
+                }}</span>
               }
             </div>
             <div class="form-group form-group--full">
-              <label>Segments de clients</label>
+              <label>{{ "platform_imfs.label_segments" | translate }}</label>
               <input
                 type="text"
                 class="form-control"
                 formControlName="segmentsClients"
-                placeholder="Agriculteurs, Commerçants, PME..."
+                [placeholder]="'platform_imfs.ph_segments' | translate"
               />
             </div>
             <div class="form-group form-group--full">
-              <label>Types de garanties acceptées</label>
+              <label>{{ "platform_imfs.label_garanties" | translate }}</label>
               <input
                 type="text"
                 class="form-control"
                 formControlName="typesGaranties"
-                placeholder="Hypothèque, Caution, Nantissement..."
+                [placeholder]="'platform_imfs.ph_garanties' | translate"
               />
             </div>
           </div>
@@ -690,7 +745,8 @@
           <div class="form-grid">
             <div class="form-group">
               <label
-                >Taux d'intérêt annuel (%) <span class="req">*</span></label
+                >{{ "platform_imfs.label_taux_interet" | translate }}
+                <span class="req">*</span></label
               >
               <input
                 type="number"
@@ -702,13 +758,16 @@
                 step="0.1"
               />
               @if (isStepFieldInvalid("tauxInteretAnnuel")) {
-                <span class="field-error">Taux requis (0-100%)</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_taux_interet" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
               <label
-                >Durée max crédit ({{ "common.months" | translate }})
-                <span class="req">*</span></label
+                >{{ "platform_imfs.label_duree_max" | translate }} ({{
+                  "common.months" | translate
+                }}) <span class="req">*</span></label
               >
               <input
                 type="number"
@@ -719,11 +778,16 @@
                 max="360"
               />
               @if (isStepFieldInvalid("dureeMaxCreditMois")) {
-                <span class="field-error">Durée requise (1-360 mois)</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_duree_max" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
-              <label>Taux pénalité retard (%) <span class="req">*</span></label>
+              <label
+                >{{ "platform_imfs.label_taux_penalite" | translate }}
+                <span class="req">*</span></label
+              >
               <input
                 type="number"
                 class="form-control"
@@ -733,13 +797,16 @@
                 step="0.1"
               />
               @if (isStepFieldInvalid("tauxPenaliteRetard")) {
-                <span class="field-error">Taux requis (≥ 0)</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_taux_penalite" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
               <label
-                >Seuil de relance ({{ "common.days" | translate }})
-                <span class="req">*</span></label
+                >{{ "platform_imfs.label_seuil_relance" | translate }} ({{
+                  "common.days" | translate
+                }}) <span class="req">*</span></label
               >
               <input
                 type="number"
@@ -749,11 +816,15 @@
                 min="1"
               />
               @if (isStepFieldInvalid("seuilRelanceJours")) {
-                <span class="field-error">Seuil requis (≥ 1 jour)</span>
+                <span class="field-error">{{
+                  "platform_imfs.error_seuil_relance" | translate
+                }}</span>
               }
             </div>
             <div class="form-group">
-              <label>Taux épargne (%)</label>
+              <label>{{
+                "platform_imfs.label_taux_epargne" | translate
+              }}</label>
               <input
                 type="number"
                 class="form-control"
@@ -765,7 +836,9 @@
             </div>
             <div class="form-group">
               <label
-                >Solde minimum épargne ({{ "common.fcfa" | translate }})</label
+                >{{ "platform_imfs.label_solde_min" | translate }} ({{
+                  "common.fcfa" | translate
+                }})</label
               >
               <input
                 type="number"
@@ -777,9 +850,9 @@
             </div>
             <div class="form-group">
               <label
-                >Frais tenue de compte ({{
+                >{{ "platform_imfs.label_frais_tenue" | translate }} ({{
                   "common.fcfa" | translate
-                }}/mois)</label
+                }})</label
               >
               <input
                 type="number"
@@ -795,19 +868,21 @@
         @if (step() === 4) {
           <div class="form-grid">
             <div class="form-group">
-              <label>Taille max documents KYC (Mo)</label>
+              <label>{{ "platform_imfs.label_max_doc_kyc" | translate }}</label>
               <input
                 type="number"
                 class="form-control"
                 formControlName="maxDocumentKycOctets"
-                placeholder="5 (défaut)"
+                [placeholder]="'platform_imfs.ph_max_doc_kyc' | translate"
                 min="1"
                 max="20"
               />
-              <span class="field-hint">1 à 20 Mo — laisser vide pour 5 Mo</span>
+              <span class="field-hint">{{
+                "platform_imfs.hint_max_doc_kyc" | translate
+              }}</span>
             </div>
             <div class="form-group">
-              <label>Niveau KYC minimal</label>
+              <label>{{ "platform_imfs.label_niveau_kyc" | translate }}</label>
               <select class="form-control" formControlName="niveauKycMinimal">
                 @for (n of niveauKycOptions; track n) {
                   <option [value]="n">{{ n }}</option>
@@ -815,7 +890,9 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Max tentatives connexion</label>
+              <label>{{
+                "platform_imfs.label_max_tentatives" | translate
+              }}</label>
               <input
                 type="number"
                 class="form-control"
@@ -834,12 +911,17 @@
           (click)="prevStep()"
           [disabled]="step() === 1"
         >
-          <span class="material-icons-round">arrow_back</span> Précédent
+          <span class="material-icons-round">arrow_back</span>
+          {{ "platform_imfs.btn_prev" | translate }}
         </button>
-        <span class="steps__counter">Étape {{ step() }} / 4</span>
+        <span class="steps__counter"
+          >{{ "platform_imfs.step_counter_prefix" | translate }} {{ step() }} /
+          4</span
+        >
         @if (step() < 4) {
           <button class="btn btn-primary" (click)="nextStep()">
-            Suivant <span class="material-icons-round">arrow_forward</span>
+            {{ "platform_imfs.btn_next" | translate }}
+            <span class="material-icons-round">arrow_forward</span>
           </button>
         } @else {
           <button
@@ -851,7 +933,7 @@
               <span class="material-icons-round spin">refresh</span>
             } @else {
               <span class="material-icons-round">check</span>
-              {{ "common.create" | translate }} l'IMF
+              {{ "platform_imfs.btn_create_imf" | translate }}
             }
           </button>
         }
