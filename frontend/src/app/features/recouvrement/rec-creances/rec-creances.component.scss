@@ -59,7 +59,7 @@
   font-size: 11px;
   font-weight: 600;
   background: rgba(234, 179, 8, 0.15);
-  color: #854d0e;
+  color: var(--color-warning);
   &.retard-severe {
     background: rgba(239, 68, 68, 0.12);
     color: var(--color-danger);
@@ -182,7 +182,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #f1f5f9;
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 12px 14px;
@@ -358,7 +358,7 @@
   background: var(--color-bg);
 
   &.accord-actif {
-    border-color: #22c55e;
+    border-color: var(--color-success);
     background: rgba(34, 197, 94, 0.04);
   }
 }

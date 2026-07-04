@@ -82,8 +82,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
   color: var(--color-success);
   padding: 10px 14px;
   border-radius: var(--radius-md);

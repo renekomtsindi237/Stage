@@ -6,13 +6,13 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 20px;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--color-muted-bg);
+  color: var(--color-text-muted);
   font-weight: 500;
 
   &.sse-live {
-    background: #dcfce7;
-    color: #16a34a;
+    background: var(--color-success-bg);
+    color: var(--color-success);
   }
 }
 
@@ -20,7 +20,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #22c55e;
+  background: var(--color-success);
   animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
@@ -59,8 +59,8 @@
   }
 
   &.kpi-alert {
-    border-color: #fca5a5;
-    background: #fff5f5;
+    border-color: var(--color-danger-border);
+    background: var(--color-danger-bg);
   }
 }
 
@@ -315,18 +315,18 @@
   font-family: monospace;
 
   &.log-error {
-    background: #fff5f5;
-    border-left: 3px solid #ef4444;
+    background: var(--color-danger-bg);
+    border-left: 3px solid var(--color-danger);
   }
 
   &.log-warn {
-    background: #fffbeb;
-    border-left: 3px solid #f59e0b;
+    background: var(--color-warning-bg);
+    border-left: 3px solid var(--color-warning);
   }
 
   &.log-info {
     background: var(--color-bg);
-    border-left: 3px solid #6366f1;
+    border-left: 3px solid var(--color-purple);
   }
 
   &.log-debug {
@@ -364,8 +364,8 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #6366f1;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-purple);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }

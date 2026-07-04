@@ -19,21 +19,21 @@
   }
 
   &--critique {
-    background: #fef2f2;
-    color: #ef4444;
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
     .counter__dot {
-      background: #ef4444;
+      background: var(--color-danger);
     }
   }
   &--haute {
-    background: #fffbeb;
-    color: #f59e0b;
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
     .counter__dot {
-      background: #f59e0b;
+      background: var(--color-warning);
     }
   }
   &--moyenne {
-    background: #fefce8;
+    background: rgba(202, 138, 4, 0.1);
     color: #ca8a04;
     .counter__dot {
       background: #eab308;

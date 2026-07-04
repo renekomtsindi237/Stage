@@ -14,7 +14,7 @@
   font-size: 11px;
   font-weight: 600;
   background: rgba(234, 179, 8, 0.15);
-  color: #854d0e;
+  color: var(--color-warning);
   &.retard-severe {
     background: rgba(239, 68, 68, 0.12);
     color: var(--color-danger);
@@ -68,22 +68,22 @@
   transition: width 0.3s ease;
 
   &.badge-basse {
-    background: #22c55e;
+    background: var(--color-success);
   }
   &.badge-moyenne {
-    background: #f59e0b;
+    background: var(--color-warning);
   }
   &.badge-haute {
     background: #f97316;
   }
   &.badge-critique {
-    background: #ef4444;
+    background: var(--color-danger);
   }
   &.badge-primary {
     background: var(--color-primary);
   }
   &.badge-dark {
-    background: #475569;
+    background: var(--color-text-muted);
   }
 }
 

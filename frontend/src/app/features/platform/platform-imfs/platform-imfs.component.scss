@@ -268,12 +268,12 @@
   }
 
   &__value--money {
-    color: #059669;
+    color: var(--color-success);
     font-weight: 700;
   }
 
   &__value--rate {
-    color: #0891b2;
+    color: var(--color-info);
     font-weight: 700;
   }
 }
@@ -542,12 +542,12 @@
 }
 
 .badge-info {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
+  background: var(--color-info-bg);
+  color: var(--color-info);
 }
 .badge-warning {
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .req {

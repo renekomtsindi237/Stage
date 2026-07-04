@@ -17,9 +17,9 @@
 .kyc-detail {
   width: 420px;
   flex-shrink: 0;
-  background: var(--color-card-bg, #1e2a3a);
+  background: var(--color-surface);
   border-radius: 12px;
-  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--color-border);
   padding: 20px;
   overflow-y: auto;
   max-height: calc(100vh - var(--topbar-height, 64px) - 48px);
@@ -48,9 +48,9 @@
   letter-spacing: 0.06em;
 }
 .filter-select {
-  background: var(--color-card-bg, #1e2a3a);
-  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
-  color: var(--color-text, #e2e8f0);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
@@ -149,7 +149,7 @@
   align-items: flex-start;
   margin-bottom: 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-bg);
   border-radius: 10px;
 }
 .step-wrap {
@@ -164,26 +164,26 @@
   text-align: center;
   gap: 6px;
   &.done .step-circle {
-    background: #22c55e;
+    background: var(--color-success);
     color: white;
   }
   &.active .step-circle {
-    background: var(--color-primary, #3b82f6);
+    background: var(--color-primary);
     color: white;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
   }
   &.pending .step-circle {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-dark);
     color: var(--color-text-muted);
   }
   &.done .step-name {
-    color: #22c55e;
+    color: var(--color-success);
   }
   &.active .step-name {
-    color: var(--color-primary, #3b82f6);
+    color: var(--color-primary);
   }
   &.pending .step-name {
-    color: var(--color-text-muted, #8b9dc3);
+    color: var(--color-text-muted);
   }
 }
 .step-circle {
@@ -206,11 +206,11 @@
 .step-connector {
   flex: 1;
   height: 2px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-border);
   margin: 0 4px;
   margin-bottom: 20px;
   &.done {
-    background: #22c55e;
+    background: var(--color-success);
   }
 }
 
@@ -232,7 +232,7 @@
 .risk-bar-track {
   flex: 1;
   height: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-dark);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -302,9 +302,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-bg);
   border-radius: 8px;
-  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--color-border);
 }
 .doc-icon {
   font-size: 20px;
@@ -322,14 +322,14 @@
   font-size: 13px;
   margin-bottom: 8px;
   &.alert-critique {
-    background: rgba(239, 68, 68, 0.1);
-    border-left: 3px solid #ef4444;
-    color: #fca5a5;
+    background: var(--color-danger-bg);
+    border-left: 3px solid var(--color-danger);
+    color: var(--color-danger);
   }
   &.alert-info {
-    background: rgba(59, 130, 246, 0.1);
-    border-left: 3px solid #3b82f6;
-    color: #93c5fd;
+    background: var(--color-info-bg);
+    border-left: 3px solid var(--color-info);
+    color: var(--color-info);
   }
 }
 
@@ -346,9 +346,9 @@
 .sub-panel {
   margin-top: 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-bg);
   border-radius: 10px;
-  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--color-border);
 }
 .form-field {
   margin-top: 10px;
@@ -420,8 +420,8 @@
 
 // ── Extra badge ──────────────────────────────────────
 .badge-green {
-  background: rgba(34, 197, 94, 0.15) !important;
-  color: #4ade80 !important;
+  background: var(--color-success-bg) !important;
+  color: var(--color-success) !important;
 }
 
 // ── Document actions ─────────────────────────────────
@@ -450,17 +450,17 @@
   }
 }
 .btn-success {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
+  background: var(--color-success-bg);
+  color: var(--color-success);
   &:hover {
-    background: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.2);
   }
 }
 .btn-danger {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
   &:hover {
-    background: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.2);
   }
 }
 .doc-motif {
@@ -489,8 +489,8 @@
   padding: 2px 8px;
 }
 .upload-panel {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed var(--color-border, rgba(255, 255, 255, 0.12));
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
   border-radius: 8px;
   padding: 14px;
   margin-top: 10px;
@@ -517,6 +517,6 @@
   }
 }
 .file-chosen {
-  color: #4ade80;
+  color: var(--color-success);
   margin-top: 4px;
 }

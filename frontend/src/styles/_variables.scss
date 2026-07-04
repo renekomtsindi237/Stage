@@ -27,6 +27,21 @@
   --color-border: #e2e8f0;
   --color-border-light: #f1f5f9;
 
+  // Semantic transparent backgrounds — theme-adaptive (rgba blends with any surface)
+  --color-danger-bg: rgba(239, 68, 68, 0.08);
+  --color-danger-border: rgba(239, 68, 68, 0.22);
+  --color-warning-bg: rgba(245, 158, 11, 0.08);
+  --color-warning-border: rgba(245, 158, 11, 0.22);
+  --color-success-bg: rgba(34, 197, 94, 0.08);
+  --color-success-border: rgba(34, 197, 94, 0.22);
+  --color-info-bg: rgba(59, 130, 246, 0.08);
+  --color-info-border: rgba(59, 130, 246, 0.22);
+  --color-muted-bg: rgba(100, 116, 139, 0.08);
+  --color-muted-border: rgba(100, 116, 139, 0.22);
+  --color-purple: #7c3aed;
+  --color-purple-bg: rgba(124, 58, 237, 0.08);
+  --color-purple-border: rgba(124, 58, 237, 0.22);
+
   // Shadows
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
