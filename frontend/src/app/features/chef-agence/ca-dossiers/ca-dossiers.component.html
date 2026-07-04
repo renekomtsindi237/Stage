@@ -14,7 +14,7 @@
         [class.active]="activeTab() === tab.value"
         (click)="switchTab(tab.value)"
       >
-        {{ tab.label }}
+        {{ tab.label | translate }}
       </button>
     }
   </div>
@@ -71,7 +71,7 @@
               </td>
               <td>
                 <span class="badge" [ngClass]="statutClass(d.statut)">
-                  {{ statutLabel(d.statut) }}
+                  {{ statutLabel(d.statut) | translate }}
                 </span>
               </td>
               <td class="text-sm text-muted">
@@ -143,7 +143,7 @@
       <div>
         <h3>{{ selected()!.clientNom || selected()!.clientId }}</h3>
         <span class="badge" [ngClass]="statutClass(selected()!.statut)">
-          {{ statutLabel(selected()!.statut) }}
+          {{ statutLabel(selected()!.statut) | translate }}
         </span>
       </div>
       <button class="btn btn-ghost btn-sm" (click)="closePanel()">

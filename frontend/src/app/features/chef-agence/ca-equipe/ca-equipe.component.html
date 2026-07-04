@@ -54,7 +54,7 @@
             <div class="member-name">{{ m.username }}</div>
             <div class="member-meta">
               <span class="badge badge-sm" [ngClass]="roleClass(m.role)">
-                {{ roleLabel(m.role) }}
+                {{ roleLabel(m.role) | translate }}
               </span>
               @if (!m.actif) {
                 <span class="badge badge-sm badge-critique">{{

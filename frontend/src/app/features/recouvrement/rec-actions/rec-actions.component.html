@@ -50,7 +50,7 @@
                 {{ selectedDossier()!.montantImpaye | fcfa }}
               </span>
               <span class="text-sm text-muted">
-                ({{ selectedDossier()!.joursRetard }}j
+                ({{ selectedDossier()!.joursRetard }}{{ "common.days_abbr" | translate }}
                 {{ "rec_actions.step1_retard" | translate }})
               </span>
             </div>

@@ -6,7 +6,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 
@@ -38,6 +38,7 @@ interface AlertePage {
 export class RecAlertesComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   loading = signal(true);
   page = signal<AlertePage | null>(null);
@@ -45,10 +46,10 @@ export class RecAlertesComponent implements OnInit {
   activeTab = signal<string>("ACTIVE");
 
   readonly tabs: { label: string; value: string }[] = [
-    { label: "Actives", value: "ACTIVE" },
-    { label: "En traitement", value: "EN_TRAITEMENT" },
-    { label: "Résolues", value: "RESOLUE" },
-    { label: "Toutes", value: "TOUS" },
+    { label: "rec_alertes.tab_active", value: "ACTIVE" },
+    { label: "rec_alertes.tab_en_traitement", value: "EN_TRAITEMENT" },
+    { label: "rec_alertes.tab_resolue", value: "RESOLUE" },
+    { label: "rec_alertes.tab_tous", value: "TOUS" },
   ];
 
   ngOnInit() {
@@ -78,10 +79,17 @@ export class RecAlertesComponent implements OnInit {
       .patch<unknown>(`/api/v1/recouvrement/alertes/${uid}/traiter`, {})
       .subscribe({
         next: () => {
-          this.toast.showSuccess("En traitement", "Alerte prise en charge.");
+          this.toast.showSuccess(
+            this.translate.instant("rec_alertes.toast_prendre_title"),
+            this.translate.instant("rec_alertes.toast_prendre_body"),
+          );
           this.load();
         },
-        error: () => this.toast.showError("Erreur", "Action impossible."),
+        error: () =>
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("rec_alertes.toast_error"),
+          ),
       });
   }
 
@@ -90,10 +98,17 @@ export class RecAlertesComponent implements OnInit {
       .patch<unknown>(`/api/v1/recouvrement/alertes/${uid}/resoudre`, {})
       .subscribe({
         next: () => {
-          this.toast.showSuccess("Résolue", "Alerte marquée résolue.");
+          this.toast.showSuccess(
+            this.translate.instant("rec_alertes.toast_resoudre_title"),
+            this.translate.instant("rec_alertes.toast_resoudre_body"),
+          );
           this.load();
         },
-        error: () => this.toast.showError("Erreur", "Action impossible."),
+        error: () =>
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("rec_alertes.toast_error"),
+          ),
       });
   }
 
@@ -122,12 +137,12 @@ export class RecAlertesComponent implements OnInit {
 
   statutLabel(s: string): string {
     const m: Record<string, string> = {
-      ACTIVE: "Active",
-      NON_TRAITEE: "Non traitée",
-      ESCALADEE: "Escaladée",
-      EN_TRAITEMENT: "En traitement",
-      RESOLUE: "Résolue",
-      CLOTUREE: "Clôturée",
+      ACTIVE: "rec_alertes.statut_active",
+      NON_TRAITEE: "rec_alertes.statut_non_traitee",
+      ESCALADEE: "rec_alertes.statut_escaladee",
+      EN_TRAITEMENT: "rec_alertes.statut_en_traitement",
+      RESOLUE: "rec_alertes.statut_resolue",
+      CLOTUREE: "rec_alertes.statut_cloturee",
     };
     return m[s] ?? s;
   }

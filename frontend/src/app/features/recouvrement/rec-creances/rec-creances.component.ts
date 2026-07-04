@@ -8,7 +8,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
@@ -79,19 +79,19 @@ const PHASES = [
 ];
 
 const PHASE_LABELS: Record<string, string> = {
-  RELANCE_AMIABLE: "Relance amiable",
-  MEDIATION_AMIABLE: "Médiation amiable",
-  MISE_EN_DEMEURE: "Mise en demeure",
-  CONTENTIEUX: "Contentieux",
-  REECHELONNEMENT: "Rééchelonnement",
-  PERTE: "Perte",
+  RELANCE_AMIABLE: "common.phase_relance_amiable",
+  MEDIATION_AMIABLE: "common.phase_mediation_amiable",
+  MISE_EN_DEMEURE: "common.phase_mise_en_demeure",
+  CONTENTIEUX: "common.phase_contentieux",
+  REECHELONNEMENT: "common.phase_reechelonnement",
+  PERTE: "common.phase_perte",
 };
 
 const GARANTIE_LABELS: Record<string, string> = {
-  NANTISSEMENT: "Nantissement",
-  HYPOTHEQUE: "Hypothèque",
-  CAUTION_SOLIDAIRE: "Caution solidaire",
-  AUTRE: "Autre",
+  NANTISSEMENT: "rec_creances.garantie_nantissement",
+  HYPOTHEQUE: "rec_creances.garantie_hypotheque",
+  CAUTION_SOLIDAIRE: "rec_creances.garantie_caution_solidaire",
+  AUTRE: "rec_creances.garantie_autre",
 };
 
 @Component({
@@ -105,6 +105,7 @@ const GARANTIE_LABELS: Record<string, string> = {
 export class RecCreancesComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly phases = PHASES;
   readonly phaseLabels = PHASE_LABELS;
@@ -292,8 +293,8 @@ export class RecCreancesComponent implements OnInit {
       !this.form.joursRetard
     ) {
       this.toast.showError(
-        "Champs requis",
-        "ID prêt, montant et jours de retard sont obligatoires.",
+        this.translate.instant("rec_creances.toast_required_title"),
+        this.translate.instant("rec_creances.toast_required_body"),
       );
       return;
     }
@@ -317,15 +318,18 @@ export class RecCreancesComponent implements OnInit {
     this.api.post<DossierRow>("/api/v1/recouvrement/dossiers", body).subscribe({
       next: () => {
         this.toast.showSuccess(
-          "Dossier ouvert",
-          "Le dossier de recouvrement a été créé.",
+          this.translate.instant("rec_creances.toast_create_title"),
+          this.translate.instant("rec_creances.toast_create_body"),
         );
         this.saving.set(false);
         this.closeCreate();
         this.load();
       },
       error: () => {
-        this.toast.showError("Erreur", "Impossible de créer le dossier.");
+        this.toast.showError(
+          this.translate.instant("common.error"),
+          this.translate.instant("rec_creances.toast_create_error"),
+        );
         this.saving.set(false);
       },
     });
@@ -344,7 +348,10 @@ export class RecCreancesComponent implements OnInit {
   submitEscalade() {
     const d = this.selectedDossier();
     if (!d || !this.escaladePhase()) {
-      this.toast.showError("Requis", "Choisir la nouvelle phase.");
+      this.toast.showError(
+        this.translate.instant("common.error"),
+        this.translate.instant("rec_creances.toast_escalade_required"),
+      );
       return;
     }
     this.escalading.set(true);
@@ -356,8 +363,10 @@ export class RecCreancesComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.showSuccess(
-            "Phase mise à jour",
-            `Dossier passé en ${this.phaseLabels[this.escaladePhase()] ?? this.escaladePhase()}.`,
+            this.translate.instant("rec_creances.toast_escalade_title"),
+            this.translate.instant(
+              this.phaseLabels[this.escaladePhase()] ?? this.escaladePhase(),
+            ),
           );
           this.escalading.set(false);
           this.showEscalade.set(false);
@@ -365,7 +374,10 @@ export class RecCreancesComponent implements OnInit {
           this.load();
         },
         error: () => {
-          this.toast.showError("Erreur", "Escalade impossible.");
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("rec_creances.toast_escalade_error"),
+          );
           this.escalading.set(false);
         },
       });
@@ -392,8 +404,8 @@ export class RecCreancesComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.showSuccess(
-            "Dossier clôturé",
-            "Le dossier a été clôturé.",
+            this.translate.instant("rec_creances.toast_cloture_title"),
+            this.translate.instant("rec_creances.toast_cloture_body"),
           );
           this.closing.set(false);
           this.showCloture.set(false);
@@ -401,7 +413,10 @@ export class RecCreancesComponent implements OnInit {
           this.load();
         },
         error: () => {
-          this.toast.showError("Erreur", "Clôture impossible.");
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("rec_creances.toast_cloture_error"),
+          );
           this.closing.set(false);
         },
       });
@@ -431,8 +446,8 @@ export class RecCreancesComponent implements OnInit {
       !this.accordForm.dateDebutNouvelEcheancier
     ) {
       this.toast.showError(
-        "Champs requis",
-        "Montant mensuel, nombre d'échéances et date de début sont obligatoires.",
+        this.translate.instant("rec_creances.toast_accord_required_title"),
+        this.translate.instant("rec_creances.toast_accord_required_body"),
       );
       return;
     }
@@ -455,15 +470,18 @@ export class RecCreancesComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.showSuccess(
-            "Accord enregistré",
-            "L'accord de rééchelonnement a été créé.",
+            this.translate.instant("rec_creances.toast_accord_title"),
+            this.translate.instant("rec_creances.toast_accord_body"),
           );
           this.accordSaving.set(false);
           this.showAccordForm.set(false);
           this.loadAccords(d.uid);
         },
         error: () => {
-          this.toast.showError("Erreur", "Impossible de créer l'accord.");
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("rec_creances.toast_accord_error"),
+          );
           this.accordSaving.set(false);
         },
       });

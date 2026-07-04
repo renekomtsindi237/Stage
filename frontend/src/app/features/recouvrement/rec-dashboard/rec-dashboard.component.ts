@@ -32,12 +32,12 @@ interface RecDashboard {
 }
 
 const PHASE_LABELS: Record<string, string> = {
-  RELANCE_AMIABLE: "Relance amiable",
-  MEDIATION_AMIABLE: "Médiation amiable",
-  MISE_EN_DEMEURE: "Mise en demeure",
-  CONTENTIEUX: "Contentieux",
-  REECHELONNEMENT: "Rééchelonnement",
-  PERTE: "Perte",
+  RELANCE_AMIABLE: "common.phase_relance_amiable",
+  MEDIATION_AMIABLE: "common.phase_mediation_amiable",
+  MISE_EN_DEMEURE: "common.phase_mise_en_demeure",
+  CONTENTIEUX: "common.phase_contentieux",
+  REECHELONNEMENT: "common.phase_reechelonnement",
+  PERTE: "common.phase_perte",
 };
 
 @Component({

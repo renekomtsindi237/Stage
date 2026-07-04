@@ -9,7 +9,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
@@ -57,22 +57,22 @@ interface AgentPage {
 }
 
 const STATUT_LABELS: Record<string, string> = {
-  INSTRUCTION: "Instruction",
-  EN_COMITE: "En comité",
-  VALIDE: "Validé",
-  APPROUVE: "Approuvé",
-  REJETE: "Rejeté",
-  AJOURNE: "Ajourné",
-  DEBLOQUE: "Débloqué",
+  INSTRUCTION: "ca_dossiers.statut_instruction",
+  EN_COMITE: "ca_dossiers.statut_en_comite",
+  VALIDE: "ca_dossiers.statut_valide",
+  APPROUVE: "ca_dossiers.statut_approuve",
+  REJETE: "ca_dossiers.statut_rejete",
+  AJOURNE: "ca_dossiers.statut_ajourne",
+  DEBLOQUE: "ca_dossiers.statut_debloque",
 };
 
 const STATUT_TABS = [
-  { label: "Tous", value: "" },
-  { label: "En comité", value: "EN_COMITE" },
-  { label: "Validés", value: "VALIDE" },
-  { label: "Instruction", value: "INSTRUCTION" },
-  { label: "Rejetés", value: "REJETE" },
-  { label: "Débloqués", value: "DEBLOQUE" },
+  { label: "ca_dossiers.tab_tous", value: "" },
+  { label: "ca_dossiers.tab_en_comite", value: "EN_COMITE" },
+  { label: "ca_dossiers.tab_valide", value: "VALIDE" },
+  { label: "ca_dossiers.tab_instruction", value: "INSTRUCTION" },
+  { label: "ca_dossiers.tab_rejete", value: "REJETE" },
+  { label: "ca_dossiers.tab_debloque", value: "DEBLOQUE" },
 ];
 
 @Component({
@@ -86,6 +86,7 @@ const STATUT_TABS = [
 export class CaDossiersComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly route = inject(ActivatedRoute);
 
   readonly tabs = STATUT_TABS;
@@ -182,10 +183,12 @@ export class CaDossiersComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.showSuccess(
-            "Décision enregistrée",
-            decision === "VALIDE"
-              ? "Dossier validé avec succès."
-              : "Dossier rejeté.",
+            this.translate.instant("ca_dossiers.toast_validate_title"),
+            this.translate.instant(
+              decision === "VALIDE"
+                ? "ca_dossiers.toast_validate_body"
+                : "ca_dossiers.toast_reject_body",
+            ),
           );
           this.validating.set(false);
           this.showMotif.set(false);
@@ -193,7 +196,10 @@ export class CaDossiersComponent implements OnInit {
           this.load();
         },
         error: () => {
-          this.toast.showError("Erreur", "Impossible de traiter ce dossier.");
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("ca_dossiers.toast_error_body"),
+          );
           this.validating.set(false);
         },
       });
@@ -233,8 +239,8 @@ export class CaDossiersComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.showSuccess(
-            "Réassignation",
-            "Dossier réassigné avec succès.",
+            this.translate.instant("ca_dossiers.toast_reassign_title"),
+            this.translate.instant("ca_dossiers.toast_reassign_body"),
           );
           this.reassigning.set(false);
           this.showReassign.set(false);
@@ -242,7 +248,10 @@ export class CaDossiersComponent implements OnInit {
           this.load();
         },
         error: () => {
-          this.toast.showError("Erreur", "Réassignation impossible.");
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            this.translate.instant("ca_dossiers.toast_reassign_error"),
+          );
           this.reassigning.set(false);
         },
       });

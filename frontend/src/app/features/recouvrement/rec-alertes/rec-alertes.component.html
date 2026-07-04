@@ -3,7 +3,8 @@
     <div>
       <h2>{{ "rec_alertes.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} alerte(s)
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "rec_alertes.count_suffix" | translate }}
       </p>
     </div>
     <button class="btn btn-ghost" (click)="load()">
@@ -19,7 +20,7 @@
         [class.active]="activeTab() === tab.value"
         (click)="switchTab(tab.value)"
       >
-        {{ tab.label }}
+        {{ tab.label | translate }}
       </button>
     }
   </div>
@@ -59,12 +60,12 @@
               </td>
               <td>
                 <span class="retard-chip" [class]="retardClass(a.joursRetard)">
-                  {{ a.joursRetard }} j
+                  {{ a.joursRetard }}{{ "common.days_abbr" | translate }}
                 </span>
               </td>
               <td>
                 <span class="badge" [ngClass]="statutClass(a.statutAlerte)">
-                  {{ statutLabel(a.statutAlerte) }}
+                  {{ statutLabel(a.statutAlerte) | translate }}
                 </span>
               </td>
               <td class="text-sm text-muted">

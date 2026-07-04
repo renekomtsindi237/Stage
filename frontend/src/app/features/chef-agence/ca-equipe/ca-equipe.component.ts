@@ -32,12 +32,12 @@ interface TeamPage {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  AGENT: "Agent terrain",
-  AGENT_CREDIT: "Chargé de clientèle",
-  CHEF_AGENCE: "Chef d'agence",
-  CAISSIER: "Caissier",
-  AGENT_SAISIE: "Agent de saisie",
-  ANALYSTE_ENGAGEMENTS: "Analyste engagements",
+  AGENT: "ca_equipe.role_agent",
+  AGENT_CREDIT: "ca_equipe.role_agent_credit",
+  CHEF_AGENCE: "ca_equipe.role_chef_agence",
+  CAISSIER: "ca_equipe.role_caissier",
+  AGENT_SAISIE: "ca_equipe.role_agent_saisie",
+  ANALYSTE_ENGAGEMENTS: "ca_equipe.role_analyste_engagements",
 };
 
 @Component({
