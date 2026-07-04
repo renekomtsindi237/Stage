@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/providers/auth_provider.dart';
+import '../../widgets/lang_switch_button.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});
@@ -170,7 +171,12 @@ class _OtpScreenState extends State<OtpScreen>
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 children: [
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: const LangSwitchButton(onDark: false),
+                  ),
+                  const SizedBox(height: 12),
 
                   // ── Logo (identique à login) ──────────────────────────────
                   _buildLogo(l10n),

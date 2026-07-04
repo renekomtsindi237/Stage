@@ -13,6 +13,7 @@ import '../../core/models/collecte_locale.dart';
 import '../../core/services/client_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../core/services/agent_service.dart';
+import '../../widgets/lang_switch_button.dart';
 
 String _generateUuid() {
   final r = Random.secure();
@@ -167,7 +168,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : ${e.toString()}')));
+          SnackBar(content: Text(AppL10n.of(context).errorWithDetail(e.toString()))));
       }
     }
   }
@@ -220,6 +221,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
             child: Text(l10n.nouvelleCollecteTitle,
               style: const TextStyle(fontFamily: 'Inter', fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white)),
           ),
+          const LangSwitchButton(),
         ],
       ),
     );

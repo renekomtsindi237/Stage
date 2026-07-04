@@ -62,7 +62,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur upload : ${e.toString()}'),
+            content: Text(AppL10n.of(context).errorWithDetail(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -97,7 +97,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur : ${e.toString()}'),
+            content: Text(AppL10n.of(context).errorWithDetail(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

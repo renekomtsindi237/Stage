@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/collecte_locale.dart';
+import '../../widgets/lang_switch_button.dart';
 
 class ConfirmationCollecteScreen extends StatelessWidget {
   final CollecteLocale collecte;
@@ -12,6 +14,7 @@ class ConfirmationCollecteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final fmt = NumberFormat('#,###', 'fr_FR');
     final dateFmt = DateFormat('dd/MM/yyyy', 'fr_FR');
     final date = DateTime.tryParse(collecte.dateCollecte);
@@ -30,12 +33,18 @@ class ConfirmationCollecteScreen extends StatelessWidget {
                     onPressed: () => context.go('/dashboard'),
                     icon: const Icon(Icons.close, color: Colors.white),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Collecte enregistrée',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white),
+                      l10n.confirmationTitle,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
+                  const LangSwitchButton(),
                 ],
               ),
             ),
@@ -52,17 +61,30 @@ class ConfirmationCollecteScreen extends StatelessWidget {
                         color: AppColors.success.withOpacity(0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 50),
+                      child: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: AppColors.success,
+                        size: 50,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Collecte sauvegardée !',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 22, fontWeight: FontWeight.w800, color: context.text),
+                      l10n.confirmationSuccessTitle,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: context.text,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Elle sera synchronisée dès que vous serez connecté.',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: context.textSec),
+                      l10n.confirmationSuccessSubtitle,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        color: context.textSec,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
@@ -71,16 +93,30 @@ class ConfirmationCollecteScreen extends StatelessWidget {
                       decoration: context.cardBox,
                       child: Column(
                         children: [
-                          _InfoRow(context, 'Montant', '${fmt.format(collecte.montantCollecte.toInt())} FCFA', bold: true, color: AppColors.gold),
+                          _InfoRow(
+                            context,
+                            l10n.confirmationAmount,
+                            '${fmt.format(collecte.montantCollecte.toInt())} FCFA',
+                            bold: true,
+                            color: AppColors.gold,
+                          ),
                           Divider(height: 24, color: context.border),
-                          _InfoRow(context, 'Client ID', collecte.clientIdExterne),
+                          _InfoRow(context, l10n.confirmationClientId, collecte.clientIdExterne),
                           const SizedBox(height: 10),
-                          _InfoRow(context, 'Canal', collecte.canalPaiement),
+                          _InfoRow(context, l10n.confirmationCanal, collecte.canalPaiement),
                           const SizedBox(height: 10),
-                          _InfoRow(context, 'Date', date != null ? dateFmt.format(date) : collecte.dateCollecte),
+                          _InfoRow(
+                            context,
+                            l10n.confirmationDate,
+                            date != null ? dateFmt.format(date) : collecte.dateCollecte,
+                          ),
                           if (collecte.latitude != null) ...[
                             const SizedBox(height: 10),
-                            _InfoRow(context, 'GPS', '${collecte.latitude!.toStringAsFixed(4)}, ${collecte.longitude!.toStringAsFixed(4)}'),
+                            _InfoRow(
+                              context,
+                              l10n.confirmationGps,
+                              '${collecte.latitude!.toStringAsFixed(4)}, ${collecte.longitude!.toStringAsFixed(4)}',
+                            ),
                           ],
                         ],
                       ),
@@ -95,11 +131,22 @@ class ConfirmationCollecteScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.cloud_upload_outlined, color: AppColors.warning, size: 20),
+                          const Icon(
+                            Icons.cloud_upload_outlined,
+                            color: AppColors.warning,
+                            size: 20,
+                          ),
                           const SizedBox(width: 10),
-                          const Expanded(
-                            child: Text('En attente de synchronisation',
-                                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.warning, fontWeight: FontWeight.w600)),
+                          Expanded(
+                            child: Text(
+                              l10n.confirmationPendingSync,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                                color: AppColors.warning,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -113,10 +160,17 @@ class ConfirmationCollecteScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.teal,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: const Text('Nouvelle collecte',
-                            style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700)),
+                        child: Text(
+                          l10n.confirmationNewCollecte,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -127,10 +181,18 @@ class ConfirmationCollecteScreen extends StatelessWidget {
                         onPressed: () => context.go('/dashboard'),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: context.border),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: Text("Retour à l'accueil",
-                            style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w600, color: context.textSec)),
+                        child: Text(
+                          l10n.backHome,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: context.textSec,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -143,11 +205,20 @@ class ConfirmationCollecteScreen extends StatelessWidget {
     );
   }
 
-  Widget _InfoRow(BuildContext context, String label, String value, {bool bold = false, Color? color}) {
+  Widget _InfoRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool bold = false,
+    Color? color,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: context.textSec)),
+        Text(
+          label,
+          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: context.textSec),
+        ),
         Text(
           value,
           style: TextStyle(

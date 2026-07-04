@@ -208,5 +208,16 @@
 
   "langFr": "Français",
   "langEn": "English",
-  "langSwitchTooltip": "Change language"
+  "langSwitchTooltip": "Change language",
+
+  "navHome": "Home",
+  "navClients": "Clients",
+  "navHistorique": "History",
+
+  "errorWithDetail": "Error: {detail}",
+  "@errorWithDetail": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../widgets/lang_switch_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -90,6 +91,11 @@ class _LoginScreenState extends State<LoginScreen>
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: const LangSwitchButton(onDark: false),
+                    ),
+                    const SizedBox(height: 12),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: GestureDetector(

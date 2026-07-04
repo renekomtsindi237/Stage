@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../core/services/client_service.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_widget.dart';
+import '../../widgets/lang_switch_button.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class ClientsListScreen extends StatefulWidget {
@@ -67,14 +69,19 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(
-        title: const Text('Clients'),
+        title: Text(l10n.clientsTitle),
         backgroundColor: context.bg,
         actions: [
+          const Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: LangSwitchButton(onDark: false),
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 12),
             child: Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -104,7 +111,7 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
               controller: _searchController,
               style: TextStyle(color: context.text, fontFamily: 'Inter'),
               decoration: InputDecoration(
-                hintText: 'Rechercher un client...',
+                hintText: l10n.clientsSearchHint,
                 prefixIcon: Icon(Icons.search_rounded, color: context.textSec),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -134,8 +141,8 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
                     : _clients.isEmpty
                         ? EmptyState(
                             icon: Icons.people_outline,
-                            title: 'Aucun client trouvé',
-                            subtitle: 'Essayez une autre recherche',
+                            title: l10n.clientsEmptyTitle,
+                            subtitle: l10n.clientsEmptySubtitle,
                             onRetry: _loadClients,
                           )
                         : RefreshIndicator(

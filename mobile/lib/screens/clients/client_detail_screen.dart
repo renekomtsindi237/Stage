@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -6,6 +7,7 @@ import '../../core/constants/theme_helper.dart';
 import '../../core/models/client.dart';
 import '../../core/services/client_service.dart';
 import '../../widgets/error_widget.dart';
+import '../../widgets/lang_switch_button.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class ClientDetailScreen extends StatefulWidget {
@@ -51,15 +53,22 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(
-        title: const Text('Détail client'),
+        title: Text(l10n.clientDetailTitle),
         backgroundColor: context.bg,
         leading: IconButton(
           onPressed: () => context.go('/clients'),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: LangSwitchButton(onDark: false),
+          ),
+        ],
       ),
       body: _loading
           ? ListView(
@@ -139,4 +148,3 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
     );
   }
 }
-

@@ -10,6 +10,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/sync_provider.dart';
 import '../../core/services/agent_service.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/lang_switch_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -175,7 +176,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   )
                 : const Icon(Icons.sync_rounded, color: Colors.white, size: 22),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 10),
+          const LangSwitchButton(),
+          const SizedBox(width: 10),
           GestureDetector(
             onTap: () => context.go('/alertes'),
             child: Stack(

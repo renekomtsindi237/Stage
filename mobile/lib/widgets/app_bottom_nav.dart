@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/theme_helper.dart';
@@ -10,6 +11,7 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Container(
       decoration: BoxDecoration(
         color: context.navBg,
@@ -29,13 +31,13 @@ class AppBottomNav extends StatelessWidget {
             children: [
               _NavItem(
                 icon: Icons.home_rounded,
-                label: 'Accueil',
+                label: l10n.navHome,
                 isActive: currentIndex == 0,
                 onTap: () => context.go('/dashboard'),
               ),
               _NavItem(
                 icon: Icons.people_rounded,
-                label: 'Clients',
+                label: l10n.navClients,
                 isActive: currentIndex == 1,
                 onTap: () => context.go('/clients'),
               ),
@@ -57,7 +59,7 @@ class AppBottomNav extends StatelessWidget {
               ),
               _NavItem(
                 icon: Icons.history_rounded,
-                label: 'Historique',
+                label: l10n.navHistorique,
                 isActive: currentIndex == 3,
                 onTap: () => context.go('/collectes/historique'),
               ),

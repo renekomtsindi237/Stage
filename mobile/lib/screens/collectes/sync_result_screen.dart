@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/collecte_locale.dart';
+import '../../widgets/lang_switch_button.dart';
 
 class SyncResultScreen extends StatelessWidget {
   final SyncResult result;
@@ -12,7 +14,8 @@ class SyncResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFmt = DateFormat('HH:mm', 'fr_FR');
+    final l10n = AppL10n.of(context);
+    final timeFmt = DateFormat('HH:mm');
     final allOk = result.rejetees == 0 && result.doublons == 0;
     final primaryColor = allOk ? AppColors.success : AppColors.warning;
 
@@ -23,7 +26,11 @@ class SyncResultScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerRight,
+                child: const LangSwitchButton(onDark: false),
+              ),
+              const SizedBox(height: 16),
               Container(
                 width: 96,
                 height: 96,
@@ -39,27 +46,34 @@ class SyncResultScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Synchronisation terminée',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 22, fontWeight: FontWeight.w800, color: context.text),
+                l10n.syncResultTitle,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: context.text,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
-              Text(timeFmt.format(result.syncedAt),
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: context.textSec)),
+              Text(
+                timeFmt.format(result.syncedAt),
+                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: context.textSec),
+              ),
               const SizedBox(height: 32),
               Row(
                 children: [
-                  Expanded(child: _stat(context, '${result.totalRecu}', 'Total reçu', AppColors.navy)),
+                  Expanded(child: _stat(context, '${result.totalRecu}', l10n.syncResultTotal, AppColors.navy)),
                   const SizedBox(width: 10),
-                  Expanded(child: _stat(context, '${result.acceptees}', 'Acceptées', AppColors.success)),
+                  Expanded(child: _stat(context, '${result.acceptees}', l10n.syncResultAccepted, AppColors.success)),
                 ],
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Expanded(child: _stat(context, '${result.doublons}', 'Doublons', AppColors.warning)),
+                  Expanded(child: _stat(context, '${result.doublons}', l10n.syncResultDuplicates, AppColors.warning)),
                   const SizedBox(width: 10),
-                  Expanded(child: _stat(context, '${result.rejetees}', 'Rejetées', AppColors.error)),
+                  Expanded(child: _stat(context, '${result.rejetees}', l10n.syncResultRejected, AppColors.error)),
                 ],
               ),
               if (result.rejetees > 0) ...[
@@ -77,7 +91,7 @@ class SyncResultScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          '${result.rejetees} collecte(s) non synchronisée(s). Contactez le support.',
+                          l10n.syncResultRejectedWarning(result.rejetees),
                           style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.error),
                         ),
                       ),
@@ -96,8 +110,14 @@ class SyncResultScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: const Text("Retour à l'accueil",
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    l10n.backHome,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -113,9 +133,16 @@ class SyncResultScreen extends StatelessWidget {
       decoration: context.cardBoxR(14),
       child: Column(
         children: [
-          Text(value, style: TextStyle(fontFamily: 'Inter', fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+          Text(
+            value,
+            style: TextStyle(fontFamily: 'Inter', fontSize: 28, fontWeight: FontWeight.w900, color: color),
+          ),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: context.textSec), textAlign: TextAlign.center),
+          Text(
+            label,
+            style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: context.textSec),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );

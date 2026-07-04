@@ -7,6 +7,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/alerte.dart';
 import '../../core/services/alerte_service.dart';
+import '../../widgets/lang_switch_button.dart';
 
 class AlertesScreen extends StatefulWidget {
   const AlertesScreen({super.key});
@@ -158,6 +159,9 @@ class _AlertesScreenState extends State<AlertesScreen> {
                 ),
               ),
             ),
+          const SizedBox(width: 8),
+          const LangSwitchButton(),
+          const SizedBox(width: 4),
         ],
       ),
     );
