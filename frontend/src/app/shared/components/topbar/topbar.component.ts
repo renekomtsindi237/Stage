@@ -18,6 +18,7 @@ import { Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
 import { TranslatePipe } from "@ngx-translate/core";
 import { LanguageService } from "../../../core/services/language.service";
+import { LanguageSelectorComponent } from "../language-selector/language-selector.component";
 
 @Component({
   selector: "app-topbar",
@@ -30,6 +31,7 @@ import { LanguageService } from "../../../core/services/language.service";
     NotificationPanelComponent,
     ReactiveFormsModule,
     TranslatePipe,
+    LanguageSelectorComponent,
   ],
   templateUrl: "./topbar.component.html",
   styleUrls: ["./topbar.component.scss"],

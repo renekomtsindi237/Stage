@@ -35,23 +35,8 @@
       </button>
     }
 
-    <!-- Language toggle -->
-    <div class="topbar__lang">
-      <button
-        class="topbar__lang-btn"
-        [class.topbar__lang-btn--active]="langSvc.lang() === 'fr'"
-        (click)="langSvc.setLang('fr')"
-      >
-        FR
-      </button>
-      <button
-        class="topbar__lang-btn"
-        [class.topbar__lang-btn--active]="langSvc.lang() === 'en'"
-        (click)="langSvc.setLang('en')"
-      >
-        EN
-      </button>
-    </div>
+    <!-- Language selector dropdown -->
+    <app-language-selector />
 
     <!-- Thème dark/light -->
     <button
