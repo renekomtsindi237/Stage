@@ -18,7 +18,8 @@
     <div>
       <h2>{{ "dir_users.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} membres
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "dir_users.members_suffix" | translate }}
       </p>
     </div>
     <div class="header-actions">
@@ -134,7 +135,11 @@
                   [class.badge-success]="u.actif"
                   [class.badge-danger]="!u.actif"
                 >
-                  {{ u.actif ? "Actif" : "Inactif" }}
+                  {{
+                    u.actif
+                      ? ("common.active" | translate)
+                      : ("common.inactive" | translate)
+                  }}
                 </span>
               </td>
               <td>

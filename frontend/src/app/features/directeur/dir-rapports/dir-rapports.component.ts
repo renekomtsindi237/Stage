@@ -38,7 +38,7 @@ export class DirRapportsComponent {
   rapports: Rapport[] = [
     {
       id: "r1",
-      titre: "Rapport mensuel de performance",
+      titre: "dir_rapports.r1_titre",
       type: "MENSUEL",
       dateDernier: "2026-05-31",
       endpoint: this.buildKpiUrl(this.firstOfMonth(-1), this.lastOfMonth(-1)),
@@ -46,7 +46,7 @@ export class DirRapportsComponent {
     },
     {
       id: "r2",
-      titre: "Rapport trimestriel portefeuille",
+      titre: "dir_rapports.r2_titre",
       type: "TRIMESTRIEL",
       dateDernier: "2026-03-31",
       endpoint: this.buildKpiUrl(
@@ -57,7 +57,7 @@ export class DirRapportsComponent {
     },
     {
       id: "r3",
-      titre: "Rapport COBAC réglementaire",
+      titre: "dir_rapports.r3_titre",
       type: "COBAC",
       dateDernier: "2026-05-31",
       endpoint: this.buildCobacUrl(),
@@ -65,14 +65,14 @@ export class DirRapportsComponent {
     },
     {
       id: "r4",
-      titre: "Rapport prêts en retard (PAR)",
+      titre: "dir_rapports.r4_titre",
       type: "COBAC",
       endpoint: `${environment.apiUrl}/api/v1/reporting/prets-retard/pdf`,
       filename: "prets_en_retard.pdf",
     },
     {
       id: "r5",
-      titre: "Rapport collectes agents terrain",
+      titre: "dir_rapports.r5_titre",
       type: "PERSONNALISE",
       endpoint: this.buildCollectesUrl(30),
       filename: "rapport_collectes.pdf",

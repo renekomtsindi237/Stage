@@ -49,7 +49,9 @@
     "never": "Jamais",
     "view": "Voir",
     "download": "Télécharger",
-    "send_btn": "Envoyer"
+    "send_btn": "Envoyer",
+    "vs_prev_month": "vs mois préc.",
+    "days_abbr": "j"
   },
   "lang": {
     "fr": "Français",
@@ -309,7 +311,8 @@
     "modal_email": "Email *",
     "modal_role": "Rôle *",
     "modal_cancel": "Annuler",
-    "modal_submit": "Ajouter"
+    "modal_submit": "Ajouter",
+    "members_suffix": "membres"
   },
   "dir_alertes": {
     "title": "Alertes prédictives ML",
@@ -330,8 +333,8 @@
     "template": "Modèle Excel",
     "import_loading": "Import…",
     "import_btn": "Importer Excel",
-    "banner_added": "ajouté(s)",
-    "banner_updated": "mis à jour",
+    "banner_added": "{{count}} ajouté(s)",
+    "banner_updated": "{{count}} mis à jour",
     "search_placeholder": "Nom ou téléphone...",
     "filter_all": "Tous statuts",
     "filter_active": "Actif",
@@ -343,7 +346,11 @@
     "col_encours": "Encours",
     "col_statut": "Statut",
     "col_agence": "Agence",
-    "col_actions": "Actions"
+    "col_actions": "Actions",
+    "total_suffix": "clients au total",
+    "status_ACTIF": "Actif",
+    "status_EN_RETARD": "En retard",
+    "status_DEFAILLANT": "Défaillant"
   },
   "dir_kpi": {
     "title": "Analyse du Portefeuille",
@@ -385,14 +392,20 @@
     "psi_model": "Modèle actif",
     "psi_last_train": "Dernier entraînement",
     "features_title": "Contribution des features à la dérive",
-    "psi_chart_title": "Évolution du PSI (90 jours)"
+    "psi_chart_title": "Évolution du PSI (90 jours)",
+    "drift_exceeds_label": "— dépasse le seuil de"
   },
   "dir_rapports": {
     "title": "Rapports",
     "subtitle": "Génération et téléchargement des rapports réglementaires",
     "last": "Dernier:",
     "generating": "Génération...",
-    "generate_btn": "Générer"
+    "generate_btn": "Générer",
+    "r1_titre": "Rapport mensuel de performance",
+    "r2_titre": "Rapport trimestriel portefeuille",
+    "r3_titre": "Rapport COBAC réglementaire",
+    "r4_titre": "Rapport prêts en retard (PAR)",
+    "r5_titre": "Rapport collectes agents terrain"
   },
   "dir_recouvrement": {
     "title": "Recouvrement — Dossiers",
@@ -448,7 +461,11 @@
     "banner_created": "agence(s) créée(s)",
     "card_agents": "Agents",
     "card_clients": "Clients",
-    "card_par30": "PAR30"
+    "card_par30": "PAR30",
+    "subtitle_suffix": "agences",
+    "banner_title": "Import terminé",
+    "banner_errors_on": "erreur(s) sur",
+    "banner_lines": "ligne(s)."
   },
   "dir_kyc": {
     "title": "KYC — Conformité clients",

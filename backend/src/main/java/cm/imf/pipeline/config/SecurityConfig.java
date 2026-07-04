@@ -147,7 +147,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/dsi/**").hasAnyRole("DSI", "SUPER_ADMIN")
                         // Analyste : scoring, pipeline, drift ML, risk PAR
                         .requestMatchers("/api/v1/analyste/**")
-                                .hasAnyRole("ANALYSTE", "ANALYSTE_ENGAGEMENTS", "DSI", "SUPER_ADMIN")
+                                .hasAnyRole("ANALYSTE", "ANALYSTE_ENGAGEMENTS", "DSI", "DIRECTEUR", "SUPER_ADMIN")
                         // Octroi crédit — dossiers, garanties, comité, visite J+15
                         .requestMatchers("/api/v1/dossiers-credit/**")
                                 .hasAnyRole("AGENT_CREDIT", "CHEF_AGENCE", "ANALYSTE_ENGAGEMENTS",

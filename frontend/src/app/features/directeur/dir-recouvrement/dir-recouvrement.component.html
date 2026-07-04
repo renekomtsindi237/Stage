@@ -136,12 +136,12 @@
                   [class]="retardClass(d.joursRetard)"
                   class="font-semibold"
                 >
-                  {{ d.joursRetard }} j
+                  {{ d.joursRetard }} {{ "common.days_abbr" | translate }}
                 </span>
               </td>
               <td>
                 <span class="badge" [class]="phaseClass(d.phase)">
-                  {{ phaseLabel(d.phase) }}
+                  {{ phaseLabel(d.phase) | translate }}
                 </span>
               </td>
               <td>

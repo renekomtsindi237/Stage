@@ -11,7 +11,8 @@
     <div>
       <h2>{{ "dir_clients.title" | translate }}</h2>
       <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }} clients au total
+        {{ page()?.totalElements ?? 0 | number }}
+        {{ "dir_clients.total_suffix" | translate }}
       </p>
     </div>
     <div class="header-actions">
@@ -137,7 +138,9 @@
                         : 'badge-critique'
                   "
                 >
-                  {{ c.statut ?? "ACTIF" }}
+                  {{
+                    "dir_clients.status_" + (c.statut ?? "ACTIF") | translate
+                  }}
                 </span>
               </td>
               <td class="text-sm text-muted">
@@ -164,7 +167,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"

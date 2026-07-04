@@ -49,7 +49,9 @@
     "never": "Never",
     "view": "View",
     "download": "Download",
-    "send_btn": "Send"
+    "send_btn": "Send",
+    "vs_prev_month": "vs prev. month",
+    "days_abbr": "d"
   },
   "lang": {
     "fr": "Français",
@@ -309,7 +311,8 @@
     "modal_email": "Email *",
     "modal_role": "Role *",
     "modal_cancel": "Cancel",
-    "modal_submit": "Add"
+    "modal_submit": "Add",
+    "members_suffix": "members"
   },
   "dir_alertes": {
     "title": "ML predictive alerts",
@@ -330,8 +333,8 @@
     "template": "Excel template",
     "import_loading": "Import…",
     "import_btn": "Import Excel",
-    "banner_added": "added",
-    "banner_updated": "updated",
+    "banner_added": "{{count}} added",
+    "banner_updated": "{{count}} updated",
     "search_placeholder": "Name or phone...",
     "filter_all": "All statuses",
     "filter_active": "Active",
@@ -343,7 +346,11 @@
     "col_encours": "Outstanding",
     "col_statut": "Status",
     "col_agence": "Branch",
-    "col_actions": "Actions"
+    "col_actions": "Actions",
+    "total_suffix": "clients total",
+    "status_ACTIF": "Active",
+    "status_EN_RETARD": "Late",
+    "status_DEFAILLANT": "Defaulting"
   },
   "dir_kpi": {
     "title": "Portfolio Analysis",
@@ -385,14 +392,20 @@
     "psi_model": "Active model",
     "psi_last_train": "Last training",
     "features_title": "Feature contribution to drift",
-    "psi_chart_title": "PSI Evolution (90 days)"
+    "psi_chart_title": "PSI Evolution (90 days)",
+    "drift_exceeds_label": "— exceeds threshold"
   },
   "dir_rapports": {
     "title": "Reports",
     "subtitle": "Generation and download of regulatory reports",
     "last": "Last:",
     "generating": "Generating...",
-    "generate_btn": "Generate"
+    "generate_btn": "Generate",
+    "r1_titre": "Monthly performance report",
+    "r2_titre": "Quarterly portfolio report",
+    "r3_titre": "COBAC regulatory report",
+    "r4_titre": "Overdue loans report (PAR)",
+    "r5_titre": "Field agent collections report"
   },
   "dir_recouvrement": {
     "title": "Recovery — Files",
@@ -448,7 +461,11 @@
     "banner_created": "branch(es) created",
     "card_agents": "Agents",
     "card_clients": "Clients",
-    "card_par30": "PAR30"
+    "card_par30": "PAR30",
+    "subtitle_suffix": "agencies",
+    "banner_title": "Import complete",
+    "banner_errors_on": "error(s) on",
+    "banner_lines": "line(s)."
   },
   "dir_kyc": {
     "title": "KYC — Client compliance",

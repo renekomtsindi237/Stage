@@ -75,10 +75,10 @@ export class DirScoringComponent implements OnInit {
 
   niveauLabel(n: string): string {
     const map: Record<string, string> = {
-      CRITIQUE: "Critique",
-      ELEVE: "Élevé",
-      MODERE: "Modéré",
-      FAIBLE: "Faible",
+      CRITIQUE: "dir_scoring.filter_critique",
+      ELEVE: "dir_scoring.filter_eleve",
+      MODERE: "dir_scoring.filter_modere",
+      FAIBLE: "dir_scoring.filter_faible",
     };
     return map[n] ?? n;
   }

@@ -117,7 +117,8 @@
           {{ "dir_analytics.drift_alert_title" | translate }}
         </p>
         <p class="alert-body">
-          PSI = {{ drift()!.psiActuel | number: "1.2-2" }} — dépasse le seuil de
+          PSI = {{ drift()!.psiActuel | number: "1.2-2" }}
+          {{ "dir_analytics.drift_exceeds_label" | translate }}
           {{ drift()!.seuilCritique }}.
           {{ "dir_analytics.drift_alert_body" | translate }}
         </p>

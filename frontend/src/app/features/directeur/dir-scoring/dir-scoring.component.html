@@ -106,7 +106,7 @@
               </td>
               <td>
                 <span class="badge" [class]="niveauClass(r.niveauRisque)">
-                  {{ niveauLabel(r.niveauRisque) }}
+                  {{ niveauLabel(r.niveauRisque) | translate }}
                 </span>
               </td>
               <td>{{ r.probabiliteDefaut | number: "1.1-1" }}%</td>

@@ -1,12 +1,13 @@
 import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 import { FcfaPipe } from "../../pipes/fcfa.pipe";
 
 @Component({
   selector: "app-stat-card",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FcfaPipe],
+  imports: [CommonModule, FcfaPipe, TranslatePipe],
   template: `
     @if (loading) {
       <div class="card stat-card stat-card-loading">
@@ -42,7 +43,9 @@ import { FcfaPipe } from "../../pipes/fcfa.pipe";
               trendUp ? "trending_up" : "trending_down"
             }}</span>
             {{ trend | number: "1.1-1" }}%
-            <span class="stat-card-trend-label">{{ trendLabel }}</span>
+            <span class="stat-card-trend-label">{{
+              trendLabel | translate
+            }}</span>
           </div>
         }
         @if (subtitle) {
@@ -108,7 +111,7 @@ export class StatCardComponent {
   @Input() label = "";
   @Input() value: number = 0;
   @Input() trend?: number;
-  @Input() trendLabel = "vs mois préc.";
+  @Input() trendLabel = "common.vs_prev_month";
   @Input() isCurrency = false;
   @Input() isPercent = false;
   @Input() subtitle?: string;

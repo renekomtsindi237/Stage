@@ -10,7 +10,9 @@
   <div class="page-header">
     <div>
       <h2>{{ "dir_agences.title" | translate }}</h2>
-      <p class="text-muted text-sm">{{ agences().length }} agences</p>
+      <p class="text-muted text-sm">
+        {{ agences().length }} {{ "dir_agences.subtitle_suffix" | translate }}
+      </p>
     </div>
     <div class="header-actions">
       <a [href]="templateUrl()" download class="btn btn-ghost btn-sm">
@@ -46,10 +48,13 @@
       class="import-banner"
       [class.import-banner--error]="importResult()!.erreurs > 0"
     >
-      <strong>Import terminé</strong> — {{ importResult()!.importe }}
+      <strong>{{ "dir_agences.banner_title" | translate }}</strong> —
+      {{ importResult()!.importe }}
       {{ "dir_agences.banner_created" | translate }},
-      {{ importResult()!.erreurs }} erreur(s) sur
-      {{ importResult()!.totalLignes }} ligne(s).
+      {{ importResult()!.erreurs }}
+      {{ "dir_agences.banner_errors_on" | translate }}
+      {{ importResult()!.totalLignes }}
+      {{ "dir_agences.banner_lines" | translate }}
       @if (importResult()!.lignesErreur.length > 0) {
         <ul class="import-errors">
           @for (e of importResult()!.lignesErreur; track $index) {

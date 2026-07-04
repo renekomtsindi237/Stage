@@ -79,12 +79,12 @@ export class DirRecouvrementComponent implements OnInit {
 
   phaseLabel(p: string): string {
     const map: Record<string, string> = {
-      RELANCE_AMIABLE: "Relance amiable",
-      MEDIATION_AMIABLE: "Médiation amiable",
-      MISE_EN_DEMEURE: "Mise en demeure",
-      CONTENTIEUX: "Contentieux",
-      REECHELONNEMENT: "Rééchelonnement",
-      PERTE: "Perte",
+      RELANCE_AMIABLE: "dir_recouvrement.filter_relance",
+      MEDIATION_AMIABLE: "dir_recouvrement.filter_mediation",
+      MISE_EN_DEMEURE: "dir_recouvrement.filter_med_form",
+      CONTENTIEUX: "dir_recouvrement.filter_contentieux",
+      REECHELONNEMENT: "dir_recouvrement.filter_reechelonnement",
+      PERTE: "dir_recouvrement.filter_perte",
     };
     return map[p] ?? p;
   }
