@@ -72,13 +72,13 @@ export class AnlScoringComponent implements OnInit {
     this.load();
   }
 
-  classeLabel(c: string) {
+  classeLabel(c: string): string {
     const map: Record<string, string> = {
-      TRES_FAIBLE: "Très faible",
-      FAIBLE: "Faible",
-      MOYEN: "Moyen",
-      BON: "Bon",
-      TRES_BON: "Très bon",
+      TRES_FAIBLE: "anl_scoring.filter_tres_faible",
+      FAIBLE: "anl_scoring.filter_faible",
+      MOYEN: "anl_scoring.filter_moyen",
+      BON: "anl_scoring.filter_bon",
+      TRES_BON: "anl_scoring.filter_tres_bon",
     };
     return map[c] ?? c;
   }

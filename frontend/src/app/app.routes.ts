@@ -234,13 +234,6 @@ export const routes: Routes = [
                 (m) => m.AnlDriftComponent,
               ),
           },
-          {
-            path: "mcrs-demo",
-            loadComponent: () =>
-              import("./features/analyste/anl-mcrs-demo/anl-mcrs-demo.component").then(
-                (m) => m.AnlMcrsDemoComponent,
-              ),
-          },
         ],
       },
 

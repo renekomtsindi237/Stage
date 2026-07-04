@@ -103,7 +103,6 @@
       "scoring": "MCRS Scoring",
       "pipeline": "Airflow Pipeline",
       "drift": "ML Drift",
-      "mcrs_demo": "MCRS Demo",
       "alertes_ml": "ML Alerts",
       "kpi_portefeuille": "Portfolio KPIs",
       "recouvrement": "Recovery",
@@ -804,14 +803,18 @@
     "dag_duration": "Duration",
     "dag_rows_read": "Rows read",
     "dag_rows_written": "Rows written",
-    "dag_logs": "View logs"
+    "dag_logs": "View logs",
+    "statut_success": "Success",
+    "statut_failed": "Failed",
+    "statut_running": "Running",
+    "statut_pending": "Pending"
   },
   "anl_drift": {
     "title": "ML Drift Analysis",
     "subtitle": "MCRS model drift monitoring (Population Stability Index)",
     "alert_title": "Major Drift Alert",
     "alert_body": "The global PSI has exceeded the critical threshold of",
-    "alert_retrain": "is planned automatically.",
+    "alert_retrain": "Retraining is planned automatically.",
     "psi_label": "Current PSI",
     "psi_drift": "DRIFT DETECTED",
     "psi_stable": "STABLE",

@@ -60,6 +60,16 @@ export class AnlPipelineComponent implements OnInit {
     return map[s] ?? "basse";
   }
 
+  statutLabel(s: string): string {
+    const map: Record<string, string> = {
+      SUCCESS: "anl_pipeline.statut_success",
+      RUNNING: "anl_pipeline.statut_running",
+      FAILED: "anl_pipeline.statut_failed",
+      PENDING: "anl_pipeline.statut_pending",
+    };
+    return map[s] ?? s;
+  }
+
   dagIcon(s: string): string {
     const map: Record<string, string> = {
       SUCCESS: "check_circle",

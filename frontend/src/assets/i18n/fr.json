@@ -103,7 +103,6 @@
       "scoring": "Scoring MCRS",
       "pipeline": "Pipeline Airflow",
       "drift": "Drift ML",
-      "mcrs_demo": "Démo MCRS",
       "alertes_ml": "Alertes ML",
       "kpi_portefeuille": "KPI Portefeuille",
       "recouvrement": "Recouvrement",
@@ -804,14 +803,18 @@
     "dag_duration": "Durée",
     "dag_rows_read": "Lignes lues",
     "dag_rows_written": "Lignes écrites",
-    "dag_logs": "Voir les logs"
+    "dag_logs": "Voir les logs",
+    "statut_success": "Succès",
+    "statut_failed": "Échoué",
+    "statut_running": "En cours",
+    "statut_pending": "En attente"
   },
   "anl_drift": {
     "title": "Analyse du Drift ML",
     "subtitle": "Surveillance de la dérive du modèle MCRS (Population Stability Index)",
     "alert_title": "Alerte de Dérive Majeure",
     "alert_body": "Le PSI global a dépassé le seuil critique de",
-    "alert_retrain": "est planifié automatiquement.",
+    "alert_retrain": "Un réentraînement est planifié automatiquement.",
     "psi_label": "PSI Actuel",
     "psi_drift": "DRIFT DÉTECTÉ",
     "psi_stable": "STABLE",

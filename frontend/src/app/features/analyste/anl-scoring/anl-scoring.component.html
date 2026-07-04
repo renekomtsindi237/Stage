@@ -84,7 +84,7 @@
               </td>
               <td>
                 <span class="badge" [class]="classeClass(r.classe)">{{
-                  classeLabel(r.classe)
+                  classeLabel(r.classe) | translate
                 }}</span>
               </td>
               <td>{{ r.probabiliteDefaut | number: "1.1-1" }}%</td>
@@ -108,7 +108,8 @@
           <span class="material-icons-round">chevron_left</span>
         </button>
         <span class="text-sm"
-          >Page {{ currentPage() + 1 }} / {{ page()?.totalPages }}</span
+          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+          {{ page()?.totalPages }}</span
         >
         <button
           class="btn btn-ghost btn-sm"

@@ -38,7 +38,7 @@
         [class]="'badge-' + statutClass(data()!.statutGlobal)"
       >
         <span class="material-icons-round" style="font-size: 12px">circle</span>
-        {{ data()!.statutGlobal }}
+        {{ statutLabel(data()!.statutGlobal) | translate }}
       </span>
     </div>
   </div>
@@ -68,7 +68,7 @@
             class="badge ml-auto"
             [class]="'badge-' + statutClass(dag.statut)"
           >
-            {{ dag.statut }}
+            {{ statutLabel(dag.statut) | translate }}
           </span>
         </div>
 

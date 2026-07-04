@@ -68,11 +68,6 @@ export class SidebarComponent {
         icon: "trending_up",
         route: "/analyste/drift",
       },
-      {
-        label: "sidebar.menu.mcrs_demo",
-        icon: "model_training",
-        route: "/analyste/mcrs-demo",
-      },
     ],
     DIRECTEUR: [
       {
