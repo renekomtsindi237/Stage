@@ -1,18 +1,22 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { RouterLink, RouterOutlet } from "@angular/router";
 import { TranslatePipe } from "@ngx-translate/core";
+import { LanguageSelectorComponent } from "../../shared/components/language-selector/language-selector.component";
 
 @Component({
   selector: "app-auth-shell",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, TranslatePipe],
+  imports: [RouterOutlet, RouterLink, TranslatePipe, LanguageSelectorComponent],
   template: `
     <div class="auth-shell">
       <a routerLink="/" class="auth-back">
         <span class="material-icons-round">arrow_back</span>
         {{ "auth_shell.back_home" | translate }}
       </a>
+      <div class="auth-lang">
+        <app-language-selector />
+      </div>
       <div class="auth-logo-wrap">
         <img
           src="assets/logo.png"
@@ -36,6 +40,11 @@ import { TranslatePipe } from "@ngx-translate/core";
         justify-content: center;
         padding: 40px 16px;
         position: relative;
+      }
+      .auth-lang {
+        position: absolute;
+        top: 20px;
+        right: 20px;
       }
       .auth-back {
         position: absolute;
