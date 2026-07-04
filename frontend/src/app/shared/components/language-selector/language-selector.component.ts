@@ -26,7 +26,8 @@ const LANGUAGES = [
         <span
           class="material-icons-round lang-sel__chevron"
           [class.rotated]="open()"
-        >expand_more</span>
+          >expand_more</span
+        >
       </button>
 
       @if (open()) {
@@ -163,8 +164,7 @@ export class LanguageSelectorComponent {
   readonly languages = LANGUAGES;
   readonly open = signal(false);
   readonly current = computed(
-    () =>
-      LANGUAGES.find((l) => l.code === this.langSvc.lang()) ?? LANGUAGES[0],
+    () => LANGUAGES.find((l) => l.code === this.langSvc.lang()) ?? LANGUAGES[0],
   );
 
   toggle() {

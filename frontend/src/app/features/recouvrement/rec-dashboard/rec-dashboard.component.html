@@ -100,7 +100,7 @@
                 </td>
                 <td>
                   <span class="badge" [ngClass]="phaseClass(c.phase)">
-                    {{ (phaseLabels[c.phase] ?? c.phase) | translate }}
+                    {{ phaseLabels[c.phase] ?? c.phase | translate }}
                   </span>
                 </td>
                 <td>
@@ -166,7 +166,7 @@
           <div class="phase-row">
             <div class="phase-left">
               <span class="badge" [ngClass]="phaseClass(entry.phase)">
-                {{ (phaseLabels[entry.phase] ?? entry.phase) | translate }}
+                {{ phaseLabels[entry.phase] ?? entry.phase | translate }}
               </span>
             </div>
             <div class="phase-right">
