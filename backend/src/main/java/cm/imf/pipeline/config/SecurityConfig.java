@@ -2,6 +2,7 @@ package cm.imf.pipeline.config;
 
 import cm.imf.pipeline.filter.ApiKeyAuthenticationFilter;
 import cm.imf.pipeline.security.JwtAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,6 +75,10 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED))
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Les dispatches d'erreur Tomcat (/error) doivent être permis —
+                        // sinon Spring Security relance AccessDeniedException sur le dispatch
+                        // ERROR, ce qui corrompt la réponse et produit un 500 au lieu du 401.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         // Endpoints publics : ping/health pour mobile, auth, docs Swagger
                         .requestMatchers("/ping", "/health", "/api/v1/ping", "/api/v1/health").permitAll()
                         .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()

@@ -68,6 +68,7 @@ public class AdminService implements IAdminService {
     private final PasswordEncoder  passwordEncoder;
     private final R2StorageService r2;
     private final EmailService     emailService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
@@ -218,10 +219,58 @@ public class AdminService implements IAdminService {
     @Transactional(readOnly = true)
     public List<AgenceResponse> listAgences() {
         Long imfId = TenantContext.currentImfId();
-        return agenceRepository.findByImfIdOrderByNomAsc(imfId)
-                .stream()
-                .map(AgenceResponse::from)
-                .toList();
+        return jdbc.query("""
+                SELECT
+                    a.uid::text                                          AS uid,
+                    a.nom, a.ville, a.responsable, a.telephone,
+                    a.actif, a.created_at,
+                    COALESCE((
+                        SELECT COUNT(*)
+                        FROM app.utilisateurs u
+                        WHERE u.imf_id = a.imf_id
+                          AND u.role   = 'AGENT'
+                          AND u.actif  = TRUE
+                    ), 0)                                               AS agents_count,
+                    COALESCE((
+                        SELECT COUNT(*)
+                        FROM app.clients_informels ci
+                        WHERE ci.agence_id = a.id
+                    ), 0)                                               AS clients_count,
+                    COALESCE((
+                        SELECT SUM(c.montant_impaye)
+                        FROM app.creances c
+                        WHERE c.agence_id = a.id
+                          AND c.statut    = 'ACTIVE'
+                    ), 0)                                               AS encours_fcfa,
+                    COALESCE((
+                        SELECT ROUND(
+                            100.0 * SUM(c.montant_impaye)
+                                FILTER (WHERE c.jours_retard > 30)
+                            / NULLIF(SUM(c.montant_impaye), 0),
+                            1
+                        )
+                        FROM app.creances c
+                        WHERE c.agence_id = a.id
+                          AND c.statut    = 'ACTIVE'
+                    ), 0)                                               AS par30
+                FROM app.agences a
+                WHERE a.imf_id = ?
+                ORDER BY a.nom
+                """,
+                (rs, i) -> new AgenceResponse(
+                        rs.getString("uid"),
+                        rs.getString("nom"),
+                        rs.getString("ville"),
+                        rs.getString("responsable"),
+                        rs.getString("telephone"),
+                        rs.getBoolean("actif"),
+                        rs.getObject("created_at",
+                                java.time.OffsetDateTime.class),
+                        rs.getLong("agents_count"),
+                        rs.getLong("clients_count"),
+                        rs.getLong("encours_fcfa"),
+                        rs.getDouble("par30")),
+                imfId);
     }
 
     @Transactional(readOnly = true)

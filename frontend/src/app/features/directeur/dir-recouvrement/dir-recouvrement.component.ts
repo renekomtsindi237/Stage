@@ -13,12 +13,12 @@ import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 
 interface DossierRecouvrement {
   uid: string;
-  clientNom: string;
-  montantDu: number;
+  nomClient: string;
+  montantImpaye: number;
   joursRetard: number;
   phase: string;
   clos: boolean;
-  createdAt: string;
+  dateOuverture: string;
   updatedAt: string;
 }
 

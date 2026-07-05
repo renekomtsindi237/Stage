@@ -1,0 +1,725 @@
+{
+  "_type": "Project",
+  "_id": "PROJ_MR",
+  "name": "MicroRecouv V1 — Modèle Conceptuel de la Base de Données",
+  "ownedElements": [
+    {
+      "_type": "UMLModel",
+      "_id": "MDL_MR",
+      "_parent": { "$ref": "PROJ_MR" },
+      "name": "Domaine Métier MicroRecouv",
+      "ownedElements": [
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_MT",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Infrastructure Multi-tenant",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_IMF",
+              "_parent": { "$ref": "PKG_MT" },
+              "name": "Imf",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_IMF_1", "_parent": { "$ref": "CLS_IMF" }, "name": "code", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_IMF_2", "_parent": { "$ref": "CLS_IMF" }, "name": "nom", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_IMF_3", "_parent": { "$ref": "CLS_IMF" }, "name": "typeImf", "type": "TypeImfEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_IMF_4", "_parent": { "$ref": "CLS_IMF" }, "name": "pays", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_IMF_5", "_parent": { "$ref": "CLS_IMF" }, "name": "actif", "type": "Boolean", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_AGC",
+              "_parent": { "$ref": "PKG_MT" },
+              "name": "Agence",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_AGC_1", "_parent": { "$ref": "CLS_AGC" }, "name": "codeAgence", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_AGC_2", "_parent": { "$ref": "CLS_AGC" }, "name": "nomAgence", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_AGC_3", "_parent": { "$ref": "CLS_AGC" }, "name": "ville", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_AGC_4", "_parent": { "$ref": "CLS_AGC" }, "name": "region", "type": "String", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_USR",
+              "_parent": { "$ref": "PKG_MT" },
+              "name": "User",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_USR_1", "_parent": { "$ref": "CLS_USR" }, "name": "email", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_USR_2", "_parent": { "$ref": "CLS_USR" }, "name": "nomComplet", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_USR_3", "_parent": { "$ref": "CLS_USR" }, "name": "role", "type": "RoleEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_USR_4", "_parent": { "$ref": "CLS_USR" }, "name": "actif", "type": "Boolean", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_CLI",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Clients & KYC",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_CLI",
+              "_parent": { "$ref": "PKG_CLI" },
+              "name": "ClientInformel",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_CLI_1", "_parent": { "$ref": "CLS_CLI" }, "name": "nomComplet", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CLI_2", "_parent": { "$ref": "CLS_CLI" }, "name": "telephone", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CLI_3", "_parent": { "$ref": "CLS_CLI" }, "name": "secteurActivite", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CLI_4", "_parent": { "$ref": "CLS_CLI" }, "name": "dateAdhesion", "type": "Date", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_KYC",
+              "_parent": { "$ref": "PKG_CLI" },
+              "name": "KycDossier",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_KYC_1", "_parent": { "$ref": "CLS_KYC" }, "name": "statut", "type": "StatutKycEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_KYC_2", "_parent": { "$ref": "CLS_KYC" }, "name": "dateVerification", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_KYC_3", "_parent": { "$ref": "CLS_KYC" }, "name": "niveauKyc", "type": "String", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_COL",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Collectes Terrain (offline-first)",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_CYC",
+              "_parent": { "$ref": "PKG_COL" },
+              "name": "CycleCollecte",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_CYC_1", "_parent": { "$ref": "CLS_CYC" }, "name": "nomCycle", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CYC_2", "_parent": { "$ref": "CLS_CYC" }, "name": "periodicite", "type": "PeriodiciteEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CYC_3", "_parent": { "$ref": "CLS_CYC" }, "name": "objectifMontant", "type": "BigDecimal", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_TER",
+              "_parent": { "$ref": "PKG_COL" },
+              "name": "CollecteTerrain",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_TER_1", "_parent": { "$ref": "CLS_TER" }, "name": "uuidMobile", "type": "UUID", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TER_2", "_parent": { "$ref": "CLS_TER" }, "name": "montantCollecte", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TER_3", "_parent": { "$ref": "CLS_TER" }, "name": "dateCollecte", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TER_4", "_parent": { "$ref": "CLS_TER" }, "name": "canalPaiement", "type": "CanalEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TER_5", "_parent": { "$ref": "CLS_TER" }, "name": "statut", "type": "StatutCollecteEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TER_6", "_parent": { "$ref": "CLS_TER" }, "name": "latitude", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TER_7", "_parent": { "$ref": "CLS_TER" }, "name": "longitude", "type": "BigDecimal", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_CRD",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Cycle Crédit",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_DCR",
+              "_parent": { "$ref": "PKG_CRD" },
+              "name": "DossierCredit",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_DCR_1", "_parent": { "$ref": "CLS_DCR" }, "name": "montantDemande", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_DCR_2", "_parent": { "$ref": "CLS_DCR" }, "name": "dureeMois", "type": "Integer", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_DCR_3", "_parent": { "$ref": "CLS_DCR" }, "name": "objetFinancement", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_DCR_4", "_parent": { "$ref": "CLS_DCR" }, "name": "statut", "type": "StatutDossierEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_CMT",
+              "_parent": { "$ref": "PKG_CRD" },
+              "name": "ComiteDecision",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_CMT_1", "_parent": { "$ref": "CLS_CMT" }, "name": "dateDeliberation", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CMT_2", "_parent": { "$ref": "CLS_CMT" }, "name": "decision", "type": "DecisionEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CMT_3", "_parent": { "$ref": "CLS_CMT" }, "name": "motif", "type": "String", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_CCR",
+              "_parent": { "$ref": "PKG_CRD" },
+              "name": "ContratCredit",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_CCR_1", "_parent": { "$ref": "CLS_CCR" }, "name": "referenceContrat", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CCR_2", "_parent": { "$ref": "CLS_CCR" }, "name": "montantTotal", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CCR_3", "_parent": { "$ref": "CLS_CCR" }, "name": "tauxInteret", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CCR_4", "_parent": { "$ref": "CLS_CCR" }, "name": "nbEcheances", "type": "Integer", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CCR_5", "_parent": { "$ref": "CLS_CCR" }, "name": "statut", "type": "StatutContratEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_ECH",
+              "_parent": { "$ref": "PKG_CRD" },
+              "name": "Echeance",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_ECH_1", "_parent": { "$ref": "CLS_ECH" }, "name": "numeroEcheance", "type": "Integer", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ECH_2", "_parent": { "$ref": "CLS_ECH" }, "name": "dateEcheance", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ECH_3", "_parent": { "$ref": "CLS_ECH" }, "name": "montantDu", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ECH_4", "_parent": { "$ref": "CLS_ECH" }, "name": "montantRembourse", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ECH_5", "_parent": { "$ref": "CLS_ECH" }, "name": "statut", "type": "StatutEcheanceEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_GAR",
+              "_parent": { "$ref": "PKG_CRD" },
+              "name": "GarantieCredit",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_GAR_1", "_parent": { "$ref": "CLS_GAR" }, "name": "typeGarantie", "type": "TypeGarantieEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_GAR_2", "_parent": { "$ref": "CLS_GAR" }, "name": "valeurEstimee", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_GAR_3", "_parent": { "$ref": "CLS_GAR" }, "name": "description", "type": "String", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_REC",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Recouvrement de Créances",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_CRE",
+              "_parent": { "$ref": "PKG_REC" },
+              "name": "Creance",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_CRE_1", "_parent": { "$ref": "CLS_CRE" }, "name": "montantTotal", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CRE_2", "_parent": { "$ref": "CLS_CRE" }, "name": "montantImpaye", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CRE_3", "_parent": { "$ref": "CLS_CRE" }, "name": "joursRetard", "type": "Integer", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CRE_4", "_parent": { "$ref": "CLS_CRE" }, "name": "classeRisqueCobac", "type": "ClasseCobacEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CRE_5", "_parent": { "$ref": "CLS_CRE" }, "name": "statut", "type": "StatutCreanceEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_ALT",
+              "_parent": { "$ref": "PKG_REC" },
+              "name": "AlerteImpaye",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_ALT_1", "_parent": { "$ref": "CLS_ALT" }, "name": "typeAlerte", "type": "TypeAlerteEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ALT_2", "_parent": { "$ref": "CLS_ALT" }, "name": "joursRetard", "type": "Integer", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ALT_3", "_parent": { "$ref": "CLS_ALT" }, "name": "statutAlerte", "type": "StatutAlerteEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_PLA",
+              "_parent": { "$ref": "PKG_REC" },
+              "name": "PlanApurement",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_PLA_1", "_parent": { "$ref": "CLS_PLA" }, "name": "montantAccorde", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_PLA_2", "_parent": { "$ref": "CLS_PLA" }, "name": "nombreEcheances", "type": "Integer", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_PLA_3", "_parent": { "$ref": "CLS_PLA" }, "name": "statut", "type": "StatutPlanEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_DRC",
+              "_parent": { "$ref": "PKG_REC" },
+              "name": "DossierRecouvrement",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_DRC_1", "_parent": { "$ref": "CLS_DRC" }, "name": "phase", "type": "PhaseEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_DRC_2", "_parent": { "$ref": "CLS_DRC" }, "name": "prioriteScoring", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_DRC_3", "_parent": { "$ref": "CLS_DRC" }, "name": "clos", "type": "Boolean", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_ACT",
+              "_parent": { "$ref": "PKG_REC" },
+              "name": "ActionRecouvrement",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_ACT_1", "_parent": { "$ref": "CLS_ACT" }, "name": "typeAction", "type": "TypeActionEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ACT_2", "_parent": { "$ref": "CLS_ACT" }, "name": "dateAction", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_ACT_3", "_parent": { "$ref": "CLS_ACT" }, "name": "resultat", "type": "String", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_CAI",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Caisse",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_OPC",
+              "_parent": { "$ref": "PKG_CAI" },
+              "name": "OperationCaisse",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_OPC_1", "_parent": { "$ref": "CLS_OPC" }, "name": "typeOperation", "type": "TypeOperationEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_OPC_2", "_parent": { "$ref": "CLS_OPC" }, "name": "montant", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_OPC_3", "_parent": { "$ref": "CLS_OPC" }, "name": "dateOperation", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_OPC_4", "_parent": { "$ref": "CLS_OPC" }, "name": "motif", "type": "String", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_ML",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Scoring ML (XGBoost + SHAP)",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_SCR",
+              "_parent": { "$ref": "PKG_ML" },
+              "name": "ClientScore",
+              "stereotype": "ML",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_SCR_1", "_parent": { "$ref": "CLS_SCR" }, "name": "scoreCrs", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SCR_2", "_parent": { "$ref": "CLS_SCR" }, "name": "scoreRps", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SCR_3", "_parent": { "$ref": "CLS_SCR" }, "name": "scoreCsi", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SCR_4", "_parent": { "$ref": "CLS_SCR" }, "name": "scoreMcrs", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SCR_5", "_parent": { "$ref": "CLS_SCR" }, "name": "classeRisque", "type": "ClasseRisqueEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SCR_6", "_parent": { "$ref": "CLS_SCR" }, "name": "actionRecommandee", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SCR_7", "_parent": { "$ref": "CLS_SCR" }, "name": "scoredAt", "type": "Date", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_SHP",
+              "_parent": { "$ref": "PKG_ML" },
+              "name": "ShapExplanation",
+              "stereotype": "ML",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_SHP_1", "_parent": { "$ref": "CLS_SHP" }, "name": "featureName", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SHP_2", "_parent": { "$ref": "CLS_SHP" }, "name": "shapValue", "type": "BigDecimal", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_SHP_3", "_parent": { "$ref": "CLS_SHP" }, "name": "rangImportance", "type": "Integer", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_IA",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Chatbot IA (GROQ API)",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_CNV",
+              "_parent": { "$ref": "PKG_IA" },
+              "name": "ConversationIA",
+              "stereotype": "IA",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_CNV_1", "_parent": { "$ref": "CLS_CNV" }, "name": "sessionId", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CNV_2", "_parent": { "$ref": "CLS_CNV" }, "name": "role", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_CNV_3", "_parent": { "$ref": "CLS_CNV" }, "name": "dateDebut", "type": "Date", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_MSG",
+              "_parent": { "$ref": "PKG_IA" },
+              "name": "MessageIA",
+              "stereotype": "IA",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_MSG_1", "_parent": { "$ref": "CLS_MSG" }, "name": "contenu", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_MSG_2", "_parent": { "$ref": "CLS_MSG" }, "name": "expediteur", "type": "ExpediteurEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_MSG_3", "_parent": { "$ref": "CLS_MSG" }, "name": "timestamp", "type": "Date", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_MSG_4", "_parent": { "$ref": "CLS_MSG" }, "name": "tokensUtilises", "type": "Integer", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "_type": "UMLPackage",
+          "_id": "PKG_SUP",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Support & Audit",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_TKT",
+              "_parent": { "$ref": "PKG_SUP" },
+              "name": "TicketSupport",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_TKT_1", "_parent": { "$ref": "CLS_TKT" }, "name": "titre", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TKT_2", "_parent": { "$ref": "CLS_TKT" }, "name": "categorie", "type": "CategorieEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TKT_3", "_parent": { "$ref": "CLS_TKT" }, "name": "priorite", "type": "PrioriteEnum", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_TKT_4", "_parent": { "$ref": "CLS_TKT" }, "name": "statut", "type": "StatutTicketEnum", "visibility": "public" }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "CLS_NOT",
+              "_parent": { "$ref": "PKG_SUP" },
+              "name": "Notification",
+              "visibility": "public",
+              "ownedElements": [
+                { "_type": "UMLAttribute", "_id": "A_NOT_1", "_parent": { "$ref": "CLS_NOT" }, "name": "type", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_NOT_2", "_parent": { "$ref": "CLS_NOT" }, "name": "titre", "type": "String", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_NOT_3", "_parent": { "$ref": "CLS_NOT" }, "name": "lu", "type": "Boolean", "visibility": "public" },
+                { "_type": "UMLAttribute", "_id": "A_NOT_4", "_parent": { "$ref": "CLS_NOT" }, "name": "createdAt", "type": "Date", "visibility": "public" }
+              ]
+            }
+          ]
+        },
+
+        { "_type": "UMLAssociation", "_id": "REL_01", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R01E1", "reference": { "$ref": "CLS_IMF" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R01E2", "reference": { "$ref": "CLS_AGC" }, "multiplicity": "1..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_02", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R02E1", "reference": { "$ref": "CLS_IMF" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R02E2", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_03", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R03E1", "reference": { "$ref": "CLS_AGC" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R03E2", "reference": { "$ref": "CLS_USR" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_04", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R04E1", "reference": { "$ref": "CLS_IMF" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R04E2", "reference": { "$ref": "CLS_CLI" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_05", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R05E1", "reference": { "$ref": "CLS_CLI" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R05E2", "reference": { "$ref": "CLS_KYC" }, "multiplicity": "0..1" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_06", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R06E1", "reference": { "$ref": "CLS_AGC" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R06E2", "reference": { "$ref": "CLS_CYC" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_07", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R07E1", "reference": { "$ref": "CLS_CYC" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R07E2", "reference": { "$ref": "CLS_TER" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_08", "_parent": { "$ref": "MDL_MR" }, "name": "agent",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R08E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R08E2", "reference": { "$ref": "CLS_TER" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_09", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R09E1", "reference": { "$ref": "CLS_CLI" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R09E2", "reference": { "$ref": "CLS_TER" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_10", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R10E1", "reference": { "$ref": "CLS_CLI" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R10E2", "reference": { "$ref": "CLS_DCR" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_11", "_parent": { "$ref": "MDL_MR" }, "name": "instruit",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R11E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R11E2", "reference": { "$ref": "CLS_DCR" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_12", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R12E1", "reference": { "$ref": "CLS_DCR" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R12E2", "reference": { "$ref": "CLS_CMT" }, "multiplicity": "0..1" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_13", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R13E1", "reference": { "$ref": "CLS_DCR" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R13E2", "reference": { "$ref": "CLS_CCR" }, "multiplicity": "0..1" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_14", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R14E1", "reference": { "$ref": "CLS_CCR" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R14E2", "reference": { "$ref": "CLS_ECH" }, "multiplicity": "1..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_15", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R15E1", "reference": { "$ref": "CLS_CCR" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R15E2", "reference": { "$ref": "CLS_GAR" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_16", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R16E1", "reference": { "$ref": "CLS_CCR" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R16E2", "reference": { "$ref": "CLS_CRE" }, "multiplicity": "0..1" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_17", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R17E1", "reference": { "$ref": "CLS_CRE" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R17E2", "reference": { "$ref": "CLS_ALT" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_18", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R18E1", "reference": { "$ref": "CLS_CRE" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R18E2", "reference": { "$ref": "CLS_PLA" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_19", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R19E1", "reference": { "$ref": "CLS_CRE" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R19E2", "reference": { "$ref": "CLS_DRC" }, "multiplicity": "0..1" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_20", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R20E1", "reference": { "$ref": "CLS_DRC" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R20E2", "reference": { "$ref": "CLS_ACT" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_21", "_parent": { "$ref": "MDL_MR" }, "name": "responsable",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R21E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R21E2", "reference": { "$ref": "CLS_DRC" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_22", "_parent": { "$ref": "MDL_MR" }, "name": "caissier",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R22E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R22E2", "reference": { "$ref": "CLS_OPC" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_23", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R23E1", "reference": { "$ref": "CLS_AGC" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R23E2", "reference": { "$ref": "CLS_OPC" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_24", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R24E1", "reference": { "$ref": "CLS_CLI" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R24E2", "reference": { "$ref": "CLS_SCR" }, "multiplicity": "0..1" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_25", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R25E1", "reference": { "$ref": "CLS_SCR" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R25E2", "reference": { "$ref": "CLS_SHP" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLDependency", "_id": "REL_26", "_parent": { "$ref": "MDL_MR" },
+          "name": "consulte",
+          "source": { "$ref": "CLS_CRE" },
+          "target": { "$ref": "CLS_SCR" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_27", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R27E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R27E2", "reference": { "$ref": "CLS_CNV" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_28", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R28E1", "reference": { "$ref": "CLS_CNV" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R28E2", "reference": { "$ref": "CLS_MSG" }, "multiplicity": "1..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_29", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R29E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R29E2", "reference": { "$ref": "CLS_TKT" }, "multiplicity": "0..*" } },
+
+        { "_type": "UMLAssociation", "_id": "REL_30", "_parent": { "$ref": "MDL_MR" },
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R30E1", "reference": { "$ref": "CLS_USR" }, "multiplicity": "1", "aggregation": "shared" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R30E2", "reference": { "$ref": "CLS_NOT" }, "multiplicity": "0..*" } },
+
+        {
+          "_type": "UMLClassDiagram",
+          "_id": "DIAG_001",
+          "_parent": { "$ref": "MDL_MR" },
+          "name": "Diagramme de classes — Domaine Métier MicroRecouv V1",
+          "defaultDiagram": true,
+          "ownedViews": [
+
+            {
+              "_type": "UMLClassView", "_id": "V_IMF", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_IMF" },
+              "x": 260, "y": 30, "width": 205, "height": 130,
+              "fillColor": "#DBEAFE", "lineColor": "#2563EB"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_AGC", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_AGC" },
+              "x": 490, "y": 30, "width": 205, "height": 110,
+              "fillColor": "#DBEAFE", "lineColor": "#2563EB"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_USR", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_USR" },
+              "x": 720, "y": 30, "width": 205, "height": 110,
+              "fillColor": "#DBEAFE", "lineColor": "#2563EB"
+            },
+
+            {
+              "_type": "UMLClassView", "_id": "V_CLI", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_CLI" },
+              "x": 30, "y": 210, "width": 205, "height": 110,
+              "fillColor": "#DCFCE7", "lineColor": "#16A34A"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_KYC", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_KYC" },
+              "x": 260, "y": 210, "width": 205, "height": 90,
+              "fillColor": "#DCFCE7", "lineColor": "#16A34A"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_CYC", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_CYC" },
+              "x": 490, "y": 210, "width": 205, "height": 90,
+              "fillColor": "#FFEDD5", "lineColor": "#EA580C"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_TER", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_TER" },
+              "x": 720, "y": 210, "width": 205, "height": 170,
+              "fillColor": "#FFEDD5", "lineColor": "#EA580C"
+            },
+
+            {
+              "_type": "UMLClassView", "_id": "V_DCR", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_DCR" },
+              "x": 30, "y": 420, "width": 205, "height": 110,
+              "fillColor": "#F3E8FF", "lineColor": "#9333EA"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_CMT", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_CMT" },
+              "x": 260, "y": 420, "width": 205, "height": 90,
+              "fillColor": "#F3E8FF", "lineColor": "#9333EA"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_CCR", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_CCR" },
+              "x": 490, "y": 420, "width": 205, "height": 130,
+              "fillColor": "#F3E8FF", "lineColor": "#9333EA"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_ECH", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_ECH" },
+              "x": 720, "y": 420, "width": 205, "height": 130,
+              "fillColor": "#F3E8FF", "lineColor": "#9333EA"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_GAR", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_GAR" },
+              "x": 950, "y": 420, "width": 205, "height": 90,
+              "fillColor": "#F3E8FF", "lineColor": "#9333EA"
+            },
+
+            {
+              "_type": "UMLClassView", "_id": "V_CRE", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_CRE" },
+              "x": 30, "y": 600, "width": 205, "height": 130,
+              "fillColor": "#FFE4E6", "lineColor": "#DC2626"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_ALT", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_ALT" },
+              "x": 260, "y": 600, "width": 205, "height": 90,
+              "fillColor": "#FFE4E6", "lineColor": "#DC2626"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_PLA", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_PLA" },
+              "x": 490, "y": 600, "width": 205, "height": 90,
+              "fillColor": "#FFE4E6", "lineColor": "#DC2626"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_DRC", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_DRC" },
+              "x": 720, "y": 600, "width": 205, "height": 90,
+              "fillColor": "#FFE4E6", "lineColor": "#DC2626"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_ACT", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_ACT" },
+              "x": 950, "y": 600, "width": 205, "height": 90,
+              "fillColor": "#FFE4E6", "lineColor": "#DC2626"
+            },
+
+            {
+              "_type": "UMLClassView", "_id": "V_OPC", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_OPC" },
+              "x": 30, "y": 780, "width": 205, "height": 110,
+              "fillColor": "#FEF9C3", "lineColor": "#CA8A04"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_SCR", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_SCR" },
+              "x": 260, "y": 780, "width": 205, "height": 170,
+              "fillColor": "#CCFBF1", "lineColor": "#0D9488"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_SHP", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_SHP" },
+              "x": 490, "y": 780, "width": 205, "height": 90,
+              "fillColor": "#CCFBF1", "lineColor": "#0D9488"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_CNV", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_CNV" },
+              "x": 720, "y": 780, "width": 205, "height": 90,
+              "fillColor": "#E0E7FF", "lineColor": "#4F46E5"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_MSG", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_MSG" },
+              "x": 950, "y": 780, "width": 205, "height": 110,
+              "fillColor": "#E0E7FF", "lineColor": "#4F46E5"
+            },
+
+            {
+              "_type": "UMLClassView", "_id": "V_TKT", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_TKT" },
+              "x": 30, "y": 1000, "width": 205, "height": 110,
+              "fillColor": "#F1F5F9", "lineColor": "#64748B"
+            },
+            {
+              "_type": "UMLClassView", "_id": "V_NOT", "_parent": { "$ref": "DIAG_001" },
+              "model": { "$ref": "CLS_NOT" },
+              "x": 260, "y": 1000, "width": 205, "height": 110,
+              "fillColor": "#F1F5F9", "lineColor": "#64748B"
+            },
+
+            { "_type": "UMLAssociationView", "_id": "VR01", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_01" }, "source": { "$ref": "V_IMF" }, "target": { "$ref": "V_AGC" } },
+            { "_type": "UMLAssociationView", "_id": "VR02", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_02" }, "source": { "$ref": "V_IMF" }, "target": { "$ref": "V_USR" } },
+            { "_type": "UMLAssociationView", "_id": "VR03", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_03" }, "source": { "$ref": "V_AGC" }, "target": { "$ref": "V_USR" } },
+            { "_type": "UMLAssociationView", "_id": "VR04", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_04" }, "source": { "$ref": "V_IMF" }, "target": { "$ref": "V_CLI" } },
+            { "_type": "UMLAssociationView", "_id": "VR05", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_05" }, "source": { "$ref": "V_CLI" }, "target": { "$ref": "V_KYC" } },
+            { "_type": "UMLAssociationView", "_id": "VR06", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_06" }, "source": { "$ref": "V_AGC" }, "target": { "$ref": "V_CYC" } },
+            { "_type": "UMLAssociationView", "_id": "VR07", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_07" }, "source": { "$ref": "V_CYC" }, "target": { "$ref": "V_TER" } },
+            { "_type": "UMLAssociationView", "_id": "VR08", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_08" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_TER" } },
+            { "_type": "UMLAssociationView", "_id": "VR09", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_09" }, "source": { "$ref": "V_CLI" }, "target": { "$ref": "V_TER" } },
+            { "_type": "UMLAssociationView", "_id": "VR10", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_10" }, "source": { "$ref": "V_CLI" }, "target": { "$ref": "V_DCR" } },
+            { "_type": "UMLAssociationView", "_id": "VR11", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_11" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_DCR" } },
+            { "_type": "UMLAssociationView", "_id": "VR12", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_12" }, "source": { "$ref": "V_DCR" }, "target": { "$ref": "V_CMT" } },
+            { "_type": "UMLAssociationView", "_id": "VR13", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_13" }, "source": { "$ref": "V_DCR" }, "target": { "$ref": "V_CCR" } },
+            { "_type": "UMLAssociationView", "_id": "VR14", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_14" }, "source": { "$ref": "V_CCR" }, "target": { "$ref": "V_ECH" } },
+            { "_type": "UMLAssociationView", "_id": "VR15", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_15" }, "source": { "$ref": "V_CCR" }, "target": { "$ref": "V_GAR" } },
+            { "_type": "UMLAssociationView", "_id": "VR16", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_16" }, "source": { "$ref": "V_CCR" }, "target": { "$ref": "V_CRE" } },
+            { "_type": "UMLAssociationView", "_id": "VR17", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_17" }, "source": { "$ref": "V_CRE" }, "target": { "$ref": "V_ALT" } },
+            { "_type": "UMLAssociationView", "_id": "VR18", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_18" }, "source": { "$ref": "V_CRE" }, "target": { "$ref": "V_PLA" } },
+            { "_type": "UMLAssociationView", "_id": "VR19", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_19" }, "source": { "$ref": "V_CRE" }, "target": { "$ref": "V_DRC" } },
+            { "_type": "UMLAssociationView", "_id": "VR20", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_20" }, "source": { "$ref": "V_DRC" }, "target": { "$ref": "V_ACT" } },
+            { "_type": "UMLAssociationView", "_id": "VR21", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_21" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_DRC" } },
+            { "_type": "UMLAssociationView", "_id": "VR22", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_22" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_OPC" } },
+            { "_type": "UMLAssociationView", "_id": "VR23", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_23" }, "source": { "$ref": "V_AGC" }, "target": { "$ref": "V_OPC" } },
+            { "_type": "UMLAssociationView", "_id": "VR24", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_24" }, "source": { "$ref": "V_CLI" }, "target": { "$ref": "V_SCR" } },
+            { "_type": "UMLAssociationView", "_id": "VR25", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_25" }, "source": { "$ref": "V_SCR" }, "target": { "$ref": "V_SHP" } },
+            { "_type": "UMLDependencyView",  "_id": "VR26", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_26" }, "source": { "$ref": "V_CRE" }, "target": { "$ref": "V_SCR" } },
+            { "_type": "UMLAssociationView", "_id": "VR27", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_27" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_CNV" } },
+            { "_type": "UMLAssociationView", "_id": "VR28", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_28" }, "source": { "$ref": "V_CNV" }, "target": { "$ref": "V_MSG" } },
+            { "_type": "UMLAssociationView", "_id": "VR29", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_29" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_TKT" } },
+            { "_type": "UMLAssociationView", "_id": "VR30", "_parent": { "$ref": "DIAG_001" }, "model": { "$ref": "REL_30" }, "source": { "$ref": "V_USR" }, "target": { "$ref": "V_NOT" } }
+          ]
+        }
+
+      ]
+    }
+  ]
+}

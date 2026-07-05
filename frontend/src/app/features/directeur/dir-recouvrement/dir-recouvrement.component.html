@@ -129,8 +129,8 @@
         } @else {
           @for (d of page()?.content ?? []; track d.uid) {
             <tr>
-              <td class="font-semibold">{{ d.clientNom }}</td>
-              <td class="font-semibold">{{ d.montantDu | fcfa }}</td>
+              <td class="font-semibold">{{ d.nomClient }}</td>
+              <td class="font-semibold">{{ d.montantImpaye | fcfa }}</td>
               <td>
                 <span
                   [class]="retardClass(d.joursRetard)"

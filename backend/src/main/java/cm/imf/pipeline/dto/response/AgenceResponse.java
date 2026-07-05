@@ -12,14 +12,19 @@ public record AgenceResponse(
         String responsable,
         String telephone,
         boolean actif,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        long agentsCount,
+        long clientsCount,
+        long encoursFcfa,
+        double par30
 ) {
     public static AgenceResponse from(Agence a) {
         return new AgenceResponse(
                 a.getUid() != null ? a.getUid().toString() : null,
                 a.getNom(), a.getVille(),
                 a.getResponsable(), a.getTelephone(),
-                a.isActif(), a.getCreatedAt()
+                a.isActif(), a.getCreatedAt(),
+                0L, 0L, 0L, 0.0
         );
     }
 }

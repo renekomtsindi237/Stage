@@ -156,8 +156,15 @@ export class DirCarteAgentsComponent
       subdomains: ["a", "b", "c"],
     }).addTo(this.map);
 
-    // Zoom sur le Cameroun en entier
+    // Zoom sur le Cameroun en entier.
+    // setTimeout nécessaire : Angular AfterViewInit s'exécute avant que le
+    // container CSS ait sa taille finale — Leaflet calcule un zoom erroné
+    // si la div a encore height=0. invalidateSize() force le recalcul.
     this.map.fitBounds(CAMEROUN_BOUNDS, { padding: [20, 20] });
+    setTimeout(() => {
+      this.map?.invalidateSize();
+      this.map?.fitBounds(CAMEROUN_BOUNDS, { padding: [20, 20] });
+    }, 200);
   }
 
   private swapTiles(dark: boolean) {
