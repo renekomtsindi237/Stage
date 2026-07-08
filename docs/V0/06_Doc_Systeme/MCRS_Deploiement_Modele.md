@@ -39,10 +39,12 @@ séparation existe pour qu'aucun modèle non validé ne devienne actif par accid
 
 Entraînement walk-forward hebdomadaire (dimanche 02h00) sur `ml.features_client`, avec
 comparaison champion/challenger et promotion automatique si le challenger est meilleur (cf.
-`pipeline/dags/dag_ml_training.py`). **État actuel : cassé** — le conteneur
-`imf_staging_airflow_init` boucle en échec (connexion Postgres via socket Unix local au lieu du
-conteneur `imf-airflow-db`/Supabase). Tant que ce n'est pas corrigé, ce mécanisme est
-inopérant — diagnostic complet dans l'historique de ce document (section 4).
+`pipeline/dags/dag_ml_training.py`). **État actuel (2026-07-08) : le DAG s'importe et
+s'enregistre correctement** dans le scheduler géré par CI/CD (`imf-airflow-scheduler`, projet
+`imf-backend`) — vérifié via `airflow dags list` : `dag_ml_training | pipeline-imf | paused=False`,
+de même pour `dag_ml_scoring`. Diagnostic et correctif dans l'historique de ce document (section
+4). **Ce qui n'a en revanche pas été testé** : un déclenchement réel du DAG de bout en bout — cf.
+limite en section 4.
 
 ### 2.2 Mécanisme manuel formalisé (utilisable dès maintenant)
 
@@ -126,14 +128,30 @@ walk-forward significative sur 5 plis), puis `train_mcrs_champion.py --donnees <
   /external/scores/CLF001` → 200 avec un score réellement déjà calculé (0.8797, FAIBLE, classe A,
   calculé le 2026-06-23 — pas une donnée fabriquée pour l'occasion), `GET /external/scores/at-risk`
   → 200 avec 31 clients réels. Aucune clé / `401` sans authentification confirmés.
+- **DAGs Airflow en échec d'import (`ModuleNotFoundError: No module named 'pipeline'`)**, dont
+  `dag_ml_training` et `dag_ml_scoring` — ~10 des 15 DAGs sur 15. **Diagnostic initial erroné dans
+  une version antérieure de ce document** : ce qui semblait être le problème
+  (`imf_staging_airflow_init` en crash-loop, erreur socket Postgres local) était en fait un
+  conteneur **orphelin d'un tout autre projet Docker Compose** (`imf-pipeline`, image
+  `apache/airflow:2.9.1` nue), sans rapport avec le vrai Airflow géré par CI/CD
+  (`imf-airflow-scheduler`/`imf-airflow-webserver`, projet `imf-backend`, image
+  `ghcr.io/.../imf-airflow:staging`, en service continu). Le vrai problème : `dags/scripts/*.py`
+  fait des imports en paquet (`from pipeline.src... import ...`), mais
+  `docker-compose.backend-pipeline.yml` ne montait que `pipeline/dags/` dans le conteneur, jamais
+  `pipeline/src/`. Corrigé en ajoutant un second volume (`pipeline/:/opt/airflow/pipeline:ro`) et
+  une variable `PYTHONPATH` à double entrée (`/opt/airflow:/opt/airflow/pipeline/src` — la seconde
+  entrée est nécessaire car `pipeline/src/database.py` fait lui-même des imports plats
+  `from config import settings`). Après correctif : import-errors passés de ~10 DAGs à 1 (bug
+  résiduel sans rapport, cf. section suivante), `dag_ml_training` et `dag_ml_scoring` confirmés
+  `paused=False` via `airflow dags list`. **Non testé : un déclenchement réel du DAG** (le run
+  complet nécessiterait un extrait `ml.features_client` avec un volume de défauts suffisant, cf.
+  section 3) — seuls l'import et l'enregistrement dans le scheduler sont vérifiés.
 
 ### Non résolus
 
-- **`imf_staging_airflow_init` en crash-loop** : erreur `psycopg2.OperationalError: connection to
-  server on socket "/var/run/postgresql/.s.PGSQL.5432" failed` — le conteneur tente une connexion
-  Postgres locale (socket Unix) au lieu de pointer vers `imf-airflow-db` (conteneur) ou Supabase
-  (production). À corriger : variable `AIRFLOW__DATABASE__SQL_ALCHEMY_CONN` (ou équivalent) du
-  service Airflow dans `deploy/docker-compose.backend-pipeline.yml`.
+- **`dag_pipeline_init.py` en échec d'import** : `ValueError: 'skipped' is not a valid
+  DagRunState` — bug résiduel découvert pendant le diagnostic ci-dessus, sans rapport avec le
+  problème `pipeline.src`, non corrigé (hors périmètre de cette intervention).
 - **`ml-api` exposé directement sur l'IP publique du VPS** (`network_mode: host`, port 8090) **sans
   authentification serveur-à-serveur** sur `/score/single` — seul un CORS limité protège les
   appels navigateur, inopérant pour un appel serveur-à-serveur. Recommandation : retirer

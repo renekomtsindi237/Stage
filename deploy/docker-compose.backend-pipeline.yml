@@ -167,8 +167,17 @@ services:
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
       # Connexion vers la base applicative Supabase (utilisée par tous les DAGs via PostgresHook)
       AIRFLOW_CONN_IMF_PIPELINE_DB:        "postgresql://postgres.ceiqkvvacjsakycsgcfz:${SUPABASE_DB_PASSWORD}@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require&options=-csearch_path%3Dapp"
+      # dags/scripts/*.py font `from pipeline.src... import ...` : le paquet
+      # pipeline/src n'était jusqu'ici jamais monté dans le conteneur, seul
+      # pipeline/dags/ l'était — ModuleNotFoundError sur la quasi-totalité
+      # des DAGs (dont dag_ml_training). Deux entrées nécessaires : /opt/airflow
+      # (pour les imports en paquet `pipeline.src.xxx`) et
+      # /opt/airflow/pipeline/src (pipeline/src/database.py fait lui-même des
+      # imports plats `from config import settings`, pas `from .config`).
+      PYTHONPATH:                          /opt/airflow:/opt/airflow/pipeline/src
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
+      - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline:ro
       - airflow_logs:/opt/airflow/logs
     command: airflow webserver
     healthcheck:
@@ -195,8 +204,11 @@ services:
       AIRFLOW__LOGGING__BASE_LOG_FOLDER:   /opt/airflow/logs
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
       AIRFLOW_CONN_IMF_PIPELINE_DB:        "postgresql://postgres.ceiqkvvacjsakycsgcfz:${SUPABASE_DB_PASSWORD}@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require&options=-csearch_path%3Dapp"
+      # cf. commentaire équivalent sur airflow-webserver ci-dessus.
+      PYTHONPATH:                          /opt/airflow:/opt/airflow/pipeline/src
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
+      - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline:ro
       - airflow_logs:/opt/airflow/logs
     command: airflow scheduler
     healthcheck:
