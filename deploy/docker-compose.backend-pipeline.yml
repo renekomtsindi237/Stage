@@ -117,6 +117,8 @@ services:
       GROQ_API_KEY:                  ${GROQ_API_KEY}
       FIREBASE_ENABLED:              "false"
       IMF_SWAGGER_SERVER_URL:        "https://imf.rene.it.com"
+      # Partagée avec ml-api (X-Internal-Key sur /score/single, /score/batch)
+      MCRS_INTERNAL_API_KEY:         ${MCRS_INTERNAL_API_KEY:-}
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:
@@ -136,6 +138,8 @@ services:
       DATABASE_URL: "postgresql://postgres.ceiqkvvacjsakycsgcfz:${SUPABASE_DB_PASSWORD}@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require"
       MODEL_PATH:   /ml/models/mcrs/champion
       APP_ENV:      staging
+      # Requise sur /score/single et /score/batch — vide = mode dégradé ouvert
+      MCRS_INTERNAL_API_KEY: ${MCRS_INTERNAL_API_KEY:-}
     volumes:
       - /ml/models:/ml/models:ro
     healthcheck:

@@ -39,7 +39,10 @@ with DAG(
         trigger_dag_id="dag_collectes",
         wait_for_completion=True,
         poke_interval=60,
-        allowed_states=["success", "skipped"],
+        # "skipped" est un état de TASK (TaskInstanceState), jamais un état de
+        # DagRun (DagRunState ne connaît que queued/running/success/failed) —
+        # le passer ici lève ValueError au chargement du DAG.
+        allowed_states=["success"],
         failed_states=["failed"],
         reset_dag_run=True,
     )
@@ -49,7 +52,7 @@ with DAG(
         trigger_dag_id="dag_kpis_quotidien",
         wait_for_completion=True,
         poke_interval=30,
-        allowed_states=["success", "skipped"],
+        allowed_states=["success"],
         failed_states=["failed"],
         reset_dag_run=True,
     )

@@ -123,6 +123,7 @@ imf:
     staging-schema: staging
     ml-api-url: ${ML_API_URL:http://ml-api:8090}
     ml-api-timeout-seconds: ${ML_API_TIMEOUT_SECONDS:5}
+    ml-internal-api-key: ${MCRS_INTERNAL_API_KEY:}
   ai:
     api-key: ${GROQ_API_KEY:}
     base-url: https://api.groq.com/openai/v1

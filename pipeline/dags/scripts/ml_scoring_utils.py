@@ -28,11 +28,14 @@ logger = logging.getLogger(__name__)
 MODEL_BASE_DIR = Path(os.getenv("MCRS_MODEL_DIR", "/ml/models/mcrs"))
 CHAMPION_DIR = MODEL_BASE_DIR / "champion"
 
+# Nombre de features SHAP conservées par score (les plus influentes, |valeur| décroissante)
+SHAP_TOP_N = 10
+
 
 def charger_modele_actif(**ctx) -> str:
     """
     Charge le modèle MCRS champion depuis le disque.
-    Stocke le chemin dans XCom pour les tâches suivantes.
+    Stocke le chemin, l'AUC et l'identité du run actif (ml.model_runs) dans XCom.
     """
     if not CHAMPION_DIR.exists():
         raise FileNotFoundError(
@@ -46,12 +49,42 @@ def charger_modele_actif(**ctx) -> str:
         model.metrics_.get("auc_roc", 0),
     )
 
+    model_run_id, model_version = _identite_run_actif()
+
     ti = ctx.get("ti")
     if ti:
         ti.xcom_push(key="model_dir", value=str(CHAMPION_DIR))
         ti.xcom_push(key="model_auc", value=model.metrics_.get("auc_roc", 0))
+        ti.xcom_push(key="model_run_id", value=model_run_id)
+        ti.xcom_push(key="model_version", value=model_version)
 
     return str(CHAMPION_DIR)
+
+
+def _identite_run_actif() -> tuple[int | None, str]:
+    """
+    Résout le run ml.model_runs actif (est_modele_actif=TRUE le plus récent).
+
+    Ne bloque jamais le scoring : (None, "inconnue") si aucun run n'est
+    enregistré (ex. modèle déployé manuellement hors DAG, cf.
+    pipeline/promouvoir_modele.py, qui n'écrit pas dans ml.model_runs).
+
+    NB : la colonne `version` est aujourd'hui une constante statique
+    ("2.0.0") côté dag_ml_training (ml_training_utils.py) — limite connue,
+    hors périmètre de cette correction. `model_run_id` reste un identifiant
+    fiable pour distinguer deux runs même tant que `version` ne le permet pas.
+    """
+    sql = """
+        SELECT id, version FROM ml.model_runs
+        WHERE est_modele_actif = TRUE
+        ORDER BY created_at DESC LIMIT 1
+    """
+    with readonly_session() as cur:
+        cur.execute(sql)
+        row = cur.fetchone()
+    if not row:
+        return None, "inconnue"
+    return row["id"], row["version"]
 
 
 def scorer_clients_batch(
@@ -67,8 +100,9 @@ def scorer_clients_batch(
     Traitement :
     1. Récupère la liste des IMF actives.
     2. Pour chaque IMF, construit les features et score par batch.
-    3. Insère les résultats dans ml.client_scores (upsert par client + date).
-    4. Met à jour app.creances avec le score MCRS du jour.
+    3. Insère les résultats dans ml.client_scores (upsert par client, cf. V29 —
+       une seule ligne courante par (client_id_externe, imf_id), pas par jour).
+    4. Met à jour app.creances avec le score MCRS courant.
 
     Returns
     -------
@@ -83,6 +117,8 @@ def scorer_clients_batch(
     model.params.poids_crs = poids_crs
     model.params.poids_rps = poids_rps
     model.params.poids_csi = poids_csi
+
+    model_run_id, model_version = _identite_run_actif()
 
     imf_ids = reconstruire_imf_ids_actifs()
     logger.info("Scoring MCRS pour %d IMF actives", len(imf_ids))
@@ -112,7 +148,7 @@ def scorer_clients_batch(
 
     # Insertion en base
     if all_scores:
-        _inserer_scores(all_scores)
+        _inserer_scores(all_scores, model_run_id, model_version)
         _maj_scores_creances(all_scores)
 
     # Stocker scores pour PSI
@@ -137,58 +173,19 @@ def scorer_clients_batch(
 
 def calculer_shap_values(top_n_features: int = 10, **ctx) -> int:
     """
-    Récupère les SHAP values de la dernière session de scoring
-    et les insère dans ml.shap_explanations.
+    No-op de compatibilité, conservé comme tâche Airflow à part entière
+    (dag_ml_scoring.py) pour ne pas modifier le graphe de tâches du DAG.
 
-    Les SHAP values sont déjà calculées par predict_batch() et stockées
-    dans ml.client_scores.shap_top_features (JSONB).
-    Cette tâche les réécrit dans la table dédiée ml.shap_explanations.
+    Les valeurs SHAP sont désormais insérées directement par _inserer_scores()
+    dans ml.shap_explanations, au moment où score.shap_values est encore en
+    mémoire (juste après le calcul). L'ancienne implémentation tentait de les
+    relire depuis une colonne ml.client_scores.shap_top_features qui n'a
+    jamais existé dans le schéma réellement migré (V23/V29) — cette tâche
+    aurait donc toujours échoué silencieusement (0 ligne, aucune erreur) si
+    le pipeline avait pu être déclenché jusqu'ici.
     """
-    sql_select = """
-        SELECT client_id, imf_id, date_score, shap_top_features
-        FROM ml.client_scores
-        WHERE date_score = CURRENT_DATE
-          AND shap_top_features IS NOT NULL
-    """
-    sql_insert = """
-        INSERT INTO ml.shap_explanations
-            (client_id, imf_id, date_score, feature_name, shap_value, rang)
-        VALUES
-            (%(client_id)s, %(imf_id)s, %(date_score)s,
-             %(feature_name)s, %(shap_value)s, %(rang)s)
-        ON CONFLICT (client_id, imf_id, date_score, feature_name) DO UPDATE
-            SET shap_value = EXCLUDED.shap_value,
-                rang       = EXCLUDED.rang
-    """
-    n_rows = 0
-    with readonly_session() as cur:
-        cur.execute(sql_select)
-        rows = cur.fetchall()
-
-    with db_session() as cur:
-        for row in rows:
-            shap_dict: dict = row["shap_top_features"] or {}
-            for rang, (feat, val) in enumerate(
-                sorted(shap_dict.items(), key=lambda x: abs(x[1]), reverse=True)[
-                    :top_n_features
-                ],
-                start=1,
-            ):
-                cur.execute(
-                    sql_insert,
-                    {
-                        "client_id": row["client_id"],
-                        "imf_id": row["imf_id"],
-                        "date_score": row["date_score"],
-                        "feature_name": feat,
-                        "shap_value": float(val),
-                        "rang": rang,
-                    },
-                )
-                n_rows += 1
-
-    logger.info("SHAP explanations insérées : %d lignes", n_rows)
-    return n_rows
+    logger.info("calculer_shap_values : no-op — SHAP déjà inséré par _inserer_scores().")
+    return 0
 
 
 def detecter_drift_psi(
@@ -228,21 +225,19 @@ def detecter_drift_psi_segmente(
     sql_scores = """
         SELECT
             cs.score_mcrs,
-            cs.date_score,
-            COALESCE(ci.zone_id, 'INCONNU')   AS zone_id,
-            COALESCE(pg.categorie, 'AUTRE')   AS categorie_produit
+            cs.scored_at                       AS date_score,
+            COALESCE(ci.zone_id, 'INCONNU')     AS zone_id,
+            COALESCE(pg.categorie, 'AUTRE')     AS categorie_produit
         FROM ml.client_scores cs
-        LEFT JOIN app.clients c
-            ON  c.client_id_externe = cs.client_id_externe
-            AND c.imf_id::TEXT       = cs.imf_code
         LEFT JOIN app.clients_informels ci
-            ON  ci.client_id = c.id
+            ON  ci.client_id_externe = cs.client_id_externe
+            AND ci.imf_id            = cs.imf_id
         LEFT JOIN app.client_activites_produits cap
-            ON  cap.client_informel_id = ci.id
-            AND cap.est_activite_principale = TRUE
+            ON  cap.client_id = ci.id
+            AND cap.est_produit_principal = TRUE
         LEFT JOIN app.produits_generiques pg
             ON  pg.id = cap.produit_id
-        WHERE cs.date_score >= CURRENT_DATE - %(jours_ref)s * INTERVAL '1 day'
+        WHERE cs.scored_at >= CURRENT_DATE - %(jours_ref)s * INTERVAL '1 day'
     """
 
     with readonly_session() as cur:
@@ -334,21 +329,24 @@ def detecter_drift_psi_segmente(
 def maj_priorites_dossiers_recouvrement(**ctx) -> int:
     """
     Met à jour la colonne priorite_scoring dans app.dossiers_recouvrement
-    en fonction du score MCRS du jour pour chaque client.
+    en fonction du score MCRS courant de chaque client.
+
+    app.dossiers_recouvrement n'a pas de lien direct vers un client (ni
+    client_id, ni client_id_externe) — seul app.creances porte les deux
+    (via dossier_recouvrement_id). Le passage par app.creances est donc
+    obligatoire, pas une simplification.
     """
     sql = """
         UPDATE app.dossiers_recouvrement dr
         SET
             priorite_scoring = cs.priorite_recouvrement,
-            score_mcrs_dernier = cs.score_mcrs,
-            classe_risque_mcrs = cs.classe_risque,
             updated_at = NOW()
-        FROM ml.client_scores cs
-        JOIN app.clients c ON c.id = dr.client_id AND c.imf_id = dr.imf_id
-        WHERE c.client_id_externe = cs.client_id_externe
-          AND cs.imf_code = dr.imf_id::TEXT
-          AND cs.date_score = CURRENT_DATE
-          AND dr.statut = 'OUVERT'
+        FROM app.creances cr
+        JOIN ml.client_scores cs
+            ON  cs.client_id_externe = cr.client_id_externe
+            AND cs.imf_id            = cr.imf_id
+        WHERE cr.dossier_recouvrement_id = dr.id
+          AND dr.clos = FALSE
     """
     with db_session() as cur:
         cur.execute(sql)
@@ -361,62 +359,114 @@ def maj_priorites_dossiers_recouvrement(**ctx) -> int:
 # ─── Helpers privés ───────────────────────────────────────────────────────────
 
 
-def _inserer_scores(scores: list[ScoreResult]) -> None:
-    sql = """
+def _inserer_scores(
+    scores: list[ScoreResult],
+    model_run_id: int | None,
+    model_version: str,
+) -> None:
+    """
+    Upsert dans ml.client_scores (une ligne par client/IMF, cf. V29) puis,
+    pour chaque score inséré/mis à jour, réinsertion complète de ses
+    explications SHAP dans ml.shap_explanations (score_id FK — pas de colonne
+    JSONB shap_top_features sur client_scores, contrairement à ce que
+    l'ancienne implémentation supposait).
+    """
+    sql_score = """
         INSERT INTO ml.client_scores (
-            client_id_externe, imf_code, date_score,
+            imf_id, client_id_externe, model_run_id, model_version,
             score_crs, score_rps, score_csi, score_mcrs,
-            classe_risque, probabilite_defaut_30j, probabilite_defaut_90j,
+            niveau_risque, probabilite_defaut_30j, probabilite_defaut_90j,
             score_mcrs_ic_bas, score_mcrs_ic_haut,
-            action_recommandee, priorite_recouvrement,
-            shap_top_features, scored_at
-        ) VALUES (
-            %(client_id_externe)s, %(imf_code)s, CURRENT_DATE,
+            action_recommandee, priorite_recouvrement, scored_at
+        )
+        SELECT
+            i.id, %(client_id_externe)s, %(model_run_id)s, %(model_version)s,
             %(score_crs)s, %(score_rps)s, %(score_csi)s, %(score_mcrs)s,
             %(classe_risque)s, %(probabilite_defaut_30j)s, %(probabilite_defaut_90j)s,
             %(score_mcrs_ic_bas)s, %(score_mcrs_ic_haut)s,
-            %(action_recommandee)s, %(priorite_recouvrement)s,
-            %(shap_top_features)s, NOW()
-        )
-        ON CONFLICT (client_id_externe, imf_code, date_score)
+            %(action_recommandee)s, %(priorite_recouvrement)s, NOW()
+        FROM app.imf i WHERE i.code = %(imf_code)s
+        ON CONFLICT (client_id_externe, imf_id)
         DO UPDATE SET
+            model_run_id             = EXCLUDED.model_run_id,
+            model_version            = EXCLUDED.model_version,
             score_crs                = EXCLUDED.score_crs,
             score_rps                = EXCLUDED.score_rps,
             score_csi                = EXCLUDED.score_csi,
-            score_mcrs               = EXCLUDED.score_mcrs,
-            classe_risque            = EXCLUDED.classe_risque,
-            probabilite_defaut_30j   = EXCLUDED.probabilite_defaut_30j,
-            probabilite_defaut_90j   = EXCLUDED.probabilite_defaut_90j,
-            action_recommandee       = EXCLUDED.action_recommandee,
-            priorite_recouvrement    = EXCLUDED.priorite_recouvrement,
-            shap_top_features        = EXCLUDED.shap_top_features,
-            scored_at                = EXCLUDED.scored_at
+            score_mcrs                = EXCLUDED.score_mcrs,
+            niveau_risque             = EXCLUDED.niveau_risque,
+            probabilite_defaut_30j    = EXCLUDED.probabilite_defaut_30j,
+            probabilite_defaut_90j    = EXCLUDED.probabilite_defaut_90j,
+            score_mcrs_ic_bas         = EXCLUDED.score_mcrs_ic_bas,
+            score_mcrs_ic_haut        = EXCLUDED.score_mcrs_ic_haut,
+            action_recommandee        = EXCLUDED.action_recommandee,
+            priorite_recouvrement     = EXCLUDED.priorite_recouvrement,
+            scored_at                 = EXCLUDED.scored_at,
+            updated_at                = NOW()
+        RETURNING id
+    """
+    sql_purge_shap = "DELETE FROM ml.shap_explanations WHERE score_id = %(score_id)s"
+    sql_shap = """
+        INSERT INTO ml.shap_explanations
+            (score_id, feature_name, shap_value, rang_importance, signe)
+        VALUES (%(score_id)s, %(feature_name)s, %(shap_value)s, %(rang)s, %(signe)s)
     """
     with db_session() as cur:
         for score in scores:
-            cur.execute(
-                sql,
-                {
-                    **score.to_dict(),
-                    "shap_top_features": json.dumps(score.shap_values),
-                },
-            )
+            params = {
+                **score.to_dict(),
+                "model_run_id": model_run_id,
+                "model_version": model_version,
+            }
+            cur.execute(sql_score, params)
+            row = cur.fetchone()
+            if row is None:
+                logger.error(
+                    "Code IMF inconnu '%s' — score de %s non inséré",
+                    score.imf_code,
+                    score.client_id_externe,
+                )
+                continue
+            score_id = row["id"]
+
+            # Repartir propre : évite d'accumuler des lignes SHAP obsolètes
+            # si le nombre/l'ordre des features top-N change entre deux runs.
+            cur.execute(sql_purge_shap, {"score_id": score_id})
+
+            top_features = sorted(
+                score.shap_values.items(), key=lambda kv: abs(kv[1]), reverse=True
+            )[:SHAP_TOP_N]
+            for rang, (feat, val) in enumerate(top_features, start=1):
+                cur.execute(
+                    sql_shap,
+                    {
+                        "score_id": score_id,
+                        "feature_name": feat,
+                        "shap_value": float(val),
+                        "rang": rang,
+                        "signe": "+" if val >= 0 else "-",
+                    },
+                )
 
 
 def _maj_scores_creances(scores: list[ScoreResult]) -> None:
+    """
+    Miroir du score MCRS courant sur app.creances (colonnes ajoutées par
+    V60 — absentes du schéma jusque-là, cf. commentaire de la migration).
+    """
     sql = """
         UPDATE app.creances cr
         SET
-            score_mcrs        = %(score_mcrs)s,
-            score_crs         = %(score_crs)s,
-            score_rps         = %(score_rps)s,
-            score_csi         = %(score_csi)s,
-            classe_risque_mcrs= %(classe_risque)s,
-            updated_at        = NOW()
-        FROM app.clients c
-        WHERE c.id              = cr.client_id
-          AND c.imf_id          = cr.imf_id
-          AND c.client_id_externe = %(client_id_externe)s
+            score_mcrs          = %(score_mcrs)s,
+            score_crs            = %(score_crs)s,
+            score_rps             = %(score_rps)s,
+            score_csi             = %(score_csi)s,
+            classe_risque_mcrs    = %(classe_risque)s,
+            updated_at            = NOW()
+        FROM app.imf i
+        WHERE i.code = %(imf_code)s
+          AND cr.imf_id = i.id
+          AND cr.client_id_externe = %(client_id_externe)s
     """
     with db_session() as cur:
         for score in scores:
@@ -428,6 +478,7 @@ def _maj_scores_creances(scores: list[ScoreResult]) -> None:
                     "score_rps": score.score_rps,
                     "score_csi": score.score_csi,
                     "classe_risque": score.classe_risque,
+                    "imf_code": score.imf_code,
                     "client_id_externe": score.client_id_externe,
                 },
             )
@@ -442,16 +493,20 @@ def _inserer_alerte_drift_segmentee(
     psi_global: float,
     segments_alertes: list[dict],
 ) -> None:
-    """Insère une alerte de drift avec détail par segment dans ml.alertes_predictives."""
+    """
+    Journalise un drift détecté (log uniquement — pas d'écriture en base).
+
+    ml.alertes_predictives exige imf_id, client_id_externe et titre NOT NULL,
+    et son CHECK type_alerte ne couvre que des alertes par client (pas de
+    valeur "drift de portefeuille"). Un drift PSI est par nature un
+    phénomène de portefeuille/segment, pas rattaché à un client précis —
+    y écrire forcerait soit une valeur de type_alerte hors contrainte, soit
+    un client_id_externe fictif trompeur. Tant qu'aucune table dédiée au
+    suivi de drift n'existe (hors périmètre de cette correction), le log
+    Airflow (conservé par la rétention des logs du scheduler) reste la
+    seule trace — visible dans les logs de la tâche detecter_drift.
+    """
     msg = f"Drift PSI_final={psi_final:.4f} (global={psi_global:.4f})" + (
         f" — segments: {json.dumps(segments_alertes)}" if segments_alertes else ""
     )
-    sql = """
-        INSERT INTO ml.alertes_predictives
-            (type_alerte, message, psi_valeur, date_detection, statut, created_at)
-        VALUES
-            ('DRIFT_DETECTE', %(message)s, %(psi)s, CURRENT_DATE, 'ACTIVE', NOW())
-        ON CONFLICT DO NOTHING
-    """
-    with db_session() as cur:
-        cur.execute(sql, {"message": msg, "psi": psi_final})
+    logger.warning("ALERTE DRIFT (non persistée en base — cf. docstring) : %s", msg)

@@ -9,6 +9,7 @@ public record ApiClientResponse(
         String name,
         String description,
         String imfNom,
+        String imfCode,
         String keyPrefix,
         String scopes,
         String statut,

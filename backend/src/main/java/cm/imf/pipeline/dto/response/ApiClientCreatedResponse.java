@@ -12,6 +12,8 @@ public record ApiClientCreatedResponse(
         String name,
         String description,
         String imfNom,
+        /** Code de l'IMF — distingue les tenants qui partagent le même nom affiché. */
+        String imfCode,
         /** Clé brute complète — à copier immédiatement, non récupérable. */
         String apiKey,
         /** Préfixe affiché dans l'UI pour identifier la clé. */

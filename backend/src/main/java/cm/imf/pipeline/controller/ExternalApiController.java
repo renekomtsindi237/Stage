@@ -107,6 +107,7 @@ public class ExternalApiController {
                        cs.probabilite_defaut_90j,
                        cs.action_recommandee,
                        cs.priorite_recouvrement,
+                       cs.model_version,
                        cs.scored_at
                 FROM ml.client_scores cs
                 JOIN app.imf i ON i.id = cs.imf_id
@@ -135,6 +136,7 @@ public class ExternalApiController {
                        cs.probabilite_defaut_30j,
                        cs.action_recommandee,
                        cs.priorite_recouvrement,
+                       cs.model_version,
                        cs.scored_at
                 FROM ml.client_scores cs
                 WHERE cs.imf_id = ?

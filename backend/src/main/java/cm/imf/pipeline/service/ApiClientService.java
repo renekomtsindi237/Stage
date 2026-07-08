@@ -97,6 +97,7 @@ public class ApiClientService {
                 apiClient.getName(),
                 apiClient.getDescription(),
                 imf.getNom(),
+                imf.getCode(),
                 rawKey,           // clé brute — affichée une seule fois
                 prefix,
                 apiClient.getScopes(),
@@ -198,6 +199,7 @@ public class ApiClientService {
                 c.getName(),
                 c.getDescription(),
                 c.getImf() != null ? c.getImf().getNom() : null,
+                c.getImf() != null ? c.getImf().getCode() : null,
                 c.getKeyPrefix(),
                 c.getScopes(),
                 c.getStatut(),

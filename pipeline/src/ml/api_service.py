@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import secrets
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -29,7 +30,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
@@ -124,6 +125,28 @@ def _get_model() -> MCRSModel:
     return _model
 
 
+# ─── Authentification interne ────────────────────────────────────────────────
+#
+# /score/single et /score/batch étaient jusqu'ici accessibles sans aucune
+# authentification à quiconque atteint le port 8090 (network_mode: host sur le
+# VPS). CORS ne protège que les appels navigateur, pas les appels
+# serveur-à-serveur (Blucash, dag_ml_scoring). MCRS_INTERNAL_API_KEY est
+# partagée avec le backend Spring Boot (MlScoringClient) et Blucash
+# (McrsScoringClient) — absente : mode dégradé ouvert, pour ne rien casser
+# tant qu'elle n'est pas déployée partout.
+INTERNAL_API_KEY = os.getenv("MCRS_INTERNAL_API_KEY")
+
+
+def _verifier_cle_interne(x_internal_key: str | None = Header(default=None)) -> None:
+    if not INTERNAL_API_KEY:
+        return
+    if not x_internal_key or not secrets.compare_digest(x_internal_key, INTERNAL_API_KEY):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="En-tête X-Internal-Key manquant ou invalide.",
+        )
+
+
 # ─── Lifespan ─────────────────────────────────────────────────────────────────
 
 
@@ -134,6 +157,11 @@ async def lifespan(app: FastAPI):
     except FileNotFoundError:
         logger.warning(
             "Modèle MCRS non trouvé dans %s — service démarré sans modèle.", MODEL_DIR
+        )
+    if not INTERNAL_API_KEY:
+        logger.warning(
+            "MCRS_INTERNAL_API_KEY non définie — /score/single et /score/batch "
+            "restent accessibles sans authentification."
         )
     yield
     logger.info("API MCRS arrêtée.")
@@ -373,7 +401,12 @@ def model_info():
     }
 
 
-@app.post("/score/single", response_model=ScoreResponse, tags=["Scoring"])
+@app.post(
+    "/score/single",
+    response_model=ScoreResponse,
+    tags=["Scoring"],
+    dependencies=[Depends(_verifier_cle_interne)],
+)
 def score_single(input_data: FeatureInput):
     """
     Score un client unique.
@@ -402,7 +435,12 @@ def score_single(input_data: FeatureInput):
     return ScoreResponse(**result.to_dict())
 
 
-@app.post("/score/batch", response_model=BatchScoreResponse, tags=["Scoring"])
+@app.post(
+    "/score/batch",
+    response_model=BatchScoreResponse,
+    tags=["Scoring"],
+    dependencies=[Depends(_verifier_cle_interne)],
+)
 def score_batch(request: BatchScoreRequest):
     """
     Score un batch de clients.

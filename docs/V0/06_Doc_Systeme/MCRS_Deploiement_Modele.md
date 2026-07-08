@@ -42,9 +42,12 @@ comparaison champion/challenger et promotion automatique si le challenger est me
 `pipeline/dags/dag_ml_training.py`). **État actuel (2026-07-08) : le DAG s'importe et
 s'enregistre correctement** dans le scheduler géré par CI/CD (`imf-airflow-scheduler`, projet
 `imf-backend`) — vérifié via `airflow dags list` : `dag_ml_training | pipeline-imf | paused=False`,
-de même pour `dag_ml_scoring`. Diagnostic et correctif dans l'historique de ce document (section
-4). **Ce qui n'a en revanche pas été testé** : un déclenchement réel du DAG de bout en bout — cf.
-limite en section 4.
+de même pour `dag_ml_scoring`, et `airflow dags list-import-errors` ne remonte plus aucune erreur
+(0/15 DAGs, contre ~10/15 le matin même). `dag_ml_scoring` a été déclenché réellement le
+2026-07-08 — le scoring batch lui-même (le code corrigé en section 4) reste non vérifié de bout en
+bout car les toutes premières tâches (`feat_comportemental`/`feat_externe`, préparation dbt)
+échouent avant de l'atteindre : `dbt-core` n'est pas installé dans l'image `imf-airflow` — cf.
+"Non résolus" en section 4. `dag_ml_training` n'a pas été déclenché (dépend des mêmes features).
 
 ### 2.2 Mécanisme manuel formalisé (utilisable dès maintenant)
 
@@ -147,23 +150,72 @@ walk-forward significative sur 5 plis), puis `train_mcrs_champion.py --donnees <
   complet nécessiterait un extrait `ml.features_client` avec un volume de défauts suffisant, cf.
   section 3) — seuls l'import et l'enregistrement dans le scheduler sont vérifiés.
 
+### Corrigés (2026-07-08, suite — même journée, deuxième intervention)
+
+- **`dag_pipeline_init.py` en échec d'import** (`ValueError: 'skipped' is not a valid
+  DagRunState`) : `"skipped"` est un état de *tâche* (TaskInstanceState), jamais un état de
+  *DagRun* — confirmé en inspectant `TriggerDagRunOperator.__init__` dans le conteneur
+  (`DagRunState(s) for s in allowed_states` lève l'exception). Corrigé en retirant `"skipped"` des
+  deux `allowed_states=[...]` du DAG. Vérifié : `airflow dags list-import-errors` → 0 erreur sur
+  les 15 DAGs (contre 1 avant ce correctif).
+- **`ml-api` sans authentification serveur-à-serveur** : ajout d'une dépendance FastAPI vérifiant
+  un header `X-Internal-Key` (comparaison en temps constant) sur `/score/single` et `/score/batch`
+  uniquement — `/model/health`/`/model/info` restent ouverts (pas de donnée client). Clé partagée
+  `MCRS_INTERNAL_API_KEY`, propagée au backend Spring Boot (`MlClientConfig`) et à Blucash (à faire
+  côté `Workflow_de_gestion` — cf. `api_docs/02_integration_blucash.md`). Vérifié en staging :
+  `POST /score/single` sans clé → 401 ; `GET /model/health` toujours 200. La restructuration réseau
+  (isoler `ml-api` du réseau public) a été explicitement écartée avec l'utilisateur — `backend` et
+  `ml-api` partagent `network_mode: host` à cause de Redis en localhost, la clé partagée est le
+  compromis retenu.
+- **`GET /external/scores/{clientId}` ne renvoie pas la version du modèle** : `model_version`
+  ajouté au `SELECT` de `getScore()`/`getAtRiskScores()` — la colonne existait déjà depuis V29
+  (défaut `'1.0.0'`), seule la lecture manquait côté contrôleur. Vérifié : le champ apparaît
+  désormais dans la réponse (`"model_version":"1.0.0"` sur le score CLF001 existant, pas encore
+  réécrit par le pipeline batch — cf. point suivant pour que cette valeur devienne réellement
+  significative).
+- **Deux IMF "FINANCE SARL"** : `imfCode` ajouté à `ApiClientCreatedResponse`/`ApiClientResponse`
+  (additif, sans renommage de données — décision explicite avec l'utilisateur).
+- **`ml_scoring_utils.py` (le script réel derrière `dag_ml_scoring`) était écrit contre un schéma
+  de base entièrement différent de celui migré** : `imf_code`/`date_score` sur `ml.client_scores`
+  (colonnes inexistantes — les vraies sont `imf_id`/`scored_at`, upsert par client depuis V29),
+  `classe_risque` au lieu de `niveau_risque`, une forme de `ml.shap_explanations` composite au lieu
+  du vrai `score_id` FK, une table `app.clients` qui n'a jamais existé (le vrai client informel est
+  `app.clients_informels`), des colonnes de score sur `app.creances`
+  (`score_mcrs`/`classe_risque_mcrs`/…) qui n'avaient jamais été migrées, et une valeur
+  `'DRIFT_DETECTE'` hors de la contrainte CHECK de `ml.alertes_predictives`. Concrètement : **le
+  scoring batch n'avait jamais pu réussir contre la vraie base** — le seul score réel existant
+  (CLF001, 2026-06-23) vient d'un calcul manuel ponctuel, pas du pipeline. Réécriture complète des
+  6 fonctions d'écriture de `ml_scoring_utils.py` pour correspondre au schéma réel, `model_version`
+  et `model_run_id` désormais réellement peuplés depuis `ml.model_runs` (plutôt que le défaut figé),
+  SHAP inséré au moment de l'insertion du score (`RETURNING id`) plutôt que relu depuis une colonne
+  qui n'existait pas. Nouvelle migration `V60__ajout_scores_mcrs_creances.sql` (colonnes
+  nullables, additives) pour que le miroir de score sur `app.creances` ait enfin une cible réelle.
+  Les alertes de drift (portefeuille/segment, pas par client) ne sont plus écrites en base — le
+  schéma `ml.alertes_predictives` est conçu pour des alertes par client (`imf_id`/`client_id_externe`
+  NOT NULL), pas pour un événement de portefeuille ; seul le log Airflow fait foi pour l'instant.
+
 ### Non résolus
 
-- **`dag_pipeline_init.py` en échec d'import** : `ValueError: 'skipped' is not a valid
-  DagRunState` — bug résiduel découvert pendant le diagnostic ci-dessus, sans rapport avec le
-  problème `pipeline.src`, non corrigé (hors périmètre de cette intervention).
-- **`ml-api` exposé directement sur l'IP publique du VPS** (`network_mode: host`, port 8090) **sans
-  authentification serveur-à-serveur** sur `/score/single` — seul un CORS limité protège les
-  appels navigateur, inopérant pour un appel serveur-à-serveur. Recommandation : retirer
-  l'exposition publique du port 8090 (accessible uniquement depuis le réseau Docker interne, via
-  le backend Spring Boot) et faire transiter tout accès externe par la façade authentifiée
-  `/api/v1/external/**`.
-- **`GET /external/scores/{clientId}` ne renvoie pas la version du modèle** — limite à corriger
-  pour permettre une traçabilité propre côté intégrateurs externes sans qu'ils aient besoin de
-  connaître l'existence du service ML interne (cf. `api_docs/02_integration_blucash.md`).
-- **Deux IMF distinctes portent le même nom affiché "FINANCE SARL"** (`id=1, code=FINTECH` et
-  `id=347, code=FINANCE`) — piège de tenant confirmé en pratique (une clé API créée sur la mauvaise
-  IMF renvoie des 404 silencieux, pas une erreur explicite). Recommandation : soit renommer l'une
-  des deux IMF de test pour lever l'ambiguïté, soit faire afficher le `code` à côté du `nom` dans
-  toute réponse de provisioning de clé API (`ApiClientCreatedResponse.imfNom` → inclure aussi
-  `imfCode`).
+- **`dbt-core` n'est pas installé dans l'image `imf-airflow`** — découvert en déclenchant
+  réellement `dag_ml_scoring` : les toutes premières tâches (`feat_comportemental`/`feat_externe`,
+  `dbt run` via `pipeline/dags/scripts/dbt_utils.py`) échouent avant même d'atteindre le code
+  corrigé ci-dessus (`FileNotFoundError` sur un chemin en plus faux — `DBT_PROJECT_DIR` par défaut
+  vaut `/app/pipeline/dbt_project`, un chemin qui n'existe que dans le conteneur `imf-ml-api`, pas
+  dans `imf-airflow` où le vrai chemin est `/opt/airflow/pipeline/dbt_project` depuis le montage de
+  volume du 2026-07-08 matin — mais même en corrigeant le chemin, `dbt` lui-même est absent :
+  `pip show dbt-core` → *not found*). **Conséquence directe pour ce document** : la réécriture de
+  `ml_scoring_utils.py` ci-dessus est correcte et déployée, mais reste **non vérifiée de bout en
+  bout** — le déclenchement réel du 2026-07-08 s'est terminé en `upstream_failed` en cascade dès la
+  première tâche, jamais jusqu'à `scorer_clients`. Il faut ajouter `dbt-core` + l'adaptateur
+  Postgres au `Dockerfile` de l'image `imf-airflow` (et corriger `DBT_PROJECT_DIR`/
+  `DBT_PROFILES_DIR`), ce qui nécessite un rebuild d'image via le pipeline CI/CD — pas un correctif
+  à chaud. Non fait à ce stade : hors du périmètre validé pour cette intervention, à traiter comme
+  un chantier séparé.
+- **`http://ml-api:8090` ne résout pas depuis `imf-backend`** — `backend` et `ml-api` tournent tous
+  deux en `network_mode: host` (pas de réseau Docker bridge, donc pas de DNS `ml-api` interne).
+  `MlScoringClient`/`RealtimeScoringService` (scoring temps réel à l'ouverture d'un dossier,
+  utilisé côté Spring Boot) échouent donc silencieusement depuis le début — capturés par le mode
+  dégradé (`Optional.empty()`), sans jamais remonter d'erreur visible. Correctif probable :
+  `ML_API_URL=http://localhost:8090` explicite pour le service `backend`. Découvert en vérifiant
+  que la clé `X-Internal-Key` (ci-dessus) atteignait bien `ml-api` depuis le backend — pas corrigé,
+  hors périmètre validé pour cette intervention.
