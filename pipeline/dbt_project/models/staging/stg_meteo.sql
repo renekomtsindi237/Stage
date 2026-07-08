@@ -6,73 +6,31 @@
     )
 }}
 
--- Pivot les observations météo Open-Meteo du format narrow (variable, valeur)
--- vers un format wide (une ligne par zone et par jour) pour le feature store ML.
+-- app.donnees_meteo est déjà au format wide (une ligne par zone/jour, avec
+-- indice_secheresse en enum VARCHAR prêt à l'emploi) — pas de pivot narrow
+-- à faire, contrairement à la version précédente de ce modèle qui supposait
+-- un format (variable, valeur) et une colonne `date_meteo` qui n'ont jamais
+-- existé dans le schéma réellement migré (V21__donnees_externes.sql). Cette
+-- table ne porte pas non plus de latitude/longitude (non utilisées par
+-- feat_client_externe.sql, qui les prend de app.clients_informels/agences).
 
 WITH source AS (
     SELECT *
     FROM {{ source('app', 'donnees_meteo') }}
-    WHERE date_meteo IS NOT NULL
+    WHERE date_observation IS NOT NULL
     {% if is_incremental() %}
-      AND date_meteo > (SELECT MAX(date_observation) FROM {{ this }})
+      AND date_observation > (SELECT MAX(date_observation) FROM {{ this }})
     {% endif %}
-),
-
-pivote AS (
-    SELECT
-        zone_nom                                                                  AS zone_id,
-        date_meteo                                                                AS date_observation,
-        MAX(latitude)                                                             AS latitude,
-        MAX(longitude)                                                            AS longitude,
-        MAX(valeur) FILTER (WHERE variable = 'precipitation')                    AS precipitation_mm,
-        MAX(valeur) FILTER (WHERE variable = 'temperature_2m_max')               AS temperature_max,
-        MAX(valeur) FILTER (WHERE variable = 'temperature_2m_min')               AS temperature_min,
-        MAX(valeur) FILTER (WHERE variable = 'wind_speed_10m_max')               AS vent_max_kmh,
-        MAX(valeur) FILTER (WHERE variable = 'et0_fao_evapotranspiration')       AS evapotranspiration_mm,
-        -- Anomalie de précipitation (calculée par maj_app_donnees_meteo)
-        MAX(anomalie_pct) FILTER (WHERE variable = 'precipitation')              AS anomalie_precipitation_pct,
-        -- Indice de sécheresse booléen enrichi par le DAG
-        BOOL_OR(indice_secheresse) FILTER (WHERE variable = 'precipitation')     AS est_secheresse
-    FROM source
-    GROUP BY zone_nom, date_meteo
-),
-
-avec_indice_categoriel AS (
-    SELECT
-        zone_id,
-        date_observation,
-        latitude,
-        longitude,
-        COALESCE(precipitation_mm, 0)           AS precipitation_mm,
-        temperature_max,
-        temperature_min,
-        vent_max_kmh,
-        evapotranspiration_mm,
-        COALESCE(anomalie_precipitation_pct, 0) AS anomalie_precipitation_pct,
-        -- Catégorisation de la sécheresse (ordinal alphabétique stable pour MAX dans feat_client_externe)
-        CASE
-            WHEN est_secheresse IS NULL OR precipitation_mm IS NULL THEN 'INCONNU'
-            WHEN est_secheresse = TRUE AND COALESCE(anomalie_precipitation_pct, 0) <= -60 THEN 'SEVERE'
-            WHEN est_secheresse = TRUE AND COALESCE(anomalie_precipitation_pct, 0) <= -40 THEN 'MODEREE'
-            WHEN est_secheresse = TRUE                                                     THEN 'FAIBLE'
-            ELSE                                                                                'NORMAL'
-        END                                     AS indice_secheresse
-    FROM pivote
 )
 
 SELECT
     zone_id,
     date_observation,
-    latitude,
-    longitude,
-    precipitation_mm,
+    COALESCE(precipitation_mm, 0) AS precipitation_mm,
     temperature_max,
     temperature_min,
-    vent_max_kmh,
-    evapotranspiration_mm,
-    indice_secheresse,
-    anomalie_precipitation_pct,
+    COALESCE(indice_secheresse, 'NORMAL') AS indice_secheresse,
     NOW() AS _dbt_loaded_at
 
-FROM avec_indice_categoriel
+FROM source
 WHERE date_observation >= '{{ var("date_debut_historique") }}'::DATE

@@ -32,79 +32,91 @@ logger = logging.getLogger(__name__)
 # ─── Features CRS ─────────────────────────────────────────────────────────────
 
 CRS_QUERY = """
+-- staging.stg_clients dépend de raw.export_cbs (jamais alimenté, aucune
+-- ingestion CBS réelle configurée) : ne peut jamais servir de table client
+-- pilote. app.clients_informels est la table client réelle ; jointe à
+-- app.imf pour imf_code (clients_informels ne porte que imf_id). De même,
+-- staging.stg_collectes_epargne existe réellement (alimentée via
+-- app.collectes_terrain) mais avec des noms de colonnes différents :
+-- client_id_externe (pas client_id), imf_code (pas imf_id),
+-- montant_collecte (pas montant), statut_validation='VALIDE' (pas
+-- statut='VALIDEE').
 SELECT
-    c.client_id_externe,
-    c.imf_code,
-    -- Volume et fréquence
-    COUNT(ce.id)                                                AS nb_collectes_12m,
-    -- Régularité : % de semaines avec au moins une collecte
+    ci.client_id_externe,
+    i.code                                                       AS imf_code,
+    COUNT(ce.hash_sha256)                                        AS nb_collectes_12m,
     ROUND(
         COUNT(DISTINCT DATE_TRUNC('week', ce.date_collecte)) * 100.0
         / NULLIF(52, 0), 2
     )                                                           AS regularite_collecte_pct,
-    -- Tendance : pente normalisée (régression simple approchée par corrélation date-montant)
     COALESCE(
-        REGR_SLOPE(ce.montant, EXTRACT(EPOCH FROM ce.date_collecte)::FLOAT) * 86400,
+        REGR_SLOPE(ce.montant_collecte, EXTRACT(EPOCH FROM ce.date_collecte)::FLOAT) * 86400,
         0
     )                                                           AS tendance_collecte_3m,
-    ROUND(AVG(ce.montant)::NUMERIC, 2)                          AS montant_moy_collecte,
-    ROUND(STDDEV(ce.montant)::NUMERIC, 2)                       AS ecart_type_collecte,
-    -- Cycles manqués : semaines sans collecte sur 52
+    ROUND(AVG(ce.montant_collecte)::NUMERIC, 2)                 AS montant_moy_collecte,
+    ROUND(STDDEV(ce.montant_collecte)::NUMERIC, 2)              AS ecart_type_collecte,
     52 - COUNT(DISTINCT DATE_TRUNC('week', ce.date_collecte))   AS nb_cycles_manques_12m,
-    ROUND(SUM(ce.montant)::NUMERIC, 2)                          AS montant_total_collectes_12m
-FROM staging.stg_clients c
+    ROUND(SUM(ce.montant_collecte)::NUMERIC, 2)                 AS montant_total_collectes_12m
+FROM app.clients_informels ci
+JOIN app.imf i ON i.id = ci.imf_id
 LEFT JOIN staging.stg_collectes_epargne ce
-    ON ce.client_id   = c.id
-    AND ce.imf_id     = c.imf_id
-    AND ce.statut     = 'VALIDEE'
-    AND ce.date_collecte >= (CURRENT_DATE - INTERVAL '12 months')
-    AND ce.est_doublon = FALSE
-WHERE c.imf_id = %(imf_id)s
-GROUP BY c.client_id_externe, c.imf_code
+    ON ce.client_id_externe = ci.client_id_externe
+    AND ce.imf_code          = i.code
+    AND ce.statut_validation = 'VALIDE'
+    AND ce.date_collecte    >= (CURRENT_DATE - INTERVAL '12 months')
+    AND NOT ce.est_doublon
+WHERE ci.imf_id = %(imf_id)s
+GROUP BY ci.client_id_externe, i.code
 """
 
 # Tendance 3 mois (sous-requête ciblée)
 CRS_TENDANCE_3M_QUERY = """
 WITH recent AS (
     SELECT
-        client_id,
-        imf_id,
+        client_id_externe,
+        imf_code,
         EXTRACT(EPOCH FROM date_collecte)::FLOAT AS ts,
-        montant
+        montant_collecte
     FROM staging.stg_collectes_epargne
-    WHERE imf_id = %(imf_id)s
-      AND date_collecte >= (CURRENT_DATE - INTERVAL '3 months')
-      AND statut = 'VALIDEE'
-      AND est_doublon = FALSE
+    WHERE date_collecte    >= (CURRENT_DATE - INTERVAL '3 months')
+      AND statut_validation = 'VALIDE'
+      AND NOT est_doublon
 )
 SELECT
-    c.client_id_externe,
-    COALESCE(REGR_SLOPE(r.montant, r.ts) * 86400, 0) AS tendance_collecte_3m
-FROM staging.stg_clients c
-LEFT JOIN recent r ON r.client_id = c.id AND r.imf_id = c.imf_id
-WHERE c.imf_id = %(imf_id)s
-GROUP BY c.client_id_externe
+    ci.client_id_externe,
+    COALESCE(REGR_SLOPE(r.montant_collecte, r.ts) * 86400, 0) AS tendance_collecte_3m
+FROM app.clients_informels ci
+JOIN app.imf i ON i.id = ci.imf_id
+LEFT JOIN recent r ON r.client_id_externe = ci.client_id_externe AND r.imf_code = i.code
+WHERE ci.imf_id = %(imf_id)s
+GROUP BY ci.client_id_externe
 """
 
 
 # ─── Features RPS ─────────────────────────────────────────────────────────────
 
 RPS_QUERY = """
+-- Même remède que CRS_QUERY : app.clients_informels comme pilote (pas
+-- staging.stg_clients). staging.stg_creances existe réellement (alimentée
+-- via des données CBS déjà en base) mais avec id_client/imf_code (pas
+-- client_id/imf_id) et montant_initial/montant_impaye/classe_risque_cobac
+-- (pas montant_decaisse/montant_encours/classe_cobac) — mêmes noms que
+-- int_profil_recouvrement_client.sql (dbt), qui traite déjà id_client comme
+-- équivalent à client_id_externe. app.kpi_recouvrement_snapshots est un
+-- agrégat de PORTEFEUILLE (imf_id/agence_id/date_calcul) sans client_id —
+-- ne peut structurellement pas fournir un nb_incidents_paiement par client,
+-- mis à 0 plutôt que de référencer une jointure impossible.
+-- app.promesses_paiement se rattache par creance_id -> app.creances
+-- (client_id_externe réel), pas par un client_id direct.
 SELECT
-    c.client_id_externe,
-    -- Taux de remboursement global
-    ROUND(
-        (1 - COALESCE(cr.montant_encours, 0) / NULLIF(cr.montant_decaisse, 0)) * 100,
-        2
-    )                                           AS taux_remboursement_pct,
-    COALESCE(cr.jours_retard, 0)                AS jours_retard_moyen,
-    COALESCE(cr.jours_retard, 0)                AS jours_retard_max,
-    -- Incidents de paiement : nombre de passages en retard sur 12 mois
-    COALESCE(hist.nb_incidents_12m, 0)          AS nb_incidents_paiement,
-    COALESCE(cr.montant_encours, 0)             AS montant_impaye_courant,
-    -- Remboursements effectués (approx : echeances payées estimées depuis CBS)
-    COALESCE(prom.nb_respectees, 0)             AS nb_remboursements_12m,
-    CASE cr.classe_cobac
+    ci.client_id_externe,
+    ROUND(AVG(cr.montant_rembourse / NULLIF(cr.montant_initial, 0)) * 100, 2) AS taux_remboursement_pct,
+    COALESCE(AVG(cr.jours_retard), 0)          AS jours_retard_moyen,
+    COALESCE(MAX(cr.jours_retard), 0)          AS jours_retard_max,
+    0                                           AS nb_incidents_paiement,
+    COALESCE(SUM(cr.montant_impaye), 0)         AS montant_impaye_courant,
+    COALESCE(MAX(prom.nb_respectees), 0)        AS nb_remboursements_12m,
+    CASE MAX(cr.classe_risque_cobac)
         WHEN 'A' THEN 0
         WHEN 'B' THEN 1
         WHEN 'C' THEN 2
@@ -112,88 +124,66 @@ SELECT
         WHEN 'E' THEN 4
         ELSE 0
     END                                         AS classe_risque_cobac_encode
-FROM staging.stg_clients c
+FROM app.clients_informels ci
+JOIN app.imf i ON i.id = ci.imf_id
 LEFT JOIN staging.stg_creances cr
-    ON cr.client_id = c.id
-    AND cr.imf_id   = c.imf_id
+    ON cr.id_client = ci.client_id_externe
+    AND cr.imf_code  = i.code
 LEFT JOIN (
-    -- Nombre d'incidents de paiement (passages en retard > 0 jours sur 12 mois)
-    SELECT client_id, imf_id, COUNT(*) AS nb_incidents_12m
-    FROM app.kpi_recouvrement_snapshots krs
-    WHERE krs.date_snapshot >= (CURRENT_DATE - INTERVAL '12 months')
-    GROUP BY client_id, imf_id
-) hist ON hist.client_id = c.id AND hist.imf_id = c.imf_id
-LEFT JOIN (
-    -- Promesses tenues comme proxy de remboursements réguliers
-    SELECT client_id, imf_id, COUNT(*) AS nb_respectees
+    -- Promesses honorées comme proxy de remboursements réguliers
+    SELECT cr2.client_id_externe, cr2.imf_id, COUNT(*) AS nb_respectees
     FROM app.promesses_paiement pp
-    WHERE pp.statut = 'RESPECTEE'
-      AND pp.date_realisation >= (CURRENT_DATE - INTERVAL '12 months')
-    GROUP BY client_id, imf_id
-) prom ON prom.client_id = c.id AND prom.imf_id = c.imf_id
-WHERE c.imf_id = %(imf_id)s
+    JOIN app.creances cr2 ON cr2.id = pp.creance_id
+    WHERE pp.statut = 'HONOREE'
+      AND pp.date_reglement >= (CURRENT_DATE - INTERVAL '12 months')
+    GROUP BY cr2.client_id_externe, cr2.imf_id
+) prom ON prom.client_id_externe = ci.client_id_externe AND prom.imf_id = ci.imf_id
+WHERE ci.imf_id = %(imf_id)s
+GROUP BY ci.client_id_externe
 """
 
 
 # ─── Features CSI ─────────────────────────────────────────────────────────────
 
 CSI_QUERY = """
-WITH prix_produit AS (
-    -- Prix du produit principal du client sur les 120 derniers jours (fenêtre étendue pour les lags)
+-- Corrections apportées (même campagne que CRS_QUERY/RPS_QUERY) :
+-- - app.prix_produits n'existe pas (aucune ingestion de prix marché
+--   configurée à ce jour, cf. feat_client_externe.sql) — prix_produit videe.
+-- - app.facteurs_macro n'a pas de colonne imf_id (indicateurs nationaux,
+--   pas par IMF) ni date_indicateur (réel: date_observation).
+-- - app.donnees_meteo : date_observation (pas date_meteo),
+--   indice_secheresse est un VARCHAR enum (pas numérique, non moyennable) —
+--   valeur la plus récente retenue plutôt qu'une moyenne.
+-- - app.clients_informels.zone_id (pas zone_geographique),
+--   .secteur_principal (pas secteur_activite, enum 'AGRICOLE' pas
+--   'AGRICULTURE').
+-- - app.client_activites_produits.client_id/.est_produit_principal (pas
+--   client_informel_id/est_activite_principale).
+-- - app.evenements_exterieurs.impact_collecte (pas impact_estime),
+--   zone_id singulier nullable = national (pas zone_ids ARRAY).
+-- - staging.stg_creances/stg_collectes_epargne : mêmes corrections
+--   id_client/imf_code/montant_collecte/statut_validation que RPS_QUERY.
+--   stg_creances n'a pas de duree_mois -> capacité de remboursement
+--   simplifiée (revenu - impayé), même formule que features_client.sql (dbt).
+WITH macro_zone AS (
     SELECT
-        cap.client_informel_id,
-        pp.produit_id,
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE pp.date_prix >= CURRENT_DATE - INTERVAL '90 days')   AS prix_moy_90j,
-        STDDEV(pp.prix_unitaire)
-            FILTER (WHERE pp.date_prix >= CURRENT_DATE - INTERVAL '90 days')   AS prix_vol_90j,
-        COALESCE(
-            REGR_SLOPE(pp.prix_unitaire, EXTRACT(EPOCH FROM pp.date_prix)::FLOAT)
-                FILTER (WHERE pp.date_prix >= CURRENT_DATE - INTERVAL '30 days') * 86400 * 30,
-            0
-        )                                                                        AS tendance_prix_30j,
-        -- Lag 30j : prix moyen de la période 31–60 jours en arrière
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE pp.date_prix BETWEEN CURRENT_DATE - INTERVAL '60 days'
-                                           AND CURRENT_DATE - INTERVAL '31 days') AS prix_lag_30j,
-        -- Lag 90j : prix moyen de la période 91–120 jours en arrière
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE pp.date_prix BETWEEN CURRENT_DATE - INTERVAL '120 days'
-                                           AND CURRENT_DATE - INTERVAL '91 days') AS prix_lag_90j
-    FROM app.client_activites_produits cap
-    JOIN app.prix_produits pp
-        ON pp.produit_id = cap.produit_id
-        AND pp.imf_id    = %(imf_id)s
-        AND pp.date_prix >= (CURRENT_DATE - INTERVAL '120 days')
-        AND pp.fiabilite_score >= 3
-    WHERE cap.est_activite_principale = TRUE
-    GROUP BY cap.client_informel_id, pp.produit_id
-),
-macro_zone AS (
-    -- Macro-indicateurs de la zone client (30 derniers jours)
-    SELECT
-        AVG(CASE WHEN type_indicateur = 'INFLATION'
-            THEN valeur END)            AS inflation_mensuelle_moy,
-        MAX(CASE WHEN type_indicateur = 'TAUX_DIRECTEUR_BEAC'
-            THEN valeur END)            AS taux_directeur_beac
+        AVG(valeur) FILTER (WHERE indicateur = 'TAUX_INFLATION_MENSUEL') AS inflation_mensuelle_moy,
+        MAX(valeur) FILTER (WHERE indicateur = 'TAUX_DIRECTEUR_BEAC')    AS taux_directeur_beac
     FROM app.facteurs_macro
-    WHERE date_indicateur >= (CURRENT_DATE - INTERVAL '30 days')
-      AND imf_id = %(imf_id)s
+    WHERE date_observation >= (CURRENT_DATE - INTERVAL '30 days')
 ),
 meteo_zone AS (
-    -- Météo par zone client (30 derniers jours)
-    SELECT
-        ci.id   AS client_informel_id,
-        AVG(dm.precipitation_mm)        AS precipitation_moy_mm,
-        AVG(dm.indice_secheresse)       AS indice_secheresse
+    SELECT DISTINCT ON (ci.id)
+        ci.id AS client_informel_id,
+        dm.precipitation_mm,
+        dm.indice_secheresse
     FROM app.clients_informels ci
     JOIN app.donnees_meteo dm
-        ON dm.zone_id = ci.zone_geographique
-        AND dm.date_meteo >= (CURRENT_DATE - INTERVAL '30 days')
-    GROUP BY ci.id
+        ON dm.zone_id = ci.zone_id
+        AND dm.date_observation >= (CURRENT_DATE - INTERVAL '30 days')
+    ORDER BY ci.id, dm.date_observation DESC
 ),
 evenements AS (
-    -- Nombre d'événements négatifs dans les 30 prochains jours (anticipation)
     SELECT
         ci.id AS client_informel_id,
         COUNT(DISTINCT ev.id) AS nb_evenements_negatifs
@@ -201,76 +191,78 @@ evenements AS (
     JOIN app.evenements_exterieurs ev
         ON ev.date_debut <= (CURRENT_DATE + INTERVAL '30 days')
         AND ev.date_fin   >= CURRENT_DATE
-        AND ev.impact_estime = 'NEGATIF'
-        AND ci.zone_geographique = ANY(ev.zone_ids)
+        AND ev.impact_collecte = 'NEGATIF'
+        AND (ev.zone_id IS NULL OR ev.zone_id = ci.zone_id)
     GROUP BY ci.id
+),
+creances_agg AS (
+    SELECT id_client, imf_code,
+           SUM(montant_impaye) AS montant_impaye_total
+    FROM staging.stg_creances
+    GROUP BY id_client, imf_code
+),
+collectes_agg AS (
+    SELECT client_id_externe, imf_code,
+           SUM(montant_collecte) AS montant_total_collectes_12m
+    FROM staging.stg_collectes_epargne
+    WHERE statut_validation = 'VALIDE'
+      AND date_collecte >= (CURRENT_DATE - INTERVAL '12 months')
+    GROUP BY client_id_externe, imf_code
 )
 SELECT
-    c.client_id_externe,
+    ci.client_id_externe,
     ci.revenu_mensuel_estime,
-    (CURRENT_DATE - c.created_at::DATE)                         AS anciennete_client_jours,
-    -- Nombre de produits actifs (diversification)
+    (CURRENT_DATE - ci.created_at::DATE)                        AS anciennete_client_jours,
     COUNT(DISTINCT cap.produit_id)                              AS nb_produits_actifs,
-    -- Ratio collecte / crédit
     ROUND(
         COALESCE(kcs.montant_total_collectes_12m, 0)
-        / NULLIF(cr.montant_decaisse, 0), 4
+        / NULLIF(cra.montant_impaye_total, 0), 4
     )                                                           AS ratio_collecte_credit,
-    -- Capacité de remboursement : revenu / (encours_mensuel * 1.2)
-    ROUND(
-        ci.revenu_mensuel_estime
-        / NULLIF(cr.montant_encours / NULLIF(cr.duree_mois, 0) * 1.2, 0),
-        4
+    GREATEST(
+        COALESCE(ci.revenu_mensuel_estime, 0) - COALESCE(cra.montant_impaye_total, 0),
+        0
     )                                                           AS capacite_remboursement,
-    -- Indice de résilience = min(nb_produits / 5, 1)
     LEAST(COUNT(DISTINCT cap.produit_id)::FLOAT / 5.0, 1.0)    AS indice_resilience,
-    -- Profil producteur : 1 si activité de vente/production (agriculteur, éleveur...)
-    CASE WHEN ci.secteur_activite IN ('AGRICULTURE','ELEVAGE','PECHE','ARTISANAT') THEN 1 ELSE 0
+    CASE WHEN ci.secteur_principal IN ('AGRICOLE','ELEVAGE','PECHE','ARTISANAT') THEN 1 ELSE 0
     END                                                         AS est_producteur,
-    -- Features prix produit principal
-    COALESCE(pp.prix_moy_90j, 0)                               AS prix_produit_principal_moy,
-    COALESCE(pp.prix_vol_90j, 0)                               AS volatilite_prix_produit,
-    COALESCE(pp.tendance_prix_30j, 0)                          AS tendance_prix_30j,
-    -- Lag features (fallback sur la période courante si la période passée est vide)
-    COALESCE(pp.prix_lag_30j, pp.prix_moy_90j, 0)             AS prix_lag_30j,
-    COALESCE(pp.prix_lag_90j, pp.prix_moy_90j, 0)             AS prix_lag_90j,
-    -- Macro
+    -- Prix produit : indisponible (pas d'ingestion prix marché configurée)
+    0::NUMERIC AS prix_produit_principal_moy,
+    0::NUMERIC AS volatilite_prix_produit,
+    0::NUMERIC AS tendance_prix_30j,
+    0::NUMERIC AS prix_lag_30j,
+    0::NUMERIC AS prix_lag_90j,
     COALESCE(mz.inflation_mensuelle_moy, 4.0)                  AS inflation_mensuelle_moy,
     COALESCE(mz.taux_directeur_beac, 5.0)                      AS taux_directeur_beac,
-    -- Météo
-    COALESCE(mtz.precipitation_moy_mm, 80.0)                   AS precipitation_moy_mm,
-    COALESCE(mtz.indice_secheresse, 0.0)                       AS indice_secheresse,
-    -- Événements
+    COALESCE(mtz.precipitation_mm, 80.0)                       AS precipitation_moy_mm,
+    -- mcrs_model.py attend un indice de type Palmer DSI (float, négatif =
+    -- sécheresse, cf. ALL_FEATURES/FEATURE_DEFAULTS) — pas la chaîne
+    -- app.donnees_meteo.indice_secheresse (VARCHAR enum), encodée ici.
+    CASE COALESCE(mtz.indice_secheresse, 'NORMAL')
+        WHEN 'SECHERESSE_LEGERE'  THEN -1.0
+        WHEN 'SECHERESSE_MODEREE' THEN -2.0
+        WHEN 'SECHERESSE_SEVERE'  THEN -3.0
+        ELSE 0.0
+    END                                                         AS indice_secheresse,
     COALESCE(ev.nb_evenements_negatifs, 0)                     AS nb_evenements_negatifs
-FROM staging.stg_clients c
-JOIN app.clients_informels ci
-    ON ci.client_id = c.id
-    AND ci.imf_id   = %(imf_id)s
+FROM app.clients_informels ci
+JOIN app.imf i ON i.id = ci.imf_id
 LEFT JOIN app.client_activites_produits cap
-    ON cap.client_informel_id = ci.id
-LEFT JOIN prix_produit pp
-    ON pp.client_informel_id = ci.id
-LEFT JOIN macro_zone mz ON TRUE
+    ON cap.client_id = ci.id
 LEFT JOIN meteo_zone mtz ON mtz.client_informel_id = ci.id
 LEFT JOIN evenements ev ON ev.client_informel_id = ci.id
-LEFT JOIN staging.stg_creances cr
-    ON cr.client_id = c.id AND cr.imf_id = c.imf_id
-LEFT JOIN (
-    SELECT client_id, imf_id, SUM(montant) AS montant_total_collectes_12m
-    FROM staging.stg_collectes_epargne
-    WHERE statut = 'VALIDEE'
-      AND date_collecte >= (CURRENT_DATE - INTERVAL '12 months')
-    GROUP BY client_id, imf_id
-) kcs ON kcs.client_id = c.id AND kcs.imf_id = c.imf_id
-WHERE c.imf_id = %(imf_id)s
+LEFT JOIN creances_agg cra
+    ON cra.id_client = ci.client_id_externe AND cra.imf_code = i.code
+LEFT JOIN collectes_agg kcs
+    ON kcs.client_id_externe = ci.client_id_externe AND kcs.imf_code = i.code
+CROSS JOIN macro_zone mz
+WHERE ci.imf_id = %(imf_id)s
 GROUP BY
-    c.client_id_externe, ci.revenu_mensuel_estime, c.created_at,
-    cr.montant_decaisse, cr.montant_encours, cr.duree_mois,
-    pp.prix_moy_90j, pp.prix_vol_90j, pp.tendance_prix_30j, pp.prix_lag_30j, pp.prix_lag_90j,
+    ci.client_id_externe, ci.revenu_mensuel_estime, ci.created_at,
+    cra.montant_impaye_total,
     mz.inflation_mensuelle_moy, mz.taux_directeur_beac,
-    mtz.precipitation_moy_mm, mtz.indice_secheresse,
+    mtz.precipitation_mm, mtz.indice_secheresse,
     ev.nb_evenements_negatifs, kcs.montant_total_collectes_12m,
-    ci.secteur_activite
+    ci.secteur_principal
 """
 
 

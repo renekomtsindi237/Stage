@@ -105,6 +105,13 @@ services:
       CORS_ALLOWED_ORIGINS:          "https://imf.rene.it.com,http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:9091"
       REDIS_HOST:                    127.0.0.1
       REDIS_PORT:                    6380
+      # backend et ml-api tournent tous deux en network_mode: host (pas de
+      # réseau bridge Docker, donc pas de DNS "ml-api") — le défaut
+      # http://ml-api:8090 de application.yml ne résout jamais ; getent
+      # hosts ml-api confirmé en échec depuis imf-backend. MlScoringClient
+      # (scoring temps réel à l'ouverture d'un dossier) échouait donc
+      # silencieusement depuis le début, absorbé par son mode dégradé.
+      ML_API_URL:                    http://localhost:8090
       # URL publique → liens OTP emails + cookies sécurisés
       APP_URL:                       "https://imf.rene.it.com"
       APP_NAME:                      "MicroRecouv"
@@ -179,9 +186,30 @@ services:
       # /opt/airflow/pipeline/src (pipeline/src/database.py fait lui-même des
       # imports plats `from config import settings`, pas `from .config`).
       PYTHONPATH:                          /opt/airflow:/opt/airflow/pipeline/src
+      # dbt (feat_comportemental/feat_externe/assembler_feature_store dans
+      # dag_ml_scoring) — profiles.yml lit ces variables via env_var(), pas
+      # une seule n'était définie jusqu'ici (dbt échouait avant même de
+      # tenter la connexion).
+      DBT_PROJECT_DIR:                     /opt/airflow/pipeline/dbt_project
+      DBT_PROFILES_DIR:                    /opt/airflow/pipeline/dbt_project
+      DBT_TARGET:                          prod
+      POSTGRES_HOST:                       aws-0-eu-west-3.pooler.supabase.com
+      POSTGRES_PORT:                       "6543"
+      POSTGRES_DB:                         postgres
+      POSTGRES_USER:                       postgres.ceiqkvvacjsakycsgcfz
+      POSTGRES_PASSWORD:                   ${SUPABASE_DB_PASSWORD}
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
-      - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline:ro
+      # pas :ro — dbt écrit package-lock.yml/dbt_packages/target/ dans
+      # pipeline/dbt_project/ (aucune option dbt ne permet de les reloger
+      # entièrement hors du project-dir en 1.8) ; confirmé par
+      # `OSError: [Errno 30] Read-only file system` en testant `dbt deps`
+      # avant ce correctif.
+      - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline
+      # charger_modele_actif()/scorer_clients_batch() (dag_ml_scoring) lisent
+      # le modèle champion sur disque — jamais monté ici jusqu'ici (seul
+      # imf-ml-api l'avait), FileNotFoundError systématique sur cette tâche.
+      - /ml/models:/ml/models:ro
       - airflow_logs:/opt/airflow/logs
     command: airflow webserver
     healthcheck:
@@ -210,9 +238,22 @@ services:
       AIRFLOW_CONN_IMF_PIPELINE_DB:        "postgresql://postgres.ceiqkvvacjsakycsgcfz:${SUPABASE_DB_PASSWORD}@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?sslmode=require&options=-csearch_path%3Dapp"
       # cf. commentaire équivalent sur airflow-webserver ci-dessus.
       PYTHONPATH:                          /opt/airflow:/opt/airflow/pipeline/src
+      # cf. commentaires dbt sur airflow-webserver ci-dessus — c'est le
+      # scheduler qui exécute réellement les tâches (LocalExecutor).
+      DBT_PROJECT_DIR:                     /opt/airflow/pipeline/dbt_project
+      DBT_PROFILES_DIR:                    /opt/airflow/pipeline/dbt_project
+      DBT_TARGET:                          prod
+      POSTGRES_HOST:                       aws-0-eu-west-3.pooler.supabase.com
+      POSTGRES_PORT:                       "6543"
+      POSTGRES_DB:                         postgres
+      POSTGRES_USER:                       postgres.ceiqkvvacjsakycsgcfz
+      POSTGRES_PASSWORD:                   ${SUPABASE_DB_PASSWORD}
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
-      - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline:ro
+      - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline
+      # cf. commentaire équivalent sur airflow-webserver ci-dessus — c'est
+      # le scheduler qui exécute réellement charger_modele_actif().
+      - /ml/models:/ml/models:ro
       - airflow_logs:/opt/airflow/logs
     command: airflow scheduler
     healthcheck:

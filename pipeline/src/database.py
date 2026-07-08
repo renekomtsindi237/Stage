@@ -96,7 +96,20 @@ def db_session() -> Generator[Cursor, None, None]:
 def readonly_session() -> Generator[Cursor, None, None]:
     """
     Context manager pour les requêtes en lecture seule.
-    Autocommit désactivé ; aucun commit n'est effectué.
+    Autocommit activé ; aucun commit explicite n'est nécessaire.
+
+    IMPORTANT : `set_session(readonly=True)` positionne l'état en `READ
+    ONLY` au niveau de la session Postgres physique, pas seulement de la
+    transaction. `conn.close()` ferme le socket côté client psycopg2, mais
+    le pooler Supabase (port 6543, mode transaction) garde la connexion
+    backend physique ouverte et la réattribue telle quelle à la prochaine
+    connexion — sans ce reset explicite, une tâche db_session() ultérieure
+    peut hériter d'une session encore en lecture seule et échouer sur son
+    premier UPDATE/INSERT avec "cannot execute ... in a read-only
+    transaction", sans rapport apparent avec cette fonction-ci (bug constaté
+    en conditions réelles sur dag_ml_scoring : maj_priorites_dossiers /
+    detecter_drift échouaient aléatoirement selon quelle connexion pooler
+    leur était assignée).
     """
     conn = get_connection()
     conn.set_session(readonly=True, autocommit=True)
@@ -107,6 +120,10 @@ def readonly_session() -> Generator[Cursor, None, None]:
         _translate_psycopg2_error(exc)
     finally:
         cur.close()
+        try:
+            conn.set_session(readonly=False, autocommit=True)
+        except Exception:
+            logger.warning("Impossible de réinitialiser la session en lecture-écriture avant fermeture")
         conn.close()
 
 

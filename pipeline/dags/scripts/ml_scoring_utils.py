@@ -256,8 +256,11 @@ def detecter_drift_psi_segmente(
     df = pd.DataFrame(
         rows, columns=["score_mcrs", "date_score", "zone_id", "categorie_produit"]
     )
-    df["date_score"] = pd.to_datetime(df["date_score"])
-    cutoff = pd.Timestamp.now().normalize() - pd.Timedelta(days=fenetre_courante_jours)
+    # cs.scored_at est TIMESTAMPTZ -> pd.to_datetime infère un dtype tz-aware
+    # (UTC) ; comparer à un Timestamp naïf lève TypeError, pas seulement un
+    # résultat silencieusement faux — cutoff doit être tz-aware lui aussi.
+    df["date_score"] = pd.to_datetime(df["date_score"], utc=True)
+    cutoff = pd.Timestamp.now(tz="UTC").normalize() - pd.Timedelta(days=fenetre_courante_jours)
 
     df_ref = df[df["date_score"] < cutoff]
     df_cur = df[df["date_score"] >= cutoff]

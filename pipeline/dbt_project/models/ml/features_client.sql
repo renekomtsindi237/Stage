@@ -1,7 +1,7 @@
 {{
     config(
         materialized='incremental',
-        unique_key=['imf_code', 'client_id_externe', 'periode_debut', 'version_features'],
+        unique_key=['imf_id', 'client_id_externe', 'periode_debut', 'version_features'],
         on_schema_change='append_new_columns'
     )
 }}
@@ -20,56 +20,80 @@ externe AS (
 ),
 
 clients AS (
+    -- stg_clients dépend de raw.export_cbs, jamais alimenté (aucune
+    -- ingestion CBS réelle configurée à ce jour) — la table client réelle
+    -- avec des données est app.clients_informels, jointe à app.imf pour
+    -- imf_code (clients_informels ne porte que imf_id). nb_collectes_total/
+    -- montant_total_collectes ne sont pas utilisées plus loin dans ce
+    -- modèle (déjà couvertes par nb_collectes_12m/montant_total_collectes_12m
+    -- issues de int_profil_recouvrement_client) — retirées plutôt que
+    -- recalculées inutilement.
     SELECT
-        imf_code,
-        client_id_externe,
-        zone_id,
-        secteur_principal,
-        revenu_mensuel_estime,
-        anciennete_jours,
-        nb_collectes_total,
-        montant_total_collectes
-    FROM {{ ref('stg_clients') }}
+        i.code                                          AS imf_code,
+        ci.client_id_externe,
+        ci.zone_id,
+        ci.secteur_principal,
+        ci.revenu_mensuel_estime,
+        EXTRACT(DAY FROM NOW() - ci.created_at)::INTEGER AS anciennete_jours
+    FROM {{ source('app', 'clients_informels') }} ci
+    JOIN {{ source('app', 'imf') }} i ON i.id = ci.imf_id
 ),
 
--- Géospatial (distance agence + marché)
+-- Géospatial (distance marché — app.agences n'a pas de latitude/longitude,
+-- contrairement à ce que ce modèle supposait ; distance_agence_km reste
+-- structurellement NULL tant que cette colonne n'existe pas sur agences)
 geo AS (
-    SELECT
-        ci.imf_code,
-        ci.client_id_externe,
-        -- Distance euclidienne approchée en km (1° lat ≈ 111 km)
-        ROUND(SQRT(
-            POW((ci.latitude_activite  - a.latitude)  * 111, 2) +
-            POW((ci.longitude_activite - a.longitude) * 111 * COS(RADIANS(ci.latitude_activite)), 2)
-        )::NUMERIC, 2) AS distance_agence_km,
-        ROUND(SQRT(
-            POW((ci.latitude_activite  - ml.latitude)  * 111, 2) +
-            POW((ci.longitude_activite - ml.longitude) * 111 * COS(RADIANS(ci.latitude_activite)), 2)
-        )::NUMERIC, 2) AS distance_marche_km
-    FROM {{ source('app', 'clients_informels') }} ci
-    LEFT JOIN {{ source('app', 'agences') }} a
-        ON ci.agence_id = a.id
-    LEFT JOIN {{ source('app', 'marches_locaux') }} ml
-        ON ci.zone_id = ml.zone_id
-        AND ml.actif = TRUE
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY ci.imf_code, ci.client_id_externe
-                                ORDER BY distance_agence_km NULLS LAST) = 1
+    -- QUALIFY n'existe pas en Postgres (syntaxe Snowflake/BigQuery) — remplacé
+    -- par une sous-requête + ROW_NUMBER/WHERE. imf_code résolu via app.imf
+    -- (clients_informels ne porte que imf_id), même remède que les CTE
+    -- ci-dessus et que feat_client_externe.sql.
+    SELECT imf_code, client_id_externe, distance_agence_km, distance_marche_km
+    FROM (
+        SELECT
+            i.code AS imf_code,
+            ci.client_id_externe,
+            NULL::NUMERIC AS distance_agence_km,
+            ROUND(SQRT(
+                POW((ci.latitude_activite  - ml.latitude)  * 111, 2) +
+                POW((ci.longitude_activite - ml.longitude) * 111 * COS(RADIANS(ci.latitude_activite)), 2)
+            )::NUMERIC, 2) AS distance_marche_km,
+            -- Postgres n'autorise pas la référence à un alias du même SELECT
+            -- dans un ORDER BY de window function : ré-écrit l'expression.
+            ROW_NUMBER() OVER (
+                PARTITION BY i.code, ci.client_id_externe
+                ORDER BY SQRT(
+                    POW((ci.latitude_activite  - ml.latitude)  * 111, 2) +
+                    POW((ci.longitude_activite - ml.longitude) * 111 * COS(RADIANS(ci.latitude_activite)), 2)
+                ) NULLS LAST
+            ) AS rn
+        FROM {{ source('app', 'clients_informels') }} ci
+        JOIN {{ source('app', 'imf') }} i ON i.id = ci.imf_id
+        LEFT JOIN {{ source('app', 'marches_locaux') }} ml
+            ON ci.zone_id = ml.zone_id
+            AND ml.actif = TRUE
+    ) ranked
+    WHERE rn = 1
 ),
 
 -- Nombre de produits vendus
 nb_produits AS (
     SELECT
-        ci.imf_code,
+        i.code AS imf_code,
         ci.client_id_externe,
         COUNT(DISTINCT cap.produit_id) AS nb_produits_vendus
     FROM {{ source('app', 'clients_informels') }} ci
+    JOIN {{ source('app', 'imf') }} i ON i.id = ci.imf_id
     JOIN {{ source('app', 'client_activites_produits') }} cap ON ci.id = cap.client_id
-    GROUP BY ci.imf_code, ci.client_id_externe
+    GROUP BY i.code, ci.client_id_externe
 ),
 
 assemblee AS (
     SELECT
-        c.imf_code,
+        -- ml.features_client (V23) exige imf_id (FK), pas imf_code — les CTE
+        -- ci-dessus utilisent toutes imf_code comme clé de jointure interne
+        -- (héritée de int_profil_recouvrement_client/feat_client_externe),
+        -- résolu ici en imf_id juste pour l'écriture finale.
+        i.id AS imf_id,
         c.client_id_externe,
         COALESCE(e.periode_debut, CURRENT_DATE - INTERVAL '90 days')::DATE AS periode_debut,
         COALESCE(e.periode_fin,   CURRENT_DATE)::DATE                       AS periode_fin,
@@ -128,6 +152,7 @@ assemblee AS (
         NOW()                                       AS computed_at
 
     FROM clients c
+    JOIN {{ source('app', 'imf') }} i ON i.code = c.imf_code
     LEFT JOIN comportemental b
         ON  c.imf_code         = b.imf_code
         AND c.client_id_externe = b.client_id_externe
@@ -143,6 +168,6 @@ assemblee AS (
 )
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(['imf_code', 'client_id_externe', 'periode_debut', 'version_features']) }} AS feature_id,
+    {{ dbt_utils.generate_surrogate_key(['imf_id', 'client_id_externe', 'periode_debut', 'version_features']) }} AS feature_id,
     a.*
 FROM assemblee a

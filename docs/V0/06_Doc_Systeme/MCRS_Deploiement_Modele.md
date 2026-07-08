@@ -39,15 +39,18 @@ séparation existe pour qu'aucun modèle non validé ne devienne actif par accid
 
 Entraînement walk-forward hebdomadaire (dimanche 02h00) sur `ml.features_client`, avec
 comparaison champion/challenger et promotion automatique si le challenger est meilleur (cf.
-`pipeline/dags/dag_ml_training.py`). **État actuel (2026-07-08) : le DAG s'importe et
-s'enregistre correctement** dans le scheduler géré par CI/CD (`imf-airflow-scheduler`, projet
-`imf-backend`) — vérifié via `airflow dags list` : `dag_ml_training | pipeline-imf | paused=False`,
-de même pour `dag_ml_scoring`, et `airflow dags list-import-errors` ne remonte plus aucune erreur
-(0/15 DAGs, contre ~10/15 le matin même). `dag_ml_scoring` a été déclenché réellement le
-2026-07-08 — le scoring batch lui-même (le code corrigé en section 4) reste non vérifié de bout en
-bout car les toutes premières tâches (`feat_comportemental`/`feat_externe`, préparation dbt)
-échouent avant de l'atteindre : `dbt-core` n'est pas installé dans l'image `imf-airflow` — cf.
-"Non résolus" en section 4. `dag_ml_training` n'a pas été déclenché (dépend des mêmes features).
+`pipeline/dags/dag_ml_training.py`).
+
+**État au 2026-07-08 (fin de journée) : `dag_ml_scoring` tourne intégralement en succès contre la
+vraie base**, vérifié par déclenchement réel (pas juste import) — les 17 tâches passent à
+`success` (`declencher_retrain` correctement `skipped`, aucun drift détecté), y compris
+`scorer_clients` qui a écrit 85 vrais scores (`ml.client_scores` : `n=85`,
+`max(scored_at)` = l'heure du run, contre 60 lignes figées au 2026-06-23 avant ce travail).
+Confirmé via l'API externe : `GET /external/scores/CLF001` renvoie désormais un score calculé à
+l'instant (`model_version: "v1.2.0"`, lu depuis `ml.model_runs` — plus le défaut figé `"1.0.0"`).
+`dag_ml_training` s'importe et s'enregistre correctement mais n'a pas été déclenché (walk-forward
+sur `ml.features_client`, dépend en partie de `LABELS_QUERY` dans `feature_engineering.py`, non
+auditée — cf. section 4 "Non résolus").
 
 ### 2.2 Mécanisme manuel formalisé (utilisable dès maintenant)
 
@@ -194,28 +197,112 @@ walk-forward significative sur 5 plis), puis `train_mcrs_champion.py --donnees <
   schéma `ml.alertes_predictives` est conçu pour des alertes par client (`imf_id`/`client_id_externe`
   NOT NULL), pas pour un événement de portefeuille ; seul le log Airflow fait foi pour l'instant.
 
+### Corrigés (2026-07-08, troisième intervention — mise en service réelle de dag_ml_scoring)
+
+Déclencher réellement le DAG (plutôt que se fier à `airflow dags list`) a révélé une chaîne de
+blocages plus profonde que prévu — chacun corrigé et reveérifié par un nouveau déclenchement :
+
+- **`dbt-core` absent de l'image `imf-airflow`** : `Dockerfile.airflow` copiait `requirements.txt`
+  (qui liste `dbt-core`/`dbt-postgres`) mais ne l'installait jamais — le `pip install` du Dockerfile
+  est une liste manuelle qui n'avait jamais été tenue à jour avec ce fichier. Ajouté à la liste
+  explicite (mêmes versions que `requirements.txt`, 1.8.2). Installé à chaud pour vérifier
+  (`pip install` dans le conteneur) avant de committer le Dockerfile — aucun conflit de dépendances
+  avec l'environnement Airflow 2.8.4 constaté.
+- **`pipeline/` monté `:ro`** : `dbt deps`/`dbt run` doivent écrire `package-lock.yml`/
+  `dbt_packages/`/`target/` dans le project-dir (aucune option dbt 1.8 ne permet de les reloger
+  entièrement ailleurs) — `OSError: Read-only file system` systématique. Retiré `:ro` du montage
+  `pipeline/` (scheduler + webserver). Une fois writable, permission refusée pour l'utilisateur
+  `airflow` (uid 50000, gid 0) sur des fichiers appartenant à `root:root` sans bit d'écriture
+  groupe — `chmod -R g+w` sur `pipeline/dbt_project/` côté hôte.
+- **`sources.yml` incomplet** : le source `app` ne déclarait que 2 tables (`donnees_meteo`,
+  `facteurs_macro`) sur les 9 réellement référencées par les modèles (`clients_informels`,
+  `client_activites_produits`, `produits_generiques`, `agences`, `marches_locaux`,
+  `evenements_exterieurs`, `imf`) — `Compilation Error` dès le premier `dbt run`, quel que soit le
+  `--select`. Complété.
+- **Schéma de sortie dbt doublé** (`staging_ml` au lieu de `ml`, etc.) : `profiles.yml` fixe un
+  schéma cible `staging`, et sans macro `generate_schema_name` personnalisée, dbt préfixe
+  systématiquement tout `+schema` custom par ce schéma cible — comportement par défaut documented
+  par dbt lui-même, jamais neutralisé ici. Ajouté `macros/generate_schema_name.sql` (pattern
+  standard dbt) pour que `+schema: ml` produise bien `ml`, pas `staging_ml`.
+- **`app.clients` n'a jamais existé** : `feat_client_externe.sql`/`features_client.sql`
+  interrogeaient une table `raw.export_cbs` → `stg_clients` → `app.clients` comme pilote — chaîne
+  jamais alimentée (aucune ingestion CBS réelle configurée). Recablé sur `app.clients_informels`
+  (table réelle, peuplée) + jointure `app.imf` pour `imf_code` (`clients_informels` ne porte que
+  `imf_id`). Même remède appliqué à `pipeline/src/ml/feature_engineering.py`
+  (`CRS_QUERY`/`RPS_QUERY`/`CSI_QUERY`, utilisées par `scorer_clients_batch` — un chemin de code
+  entièrement différent des modèles dbt, avec les mêmes bugs structurels en parallèle).
+- **`QUALIFY`** (syntaxe Snowflake/BigQuery, absente de Postgres) dans `features_client.sql` —
+  remplacé par une sous-requête + `ROW_NUMBER()`/`WHERE`.
+- **`app.agences` n'a pas de latitude/longitude** — `distance_agence_km` ne peut structurellement
+  pas être calculée avec le schéma actuel ; mise à `NULL` plutôt que référencer des colonnes
+  inexistantes (`distance_marche_km`, via `app.marches_locaux`, fonctionne réellement).
+- **`app.donnees_meteo`/`app.facteurs_macro`** interrogées avec des noms de colonnes et un format
+  imaginaires (pivot narrow `variable`/`valeur` pour la météo, indicateurs minuscules pour la
+  macro) sans rapport avec le schéma réel (déjà wide, indicateurs déjà en majuscules — cf. V21).
+  Corrigé dans `stg_meteo.sql`/`stg_indicateurs_macro.sql` et dans `feature_engineering.py`.
+  `indice_secheresse` est un VARCHAR enum réel, pas numérique — encodé en ordinal type Palmer DSI
+  (0 = normal, négatif = sécheresse croissante) pour matcher ce qu'attend `mcrs_model.py`.
+- **`raw.prix_marche` n'existe pas** (aucune ingestion de prix marché configurée, même limite que
+  MTN/Orange/CRB) : les features de prix produit restent `NULL`/`0` plutôt que de bloquer tout le
+  feature store sur une source absente — `mcrs_model.py` les impute déjà à ses médianes
+  sectorielles (`FEATURE_DEFAULTS`), aucune régression de comportement au scoring.
+- **`readonly_session()` (`pipeline/src/database.py`) laissait fuiter un état `READ ONLY` au
+  niveau de la session Postgres physique** vers le pooler Supabase (port 6543, mode transaction) —
+  `conn.close()` ferme le socket client, pas la connexion backend que le pooler recycle telle
+  quelle. Une tâche `db_session()` ultérieure pouvait hériter d'une connexion encore en lecture
+  seule et échouer sur son premier `UPDATE`/`INSERT` (`maj_priorites_dossiers`/`detecter_drift` en
+  `up_for_retry` aléatoire). Corrigé : `readonly_session()` réinitialise explicitement la session en
+  lecture-écriture avant de fermer la connexion.
+- **Comparaison de dates tz-aware/tz-naive** dans `detecter_drift_psi_segmente` (`scored_at` est
+  `TIMESTAMPTZ`, `pd.Timestamp.now()` sans fuseau) — `TypeError` Pandas. Corrigé (`utc=True`
+  explicite des deux côtés).
+- **`ml_alertes_utils.py`** (même catégorie de bugs que `ml_scoring_utils.py`, jamais corrigée
+  jusqu'ici) : `imf_code`/`date_score`/`shap_top_features` inexistants sur `ml.client_scores`,
+  colonnes `message`/`date_detection` inexistantes sur `ml.alertes_predictives` (les vraies sont
+  `titre`/`description`, `titre` NOT NULL). Corrigé pour `_alertes_risque_critique` (fonctionnelle
+  avec les vraies données — 20 alertes générées au premier run réel). `_alertes_deterioration_rapide`
+  rendue explicitement non-fonctionnelle avec un log clair plutôt que silencieuse : `ml.client_scores`
+  ne conserve plus d'historique par client depuis l'upsert V29, aucune comparaison à "il y a 7 jours"
+  n'est possible sans table dédiée. `_alertes_baisse_collecte`/`_alertes_cobac_aggravee` déjà
+  protégées par `try/except` (dégradation existante conservée) — dépendent de `raw.export_cbs`/d'un
+  historique quotidien de classe COBAC, tous deux absents du schéma réel.
+- **Sélecteurs dbt de `dag_ml_scoring.py` vers des modèles fantômes** : `feat_comportemental`/
+  `feat_externe` sélectionnaient 7 noms de modèles granulaires
+  (`feat_collecte_regularite`, `feat_prix_produit_principal`, ...) qui n'ont jamais existé dans le
+  projet dbt réel — la logique correspondante vit dans 2 modèles seulement
+  (`int_profil_recouvrement_client`, `feat_client_externe`). Corrigé.
+
+**Vérification finale** : trois déclenchements réels complets de `dag_ml_scoring` le 2026-07-08,
+le dernier avec les 17 tâches à `success` (`declencher_retrain` `skipped`, comportement correct
+sans drift) — `scorer_clients` a écrit 85 scores réels (`ml.client_scores`), `generer_alertes_ml` a
+produit 20 alertes réelles, `GET /external/scores/CLF001` confirme un score et un `model_version`
+frais.
+
 ### Non résolus
 
-- **`dbt-core` n'est pas installé dans l'image `imf-airflow`** — découvert en déclenchant
-  réellement `dag_ml_scoring` : les toutes premières tâches (`feat_comportemental`/`feat_externe`,
-  `dbt run` via `pipeline/dags/scripts/dbt_utils.py`) échouent avant même d'atteindre le code
-  corrigé ci-dessus (`FileNotFoundError` sur un chemin en plus faux — `DBT_PROJECT_DIR` par défaut
-  vaut `/app/pipeline/dbt_project`, un chemin qui n'existe que dans le conteneur `imf-ml-api`, pas
-  dans `imf-airflow` où le vrai chemin est `/opt/airflow/pipeline/dbt_project` depuis le montage de
-  volume du 2026-07-08 matin — mais même en corrigeant le chemin, `dbt` lui-même est absent :
-  `pip show dbt-core` → *not found*). **Conséquence directe pour ce document** : la réécriture de
-  `ml_scoring_utils.py` ci-dessus est correcte et déployée, mais reste **non vérifiée de bout en
-  bout** — le déclenchement réel du 2026-07-08 s'est terminé en `upstream_failed` en cascade dès la
-  première tâche, jamais jusqu'à `scorer_clients`. Il faut ajouter `dbt-core` + l'adaptateur
-  Postgres au `Dockerfile` de l'image `imf-airflow` (et corriger `DBT_PROJECT_DIR`/
-  `DBT_PROFILES_DIR`), ce qui nécessite un rebuild d'image via le pipeline CI/CD — pas un correctif
-  à chaud. Non fait à ce stade : hors du périmètre validé pour cette intervention, à traiter comme
-  un chantier séparé.
+- **`LABELS_QUERY` (`pipeline/src/ml/feature_engineering.py`), utilisée par `dag_ml_training`
+  uniquement** : mêmes symptômes probables que les requêtes corrigées ci-dessus (`staging.stg_clients`
+  comme pilote, `app.kpi_recouvrement_snapshots.client_id` qui n'existe pas — cette table est un
+  agrégat de portefeuille, pas par client). Non auditée ni corrigée — `dag_ml_training` n'a pas été
+  déclenché aujourd'hui, hors périmètre de cette vérification centrée sur le scoring.
+- **`_alertes_baisse_collecte`/`_alertes_cobac_aggravee`** (`ml_alertes_utils.py`) restent
+  non-fonctionnelles (dégradation déjà en place, cf. ci-dessus) : dépendent de `raw.export_cbs`
+  (aucune ingestion CBS réelle) et d'un historique quotidien de classification COBAC qui n'existe
+  nulle part dans le schéma actuel.
+- **Ingestion `raw.*` jamais implémentée** (`export_cbs`, `prix_marche`, `transactions_mtn`,
+  `transactions_orange`) : construit pour une architecture `raw → staging` qui n'a jamais été
+  câblée — les données réelles arrivent directement dans `app.*` via l'API Spring Boot. Les
+  fonctionnalités qui en dépendent structurellement (prix marché, alertes CBS, historique de
+  classification) resteront indisponibles tant qu'aucune ingestion réelle (CBS SFTP, MTN/Orange
+  Mobile Money, scraping/API de prix) n'est branchée — limite déjà connue, pas nouvelle.
+- **`ml-api` sans authentification serveur-à-serveur, exposé sur l'IP publique** — corrigé (cf.
+  section précédente, header `X-Internal-Key`). Restructuration réseau (isoler `ml-api` du réseau
+  public) explicitement écartée avec l'utilisateur — `backend` et `ml-api` partagent
+  `network_mode: host` à cause de Redis en localhost.
 - **`http://ml-api:8090` ne résout pas depuis `imf-backend`** — `backend` et `ml-api` tournent tous
   deux en `network_mode: host` (pas de réseau Docker bridge, donc pas de DNS `ml-api` interne).
   `MlScoringClient`/`RealtimeScoringService` (scoring temps réel à l'ouverture d'un dossier,
   utilisé côté Spring Boot) échouent donc silencieusement depuis le début — capturés par le mode
   dégradé (`Optional.empty()`), sans jamais remonter d'erreur visible. Correctif probable :
-  `ML_API_URL=http://localhost:8090` explicite pour le service `backend`. Découvert en vérifiant
-  que la clé `X-Internal-Key` (ci-dessus) atteignait bien `ml-api` depuis le backend — pas corrigé,
-  hors périmètre validé pour cette intervention.
+  `ML_API_URL=http://localhost:8090` explicite pour le service `backend`. Non corrigé — hors
+  périmètre validé pour cette intervention.

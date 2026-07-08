@@ -74,27 +74,32 @@ with DAG(
         task_id="feat_comportemental",
         python_callable=dbt_run_select,
         op_kwargs={
-            "select": (
-                "ml.feat_collecte_regularite "
-                "ml.feat_remboursement_historique "
-                "ml.feat_client_anciennete"
-            )
+            # Les 3 modèles granulaires précédents (feat_collecte_regularite,
+            # feat_remboursement_historique, feat_client_anciennete)
+            # n'avaient jamais existé dans le projet dbt réel — la logique
+            # comportementale est en fait dans ce seul modèle intermediate.
+            # Pas de "+" : stg_creances/stg_collectes_epargne (ses refs)
+            # dépendent de raw.export_cbs/raw.collectes_terrain, jamais
+            # alimentées (aucune ingestion CBS réelle configurée) — elles
+            # existent déjà comme tables (build antérieur) et ne doivent pas
+            # être reconstruites tant que cette source n'existe pas.
+            "select": "intermediate.int_profil_recouvrement_client",
         },
-        doc="Features comportementales : régularité collecte, historique remboursement, ancienneté",
+        doc="Profil comportemental recouvrement (créances CBS + historique collectes)",
     )
 
     feat_externe = PythonOperator(
         task_id="feat_externe",
         python_callable=dbt_run_select,
         op_kwargs={
-            "select": (
-                "ml.feat_prix_produit_principal "
-                "ml.feat_macro_contexte "
-                "ml.feat_meteo_zone "
-                "ml.feat_geospatial"
-            )
+            # cf. feat_comportemental : les 4 modèles granulaires précédents
+            # n'avaient jamais existé — un seul modèle réel les regroupe.
+            # "+" inclus : ses refs (stg_meteo, stg_indicateurs_macro)
+            # dépendent uniquement de app.donnees_meteo/app.facteurs_macro
+            # (données réelles, pas de raw.*) — reconstruction sûre.
+            "select": "+ml.feat_client_externe",
         },
-        doc="Features externes : prix produit principal, inflation, météo, distance agence/marché",
+        doc="Features externes : prix produit principal (NULL tant que non ingéré), inflation, météo, distance marché",
     )
 
     assembler = PythonOperator(

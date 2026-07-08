@@ -47,33 +47,35 @@ def generer_alertes_predictives(
 
 def _alertes_risque_critique(seuil: float) -> int:
     """Alerte pour les clients dont le MCRS dépasse le seuil critique."""
+    # ml.client_scores porte imf_id (BIGINT), pas imf_code, et n'a pas de
+    # colonne shap_top_features (les valeurs SHAP vivent dans
+    # ml.shap_explanations, liée par score_id — pas rejointe ici pour rester
+    # simple). Depuis V29, client_scores est un upsert par client (un seul
+    # enregistrement courant) : plus de notion de "date_score = aujourd'hui",
+    # le score EST déjà le plus récent par construction.
     sql_select = """
-        SELECT cs.client_id_externe, cs.imf_code, cs.score_mcrs,
-               cs.probabilite_defaut_90j, cs.action_recommandee,
-               cs.shap_top_features
+        SELECT cs.client_id_externe, cs.imf_id, cs.score_mcrs,
+               cs.probabilite_defaut_90j, cs.action_recommandee
         FROM ml.client_scores cs
-        WHERE cs.date_score = CURRENT_DATE
-          AND cs.score_mcrs >= %(seuil)s
+        WHERE cs.score_mcrs >= %(seuil)s
           AND NOT EXISTS (
               SELECT 1 FROM ml.alertes_predictives ap
               WHERE ap.client_id_externe = cs.client_id_externe
-                AND ap.imf_code          = cs.imf_code
+                AND ap.imf_id            = cs.imf_id
                 AND ap.type_alerte       = 'RISQUE_DEFAUT_IMMINENT'
-                AND ap.date_detection    = CURRENT_DATE
+                AND ap.created_at::date  = CURRENT_DATE
                 AND ap.statut            = 'ACTIVE'
           )
     """
     sql_insert = """
         INSERT INTO ml.alertes_predictives (
-            client_id_externe, imf_code, type_alerte, message,
-            score_mcrs, probabilite_defaut_90j,
-            action_recommandee, date_detection, statut, created_at
+            client_id_externe, imf_id, type_alerte, titre, description,
+            valeur_declenchante, seuil_alerte, statut
         ) VALUES (
-            %(client_id_externe)s, %(imf_code)s, 'RISQUE_DEFAUT_IMMINENT',
-            %(message)s,
-            %(score_mcrs)s, %(probabilite_defaut_90j)s,
-            %(action_recommandee)s, CURRENT_DATE, 'ACTIVE', NOW()
-        ) ON CONFLICT DO NOTHING
+            %(client_id_externe)s, %(imf_id)s, 'RISQUE_DEFAUT_IMMINENT',
+            %(titre)s, %(description)s,
+            %(score_mcrs)s, %(seuil)s, 'ACTIVE'
+        )
     """
     n = 0
     with readonly_session() as cur:
@@ -82,23 +84,19 @@ def _alertes_risque_critique(seuil: float) -> int:
 
     with db_session() as cur:
         for row in rows:
-            # Extraire la feature principale pour le message
-            shap = row.get("shap_top_features") or {}
-            top_feature = (
-                max(shap, key=lambda k: abs(shap[k]), default="N/A") if shap else "N/A"
-            )
             cur.execute(
                 sql_insert,
                 {
                     "client_id_externe": row["client_id_externe"],
-                    "imf_code": row["imf_code"],
-                    "message": (
-                        f"Score MCRS={row['score_mcrs']:.3f} — P(défaut 90j)={row['probabilite_defaut_90j']:.1%} "
-                        f"— Facteur principal: {top_feature}"
+                    "imf_id": row["imf_id"],
+                    "titre": f"Risque de défaut imminent — {row['client_id_externe']}",
+                    "description": (
+                        f"Score MCRS={row['score_mcrs']:.3f} — "
+                        f"P(défaut 90j)={row['probabilite_defaut_90j']:.1%} — "
+                        f"Action recommandée : {row['action_recommandee']}"
                     ),
                     "score_mcrs": row["score_mcrs"],
-                    "probabilite_defaut_90j": row["probabilite_defaut_90j"],
-                    "action_recommandee": row["action_recommandee"],
+                    "seuil": seuil,
                 },
             )
             n += 1
@@ -110,63 +108,32 @@ def _alertes_risque_critique(seuil: float) -> int:
 def _alertes_deterioration_rapide(seuil_delta: float) -> int:
     """
     Alerte si le score MCRS s'est dégradé de plus de |seuil_delta| en 7 jours.
-    Un score qui monte de plus de 0.15 en 1 semaine est un signal fort.
-    """
-    sql = """
-        WITH scores_semaine AS (
-            SELECT
-                client_id_externe, imf_code,
-                score_mcrs,
-                LAG(score_mcrs, 7) OVER (
-                    PARTITION BY client_id_externe, imf_code
-                    ORDER BY date_score
-                ) AS score_il_y_a_7j
-            FROM ml.client_scores
-            WHERE date_score >= CURRENT_DATE - INTERVAL '8 days'
-        )
-        SELECT client_id_externe, imf_code, score_mcrs,
-               score_mcrs - score_il_y_a_7j AS delta_7j
-        FROM scores_semaine
-        WHERE date_score = CURRENT_DATE
-          AND score_il_y_a_7j IS NOT NULL
-          AND (score_mcrs - score_il_y_a_7j) >= %(seuil)s
-    """
-    sql_insert = """
-        INSERT INTO ml.alertes_predictives (
-            client_id_externe, imf_code, type_alerte, message,
-            score_mcrs, date_detection, statut, created_at
-        ) VALUES (
-            %(client_id_externe)s, %(imf_code)s, 'DETERIORATION_RAPIDE',
-            %(message)s, %(score_mcrs)s, CURRENT_DATE, 'ACTIVE', NOW()
-        ) ON CONFLICT DO NOTHING
-    """
-    n = 0
-    with readonly_session() as cur:
-        cur.execute(sql, {"seuil": abs(seuil_delta)})
-        rows = cur.fetchall()
 
-    with db_session() as cur:
-        for row in rows:
-            cur.execute(
-                sql_insert,
-                {
-                    "client_id_externe": row["client_id_externe"],
-                    "imf_code": row["imf_code"],
-                    "message": (
-                        f"Score MCRS={row['score_mcrs']:.3f} — Dégradation de +{row['delta_7j']:.3f} en 7 jours"
-                    ),
-                    "score_mcrs": row["score_mcrs"],
-                },
-            )
-            n += 1
-
-    logger.info("Alertes DETERIORATION_RAPIDE : %d", n)
-    return n
+    Non implémentable en l'état : depuis V29, ml.client_scores ne conserve
+    qu'un seul enregistrement par client (le plus récent, upsert sur
+    (client_id_externe, imf_id)) — aucun historique de score n'est
+    disponible pour comparer "aujourd'hui" à "il y a 7 jours". Nécessiterait
+    soit une table d'historique dédiée, soit de renoncer à l'upsert V29
+    (régression). Hors périmètre d'une correction de schéma — signalé
+    clairement plutôt que silencieusement no-opé.
+    """
+    logger.warning(
+        "Alertes DETERIORATION_RAPIDE non calculées : ml.client_scores ne "
+        "conserve plus d'historique par client depuis V29 (upsert), "
+        "impossible de comparer au score d'il y a 7 jours sans table dédiée."
+    )
+    return 0
 
 
 def _alertes_baisse_collecte(seuil_pct: float) -> int:
     """
     Alerte si la tendance collecte est négative de façon persistante (4 semaines).
+
+    Non fonctionnel en l'état : staging.stg_clients dépend de
+    raw.export_cbs (jamais alimenté, pas d'ingestion CBS réelle configurée)
+    — la requête échoue systématiquement dès le SELECT, capturé par le
+    try/except ci-dessous (dégradation déjà en place, conservée telle
+    quelle plutôt que réécrite pour une source qui n'existe pas encore).
     """
     sql = """
         SELECT
@@ -223,6 +190,13 @@ def _alertes_cobac_aggravee() -> int:
     """
     Alerte si un client passe d'une classe COBAC inférieure à une classe supérieure ce jour.
     Ex : B→C ou C→D (aggravation de la classification).
+
+    Non fonctionnel en l'état : staging.stg_creances n'a ni colonne
+    date_extraction ni classe_cobac (la vraie colonne est
+    classe_risque_cobac, et il n'existe aucun historique quotidien par
+    classe — même limite que _alertes_deterioration_rapide). Requête
+    échoue systématiquement dès le SELECT, capturé par le try/except
+    ci-dessous.
     """
     sql = """
         WITH hier AS (

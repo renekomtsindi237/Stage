@@ -6,64 +6,38 @@
     )
 }}
 
--- Normalise les codes indicateurs macro-économiques (BEAC / INS) vers les noms
--- attendus par le feature store ML (feat_client_externe.sql) :
---   taux_directeur  → TAUX_DIRECTEUR_BEAC
---   inflation_cemac → TAUX_INFLATION_MENSUEL
---   ipc_cameroun    → INDICE_PRIX_CONSOMMATION
+-- app.facteurs_macro utilise déjà les codes indicateurs attendus par
+-- feat_client_externe.sql (TAUX_DIRECTEUR_BEAC, TAUX_INFLATION_MENSUEL,
+-- INDICE_PRIX_CONSOMMATION, ...) — pas de mapping à faire, contrairement à
+-- la version précédente de ce modèle qui supposait des codes minuscules
+-- ('taux_directeur', 'inflation_cemac', ...) n'ayant jamais existé dans le
+-- schéma réellement migré (V21__donnees_externes.sql). La colonne date
+-- réelle est `date_observation`, pas `date_publication` ; il n'y a pas de
+-- colonne `unite`/`pays` sur cette table.
 
 WITH source AS (
     SELECT *
     FROM {{ source('app', 'facteurs_macro') }}
-    WHERE date_publication IS NOT NULL
+    WHERE date_observation IS NOT NULL
       AND valeur IS NOT NULL
     {% if is_incremental() %}
-      AND date_publication > (SELECT MAX(date_observation) FROM {{ this }})
+      AND date_observation > (SELECT MAX(date_observation) FROM {{ this }})
     {% endif %}
-),
-
-normalise AS (
-    SELECT
-        CASE indicateur
-            WHEN 'taux_directeur'         THEN 'TAUX_DIRECTEUR_BEAC'
-            WHEN 'inflation_cemac'        THEN 'TAUX_INFLATION_MENSUEL'
-            WHEN 'ipc_cameroun'           THEN 'INDICE_PRIX_CONSOMMATION'
-            WHEN 'ihpc_zone_cemac'        THEN 'IHPC_CEMAC'
-            WHEN 'taux_change_eur_xaf'    THEN 'TAUX_CHANGE_EUR_XAF'
-            WHEN 'pib_croissance_cmr'     THEN 'PIB_CROISSANCE_CMR'
-            WHEN 'taux_chomage_cameroun'  THEN 'TAUX_CHOMAGE_CMR'
-            WHEN 'reserve_change_cemac'   THEN 'RESERVE_CHANGE_CEMAC'
-            WHEN 'credit_economie_cmr'    THEN 'CREDIT_ECONOMIE_CMR'
-            ELSE UPPER(indicateur)
-        END                                AS indicateur,
-        valeur::NUMERIC(18, 6)             AS valeur,
-        COALESCE(unite, '')                AS unite,
-        source,
-        COALESCE(pays, 'CM')               AS pays,
-        date_publication                   AS date_observation
-    FROM source
 )
 
 SELECT
     indicateur,
-    valeur,
-    unite,
+    valeur::NUMERIC(18, 6) AS valeur,
+    ''                     AS unite,
     source,
-    pays,
+    'CM'                   AS pays,
     date_observation,
     NOW() AS _dbt_loaded_at
 
-FROM normalise
+FROM source
 WHERE date_observation >= '{{ var("date_debut_historique") }}'::DATE
-  -- Conserver uniquement les indicateurs reconnus pour le feature store ML
   AND indicateur IN (
       'TAUX_DIRECTEUR_BEAC',
       'TAUX_INFLATION_MENSUEL',
-      'INDICE_PRIX_CONSOMMATION',
-      'IHPC_CEMAC',
-      'TAUX_CHANGE_EUR_XAF',
-      'PIB_CROISSANCE_CMR',
-      'TAUX_CHOMAGE_CMR',
-      'RESERVE_CHANGE_CEMAC',
-      'CREDIT_ECONOMIE_CMR'
+      'INDICE_PRIX_CONSOMMATION'
   )

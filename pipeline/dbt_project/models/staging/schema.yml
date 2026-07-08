@@ -38,6 +38,20 @@ sources:
             tests: [not_null]
           - name: date_publication
             tests: [not_null]
+      - name: clients_informels
+        description: "Profil étendu des clients du secteur informel (secteur, zone, revenu estimé)"
+      - name: client_activites_produits
+        description: "Activités/produits agricoles ou commerciaux rattachés à un client informel"
+      - name: produits_generiques
+        description: "Référentiel des produits agricoles/commerciaux (catégorie, saisonnalité)"
+      - name: agences
+        description: "Agences physiques de l'IMF"
+      - name: marches_locaux
+        description: "Marchés locaux de référence pour le suivi des prix produits"
+      - name: evenements_exterieurs
+        description: "Événements externes pouvant affecter la solvabilité (chocs prix, météo, etc.)"
+      - name: imf
+        description: "Institutions de microfinance (tenants) — id/code/nom"
 
   - name: raw
     schema: raw
@@ -93,6 +107,8 @@ sources:
         columns:
           - name: id_collecte_mobile
             tests: [unique, not_null]
+      - name: prix_marche
+        description: "Relevés de prix produits par marché local — ingestion externe"
 
 models:
   - name: stg_collectes_mtn

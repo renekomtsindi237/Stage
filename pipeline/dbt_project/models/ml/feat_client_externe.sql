@@ -10,14 +10,24 @@
 -- Rejoint avec le produit principal du client
 
 WITH clients AS (
-    SELECT *
-    FROM {{ ref('stg_clients') }}
+    -- cf. commentaire équivalent dans features_client.sql : stg_clients
+    -- dépend de raw.export_cbs, jamais alimenté (pas d'ingestion CBS réelle
+    -- configurée) — app.clients_informels est la table client réelle.
+    SELECT
+        i.code AS imf_code,
+        ci.client_id_externe,
+        ci.zone_id
+    FROM {{ source('app', 'clients_informels') }} ci
+    JOIN {{ source('app', 'imf') }} i ON i.id = ci.imf_id
 ),
 
 produit_principal AS (
     -- Produit vendu le plus fréquemment (ou déclaré principal)
+    -- app.clients_informels porte imf_id (FK), pas imf_code — résolu via
+    -- app.imf comme partout ailleurs dans le pipeline (aucune colonne
+    -- imf_code n'existe sur les tables app.* elles-mêmes).
     SELECT DISTINCT ON (cap.client_id)
-        ci.imf_code,
+        i.code AS imf_code,
         ci.client_id_externe,
         pg.code_produit,
         pg.categorie,
@@ -25,36 +35,30 @@ produit_principal AS (
     FROM {{ source('app', 'client_activites_produits') }} cap
     JOIN {{ source('app', 'clients_informels') }} ci ON cap.client_id = ci.id
     JOIN {{ source('app', 'produits_generiques') }} pg ON cap.produit_id = pg.id
+    JOIN {{ source('app', 'imf') }} i ON i.id = ci.imf_id
     ORDER BY cap.client_id, cap.est_produit_principal DESC, cap.revenu_mensuel_produit DESC NULLS LAST
 ),
 
 prix_produit AS (
-    -- Prix moyen, volatilité, tendance et lag sur 120 jours pour le produit principal
+    -- stg_prix_produits dépend de raw.prix_marche : aucune ingestion de prix
+    -- marché n'est configurée à ce jour (pas de scraping/API prix connecté,
+    -- au même titre que MTN/Orange/CRB — limites déjà documentées). Plutôt
+    -- que de bloquer tout le feature store sur une source qui n'existe pas
+    -- encore, ces colonnes restent NULL ici — FastAPI les impute déjà à ses
+    -- médianes sectorielles (FEATURE_DEFAULTS dans mcrs_model.py), donc
+    -- aucune régression de comportement au scoring. À rebrancher sur
+    -- {{ '{{ ref(\'stg_prix_produits\') }}' }} dès qu'une vraie source de
+    -- prix existe.
     SELECT
-        pp.code_produit,
-        pp.zone_id,
-        CURRENT_DATE - INTERVAL '90 days'   AS periode_debut,
-        CURRENT_DATE                          AS periode_fin,
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE date_prix >= CURRENT_DATE - INTERVAL '90 days')  AS prix_moy_90j,
-        STDDEV(pp.prix_unitaire)
-            FILTER (WHERE date_prix >= CURRENT_DATE - INTERVAL '90 days')  AS prix_stddev_90j,
-        -- Tendance linéaire (pente de régression sur les 30 derniers jours)
-        REGR_SLOPE(prix_unitaire, EXTRACT(EPOCH FROM date_prix))
-            FILTER (WHERE date_prix >= CURRENT_DATE - INTERVAL '30 days')  AS tendance_prix_30j,
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE date_prix >= CURRENT_DATE - INTERVAL '30 days')  AS prix_moy_30j,
-        -- Lag 30j : prix moyen de la période 31–60 jours en arrière
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE date_prix BETWEEN CURRENT_DATE - INTERVAL '60 days'
-                                        AND CURRENT_DATE - INTERVAL '31 days') AS prix_lag_30j,
-        -- Lag 90j : prix moyen de la période 91–120 jours en arrière
-        AVG(pp.prix_unitaire)
-            FILTER (WHERE date_prix BETWEEN CURRENT_DATE - INTERVAL '120 days'
-                                        AND CURRENT_DATE - INTERVAL '91 days') AS prix_lag_90j
-    FROM {{ ref('stg_prix_produits') }} pp
-    WHERE date_prix >= CURRENT_DATE - INTERVAL '120 days'  -- étendu à 120j pour les lags
-    GROUP BY pp.code_produit, pp.zone_id
+        NULL::TEXT    AS code_produit,
+        NULL::TEXT    AS zone_id,
+        NULL::NUMERIC AS prix_moy_90j,
+        NULL::NUMERIC AS prix_stddev_90j,
+        NULL::NUMERIC AS tendance_prix_30j,
+        NULL::NUMERIC AS prix_moy_30j,
+        NULL::NUMERIC AS prix_lag_30j,
+        NULL::NUMERIC AS prix_lag_90j
+    WHERE FALSE
 ),
 
 meteo_zone AS (
