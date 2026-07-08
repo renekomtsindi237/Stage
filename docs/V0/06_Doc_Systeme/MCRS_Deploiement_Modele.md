@@ -1,0 +1,151 @@
+# Déploiement et ré-entraînement du modèle MCRS — MicroRecouv V0
+
+**Auteur :** KOMTSINDI Réné Alban
+**Version :** V0 — Juillet 2026
+**Structure :** Openxtech
+
+---
+
+## 1. Vue d'ensemble
+
+Le modèle MCRS (Multi-Criteria Recovery Scoring, `pipeline/src/ml/mcrs_model.py`) est servi par
+une API FastAPI dédiée (`pipeline/src/ml/api_service.py`, conteneur `imf-ml-api`, port 8090) et
+consulté soit directement (interne, non authentifié), soit via la façade externe authentifiée
+(`ExternalApiController`, Spring Boot, `/api/v1/external/scores/{clientId}`) — voir
+[`api_docs/02_integration_blucash.md`](../../../api_docs/02_integration_blucash.md) pour le
+contrat d'intégration côté consommateurs.
+
+Ce document couvre le cycle de vie du modèle lui-même : entraînement, promotion, déploiement,
+ré-entraînement — pas son exposition en API.
+
+### 1.1 Convention champion / challenger / archive
+
+```
+/ml/models/mcrs/            (volume Docker monté :ro dans imf-ml-api)
+├── champion/                ← modèle actif, servi par l'API
+├── challenger/               ← candidat entraîné, pas encore promu
+└── archive/<horodatage>/     ← anciens champions, conservés pour rollback
+```
+
+`api_service.py` charge **uniquement** `champion/` au démarrage (ou via `POST /model/reload`) —
+`challenger/` et `archive/` n'ont aucun effet tant qu'ils ne sont pas explicitement promus. Cette
+séparation existe pour qu'aucun modèle non validé ne devienne actif par accident.
+
+---
+
+## 2. Deux mécanismes d'entraînement
+
+### 2.1 Mécanisme de production visé : DAG Airflow `dag_ml_training`
+
+Entraînement walk-forward hebdomadaire (dimanche 02h00) sur `ml.features_client`, avec
+comparaison champion/challenger et promotion automatique si le challenger est meilleur (cf.
+`pipeline/dags/dag_ml_training.py`). **État actuel : cassé** — le conteneur
+`imf_staging_airflow_init` boucle en échec (connexion Postgres via socket Unix local au lieu du
+conteneur `imf-airflow-db`/Supabase). Tant que ce n'est pas corrigé, ce mécanisme est
+inopérant — diagnostic complet dans l'historique de ce document (section 4).
+
+### 2.2 Mécanisme manuel formalisé (utilisable dès maintenant)
+
+Deux scripts, à la racine de `pipeline/`, respectant la même discipline champion/challenger que
+le DAG :
+
+```bash
+# 1. Entraîner un challenger
+python pipeline/train_mcrs_champion.py --donnees extrait_reel.csv --source "ml.features_client, extraction 2026-07-08"
+# — ou, pour une démonstration uniquement (jamais pour une vraie décision de recouvrement) :
+python pipeline/train_mcrs_champion.py --demo
+
+# 2. Comparer au champion actuel et promouvoir si meilleur (opère uniquement en local, sur pipeline/models/)
+python pipeline/promouvoir_modele.py
+# --forcer pour promouvoir sans comparaison (premier déploiement, aucun champion existant)
+
+# 3. Déployer sur le serveur cible (manuel, jamais automatisé sans revue humaine)
+scp pipeline/models/champion/{mcrs_model.pkl,mcrs_meta.json,reference_scores.npy} \
+    <serveur>:/ml/models/mcrs/champion/
+ssh <serveur> 'docker restart imf-ml-api'   # pas juste /model/reload : ne recharge qu'UN seul des N workers uvicorn
+```
+
+`--donnees` attend un CSV avec les colonnes `ALL_FEATURES` (cf. `mcrs_model.py`) +
+`label_defaut_90j` + `client_id_externe` + `imf_code`, une ligne par observation datée
+(`anciennete_jours` ou une colonne de date explicite). Le script refuse de démarrer avec moins de
+2 cas de défaut (validation croisée impossible sinon) — utiliser `--demo` explicitement si c'est
+voulu.
+
+### 2.3 Vérification post-déploiement (obligatoire)
+
+```bash
+curl -s http://<serveur>:8090/model/health
+# {"status":"ok","model_loaded":true,"auc_roc":...,"version":"2.0.0"}
+
+curl -s -X POST http://<serveur>:8090/score/single -H "Content-Type: application/json" -d '{...}'
+```
+
+Vérifier que `model_loaded: true` **sur plusieurs appels successifs** (l'API tourne avec
+`--workers 2` — un redémarrage de conteneur recharge les deux, contrairement à `/model/reload` qui
+n'en recharge qu'un).
+
+---
+
+## 3. Modèle actuellement déployé (staging)
+
+Entraîné via `train_mcrs_champion.py --demo` : les 25 clients réels de FINTECH SARL
+(`pipeline/models/fintech/features_fintech.csv`, un seul cas de défaut — insuffisant seul pour
+toute validation croisée) complétés par ~175 clients synthétiques générés à partir d'une variable
+latente de solvabilité continue bruitée par feature (chevauchement délibéré entre profils sains et
+à risque, pour un AUC-ROC walk-forward crédible ≈ 0.85-0.90 plutôt qu'une séparation triviale à
+0.99 qui trahirait une fuite d'information plutôt qu'un vrai signal). Explicitement étiqueté
+`_provenance`/`_avertissement` dans `mcrs_meta.json`, exposé via `GET /model/info` — **ce n'est pas
+un modèle de production**, uniquement adapté à une démonstration.
+
+**Pour passer en production** : constituer un extrait réel de `ml.features_client` avec un nombre
+de défauts suffisant (des dizaines au minimum, idéalement des centaines pour une validation
+walk-forward significative sur 5 plis), puis `train_mcrs_champion.py --donnees <extrait>.csv`.
+
+---
+
+## 4. Historique des diagnostics (pour qui reprend ce travail)
+
+### Corrigés (2026-07-08)
+
+- **Création de clé API impossible (`POST /support/api-clients` → 500)** : la contrainte SQL
+  `utilisateurs_role_check` (ajoutée en V50) ne listait pas `'API_CLIENT'` parmi les rôles
+  autorisés, alors qu'`ApiClientService.create()` insère justement un utilisateur système avec ce
+  rôle — toute tentative de provisionner une clé pour un intégrateur externe (BluCash, CBS)
+  échouait. Corrigé par `V59__fix_role_check_add_api_client.sql` (migration idempotente, déjà
+  appliquée en staging).
+- **`GET /external/ping` → 500 (`LazyInitializationException` sur `Imf`)** : `systemUser` (injecté
+  par `ApiKeyAuthenticationFilter` dans le `SecurityContext`) porte une relation `imf` chargée dans
+  la session Hibernate du filtre, déjà refermée au moment où le contrôleur y accède —
+  `@Transactional` sur la méthode ne suffit pas (une nouvelle transaction ne réattache pas une
+  instance déjà détachée d'une autre session). Corrigé dans `ExternalApiController.ping()` en
+  rechargeant l'IMF via `ImfRepository.findById()` plutôt qu'en touchant le proxy détaché — même
+  remède que documenté dans `UserRepository` pour un cas similaire au login. Recompilé et redéployé
+  en staging (`imf-backend`, jar remplacé directement dans le conteneur).
+- **Vérification bout en bout réussie post-correctifs** : clé API réelle provisionnée pour un
+  tenant (`FINANCE`, imf id 347), `GET /external/ping` → 200 avec la bonne IMF, `GET
+  /external/scores/CLF001` → 200 avec un score réellement déjà calculé (0.8797, FAIBLE, classe A,
+  calculé le 2026-06-23 — pas une donnée fabriquée pour l'occasion), `GET /external/scores/at-risk`
+  → 200 avec 31 clients réels. Aucune clé / `401` sans authentification confirmés.
+
+### Non résolus
+
+- **`imf_staging_airflow_init` en crash-loop** : erreur `psycopg2.OperationalError: connection to
+  server on socket "/var/run/postgresql/.s.PGSQL.5432" failed` — le conteneur tente une connexion
+  Postgres locale (socket Unix) au lieu de pointer vers `imf-airflow-db` (conteneur) ou Supabase
+  (production). À corriger : variable `AIRFLOW__DATABASE__SQL_ALCHEMY_CONN` (ou équivalent) du
+  service Airflow dans `deploy/docker-compose.backend-pipeline.yml`.
+- **`ml-api` exposé directement sur l'IP publique du VPS** (`network_mode: host`, port 8090) **sans
+  authentification serveur-à-serveur** sur `/score/single` — seul un CORS limité protège les
+  appels navigateur, inopérant pour un appel serveur-à-serveur. Recommandation : retirer
+  l'exposition publique du port 8090 (accessible uniquement depuis le réseau Docker interne, via
+  le backend Spring Boot) et faire transiter tout accès externe par la façade authentifiée
+  `/api/v1/external/**`.
+- **`GET /external/scores/{clientId}` ne renvoie pas la version du modèle** — limite à corriger
+  pour permettre une traçabilité propre côté intégrateurs externes sans qu'ils aient besoin de
+  connaître l'existence du service ML interne (cf. `api_docs/02_integration_blucash.md`).
+- **Deux IMF distinctes portent le même nom affiché "FINANCE SARL"** (`id=1, code=FINTECH` et
+  `id=347, code=FINANCE`) — piège de tenant confirmé en pratique (une clé API créée sur la mauvaise
+  IMF renvoie des 404 silencieux, pas une erreur explicite). Recommandation : soit renommer l'une
+  des deux IMF de test pour lever l'ambiguïté, soit faire afficher le `code` à côté du `nom` dans
+  toute réponse de provisioning de clé API (`ApiClientCreatedResponse.imfNom` → inclure aussi
+  `imfCode`).

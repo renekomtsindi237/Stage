@@ -3,6 +3,7 @@ package cm.imf.pipeline.controller;
 import cm.imf.pipeline.dto.request.CollecteRequest;
 import cm.imf.pipeline.dto.response.*;
 import cm.imf.pipeline.entity.User;
+import cm.imf.pipeline.repository.ImfRepository;
 import cm.imf.pipeline.service.ICollecteService;
 import cm.imf.pipeline.service.ICreanceService;
 import cm.imf.pipeline.security.TenantContext;
@@ -41,6 +42,7 @@ public class ExternalApiController {
     private final ICollecteService  collecteService;
     private final ICreanceService   creanceService;
     private final JdbcTemplate      jdbcTemplate;
+    private final ImfRepository     imfRepository;
 
     // ── Collectes (BluCash) ───────────────────────────────────────────────────
 
@@ -175,9 +177,25 @@ public class ExternalApiController {
     @Operation(summary = "Vérifier que la clé API est valide", description = "Retourne 200 si la clé est active.")
     @GetMapping("/ping")
     public ResponseEntity<Map<String, Object>> ping(@AuthenticationPrincipal User systemUser) {
+        // systemUser vient du SecurityContext (injecté par ApiKeyAuthenticationFilter,
+        // dans sa PROPRE session Hibernate déjà refermée) : sa relation imf est un
+        // proxy LAZY détaché, donc getImf().getNom() lève LazyInitializationException
+        // même avec @Transactional sur cette méthode (une nouvelle transaction ne
+        // réattache pas une instance déjà détachée d'une autre session). On ne touche
+        // donc jamais le proxy : on ne lit que son id (résolu sans accès DB, cf.
+        // TenantContext.currentImfId()) puis on recharge l'IMF via le repository,
+        // qui gère sa propre transaction — même remède déjà appliqué dans
+        // UserRepository ("Charge toujours l'IMF en même temps — évite
+        // LazyInitializationException sur login").
+        String imfNom = "N/A";
+        if (systemUser.getImf() != null) {
+            imfNom = imfRepository.findById(systemUser.getImf().getId())
+                    .map(imf -> imf.getNom())
+                    .orElse("N/A");
+        }
         return ResponseEntity.ok(Map.of(
                 "status", "ok",
-                "imf", systemUser.getImf() != null ? systemUser.getImf().getNom() : "N/A",
+                "imf", imfNom,
                 "timestamp", OffsetDateTime.now().toString()
         ));
     }
