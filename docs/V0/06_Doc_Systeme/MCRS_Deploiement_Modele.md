@@ -375,10 +375,16 @@ non corrigé, hors du périmètre explicite de cette intervention (météo/CSI u
   section précédente, header `X-Internal-Key`). Restructuration réseau (isoler `ml-api` du réseau
   public) explicitement écartée avec l'utilisateur — `backend` et `ml-api` partagent
   `network_mode: host` à cause de Redis en localhost.
-- **`http://ml-api:8090` ne résout pas depuis `imf-backend`** — `backend` et `ml-api` tournent tous
-  deux en `network_mode: host` (pas de réseau Docker bridge, donc pas de DNS `ml-api` interne).
-  `MlScoringClient`/`RealtimeScoringService` (scoring temps réel à l'ouverture d'un dossier,
-  utilisé côté Spring Boot) échouent donc silencieusement depuis le début — capturés par le mode
-  dégradé (`Optional.empty()`), sans jamais remonter d'erreur visible. Correctif probable :
-  `ML_API_URL=http://localhost:8090` explicite pour le service `backend`. Non corrigé — hors
-  périmètre validé pour cette intervention.
+- **`http://ml-api:8090` ne résolvait pas depuis `imf-backend`** — corrigé : `ML_API_URL:
+  http://localhost:8090` explicite dans `deploy/docker-compose.backend-pipeline.yml` (service
+  `backend`), vérifié vivant sur le conteneur staging (`docker exec imf-backend printenv
+  ML_API_URL`). `MlScoringClient`/`RealtimeScoringService` peuvent donc effectivement atteindre
+  `ml-api`.
+- **Le scoring temps réel ne se déclenchait qu'après une synchronisation mobile** — une créance ou
+  un dossier de recouvrement créé sans passer par une sync mobile (import CBS, ouverture manuelle
+  via `POST /recouvrement/dossiers`) ne recevait donc jamais de premier score tant qu'aucune
+  collecte terrain n'avait eu lieu pour ce client. Corrigé : `RecouvrementServiceImpl.ouvrirDossier()`
+  résout désormais la créance liée (`CreanceRepository.findByImf_IdAndIdPretExterne`) et publie le
+  même `SyncCompletedEvent` que `CollecteSyncService`/`CollecteEpargneServiceImpl`, réutilisant
+  intégralement le pipeline async après-commit existant (`SyncEventListener` →
+  `RealtimeScoringService`).

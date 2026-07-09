@@ -206,14 +206,21 @@ public class CreanceServiceImpl implements ICreanceService {
 
     private CreanceResponse.ScoreMcrs tryGetScore(Long imfId, String clientIdExterne) {
         try {
+            // ml.client_scores (V29) : classe_risque a été renommée niveau_risque, et il
+            // n'y a plus qu'une ligne par (imf_id, client_id_externe) — l'ORDER BY/LIMIT
+            // de la V23 originale n'est plus nécessaire mais reste inoffensif. top_feature/
+            // top_shap_value n'ont jamais existé sur client_scores : la feature la plus
+            // importante vient de ml.shap_explanations (rang_importance = 1), liée par score_id.
             Map<String, Object> row = jdbc.queryForMap("""
-                    SELECT score_crs, score_rps, score_csi, score_mcrs,
-                           classe_risque, probabilite_defaut_90j,
-                           action_recommandee, priorite_recouvrement,
-                           top_feature, top_shap_value
-                    FROM %s.client_scores
-                    WHERE imf_id = ? AND client_id_externe = ?
-                    ORDER BY scored_at DESC
+                    SELECT cs.score_crs, cs.score_rps, cs.score_csi, cs.score_mcrs,
+                           cs.niveau_risque, cs.probabilite_defaut_90j,
+                           cs.action_recommandee, cs.priorite_recouvrement,
+                           se.feature_name AS top_feature, se.shap_value AS top_shap_value
+                    FROM %1$s.client_scores cs
+                    LEFT JOIN %1$s.shap_explanations se
+                           ON se.score_id = cs.id AND se.rang_importance = 1
+                    WHERE cs.imf_id = ? AND cs.client_id_externe = ?
+                    ORDER BY cs.scored_at DESC
                     LIMIT 1
                     """.formatted(mlSchema),
                     imfId, clientIdExterne);
@@ -223,7 +230,7 @@ public class CreanceServiceImpl implements ICreanceService {
                     toDouble(row.get("score_rps")),
                     toDouble(row.get("score_csi")),
                     toDouble(row.get("score_mcrs")),
-                    (String) row.get("classe_risque"),
+                    (String) row.get("niveau_risque"),
                     toDouble(row.get("probabilite_defaut_90j")),
                     (String) row.get("action_recommandee"),
                     row.get("priorite_recouvrement") != null
@@ -234,7 +241,7 @@ public class CreanceServiceImpl implements ICreanceService {
         } catch (EmptyResultDataAccessException e) {
             return null;
         } catch (Exception e) {
-            log.debug("Score MCRS non disponible pour client {} : {}", clientIdExterne, e.getMessage());
+            log.warn("Score MCRS non disponible pour client {} : {}", clientIdExterne, e.getMessage());
             return null;
         }
     }

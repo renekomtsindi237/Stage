@@ -17,6 +17,10 @@ public interface CreanceRepository extends JpaRepository<Creance, Long> {
 
     Optional<Creance> findByUidAndImf_Id(UUID uid, Long imfId);
 
+    /** Résout clientIdExterne à partir de la référence prêt CBS — utilisé pour
+     * déclencher le scoring temps réel à l'ouverture d'un dossier de recouvrement. */
+    Optional<Creance> findByImf_IdAndIdPretExterne(Long imfId, String idPretExterne);
+
     @Query("""
             SELECT c FROM Creance c
             WHERE (:imfId IS NULL OR c.imf.id = :imfId)

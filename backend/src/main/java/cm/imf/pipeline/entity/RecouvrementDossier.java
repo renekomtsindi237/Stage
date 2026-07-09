@@ -42,6 +42,18 @@ public class RecouvrementDossier extends BaseEntity {
     @Builder.Default
     private int joursRetard = 0;
 
+    /**
+     * Priorité de recouvrement issue du score MCRS (1 faible → 5 critique),
+     * écrite par le pipeline (maj_priorites_dossiers_recouvrement, cf.
+     * ml_scoring_utils.py) via une requête SQL directe — jamais par ce
+     * backend. Colonne ajoutée par V22, restée absente de cette entité
+     * jusqu'ici : la file de travail des agents ne pouvait donc pas trier
+     * dessus. NULL tant qu'aucun score MCRS n'a encore été calculé pour le
+     * client du dossier.
+     */
+    @Column(name = "priorite_scoring", precision = 5, scale = 2)
+    private BigDecimal prioriteScoring;
+
     // ── Classification COBAC ──────────────────────────────────────────────────
 
     @Enumerated(EnumType.STRING)

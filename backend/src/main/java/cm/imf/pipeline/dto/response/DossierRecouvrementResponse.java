@@ -15,6 +15,7 @@ public record DossierRecouvrementResponse(
         String nomClient,
         BigDecimal montantImpaye,
         int joursRetard,
+        BigDecimal prioriteScoring,
 
         // Classification COBAC
         CategorieCobtac categorieCobtac,
@@ -47,6 +48,7 @@ public record DossierRecouvrementResponse(
                 d.getNomClient(),
                 d.getMontantImpaye(),
                 d.getJoursRetard(),
+                d.getPrioriteScoring(),
                 d.getCategorieCobtac(),
                 d.getTauxProvision(),
                 d.getMontantProvision(),

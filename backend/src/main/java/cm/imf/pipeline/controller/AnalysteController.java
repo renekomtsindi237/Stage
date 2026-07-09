@@ -140,7 +140,7 @@ public class AnalysteController {
             return ResponseEntity.ok(ApiResponse.ok(pageResult));
 
         } catch (Exception e) {
-            log.debug("ml.client_scores indisponible, scores mockés : {}", e.getMessage());
+            log.warn("ml.client_scores indisponible, scores mockés : {}", e.getMessage());
             List<Map<String, Object>> mocked = scoringMockes(imfId, size);
             Page<Map<String, Object>> pageResult = new PageImpl<>(mocked,
                     PageRequest.of(page, size), mocked.size());
@@ -209,7 +209,7 @@ public class AnalysteController {
             }).toList();
 
         } catch (Exception e) {
-            log.debug("airflow.dag_run indisponible, données mockées : {}", e.getMessage());
+            log.warn("airflow.dag_run indisponible, données mockées : {}", e.getMessage());
             liste = traitementsMockes();
         }
 
@@ -276,7 +276,7 @@ public class AnalysteController {
                     version, psi, statut, dernierEntr, evolution, features)));
 
         } catch (Exception e) {
-            log.debug("ml.drift_metrics indisponible, données mockées : {}", e.getMessage());
+            log.warn("ml.drift_metrics indisponible, données mockées : {}", e.getMessage());
             return ResponseEntity.ok(ApiResponse.ok(new ModeleInfo(
                     "MCRS-v2.4.1",
                     0.22,
@@ -306,8 +306,13 @@ public class AnalysteController {
             totalClients = stats.get("total")   instanceof Number n ? n.intValue() : 0;
             scoresMoyen  = stats.get("moyenne") instanceof Number n ? Math.round(n.doubleValue() * 100.0) / 100.0 : 0.0;
         } catch (Exception e) {
-            log.debug("ml.client_scores indisponible (dashboard) : {}", e.getMessage());
-            totalClients = 234; scoresMoyen = 612.5;
+            // Ancien fallback : totalClients=234/scoresMoyen=612.5 fixes, présentés comme
+            // de vraies données sans le signaler — un analyste ne pouvait pas distinguer
+            // un vrai portefeuille de 234 clients d'un échec de requête masqué. 0 est honnête :
+            // "pas de donnée", jamais confondu avec un vrai chiffre. log.warn (pas debug) pour
+            // que l'échec soit visible en prod, pas seulement en debug local.
+            log.warn("ml.client_scores indisponible (dashboard, imf={}) : {}", imfId, e.getMessage());
+            totalClients = 0; scoresMoyen = 0.0;
         }
 
         try {
@@ -316,7 +321,7 @@ public class AnalysteController {
                     Long.class, imfId);
             alertesOuvertes = count != null ? count.intValue() : 0;
         } catch (Exception e) {
-            log.debug("ml.alertes_predictives indisponible (dashboard) : {}", e.getMessage());
+            log.warn("ml.alertes_predictives indisponible (dashboard) : {}", e.getMessage());
             alertesOuvertes = 0;
         }
 
@@ -325,7 +330,7 @@ public class AnalysteController {
                     "SELECT psi_global FROM ml.drift_metrics ORDER BY calculated_at DESC LIMIT 1");
             driftPsi = drift.get("psi_global") instanceof Number n ? n.doubleValue() : 0.0;
         } catch (Exception e) {
-            log.debug("ml.drift_metrics indisponible (dashboard) : {}", e.getMessage());
+            log.warn("ml.drift_metrics indisponible (dashboard) : {}", e.getMessage());
             driftPsi = 0.22;
         }
 
@@ -336,7 +341,7 @@ public class AnalysteController {
                     GROUP BY niveau_risque ORDER BY count DESC
                     """, imfId);
         } catch (Exception e) {
-            log.debug("Distribution scoring indisponible : {}", e.getMessage());
+            log.warn("Distribution scoring indisponible : {}", e.getMessage());
             distribution = List.of(
                     Map.of("label", "FAIBLE", "count", 89), Map.of("label", "MODERE", "count", 65),
                     Map.of("label", "ELEVE", "count", 45),  Map.of("label", "TRES_ELEVE", "count", 23),
@@ -359,7 +364,7 @@ public class AnalysteController {
                     ORDER BY ap.created_at DESC LIMIT 5
                     """, imfId);
         } catch (Exception e) {
-            log.debug("Alertes prédictives récentes indisponibles : {}", e.getMessage());
+            log.warn("Alertes prédictives récentes indisponibles : {}", e.getMessage());
         }
 
         return ResponseEntity.ok(ApiResponse.ok(new DashboardData(
@@ -396,7 +401,7 @@ public class AnalysteController {
             long running = dags.stream().filter(d -> "RUNNING".equals(d.statut())).count();
             statutGlobal = running > 0 ? "RUNNING" : failed > 0 ? "FAILED" : dags.isEmpty() ? "IDLE" : "SUCCESS";
         } catch (Exception e) {
-            log.debug("airflow.dag_run indisponible (pipeline/status) : {}", e.getMessage());
+            log.warn("airflow.dag_run indisponible (pipeline/status) : {}", e.getMessage());
             dags = List.of(
                     new DagStatusDto("imf_ingestion_daily",    "Ingestion données quotidienne", "SUCCESS", "2m 15s", "2026-06-18T02:00:00Z"),
                     new DagStatusDto("imf_scoring_mcrs",       "Scoring MCRS clients",          "SUCCESS", "4m 32s", "2026-06-18T04:00:00Z"),
@@ -472,7 +477,7 @@ public class AnalysteController {
                     new DriftDto(psi, 0.20, psi > 0.20, version, entraine, evolution, features)));
 
         } catch (Exception e) {
-            log.debug("ml.drift_metrics indisponible (ml/drift) : {}", e.getMessage());
+            log.warn("ml.drift_metrics indisponible (ml/drift) : {}", e.getMessage());
             return ResponseEntity.ok(ApiResponse.ok(new DriftDto(
                     0.22, 0.20, true, "MCRS-v2.4.1", "2026-01-12",
                     evolutionPsiDefaulte(), featuresContribDefault())));
@@ -490,7 +495,7 @@ public class AnalysteController {
                     "SELECT * FROM app.v_par_par_imf WHERE imf_id = ?", imfId);
             return ResponseEntity.ok(ApiResponse.ok(row));
         } catch (Exception e) {
-            log.debug("v_par_par_imf indisponible : {}", e.getMessage());
+            log.warn("v_par_par_imf indisponible : {}", e.getMessage());
             return ResponseEntity.ok(ApiResponse.ok(Map.of(
                     "imf_id", imfId,
                     "encours_par30", 0, "encours_par60", 0, "encours_par90", 0,
@@ -508,7 +513,7 @@ public class AnalysteController {
                     imfId);
             return ResponseEntity.ok(ApiResponse.ok(rows));
         } catch (Exception e) {
-            log.debug("v_concentration_risque indisponible : {}", e.getMessage());
+            log.warn("v_concentration_risque indisponible : {}", e.getMessage());
             return ResponseEntity.ok(ApiResponse.ok(List.of()));
         }
     }
@@ -535,7 +540,7 @@ public class AnalysteController {
                     """, imfId, size, (long) page * size);
             return ResponseEntity.ok(ApiResponse.ok(rows));
         } catch (Exception e) {
-            log.debug("dossiers-souffrance indisponible : {}", e.getMessage());
+            log.warn("dossiers-souffrance indisponible : {}", e.getMessage());
             return ResponseEntity.ok(ApiResponse.ok(List.of()));
         }
     }

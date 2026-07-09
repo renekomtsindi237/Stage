@@ -10,16 +10,20 @@ import cm.imf.pipeline.dto.response.DossierRecouvrementResponse;
 import cm.imf.pipeline.dto.response.PageResponse;
 import cm.imf.pipeline.entity.AccordReechelonnement;
 import cm.imf.pipeline.entity.ActionRecouvrement;
+import cm.imf.pipeline.entity.Creance;
 import cm.imf.pipeline.entity.RecouvrementDossier;
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.RecouvrementPhase;
+import cm.imf.pipeline.event.SyncCompletedEvent;
 import cm.imf.pipeline.repository.AccordReechelonnementRepository;
 import cm.imf.pipeline.repository.ActionRecouvrementRepository;
+import cm.imf.pipeline.repository.CreanceRepository;
 import cm.imf.pipeline.repository.RecouvrementDossierRepository;
 import cm.imf.pipeline.repository.UserRepository;
 import cm.imf.pipeline.service.IRecouvrementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -43,6 +47,8 @@ public class RecouvrementServiceImpl implements IRecouvrementService {
     private final ActionRecouvrementRepository  actionRepo;
     private final AccordReechelonnementRepository accordRepo;
     private final UserRepository userRepo;
+    private final CreanceRepository creanceRepo;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── Ouvrir un dossier ─────────────────────────────────────────────────────
 
@@ -79,6 +85,21 @@ public class RecouvrementServiceImpl implements IRecouvrementService {
         dossier = dossierRepo.save(dossier);
         log.info("Dossier recouvrement ouvert — prêt={} imf={} catégorieCobtac={}",
                 req.idPret(), imfId, dossier.getCategorieCobtac());
+
+        // Déclenche le scoring MCRS temps réel pour ce client, comme après une
+        // synchronisation mobile — jusqu'ici l'ouverture d'un dossier n'en
+        // déclenchait aucun, donc un client jamais synchronisé via l'app mobile
+        // pouvait rester non scoré indéfiniment. Réutilise SyncCompletedEvent
+        // (nom hérité du cas d'usage sync, mais le listener ne lit que
+        // clientIds/imfId/agentUsername — syncResponse reste null ici, sans
+        // effet) pour bénéficier du même traitement async après-commit.
+        creanceRepo.findByImf_IdAndIdPretExterne(imfId, req.idPret()).ifPresentOrElse(
+                creance -> eventPublisher.publishEvent(new SyncCompletedEvent(
+                        this, null, currentUser.getUsername(),
+                        List.of(creance.getClientIdExterne()), imfId)),
+                () -> log.debug("Créance introuvable pour prêt={} imf={} — scoring temps réel non déclenché",
+                        req.idPret(), imfId));
+
         return DossierRecouvrementResponse.from(dossier);
     }
 
@@ -88,7 +109,13 @@ public class RecouvrementServiceImpl implements IRecouvrementService {
     public PageResponse<DossierRecouvrementResponse> listDossiers(
             Long imfId, RecouvrementPhase phase, Boolean clos, int page, int size) {
 
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("joursRetard").descending());
+        // Priorité MCRS d'abord (1 faible → 5 critique, écrite par le pipeline via
+        // maj_priorites_dossiers_recouvrement) ; joursRetard en repli/départage
+        // pour les dossiers pas encore scorés (prioriteScoring NULL) ou à égalité.
+        Sort sort = Sort.by(
+                Sort.Order.desc("prioriteScoring").nullsLast(),
+                Sort.Order.desc("joursRetard"));
+        PageRequest pageable = PageRequest.of(page, size, sort);
         Page<RecouvrementDossier> result;
 
         if (phase != null && clos != null) {
