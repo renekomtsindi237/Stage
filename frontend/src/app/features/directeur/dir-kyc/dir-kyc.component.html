@@ -1,14 +1,179 @@
 <div class="kyc-layout" [class.has-detail]="selected()">
   <!-- ═══════════════════════ LISTE ══════════════════════════ -->
   <div class="kyc-list">
-    <div class="page-header">
+    <div class="page-header kyc-page-header">
       <div>
         <h2>{{ "dir_kyc.title" | translate }}</h2>
         <p class="text-muted text-sm">
           {{ "dir_kyc.subtitle" | translate }}
         </p>
       </div>
+      <button class="btn btn-primary btn-sm" (click)="openCreatePanel()">
+        Nouveau dossier KYC
+      </button>
     </div>
+
+    @if (showCreatePanel()) {
+      <div class="card sub-panel create-panel">
+        <div class="detail-header" style="margin-bottom: 12px">
+          <div>
+            <h3 style="margin-bottom: 4px">Création d'un dossier KYC</h3>
+            <p class="text-muted text-sm">
+              Renseignez les informations d'identité et le niveau demandé.
+            </p>
+          </div>
+          <button class="btn btn-ghost btn-sm" (click)="closeCreatePanel()">
+            Fermer
+          </button>
+        </div>
+
+        @if (createError()) {
+          <div class="alert-box alert-critique">
+            <strong>Erreur</strong> {{ createError() }}
+          </div>
+        }
+        @if (createSuccess()) {
+          <div class="alert-box alert-success">
+            <strong>Succès</strong> {{ createSuccess() }}
+          </div>
+        }
+
+        <form [formGroup]="createForm">
+          <div class="create-grid">
+            <div class="form-field">
+              <label>Client ID <span style="color: red">*</span></label>
+              <input class="form-input" type="text" formControlName="clientId" />
+            </div>
+            <div class="form-field">
+              <label>Nom <span style="color: red">*</span></label>
+              <input class="form-input" type="text" formControlName="nomClient" />
+            </div>
+            <div class="form-field">
+              <label>Prénom</label>
+              <input class="form-input" type="text" formControlName="prenomClient" />
+            </div>
+            <div class="form-field">
+              <label>Date de naissance</label>
+              <input class="form-input" type="date" formControlName="dateNaissance" />
+            </div>
+            <div class="form-field">
+              <label>Lieu de naissance</label>
+              <input class="form-input" type="text" formControlName="lieuNaissance" />
+            </div>
+            <div class="form-field">
+              <label>Nationalité</label>
+              <input class="form-input" type="text" formControlName="nationalite" />
+            </div>
+            <div class="form-field">
+              <label>Téléphone</label>
+              <input class="form-input" type="text" formControlName="telephone" />
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input class="form-input" type="email" formControlName="email" />
+            </div>
+            <div class="form-field create-span-2">
+              <label>Adresse</label>
+              <input class="form-input" type="text" formControlName="adresse" />
+            </div>
+            <div class="form-field">
+              <label>Ville</label>
+              <input class="form-input" type="text" formControlName="ville" />
+            </div>
+            <div class="form-field">
+              <label>Profession</label>
+              <input class="form-input" type="text" formControlName="profession" />
+            </div>
+            <div class="form-field">
+              <label>Employeur</label>
+              <input class="form-input" type="text" formControlName="employeur" />
+            </div>
+            <div class="form-field">
+              <label>Revenu mensuel estimé</label>
+              <input
+                class="form-input"
+                type="number"
+                min="0"
+                formControlName="revenuMensuelEstim"
+              />
+            </div>
+            <div class="form-field">
+              <label>Type de pièce d'identité</label>
+              <select class="form-input" formControlName="typePieceIdentite">
+                @for (t of [
+                  'CNI_RECTO',
+                  'CNI_VERSO',
+                  'PASSEPORT',
+                  'PERMIS_CONDUIRE',
+                  'CARTE_SEJOUR',
+                  'AUTRE'
+                ]; track t) {
+                  <option [value]="t">{{ typeDocLabel(t) }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Numéro de pièce</label>
+              <input class="form-input" type="text" formControlName="numeroPiece" />
+            </div>
+            <div class="form-field">
+              <label>Date d'émission</label>
+              <input class="form-input" type="date" formControlName="dateEmissionPiece" />
+            </div>
+            <div class="form-field">
+              <label>Date d'expiration</label>
+              <input class="form-input" type="date" formControlName="dateExpirationPiece" />
+            </div>
+            <div class="form-field">
+              <label>Lieu d'émission</label>
+              <input class="form-input" type="text" formControlName="lieuEmissionPiece" />
+            </div>
+            <div class="form-field">
+              <label>Niveau KYC demandé <span style="color: red">*</span></label>
+              <select class="form-input" formControlName="niveauDemande">
+                @for (n of niveaux; track n) {
+                  <option [value]="n">{{ niveauLabel(n) }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field create-span-2">
+              <label class="checkbox-row" style="margin-top: 0">
+                <input type="checkbox" formControlName="estPep" />
+                Client PPE
+              </label>
+            </div>
+            <div class="form-field create-span-2">
+              <label>Observations</label>
+              <textarea
+                class="form-input"
+                rows="3"
+                formControlName="observations"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="sub-panel-actions">
+            <button class="btn btn-ghost btn-sm" type="button" (click)="closeCreatePanel()">
+              Annuler
+            </button>
+            <button
+              class="btn btn-primary btn-sm"
+              type="button"
+              [disabled]="createSubmitting() || createForm.invalid"
+              (click)="submitCreateDossier()"
+            >
+              {{ createSubmitting() ? 'Création...' : 'Créer le dossier' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (createSuccess()) {
+      <div class="alert-box alert-success" style="margin-bottom: 16px">
+        <strong>Succès</strong> {{ createSuccess() }}
+      </div>
+    }
 
     <!-- Filtres -->
     <div class="filters-bar">

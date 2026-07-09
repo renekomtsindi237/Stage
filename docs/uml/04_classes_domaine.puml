@@ -1,288 +1,261 @@
 @startuml classes_domaine
 !theme plain
-title Diagramme de classes — Domaine Métier\nCollectes Épargne & Recouvrement Créances (IMF)
+title Diagramme de classes — Domaine Métier MicroRecouv\nVersion 1.0 — IMF Cameroun (CEMAC)
 
 skinparam classAttributeIconSize 0
 skinparam classBorderColor #2C7BE5
 skinparam classHeaderBackgroundColor #EBF2FF
+skinparam classFontSize 11
+skinparam ArrowColor #2C7BE5
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
 
-' ── Multi-tenant ────────────────────────────────────────────────────────────
+' ══════════════════════════════════════════════════════
+' MULTI-TENANT
+' ══════════════════════════════════════════════════════
 class Imf {
-    +id : Long
     +code : String
     +nom : String
-    +typeImf : String {COOPERATIVE,MFI_CAT1,MFI_CAT2,MUTUELLE}
-    +maxDocumentKycOctets : Long
-    +niveauKycMinimal : String
-    +maxTentativesConnexion : Integer
+    +typeImf : {COOPERATIVE, MFI_CAT1, MFI_CAT2, MUTUELLE}
+    +pays : String
     +actif : Boolean
 }
 
 class Agence {
-    +id : Long
-    +imf : Imf
     +codeAgence : String
     +nomAgence : String
     +ville : String
     +region : String
-    +zoneId : String
-    +latitude : BigDecimal
-    +longitude : BigDecimal
 }
 
 class User {
-    +id : Long
-    +imf : Imf
-    +username : String
-    +passwordHash : String
-    +role : Role {SUPER_ADMIN,DIRECTEUR,RESPONSABLE_RECOUVREMENT,ANALYSTE,DSI,AGENT}
-    +zoneId : String
-    +agence : Agence
-    +latitude : Double
-    +longitude : Double
-    +prefLangue : String
+    +email : String
+    +nomComplet : String
+    +role : {SUPER_ADMIN, DIRECTEUR, CHEF_AGENCE,\nRESPONSABLE_RECOUVREMENT, ANALYSTE,\nANALYSTE_ENGAGEMENTS, DSI, AGENT,\nAGENT_CREDIT, AGENT_SAISIE, CAISSIER, SUPPORT}
     +actif : Boolean
-    +lastLogin : OffsetDateTime
 }
 
-' ── Collectes Épargne ────────────────────────────────────────────────────────
+' ══════════════════════════════════════════════════════
+' CLIENTS
+' ══════════════════════════════════════════════════════
+class ClientInformel {
+    +nomComplet : String
+    +telephone : String
+    +secteurActivite : String
+    +dateAdhesion : Date
+}
+
+class KycDossier {
+    +statut : {EN_ATTENTE, VALIDE, REJETE}
+    +dateVerification : Date
+    +niveauKyc : String
+}
+
+' ══════════════════════════════════════════════════════
+' COLLECTES EPARGNE (mobile offline-first)
+' ══════════════════════════════════════════════════════
 class CycleCollecte {
-    +id : Long
-    +imf : Imf
-    +agence : Agence
     +nomCycle : String
-    +periodicite : String {QUOTIDIEN,HEBDOMADAIRE,BIMENSUEL,MENSUEL}
-    +dateDebut : LocalDate
-    +dateFin : LocalDate
+    +periodicite : {QUOTIDIEN, HEBDOMADAIRE, MENSUEL}
     +objectifMontant : BigDecimal
-    +objectifNbTransactions : Integer
-    +actif : Boolean
 }
 
-class CollecteEpargne {
-    +id : Long
-    +uuidMobile : UUID {unique, déduplication}
-    +imf : Imf
-    +agence : Agence
-    +cycle : CycleCollecte
-    +agent : User
-    +clientIdExterne : String
+class CollecteTerrain {
+    +uuidMobile : UUID
     +montantCollecte : BigDecimal
-    +dateCollecte : LocalDate
-    +heureCollecte : LocalTime
-    +canalPaiement : String {ESPECES,MTN,ORANGE,WAVE}
-    +referenceTransaction : String
+    +dateCollecte : Date
+    +canalPaiement : {ESPECES, MTN, ORANGE, WAVE}
+    +statut : {SOUMISE, CONFIRMEE, DOUBLON, PENDING_SYNC}
     +latitude : BigDecimal
     +longitude : BigDecimal
-    +statut : String {SOUMISE,VALIDEE,DOUBLON,REJETEE}
-    +syncedAt : OffsetDateTime
-    +validatedBy : User
-    +soumettre() : void
-    +valider(motif : String) : void
 }
 
-class ObjectifCollecte {
-    +id : Long
-    +cycle : CycleCollecte
-    +agent : User
-    +objectifMontant : BigDecimal
-    +objectifNbTransactions : Integer
-    +realiseMontant : BigDecimal
-    +realiseNbTransactions : Integer
-    +tauxRealisationMontant : BigDecimal {computed}
-    +mettreAJourRealise() : void
+' ══════════════════════════════════════════════════════
+' CREDIT (cycle complet)
+' ══════════════════════════════════════════════════════
+class DossierCredit {
+    +montantDemande : BigDecimal
+    +dureeMois : Integer
+    +objetFinancement : String
+    +statut : {INSTRUCTION, EN_COMITE, APPROUVE,\nREJETE, AJOURNE, DEBLOQUE}
 }
 
-' ── Clients Informels ────────────────────────────────────────────────────────
-class ClientInformel {
-    +id : Long
-    +imf : Imf
-    +clientIdExterne : String
-    +nomComplet : String
-    +telephonePrincipal : String
-    +zoneId : String
-    +secteurPrincipal : String {AGRICOLE,COMMERCE,ARTISANAT,ELEVAGE}
-    +sousSecteur : String
-    +revenuMensuelEstime : BigDecimal
-    +marchePrincipal : String
-    +latitudeActivite : BigDecimal
-    +longitudeActivite : BigDecimal
-    +activitesProduits : List<ClientActiviteProduit>
+class ComiteDecision {
+    +dateDeliberation : Date
+    +decision : {APPROUVE, REJETE, AJOURNE}
+    +motif : String
 }
 
-class ProduitGenerique {
-    +id : Long
-    +codeProduit : String {unique}
-    +nomProduit : String
-    +categorie : String {CEREALE,TUBERCULE,OLEAGINEUX,BETAIL,...}
-    +uniteMesureRef : String
-    +saisonnalite : Boolean
-    +moisSaisonHaute : int[]
-    +zonesProduction : String[]
+class ContratCredit {
+    +referenceContrat : String
+    +montantTotal : BigDecimal
+    +tauxInteret : BigDecimal
+    +nbEcheances : Integer
+    +statut : {ACTIF, SOLDE, RESILIE}
 }
 
-class ClientActiviteProduit {
-    +id : Long
-    +client : ClientInformel
-    +produit : ProduitGenerique
-    +estProduitPrincipal : Boolean
-    +volumeHabituel : BigDecimal
-    +revenuMensuelProduit : BigDecimal
-    +moisActivite : int[]
+class Echeance {
+    +numeroEcheance : Integer
+    +dateEcheance : Date
+    +montantDu : BigDecimal
+    +montantRembourse : BigDecimal
+    +statut : {EN_ATTENTE, PAYEE, EN_RETARD}
 }
 
-' ── Données Externes ────────────────────────────────────────────────────────
-class PrixProduit {
-    +id : Long
-    +produit : ProduitGenerique
-    +zoneId : String
-    +datePrix : LocalDate
-    +prixUnitaire : BigDecimal
-    +uniteMesure : String
-    +source : String {AGENT_TERRAIN,MINCOMMERCE,BEAC,...}
-    +fiabilite : Short {1-5}
+class GarantieCredit {
+    +typeGarantie : {HYPOTHEQUE, NANTISSEMENT, CAUTION}
+    +valeurEstimee : BigDecimal
+    +description : String
 }
 
-class FacteurMacro {
-    +id : Long
-    +indicateur : String {TAUX_INFLATION,COURS_EUR_XAF,...}
-    +valeur : BigDecimal
-    +dateObservation : LocalDate
-    +source : String
-}
-
-class DonneeMeteo {
-    +id : Long
-    +zoneId : String
-    +dateObservation : LocalDate
-    +temperatureMoy : BigDecimal
-    +precipitationMm : BigDecimal
-    +indiceSecheresse : String {NORMAL,SECHERESSE_LEGERE,...}
-}
-
-' ── Créances & Recouvrement ─────────────────────────────────────────────────
+' ══════════════════════════════════════════════════════
+' CREANCES & RECOUVREMENT
+' ══════════════════════════════════════════════════════
 class Creance {
-    +id : Long
-    +imf : Imf
-    +agence : Agence
-    +idPretExterne : String
-    +clientIdExterne : String
-    +clientInformel : ClientInformel
-    +montantInitial : BigDecimal
+    +montantTotal : BigDecimal
     +montantImpaye : BigDecimal
-    +joursRetard : int
-    +categoriePar : String {COURANT,PAR30,PAR60,PAR90,PAR180,PERTE}
-    +classeRisqueCobac : String {A,B,C,D,E}
-    +tauxProvisionCobac : BigDecimal
-    +montantProvision : BigDecimal
-    +statut : String {ACTIVE,RECOUVREMENT_AMIABLE,...}
-    +agentResponsable : User
-    +calculerProvision() : BigDecimal
-    +classifierPar() : String
+    +joursRetard : Integer
+    +classeRisqueCobac : {A, B, C, D, E}
+    +statut : {ACTIVE, EN_RECOUVREMENT,\nSOLDE, PERTE}
+}
+
+class AlerteImpaye {
+    +typeAlerte : {RISQUE_DEFAUT_IMMINENT,\nDETERIORATION_RAPIDE,\nECHEANCE_IMMINENTE,\nIMPAYE_CONSTATE}
+    +joursRetard : Integer
+    +statutAlerte : {ACTIVE, ESCALADEE, CLOTUREE}
+}
+
+class PlanApurement {
+    +montantAccorde : BigDecimal
+    +nombreEcheances : Integer
+    +statut : {EN_COURS, HONORE, ROMPU}
 }
 
 class DossierRecouvrement {
-    +id : Long
-    +imf : Imf
-    +creance : Creance
-    +clientInformel : ClientInformel
-    +phase : String {RELANCE_AMIABLE,MISE_EN_DEMEURE,CONTENTIEUX,...}
-    +montantImpaye : BigDecimal
-    +joursRetard : int
-    +agentResponsable : User
-    +clos : Boolean
-    +dateCloture : OffsetDateTime
+    +phase : {RELANCE_AMIABLE, MISE_EN_DEMEURE,\nCONTENTIEUX, ESCALADE}
     +prioriteScoring : BigDecimal
-    +actions : List<ActionRecouvrement>
-    +changerPhase(phase : String) : void
-    +clore(motif : String) : void
+    +clos : Boolean
 }
 
 class ActionRecouvrement {
-    +id : Long
-    +dossier : DossierRecouvrement
-    +typeAction : String {APPEL,SMS,VISITE,MISE_EN_DEMEURE,...}
-    +dateAction : OffsetDateTime
-    +agent : User
-    +resultat : String {CONTACT,PAS_JOINT,PROMESSE,...}
-    +promesseDate : LocalDate
-    +promesseMontant : BigDecimal
-    +referenceTransaction : String
-    +observation : String
+    +typeAction : {APPEL, SMS, VISITE,\nMISE_EN_DEMEURE, PROMESSE}
+    +dateAction : Date
+    +resultat : String
 }
 
-class PromessePaiement {
-    +id : Long
-    +creance : Creance
-    +actionRecouvrement : ActionRecouvrement
-    +agent : User
-    +datePromesse : LocalDate
-    +montantPromis : BigDecimal
-    +dateEcheancePromesse : LocalDate
-    +statut : String {EN_ATTENTE,HONOREE,PARTIELLEMENT_HONOREE,ROMPUE}
-    +montantRecu : BigDecimal
-    +verifierEcheance() : void
+' ══════════════════════════════════════════════════════
+' CAISSE
+' ══════════════════════════════════════════════════════
+class OperationCaisse {
+    +typeOperation : {ENTREE, SORTIE, TRANSFERT}
+    +montant : BigDecimal
+    +dateOperation : Date
+    +motif : String
 }
 
-' ── Scoring ML ───────────────────────────────────────────────────────────────
-class ClientScore <<ml>> {
-    +id : Long
-    +imfId : Long
-    +clientIdExterne : String
+' ══════════════════════════════════════════════════════
+' SCORING ML
+' ══════════════════════════════════════════════════════
+class ClientScore <<ML>> {
     +scoreCrs : BigDecimal
     +scoreRps : BigDecimal
     +scoreCsi : BigDecimal
     +scoreMcrs : BigDecimal
-    +classeRisque : String {FAIBLE,MODERE,ELEVE,CRITIQUE}
-    +probabiliteDefaut30j : BigDecimal
-    +probabiliteDefaut90j : BigDecimal
-    +scoreMcrsIcBas : BigDecimal
-    +scoreMcrsIcHaut : BigDecimal
+    +classeRisque : {FAIBLE, MODERE, ELEVE, CRITIQUE}
     +actionRecommandee : String
-    +prioriteRecouvrement : Short
-    +scoredAt : OffsetDateTime
+    +scoredAt : Date
 }
 
-class ShapExplanation <<ml>> {
-    +id : Long
-    +score : ClientScore
+class ShapExplanation <<ML>> {
     +featureName : String
     +shapValue : BigDecimal
-    +featureValue : String
-    +rangImportance : Short
-    +signe : Char {+,-}
+    +rangImportance : Integer
 }
 
-' ── Relations ───────────────────────────────────────────────────────────────
-Imf "1" *-- "n" Agence
-Imf "1" *-- "n" User
-Imf "1" *-- "n" CycleCollecte
-Imf "1" *-- "n" CollecteEpargne
-Imf "1" *-- "n" Creance
-Imf "1" *-- "n" ClientInformel
+' ══════════════════════════════════════════════════════
+' CHATBOT IA
+' ══════════════════════════════════════════════════════
+class ConversationIA <<IA>> {
+    +sessionId : String
+    +role : String
+    +dateDebut : Date
+}
 
-Agence "0..1" o-- "n" CollecteEpargne
-Agence "0..1" o-- "n" CycleCollecte
-Agence "0..1" o-- "n" Creance
+class MessageIA <<IA>> {
+    +contenu : String
+    +expediteur : {USER, ASSISTANT}
+    +timestamp : Date
+    +tokensUtilises : Integer
+}
 
-CycleCollecte "1" *-- "n" ObjectifCollecte
-CycleCollecte "1" o-- "n" CollecteEpargne
+' ══════════════════════════════════════════════════════
+' SUPPORT & AUDIT
+' ══════════════════════════════════════════════════════
+class TicketSupport {
+    +titre : String
+    +categorie : {TECHNIQUE, FACTURATION, AUTRE}
+    +priorite : {NORMALE, HAUTE, URGENTE}
+    +statut : {OUVERT, EN_COURS, RESOLU}
+}
 
-User "1" o-- "n" CollecteEpargne : agent
-User "1" o-- "n" ObjectifCollecte : agent
-User "1" o-- "n" DossierRecouvrement : responsable
+class Notification {
+    +type : String
+    +titre : String
+    +lu : Boolean
+    +createdAt : Date
+}
 
-ClientInformel "1" *-- "n" ClientActiviteProduit
-ClientActiviteProduit "n" --> "1" ProduitGenerique
-ProduitGenerique "1" o-- "n" PrixProduit
+' ══════════════════════════════════════════════════════
+' RELATIONS
+' ══════════════════════════════════════════════════════
 
+' Multi-tenant
+Imf "1" *-- "1..*" Agence
+Imf "1" *-- "1..*" User
+Agence "1" o-- "0..*" User
+
+' Clients
+Imf "1" *-- "0..*" ClientInformel
+ClientInformel "1" *-- "0..1" KycDossier
+
+' Collectes
+Agence "1" o-- "0..*" CycleCollecte
+CycleCollecte "1" *-- "0..*" CollecteTerrain
+User "1" o-- "0..*" CollecteTerrain : agent
+ClientInformel "1" o-- "0..*" CollecteTerrain
+
+' Crédit
+ClientInformel "1" o-- "0..*" DossierCredit
+User "1" o-- "0..*" DossierCredit : instruit
+DossierCredit "1" *-- "0..1" ComiteDecision
+DossierCredit "1" *-- "0..1" ContratCredit
+ContratCredit "1" *-- "1..*" Echeance
+ContratCredit "1" *-- "0..*" GarantieCredit
+ContratCredit "1" *-- "0..1" Creance
+
+' Recouvrement
+Creance "1" *-- "0..*" AlerteImpaye
+Creance "1" *-- "0..*" PlanApurement
 Creance "1" o-- "0..1" DossierRecouvrement
-Creance "1" o-- "0..1" ClientInformel
-Creance "1" *-- "n" PromessePaiement
-DossierRecouvrement "1" *-- "n" ActionRecouvrement
-ActionRecouvrement "1" o-- "0..1" PromessePaiement
+DossierRecouvrement "1" *-- "0..*" ActionRecouvrement
+User "1" o-- "0..*" DossierRecouvrement : responsable
 
-ClientScore "1" *-- "n" ShapExplanation
+' Caisse
+User "1" o-- "0..*" OperationCaisse : caissier
+Agence "1" o-- "0..*" OperationCaisse
+
+' Scoring ML
+ClientInformel "1" o-- "0..1" ClientScore
+ClientScore "1" *-- "0..*" ShapExplanation
 Creance ..> ClientScore : consulte
+
+' Chatbot IA
+User "1" o-- "0..*" ConversationIA
+ConversationIA "1" *-- "1..*" MessageIA
+
+' Support & Notifications
+User "1" o-- "0..*" TicketSupport
+User "1" o-- "0..*" Notification
 
 @enduml

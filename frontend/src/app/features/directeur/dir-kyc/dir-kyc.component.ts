@@ -9,7 +9,7 @@ import {
   ElementRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import {
@@ -90,12 +90,13 @@ const TYPE_LABEL: Record<string, string> = {
   selector: "app-dir-kyc",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: "./dir-kyc.component.html",
   styleUrls: ["./dir-kyc.component.scss"],
 })
 export class DirKycComponent implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly fb = inject(FormBuilder);
 
   @ViewChild("fileInput") fileInputRef!: ElementRef<HTMLInputElement>;
 
@@ -105,6 +106,35 @@ export class DirKycComponent implements OnInit {
   selected = signal<KycDossier | null>(null);
   documents = signal<KycDocument[]>([]);
   docsLoading = signal(false);
+
+  showCreatePanel = signal(false);
+  createSubmitting = signal(false);
+  createError = signal("");
+  createSuccess = signal("");
+
+  createForm = this.fb.group({
+    clientId: ["", Validators.required],
+    nomClient: ["", Validators.required],
+    prenomClient: [""],
+    dateNaissance: [""],
+    lieuNaissance: [""],
+    nationalite: [""],
+    telephone: [""],
+    email: [""],
+    adresse: [""],
+    ville: [""],
+    profession: [""],
+    employeur: [""],
+    revenuMensuelEstim: [""],
+    typePieceIdentite: ["CNI_RECTO"],
+    numeroPiece: [""],
+    dateEmissionPiece: [""],
+    dateExpirationPiece: [""],
+    lieuEmissionPiece: [""],
+    niveauDemande: ["NIVEAU_1", Validators.required],
+    estPep: [false],
+    observations: [""],
+  });
 
   filterStatut = signal<StatutKyc | "TOUS">("TOUS");
   filterNiveau = signal<NiveauKyc | "TOUS">("TOUS");
@@ -165,6 +195,47 @@ export class DirKycComponent implements OnInit {
     this.load();
   }
 
+  private resetCreateForm() {
+    this.createForm.reset({
+      clientId: "",
+      nomClient: "",
+      prenomClient: "",
+      dateNaissance: "",
+      lieuNaissance: "",
+      nationalite: "",
+      telephone: "",
+      email: "",
+      adresse: "",
+      ville: "",
+      profession: "",
+      employeur: "",
+      revenuMensuelEstim: "",
+      typePieceIdentite: "CNI_RECTO",
+      numeroPiece: "",
+      dateEmissionPiece: "",
+      dateExpirationPiece: "",
+      lieuEmissionPiece: "",
+      niveauDemande: "NIVEAU_1",
+      estPep: false,
+      observations: "",
+    });
+  }
+
+  openCreatePanel() {
+    this.showCreatePanel.set(true);
+    this.showVerifPanel.set(false);
+    this.showRisquePanel.set(false);
+    this.createError.set("");
+    this.createSuccess.set("");
+  }
+
+  closeCreatePanel() {
+    this.showCreatePanel.set(false);
+    this.createSubmitting.set(false);
+    this.createError.set("");
+    this.resetCreateForm();
+  }
+
   // ── Chargement ──────────────────────────────────────────────────────────────
   load(p = 0) {
     this.loading.set(true);
@@ -187,6 +258,7 @@ export class DirKycComponent implements OnInit {
 
   selectDossier(d: KycDossier) {
     this.selected.set(d);
+    this.showCreatePanel.set(false);
     this.showVerifPanel.set(false);
     this.showRisquePanel.set(false);
     this.showUploadPanel.set(false);
@@ -196,6 +268,60 @@ export class DirKycComponent implements OnInit {
     this.risqueListesNoires.set(d.verifListesNoires);
     this.risqueMotif.set(d.motifRisqueEleve ?? "");
     this.verifNiveauApprouve.set(d.niveauDemande);
+  }
+
+  submitCreateDossier() {
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      return;
+    }
+
+    this.createSubmitting.set(true);
+    this.createError.set("");
+    this.createSuccess.set("");
+
+    const value = this.createForm.getRawValue();
+    const payload = {
+      clientId: value.clientId?.trim(),
+      nomClient: value.nomClient?.trim(),
+      prenomClient: value.prenomClient?.trim() || null,
+      dateNaissance: value.dateNaissance || null,
+      lieuNaissance: value.lieuNaissance?.trim() || null,
+      nationalite: value.nationalite?.trim() || null,
+      telephone: value.telephone?.trim() || null,
+      email: value.email?.trim() || null,
+      adresse: value.adresse?.trim() || null,
+      ville: value.ville?.trim() || null,
+      profession: value.profession?.trim() || null,
+      employeur: value.employeur?.trim() || null,
+      revenuMensuelEstim:
+        value.revenuMensuelEstim === "" || value.revenuMensuelEstim == null
+          ? null
+          : Number(value.revenuMensuelEstim),
+      typePieceIdentite: value.typePieceIdentite || null,
+      numeroPiece: value.numeroPiece?.trim() || null,
+      dateEmissionPiece: value.dateEmissionPiece || null,
+      dateExpirationPiece: value.dateExpirationPiece || null,
+      lieuEmissionPiece: value.lieuEmissionPiece?.trim() || null,
+      niveauDemande: value.niveauDemande,
+      estPep: value.estPep,
+      observations: value.observations?.trim() || null,
+    };
+
+    this.api.post<ApiWrapped<KycDossier>>("/api/v1/kyc/dossiers", payload).subscribe({
+      next: (r) => {
+        const dossier = r.data ?? (r as unknown as KycDossier);
+        this.selected.set(dossier);
+        this.createSubmitting.set(false);
+        this.createSuccess.set("Dossier KYC créé avec succès.");
+        this.closeCreatePanel();
+        this.load(0);
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.createError.set(err?.error?.message ?? "Impossible de créer le dossier KYC.");
+        this.createSubmitting.set(false);
+      },
+    });
   }
 
   closeDetail() {

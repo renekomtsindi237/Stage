@@ -14,6 +14,28 @@
   min-width: 0;
 }
 
+.kyc-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.create-panel {
+  margin-bottom: 16px;
+}
+
+.create-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.create-span-2 {
+  grid-column: span 2;
+}
+
 .kyc-detail {
   width: 420px;
   flex-shrink: 0;
@@ -331,6 +353,11 @@
     border-left: 3px solid var(--color-info);
     color: var(--color-info);
   }
+  &.alert-success {
+    background: rgba(34, 197, 94, 0.12);
+    border-left: 3px solid var(--color-success);
+    color: var(--color-success);
+  }
 }
 
 // ── Actions ──────────────────────────────────────────
@@ -416,6 +443,20 @@
   gap: 8px;
   justify-content: flex-end;
   margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .kyc-page-header {
+    flex-direction: column;
+  }
+
+  .create-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-span-2 {
+    grid-column: auto;
+  }
 }
 
 // ── Extra badge ──────────────────────────────────────
