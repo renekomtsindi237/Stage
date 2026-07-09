@@ -118,26 +118,12 @@ with DAG(
     meteo = PythonOperator(
         task_id="fetch_meteo_open_meteo",
         python_callable=fetch_meteo_open_meteo,
-        op_kwargs={
-            "zones": {
-                "YAOUNDE": {"lat": 3.848, "lon": 11.502},
-                "DOUALA": {"lat": 4.050, "lon": 9.700},
-                "GAROUA": {"lat": 9.301, "lon": 13.398},
-                "BAFOUSSAM": {"lat": 5.479, "lon": 10.418},
-                "BERTOUA": {"lat": 4.578, "lon": 13.685},
-                "MAROUA": {"lat": 10.591, "lon": 14.317},
-                "EBOLOWA": {"lat": 2.900, "lon": 11.150},
-                "BAMENDA": {"lat": 5.961, "lon": 10.146},
-                "NGAOUNDERE": {"lat": 7.328, "lon": 13.584},
-                "BUEA": {"lat": 4.154, "lon": 9.243},
-            },
-            "variables": [
-                "temperature_2m_min",
-                "temperature_2m_max",
-                "precipitation_sum",
-                "relative_humidity_2m_mean",
-            ],
-        },
+        # zones=None -> résolu dynamiquement depuis les vrais zone_id clients
+        # (app.clients_informels), pas une liste de 10 villes en dur qui ne
+        # correspondait jamais aux zone_id réellement utilisés
+        # ("YDE-NLONGKAK" etc., pas "YAOUNDE") — cf. _recuperer_zones_actives()
+        # dans scripts/donnees_externes_utils.py.
+        doc="Météo Open-Meteo (past_days) pour les zones clients réelles -> app.donnees_meteo",
     )
 
     evenements = PythonOperator(

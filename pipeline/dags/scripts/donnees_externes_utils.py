@@ -317,62 +317,79 @@ def fetch_indicateurs_ins_cameroun(
 # ─── 5. Météo — Open-Meteo ────────────────────────────────────────────────────
 
 
+# Coordonnées des villes principales — utilisées pour résoudre un zone_id
+# réel (ex: "YDE-NLONGKAK", "DLA-BONABERI") vers des coordonnées, via le
+# préfixe avant le tiret. Approximation délibérée : la météo ne varie pas
+# assez à l'échelle d'un arrondissement pour justifier un géocodage par
+# quartier, et app.marches_locaux (qui porterait des coordonnées plus
+# fines par zone_id) est vide en pratique.
+VILLES_PREFIXES: dict[str, tuple[float, float]] = {
+    "YDE": (3.848, 11.502),  # Yaoundé
+    "DLA": (4.050, 9.700),  # Douala
+    "GAR": (9.301, 13.398),  # Garoua
+    "BAF": (5.479, 10.418),  # Bafoussam
+    "BTA": (4.578, 13.685),  # Bertoua
+    "MAR": (10.591, 14.317),  # Maroua
+    "EBO": (2.900, 11.150),  # Ebolowa
+    "BAM": (5.961, 10.146),  # Bamenda
+    "NGA": (7.328, 13.584),  # Ngaoundéré
+    "BUE": (4.154, 9.243),  # Buea
+}
+VILLE_PAR_DEFAUT = (3.848, 11.502)  # Yaoundé, si le préfixe est inconnu
+
+
 def fetch_meteo_open_meteo(
     zones: list[dict] | dict | None = None,
     variables: list[str] | None = None,
+    jours_historique: int = 32,
     **ctx,
 ) -> int:
     """
-    Appelle l'API gratuite Open-Meteo pour les zones géographiques des IMF.
+    Appelle l'API gratuite Open-Meteo (`past_days` — pas de clé requise) pour
+    les zones géographiques réellement utilisées par les clients
+    (`app.clients_informels.zone_id`), et upsert dans app.donnees_meteo.
 
-    zones : liste de dicts {'nom', 'latitude', 'longitude'}
-            OU dict {'NOM': {'lat': ..., 'lon': ...}, ...} (format DAG).
-    variables : variables météo (défaut: précipitations, température, vent).
+    zones : si fourni, liste de dicts {'nom', 'latitude', 'longitude'} —
+            sinon résolu dynamiquement via `_recuperer_zones_actives()`.
+            Le paramètre dict {'NOM': {'lat', 'lon'}} historique (utilisé par
+            un ancien câblage du DAG avec des noms de ville plutôt que les
+            vrais zone_id clients, ce qui ne joignait jamais rien côté
+            features) reste accepté pour compatibilité mais n'est plus la
+            source par défaut.
+    jours_historique : fenêtre de rappel (Open-Meteo `past_days`, max 92) —
+            32 jours donne une marge suffisante pour la moyenne glissante de
+            30 jours utilisée par le calcul d'indice de sécheresse ci-dessous.
 
-    Insère dans app.donnees_meteo.
-    Retourne le nombre de lignes insérées.
+    Retourne le nombre de lignes upsertées dans app.donnees_meteo.
     """
-    # Normalise le format dict-style du DAG en liste
     if isinstance(zones, dict):
         zones = [
             {"nom": nom, "latitude": coords.get("lat"), "longitude": coords.get("lon")}
             for nom, coords in zones.items()
         ]
-    zones_defaut = _recuperer_zones_actives()
-    zones_cible = zones or zones_defaut
+    zones_cible = zones or _recuperer_zones_actives()
 
     vars_meteo = variables or [
-        "precipitation",
+        "precipitation_sum",
         "temperature_2m_max",
         "temperature_2m_min",
-        "wind_speed_10m_max",
-        "et0_fao_evapotranspiration",
     ]
 
-    sql = """
+    sql_upsert = """
         INSERT INTO app.donnees_meteo (
-            zone_nom, latitude, longitude,
-            date_meteo, variable, valeur, unite, source, created_at
+            zone_id, date_observation, temperature_min, temperature_max,
+            precipitation_mm, source, created_at
         ) VALUES (
-            %(zone_nom)s, %(latitude)s, %(longitude)s,
-            %(date_meteo)s, %(variable)s, %(valeur)s, %(unite)s, 'OPEN_METEO', NOW()
+            %(zone_id)s, %(date_observation)s, %(temperature_min)s,
+            %(temperature_max)s, %(precipitation_mm)s, 'OPEN_METEO', NOW()
         )
-        ON CONFLICT (zone_nom, date_meteo, variable, source) DO UPDATE
-          SET valeur = EXCLUDED.valeur
+        ON CONFLICT (zone_id, date_observation) DO UPDATE SET
+            temperature_min  = EXCLUDED.temperature_min,
+            temperature_max  = EXCLUDED.temperature_max,
+            precipitation_mm = EXCLUDED.precipitation_mm
     """
 
-    # Unités correspondantes
-    unites = {
-        "precipitation": "mm",
-        "temperature_2m_max": "°C",
-        "temperature_2m_min": "°C",
-        "wind_speed_10m_max": "km/h",
-        "et0_fao_evapotranspiration": "mm",
-    }
-
     n = 0
-    today = date.today()
-
     for zone in zones_cible:
         try:
             params = {
@@ -380,8 +397,8 @@ def fetch_meteo_open_meteo(
                 "longitude": zone["longitude"],
                 "daily": ",".join(vars_meteo),
                 "timezone": "Africa/Douala",
-                "start_date": str(today),
-                "end_date": str(today),
+                "past_days": jours_historique,
+                "forecast_days": 1,
             }
             with httpx.Client(timeout=HTTP_TIMEOUT) as client:
                 resp = client.get(OPEN_METEO_URL, params=params)
@@ -393,65 +410,114 @@ def fetch_meteo_open_meteo(
 
         daily = payload.get("daily", {})
         dates = daily.get("time", [])
+        precip = daily.get("precipitation_sum", [])
+        temp_max = daily.get("temperature_2m_max", [])
+        temp_min = daily.get("temperature_2m_min", [])
 
         with db_session() as cur:
             for i, d in enumerate(dates):
-                for var in vars_meteo:
-                    values = daily.get(var, [])
-                    if i >= len(values) or values[i] is None:
-                        continue
-                    try:
-                        cur.execute(
-                            sql,
-                            {
-                                "zone_nom": zone["nom"],
-                                "latitude": float(zone["latitude"]),
-                                "longitude": float(zone["longitude"]),
-                                "date_meteo": d,
-                                "variable": var,
-                                "valeur": float(values[i]),
-                                "unite": unites.get(var, ""),
-                            },
-                        )
-                        n += 1
-                    except (TypeError, ValueError) as exc:
-                        logger.debug(
-                            "Méteo ignorée (%s/%s) : %s", zone["nom"], var, exc
-                        )
+                if i >= len(precip) or precip[i] is None:
+                    continue
+                try:
+                    cur.execute(
+                        sql_upsert,
+                        {
+                            "zone_id": zone["nom"],
+                            "date_observation": d,
+                            "temperature_min": (
+                                temp_min[i] if i < len(temp_min) else None
+                            ),
+                            "temperature_max": (
+                                temp_max[i] if i < len(temp_max) else None
+                            ),
+                            "precipitation_mm": float(precip[i]),
+                        },
+                    )
+                    n += 1
+                except (TypeError, ValueError, IndexError) as exc:
+                    logger.debug("Météo ignorée (%s/%s) : %s", zone["nom"], d, exc)
+
+    if n:
+        _maj_indice_secheresse([z["nom"] for z in zones_cible])
 
     logger.info(
-        "fetch_meteo_open_meteo : %d observations insérées (%d zones)",
+        "fetch_meteo_open_meteo : %d observations upsertées (%d zones)",
         n,
         len(zones_cible),
     )
     return n
 
 
-def _recuperer_zones_actives() -> list[dict]:
-    """Retourne les zones géographiques des IMF actives depuis la base."""
-    sql = """
-        SELECT DISTINCT
-            ag.ville     AS nom,
-            ag.latitude,
-            ag.longitude
-        FROM app.agences ag
-        JOIN app.imfs im ON im.id = ag.imf_id
-        WHERE im.actif = TRUE
-          AND ag.latitude  IS NOT NULL
-          AND ag.longitude IS NOT NULL
-        LIMIT 50
+def _maj_indice_secheresse(zone_ids: list[str]) -> None:
     """
+    Classe indice_secheresse par comparaison au cumul de précipitation
+    glissant sur 30 jours (hors jour courant), zone par zone — pas de table
+    de "normales saisonnières" séparée à maintenir : la moyenne mobile
+    s'auto-améliore au fil des jours à mesure que l'historique s'accumule
+    dans app.donnees_meteo lui-même.
+    """
+    sql = """
+        WITH cible AS (
+            SELECT id, zone_id, date_observation, precipitation_mm
+            FROM app.donnees_meteo
+            WHERE zone_id = ANY(%(zone_ids)s)
+        ),
+        moyenne_glissante AS (
+            SELECT
+                c.id,
+                c.precipitation_mm,
+                AVG(prev.precipitation_mm) AS moy_30j
+            FROM cible c
+            LEFT JOIN app.donnees_meteo prev
+                ON prev.zone_id = c.zone_id
+                AND prev.date_observation BETWEEN c.date_observation - 30 AND c.date_observation - 1
+            GROUP BY c.id, c.precipitation_mm
+        )
+        UPDATE app.donnees_meteo dm
+        SET indice_secheresse = CASE
+            WHEN mg.moy_30j IS NULL OR mg.moy_30j = 0 THEN 'NORMAL'
+            WHEN mg.precipitation_mm >= mg.moy_30j * 3.0 THEN 'INONDATION_SEVERE'
+            WHEN mg.precipitation_mm >= mg.moy_30j * 2.0 THEN 'INONDATION'
+            WHEN mg.precipitation_mm <= mg.moy_30j * 0.40 THEN 'SECHERESSE_SEVERE'
+            WHEN mg.precipitation_mm <= mg.moy_30j * 0.60 THEN 'SECHERESSE_MODEREE'
+            WHEN mg.precipitation_mm <= mg.moy_30j * 0.80 THEN 'SECHERESSE_LEGERE'
+            ELSE 'NORMAL'
+        END
+        FROM moyenne_glissante mg
+        WHERE dm.id = mg.id
+    """
+    with db_session() as cur:
+        cur.execute(sql, {"zone_ids": zone_ids})
+        n = cur.rowcount
+    logger.info("Indice de sécheresse recalculé : %d observations", n)
+
+
+def _recuperer_zones_actives() -> list[dict]:
+    """
+    Résout les zone_id réellement utilisés par les clients
+    (app.clients_informels.zone_id, ex: "YDE-NLONGKAK") vers des
+    coordonnées, via le préfixe ville (VILLES_PREFIXES) — pas app.agences
+    (aucune colonne latitude/longitude) ni app.imfs (n'existe pas, la vraie
+    table est app.imf, singulier).
+    """
+    sql = "SELECT DISTINCT zone_id FROM app.clients_informels WHERE zone_id IS NOT NULL"
     try:
         with readonly_session() as cur:
             cur.execute(sql)
-            return [dict(row) for row in cur.fetchall()]
+            zone_ids = [row["zone_id"] for row in cur.fetchall()]
     except Exception as exc:
-        logger.warning("Impossible de récupérer les zones actives : %s", exc)
-        return [
-            {"nom": "Yaoundé", "latitude": 3.848, "longitude": 11.502},
-            {"nom": "Douala", "latitude": 4.0511, "longitude": 9.7679},
-            {"nom": "Bafoussam", "latitude": 5.4737, "longitude": 10.4173},
-        ]
+        logger.warning("Impossible de récupérer les zone_id actifs : %s", exc)
+        zone_ids = []
+
+    if not zone_ids:
+        return [{"nom": "YDE-CENTRE", "latitude": 3.848, "longitude": 11.502}]
+
+    zones = []
+    for zone_id in zone_ids:
+        prefixe = zone_id.split("-")[0].upper()
+        lat, lon = VILLES_PREFIXES.get(prefixe, VILLE_PAR_DEFAUT)
+        zones.append({"nom": zone_id, "latitude": lat, "longitude": lon})
+    return zones
 
 
 # ─── 6. Événements calendrier ─────────────────────────────────────────────────
@@ -681,33 +747,19 @@ def maj_app_facteurs_macro(**ctx) -> int:
 
 def maj_app_donnees_meteo(**ctx) -> int:
     """
-    Calcule les anomalies météo (écart à la normale saisonnière) et met à jour
-    app.donnees_meteo avec l'indice de sécheresse (sécheresse = précip < 60% normale).
+    No-op de compatibilité, conservé comme tâche Airflow à part entière
+    (dag_donnees_externes.py) pour ne pas modifier le graphe de tâches.
 
-    Retourne le nombre de zones mises à jour.
+    Le calcul d'indice_secheresse est désormais fait directement par
+    fetch_meteo_open_meteo()/_maj_indice_secheresse() au moment de
+    l'upsert, via une moyenne glissante 30 jours calculée sur
+    app.donnees_meteo lui-même — plus besoin d'une table de "normales
+    saisonnières" séparée (app.donnees_meteo_normales) qui n'a d'ailleurs
+    jamais existé, et l'ancienne implémentation ciblait un format narrow
+    (zone_nom/variable/valeur/anomalie_pct) sans rapport avec le schéma
+    réellement migré (zone_id/precipitation_mm/indice_secheresse, V21).
     """
-    sql_anomalie = """
-        UPDATE app.donnees_meteo dm
-        SET
-            anomalie_pct = (
-                dm.valeur - hist.valeur_normale
-            ) / NULLIF(hist.valeur_normale, 0) * 100,
-            indice_secheresse = CASE
-                WHEN dm.variable = 'precipitation'
-                 AND dm.valeur < hist.valeur_normale * 0.60
-                THEN TRUE ELSE FALSE
-            END
-        FROM app.donnees_meteo_normales hist
-        WHERE hist.zone_nom  = dm.zone_nom
-          AND hist.variable  = dm.variable
-          AND hist.mois      = EXTRACT(MONTH FROM dm.date_meteo)
-          AND dm.date_meteo  = CURRENT_DATE
-          AND dm.anomalie_pct IS NULL
-        RETURNING dm.id
-    """
-    with db_session() as cur:
-        cur.execute(sql_anomalie)
-        n = cur.rowcount
-
-    logger.info("maj_app_donnees_meteo : %d observations avec anomalie calculée", n)
-    return n
+    logger.info(
+        "maj_app_donnees_meteo : no-op — indice_secheresse déjà calculé par fetch_meteo_open_meteo()."
+    )
+    return 0

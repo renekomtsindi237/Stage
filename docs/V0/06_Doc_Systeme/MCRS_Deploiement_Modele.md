@@ -304,6 +304,51 @@ modèles `staging` se chargent de typer/valider).
 passe de 9 à 69 clients réels. Un déclenchement complet de `dag_ml_scoring` après cet ajout
 confirme les 17 tâches toujours à `success`.
 
+### Corrigés (2026-07-09 — météo Open-Meteo réellement branchée pour le CSI)
+
+`fetch_meteo_open_meteo()`/`dag_donnees_externes.py` existaient déjà (conçus avec de vraies
+coordonnées pour 10 villes camerounaises et les bonnes variables Open-Meteo) mais n'avaient jamais
+fonctionné, pour trois raisons cumulées, toutes corrigées :
+
+1. **Format d'écriture imaginaire** : `INSERT INTO app.donnees_meteo (zone_nom, latitude,
+   longitude, date_meteo, variable, valeur, unite, source, ...)` — la vraie table (V21) est au
+   format *wide* (`zone_id, date_observation, temperature_min/max, precipitation_mm,
+   indice_secheresse enum`), sans aucune de ces colonnes ni la contrainte `UNIQUE` supposée.
+   Corrigé pour écrire directement dans le vrai format.
+2. **Décalage de granularité des zones** : le DAG appelait la fonction avec 10 noms de ville en
+   dur (`"YAOUNDE"`, `"DOUALA"`, ...) alors que les vrais `zone_id` utilisés par
+   `app.clients_informels` sont à la granularité du quartier (`"YDE-NLONGKAK"`,
+   `"DLA-BONABERI"`, ...) — même une écriture parfaitement correcte n'aurait jamais rejoint le
+   moindre client réel dans `stg_meteo`/`feat_client_externe` (`dm.zone_id = ci.zone_id`).
+   `_recuperer_zones_actives()` résout maintenant les vrais `zone_id` clients vers des coordonnées
+   via le préfixe ville (`app.agences` n'a pas de latitude/longitude, `app.marches_locaux` est
+   vide en pratique) — le DAG ne passe plus de zones en dur.
+3. **`_recuperer_zones_actives()` interrogeait `app.imfs`** (n'existe pas — la vraie table est
+   `app.imf`, singulier) **et `app.agences.latitude/longitude`** (colonnes inexistantes) — tombait
+   systématiquement dans le fallback statique à 3 villes.
+
+**Indice de sécheresse** calculé directement à l'upsert (`_maj_indice_secheresse()`) par
+comparaison au cumul de précipitation glissant sur 30 jours de la même zone dans
+`app.donnees_meteo` — pas de table de "normales saisonnières" séparée à maintenir, la précision
+s'améliore automatiquement à mesure que l'historique s'accumule. `maj_app_donnees_meteo()` (tâche
+du DAG censée faire ce calcul via `app.donnees_meteo_normales`, une table qui n'a jamais existé,
+sur l'ancien format narrow) devenue un no-op documenté pour ne pas modifier le graphe de tâches.
+
+**Vérifié en staging** : `fetch_meteo_open_meteo` déclenché réellement — 264 observations réelles
+upsertées sur les 8 vrais `zone_id` clients (32 jours d'historique Open-Meteo `past_days`, aucune
+clé API requise), avec une répartition d'indice de sécheresse non triviale (86 `NORMAL`, 108
+`SECHERESSE_SEVERE`, 30 `MODEREE`, 8 `LEGERE`, 26 `INONDATION`, 6 `INONDATION_SEVERE` — Douala en
+`INONDATION` le jour du test, cohérent avec la vraie saison des pluies de juillet). `stg_meteo`
+(0 → 264 lignes) et `ml.feat_client_externe` rebuilds avec succès ; les clients réels portent
+désormais des `precipitation_moy_mm`/`indice_secheresse_max` variés et réels dans le feature store
+CSI, plus la valeur par défaut (80.0mm/`NORMAL`) imposée à tout le monde. Déclenchement complet de
+`dag_ml_scoring` après cet ajout : 17/17 tâches à `success`.
+
+**Hors périmètre, non touché** : `fetch_prix_mincommerce`/`fetch_indicateurs_beac`/
+`fetch_indicateurs_ins_cameroun` ont probablement la même classe de bugs (colonnes `app.facteurs_macro`
+`unite`/`pays`/`date_publication` inexistantes, par exemple) — découvert en lisant le fichier mais
+non corrigé, hors du périmètre explicite de cette intervention (météo/CSI uniquement).
+
 ### Non résolus
 
 - **`LABELS_QUERY` (`pipeline/src/ml/feature_engineering.py`), utilisée par `dag_ml_training`
