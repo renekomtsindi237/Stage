@@ -95,7 +95,9 @@ def db_session() -> Generator[Cursor, None, None]:
             conn.autocommit = True
             cur.execute("DISCARD ALL")
         except Exception:
-            logger.warning("Impossible d'exécuter DISCARD ALL avant fermeture de la session")
+            logger.warning(
+                "Impossible d'exécuter DISCARD ALL avant fermeture de la session"
+            )
         cur.close()
         conn.close()
 
@@ -140,7 +142,9 @@ def readonly_session() -> Generator[Cursor, None, None]:
         try:
             cur.execute("DISCARD ALL")
         except Exception:
-            logger.warning("Impossible d'exécuter DISCARD ALL avant fermeture de la session lecture seule")
+            logger.warning(
+                "Impossible d'exécuter DISCARD ALL avant fermeture de la session lecture seule"
+            )
         cur.close()
         conn.close()
 

@@ -140,7 +140,9 @@ INTERNAL_API_KEY = os.getenv("MCRS_INTERNAL_API_KEY")
 def _verifier_cle_interne(x_internal_key: str | None = Header(default=None)) -> None:
     if not INTERNAL_API_KEY:
         return
-    if not x_internal_key or not secrets.compare_digest(x_internal_key, INTERNAL_API_KEY):
+    if not x_internal_key or not secrets.compare_digest(
+        x_internal_key, INTERNAL_API_KEY
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="En-tête X-Internal-Key manquant ou invalide.",

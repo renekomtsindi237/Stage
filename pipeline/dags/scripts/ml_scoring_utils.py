@@ -184,7 +184,9 @@ def calculer_shap_values(top_n_features: int = 10, **ctx) -> int:
     aurait donc toujours échoué silencieusement (0 ligne, aucune erreur) si
     le pipeline avait pu être déclenché jusqu'ici.
     """
-    logger.info("calculer_shap_values : no-op — SHAP déjà inséré par _inserer_scores().")
+    logger.info(
+        "calculer_shap_values : no-op — SHAP déjà inséré par _inserer_scores()."
+    )
     return 0
 
 
@@ -260,7 +262,9 @@ def detecter_drift_psi_segmente(
     # (UTC) ; comparer à un Timestamp naïf lève TypeError, pas seulement un
     # résultat silencieusement faux — cutoff doit être tz-aware lui aussi.
     df["date_score"] = pd.to_datetime(df["date_score"], utc=True)
-    cutoff = pd.Timestamp.now(tz="UTC").normalize() - pd.Timedelta(days=fenetre_courante_jours)
+    cutoff = pd.Timestamp.now(tz="UTC").normalize() - pd.Timedelta(
+        days=fenetre_courante_jours
+    )
 
     df_ref = df[df["date_score"] < cutoff]
     df_cur = df[df["date_score"] >= cutoff]

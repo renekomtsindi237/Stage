@@ -261,7 +261,7 @@ def run_monitoring(**ctx) -> None:
     for key, issue in current.items():
         if key not in state["incidents"]:
             _send(
-                subject=f"{issue['sev']} — {issue['msg'].replace('<b>','').replace('</b>','')}",
+                subject=f"{issue['sev']} — {issue['msg'].replace('<b>', '').replace('</b>', '')}",
                 body_html=f"<p>{issue['msg']}</p><p style='color:#64748b;font-size:12px'>Détecté : {now}</p>",
                 severity=issue["sev"],
             )
