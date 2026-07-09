@@ -28,21 +28,39 @@ SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "renekomtsindi7@gmail.com")
 SMTP_PASS = os.getenv("SMTP_PASSWORD", "")
-STATE_FILE = Path("/var/lib/imf-monitor/state.json")
+# /var/lib/imf-monitor n'a jamais existé et n'est pas inscriptible par
+# l'utilisateur airflow (uid 50000) dans le conteneur — run_monitoring()
+# échouait donc systématiquement dès _load_state(), avant même de faire un
+# seul check : aucune alerte n'a jamais pu être envoyée. /opt/airflow/logs
+# est un volume nommé déjà inscriptible ET persistant (survit aux
+# recréations de conteneur, contrairement à /tmp).
+STATE_FILE = Path("/opt/airflow/logs/imf-monitor/state.json")
 
 IMF_CONTAINERS = [
     "imf-backend",
     "imf-frontend",
     "imf-airflow-scheduler",
     "imf-airflow-webserver",
-    "imf_staging_redis",
+    "imf-airflow-db",
+    "imf-ml-api",
+    "imf-redis",
+    "imf-nginx-api",
 ]
 
 HTTP_CHECKS = [
     ("Backend /actuator/health", "http://localhost:9200/actuator/health", 200),
     ("Frontend nginx", "http://localhost:9091/", 200),
-    ("API nginx", "http://localhost:9090/actuator/health", 200),
-    ("Airflow webserver", "http://localhost:8090/health", 200),
+    # Corrigé : /actuator/health n'est pas proxifié par nginx-api (seuls
+    # /api/ et /model/ le sont, cf. sa conf) — 404 systématique, jamais un
+    # vrai signal de panne. nginx-api expose son propre /health dédié.
+    ("API nginx", "http://localhost:9090/health", 200),
+    # Corrigé : pointait sur le port 8090 (ml-api, pas Airflow) avec un
+    # chemin /health inexistant même pour ml-api — signalait une fausse
+    # alerte CRITICAL permanente ("Airflow webserver inaccessible") sans
+    # rapport avec l'état réel du service. Vrai port Airflow webserver :
+    # 9202 (AIRFLOW__WEBSERVER__WEB_SERVER_PORT).
+    ("Airflow webserver", "http://localhost:9202/health", 200),
+    ("ml-api MCRS", "http://localhost:8090/model/health", 200),
 ]
 
 PG_HOST = os.getenv("POSTGRES_HOST", "aws-0-eu-west-3.pooler.supabase.com")
@@ -152,6 +170,15 @@ def collect_issues() -> list[dict]:
                             "msg": f"Container <b>{name}</b> : {restarts} redémarrages",
                         }
                     )
+    except (FileNotFoundError, PermissionError, subprocess.CalledProcessError) as e:
+        # /var/run/docker.sock n'est pas monté dans ce conteneur (choix
+        # délibéré : donner à une tâche Airflow un accès au socket Docker de
+        # l'hôte équivaut à lui donner un accès root à l'hôte — pas fait
+        # sans décision explicite). Contrainte d'environnement permanente,
+        # pas un incident réel : ne remonte qu'en log, jamais en CRITICAL
+        # (qui ferait échouer cette tâche à chaque exécution, 5 min sur 5,
+        # sans qu'il y ait quoi que ce soit à corriger côté infra).
+        print(f"[INFO] Vérification Docker indisponible (socket non monté) : {e}")
     except Exception as e:
         issues.append(
             {"key": "docker", "sev": "CRITICAL", "msg": f"Docker daemon : {e}"}

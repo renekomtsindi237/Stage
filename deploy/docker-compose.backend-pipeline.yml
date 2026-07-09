@@ -248,6 +248,18 @@ services:
       POSTGRES_DB:                         postgres
       POSTGRES_USER:                       postgres.ceiqkvvacjsakycsgcfz
       POSTGRES_PASSWORD:                   ${SUPABASE_DB_PASSWORD}
+      # dag_monitoring.py (alerting email) tourne sur ce service (LocalExecutor)
+      # et n'avait jamais ces identifiants — SMTP_PASSWORD restait vide,
+      # smtplib.login() aurait échoué à chaque incident détecté, sans jamais
+      # envoyer la moindre alerte réelle.
+      SMTP_HOST:                           ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT:                           ${SMTP_PORT:-587}
+      SMTP_USER:                           ${SMTP_USER:-}
+      SMTP_PASSWORD:                       ${SMTP_PASSWORD:-}
+      ALERT_EMAIL:                         ${ALERT_EMAIL:-renekomtsindi7@gmail.com}
+      # OpenWeatherMap (fetch_meteo_openweather, dag_donnees_externes) —
+      # absente : no-op documenté, ne bloque jamais le DAG.
+      OPENWEATHER_API_KEY:                 ${OPENWEATHER_API_KEY:-}
     volumes:
       - /opt/imf-pipeline/pipeline/dags:/opt/airflow/dags:ro
       - /opt/imf-pipeline/pipeline:/opt/airflow/pipeline

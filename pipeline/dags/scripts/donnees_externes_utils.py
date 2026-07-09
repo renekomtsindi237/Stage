@@ -23,7 +23,16 @@ from pipeline.src.database import db_session, readonly_session
 
 logger = logging.getLogger(__name__)
 
+# httpx logue chaque requête en INFO avec l'URL complète, query string
+# incluse — OpenWeatherMap authentifie via ?appid=<clé> (pas de header
+# possible sur ce plan gratuit) : sans ce niveau relevé, la clé se
+# retrouvait en clair dans les logs de tâche Airflow à chaque appel.
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
+OPENWEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+NASA_POWER_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"
 MINCOMMERCE_URL_BASE = os.getenv(
     "MINCOMMERCE_API_URL", "https://mincommerce.cm/api/prix"
 )
@@ -383,7 +392,7 @@ def fetch_meteo_open_meteo(
             %(zone_id)s, %(date_observation)s, %(temperature_min)s,
             %(temperature_max)s, %(precipitation_mm)s, 'OPEN_METEO', NOW()
         )
-        ON CONFLICT (zone_id, date_observation) DO UPDATE SET
+        ON CONFLICT (zone_id, date_observation, source) DO UPDATE SET
             temperature_min  = EXCLUDED.temperature_min,
             temperature_max  = EXCLUDED.temperature_max,
             precipitation_mm = EXCLUDED.precipitation_mm
@@ -455,36 +464,43 @@ def _maj_indice_secheresse(zone_ids: list[str]) -> None:
     de "normales saisonnières" séparée à maintenir : la moyenne mobile
     s'auto-améliore au fil des jours à mesure que l'historique s'accumule
     dans app.donnees_meteo lui-même.
+
+    Depuis V62, plusieurs sources (Open-Meteo/OpenWeatherMap/NASA POWER)
+    peuvent coexister pour un même (zone_id, date_observation) — la
+    précipitation "du jour" utilisée dans la comparaison est donc la
+    moyenne entre sources disponibles pour ce jour, pas une ligne unique.
     """
     sql = """
-        WITH cible AS (
-            SELECT id, zone_id, date_observation, precipitation_mm
+        WITH par_jour AS (
+            SELECT zone_id, date_observation, AVG(precipitation_mm) AS precip_jour
             FROM app.donnees_meteo
             WHERE zone_id = ANY(%(zone_ids)s)
+            GROUP BY zone_id, date_observation
         ),
         moyenne_glissante AS (
             SELECT
-                c.id,
-                c.precipitation_mm,
-                AVG(prev.precipitation_mm) AS moy_30j
-            FROM cible c
-            LEFT JOIN app.donnees_meteo prev
-                ON prev.zone_id = c.zone_id
-                AND prev.date_observation BETWEEN c.date_observation - 30 AND c.date_observation - 1
-            GROUP BY c.id, c.precipitation_mm
+                pj.zone_id,
+                pj.date_observation,
+                pj.precip_jour,
+                AVG(prev.precip_jour) AS moy_30j
+            FROM par_jour pj
+            LEFT JOIN par_jour prev
+                ON prev.zone_id = pj.zone_id
+                AND prev.date_observation BETWEEN pj.date_observation - 30 AND pj.date_observation - 1
+            GROUP BY pj.zone_id, pj.date_observation, pj.precip_jour
         )
         UPDATE app.donnees_meteo dm
         SET indice_secheresse = CASE
             WHEN mg.moy_30j IS NULL OR mg.moy_30j = 0 THEN 'NORMAL'
-            WHEN mg.precipitation_mm >= mg.moy_30j * 3.0 THEN 'INONDATION_SEVERE'
-            WHEN mg.precipitation_mm >= mg.moy_30j * 2.0 THEN 'INONDATION'
-            WHEN mg.precipitation_mm <= mg.moy_30j * 0.40 THEN 'SECHERESSE_SEVERE'
-            WHEN mg.precipitation_mm <= mg.moy_30j * 0.60 THEN 'SECHERESSE_MODEREE'
-            WHEN mg.precipitation_mm <= mg.moy_30j * 0.80 THEN 'SECHERESSE_LEGERE'
+            WHEN mg.precip_jour >= mg.moy_30j * 3.0 THEN 'INONDATION_SEVERE'
+            WHEN mg.precip_jour >= mg.moy_30j * 2.0 THEN 'INONDATION'
+            WHEN mg.precip_jour <= mg.moy_30j * 0.40 THEN 'SECHERESSE_SEVERE'
+            WHEN mg.precip_jour <= mg.moy_30j * 0.60 THEN 'SECHERESSE_MODEREE'
+            WHEN mg.precip_jour <= mg.moy_30j * 0.80 THEN 'SECHERESSE_LEGERE'
             ELSE 'NORMAL'
         END
         FROM moyenne_glissante mg
-        WHERE dm.id = mg.id
+        WHERE dm.zone_id = mg.zone_id AND dm.date_observation = mg.date_observation
     """
     with db_session() as cur:
         cur.execute(sql, {"zone_ids": zone_ids})
@@ -518,6 +534,208 @@ def _recuperer_zones_actives() -> list[dict]:
         lat, lon = VILLES_PREFIXES.get(prefixe, VILLE_PAR_DEFAUT)
         zones.append({"nom": zone_id, "latitude": lat, "longitude": lon})
     return zones
+
+
+def fetch_meteo_openweather(zones: list[dict] | None = None, **ctx) -> int:
+    """
+    Complète Open-Meteo avec OpenWeatherMap (clé requise, niveau gratuit) —
+    croise deux sources indépendantes sur les mêmes zones pour un signal
+    CSI plus robuste (ml.feat_client_externe agrège désormais entre
+    sources disponibles, cf. stg_meteo.sql).
+
+    Le niveau gratuit d'OpenWeatherMap n'expose pas d'historique quotidien
+    (contrairement à Open-Meteo `past_days` ou NASA POWER) — seule la
+    prévision 5 jours / pas 3h (`/data/2.5/forecast`) est accessible sans
+    abonnement payant. Les cumuls `rain.3h` sont sommés par jour pour
+    obtenir un total journalier comparable à `precipitation_sum`
+    d'Open-Meteo, sur une fenêtre plus courte (aujourd'hui + ~4 jours).
+
+    Si OPENWEATHER_API_KEY n'est pas configurée : no-op silencieux (même
+    discipline que MCRS_INTERNAL_API_KEY/services non configurés
+    ailleurs dans le projet) — retourne 0, ne bloque jamais le DAG.
+    """
+    if not OPENWEATHER_API_KEY:
+        logger.warning(
+            "OPENWEATHER_API_KEY non configurée — fetch_meteo_openweather ignoré"
+        )
+        return 0
+
+    zones_cible = zones or _recuperer_zones_actives()
+
+    sql_upsert = """
+        INSERT INTO app.donnees_meteo (
+            zone_id, date_observation, temperature_min, temperature_max,
+            precipitation_mm, source, created_at
+        ) VALUES (
+            %(zone_id)s, %(date_observation)s, %(temperature_min)s,
+            %(temperature_max)s, %(precipitation_mm)s, 'OPENWEATHER', NOW()
+        )
+        ON CONFLICT (zone_id, date_observation, source) DO UPDATE SET
+            temperature_min  = EXCLUDED.temperature_min,
+            temperature_max  = EXCLUDED.temperature_max,
+            precipitation_mm = EXCLUDED.precipitation_mm
+    """
+
+    n = 0
+    for zone in zones_cible:
+        try:
+            params = {
+                "lat": zone["latitude"],
+                "lon": zone["longitude"],
+                "appid": OPENWEATHER_API_KEY,
+                "units": "metric",
+            }
+            with httpx.Client(timeout=HTTP_TIMEOUT) as client:
+                resp = client.get(OPENWEATHER_FORECAST_URL, params=params)
+                resp.raise_for_status()
+            payload = resp.json()
+        except Exception as exc:
+            logger.warning("OpenWeatherMap zone '%s' : %s", zone.get("nom"), exc)
+            continue
+
+        # Regroupe les points 3h par jour calendaire (dt_txt: "YYYY-MM-DD HH:MM:SS")
+        par_jour: dict[str, dict] = {}
+        for point in payload.get("list", []):
+            jour = point.get("dt_txt", "")[:10]
+            if not jour:
+                continue
+            agg = par_jour.setdefault(
+                jour, {"precip": 0.0, "temp_min": None, "temp_max": None}
+            )
+            agg["precip"] += float(point.get("rain", {}).get("3h", 0.0) or 0.0)
+            tmin = point.get("main", {}).get("temp_min")
+            tmax = point.get("main", {}).get("temp_max")
+            if tmin is not None:
+                agg["temp_min"] = (
+                    tmin if agg["temp_min"] is None else min(agg["temp_min"], tmin)
+                )
+            if tmax is not None:
+                agg["temp_max"] = (
+                    tmax if agg["temp_max"] is None else max(agg["temp_max"], tmax)
+                )
+
+        with db_session() as cur:
+            for jour, agg in par_jour.items():
+                try:
+                    cur.execute(
+                        sql_upsert,
+                        {
+                            "zone_id": zone["nom"],
+                            "date_observation": jour,
+                            "temperature_min": agg["temp_min"],
+                            "temperature_max": agg["temp_max"],
+                            "precipitation_mm": round(agg["precip"], 2),
+                        },
+                    )
+                    n += 1
+                except (TypeError, ValueError) as exc:
+                    logger.debug(
+                        "OpenWeather ignoré (%s/%s) : %s", zone["nom"], jour, exc
+                    )
+
+    if n:
+        _maj_indice_secheresse([z["nom"] for z in zones_cible])
+
+    logger.info(
+        "fetch_meteo_openweather : %d observations upsertées (%d zones)",
+        n,
+        len(zones_cible),
+    )
+    return n
+
+
+def fetch_meteo_nasa_power(
+    zones: list[dict] | None = None, jours_historique: int = 32, **ctx
+) -> int:
+    """
+    Troisième source météo indépendante — NASA POWER (community=AG,
+    agroclimatologie), gratuite et sans clé, avec un vrai historique
+    quotidien (contrairement à OpenWeatherMap en niveau gratuit) : couvre
+    la même profondeur que Open-Meteo pour une comparaison directe.
+
+    PRECTOTCORR = précipitation corrigée (mm/jour), T2M_MAX/T2M_MIN =
+    températures. NASA POWER retourne -999 pour les valeurs manquantes —
+    filtrées explicitement, jamais insérées telles quelles.
+    """
+    zones_cible = zones or _recuperer_zones_actives()
+
+    fin = date.today()
+    debut = fin - timedelta(days=jours_historique)
+
+    sql_upsert = """
+        INSERT INTO app.donnees_meteo (
+            zone_id, date_observation, temperature_min, temperature_max,
+            precipitation_mm, source, created_at
+        ) VALUES (
+            %(zone_id)s, %(date_observation)s, %(temperature_min)s,
+            %(temperature_max)s, %(precipitation_mm)s, 'NASA_POWER', NOW()
+        )
+        ON CONFLICT (zone_id, date_observation, source) DO UPDATE SET
+            temperature_min  = EXCLUDED.temperature_min,
+            temperature_max  = EXCLUDED.temperature_max,
+            precipitation_mm = EXCLUDED.precipitation_mm
+    """
+
+    n = 0
+    for zone in zones_cible:
+        try:
+            params = {
+                "parameters": "PRECTOTCORR,T2M_MAX,T2M_MIN",
+                "community": "AG",
+                "longitude": zone["longitude"],
+                "latitude": zone["latitude"],
+                "start": debut.strftime("%Y%m%d"),
+                "end": fin.strftime("%Y%m%d"),
+                "format": "JSON",
+            }
+            with httpx.Client(timeout=HTTP_TIMEOUT) as client:
+                resp = client.get(NASA_POWER_URL, params=params)
+                resp.raise_for_status()
+            parametres = resp.json().get("properties", {}).get("parameter", {})
+        except Exception as exc:
+            logger.warning("NASA POWER zone '%s' : %s", zone.get("nom"), exc)
+            continue
+
+        precip = parametres.get("PRECTOTCORR", {})
+        tmax = parametres.get("T2M_MAX", {})
+        tmin = parametres.get("T2M_MIN", {})
+
+        with db_session() as cur:
+            for jour_str, valeur_precip in precip.items():
+                if valeur_precip is None or valeur_precip <= -900:
+                    continue
+                tmax_j = tmax.get(jour_str)
+                tmin_j = tmin.get(jour_str)
+                try:
+                    cur.execute(
+                        sql_upsert,
+                        {
+                            "zone_id": zone["nom"],
+                            "date_observation": f"{jour_str[:4]}-{jour_str[4:6]}-{jour_str[6:8]}",
+                            "temperature_min": (
+                                tmin_j if tmin_j is not None and tmin_j > -900 else None
+                            ),
+                            "temperature_max": (
+                                tmax_j if tmax_j is not None and tmax_j > -900 else None
+                            ),
+                            "precipitation_mm": float(valeur_precip),
+                        },
+                    )
+                    n += 1
+                except (TypeError, ValueError) as exc:
+                    logger.debug(
+                        "NASA POWER ignoré (%s/%s) : %s", zone["nom"], jour_str, exc
+                    )
+
+    if n:
+        _maj_indice_secheresse([z["nom"] for z in zones_cible])
+
+    logger.info(
+        "fetch_meteo_nasa_power : %d observations upsertées (%d zones)",
+        n,
+        len(zones_cible),
+    )
+    return n
 
 
 # ─── 6. Événements calendrier ─────────────────────────────────────────────────

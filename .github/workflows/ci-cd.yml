@@ -471,12 +471,14 @@ jobs:
           SMTP_USER:              ${{ secrets.STAGING_SMTP_USER }}
           SMTP_PASSWORD:          ${{ secrets.STAGING_SMTP_PASSWORD }}
           GROQ_API_KEY:           ${{ secrets.STAGING_GROQ_API_KEY }}
+          MCRS_INTERNAL_API_KEY:  ${{ secrets.STAGING_MCRS_INTERNAL_API_KEY }}
+          OPENWEATHER_API_KEY:    ${{ secrets.STAGING_OPENWEATHER_API_KEY }}
         with:
           host:     ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key:      ${{ secrets.STAGING_SSH_KEY }}
           port:     ${{ secrets.STAGING_PORT }}
-          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD,SMTP_HOST,SMTP_USER,SMTP_PASSWORD,GROQ_API_KEY
+          envs:     GHCR_USERNAME,GHCR_READ_TOKEN,GHCR_BASE,SHA,SUPABASE_DB_PASSWORD,SUPABASE_ANON_KEY,AIRFLOW_DB_PASSWORD,JWT_SECRET,AIRFLOW_FERNET_KEY,AIRFLOW_ADMIN_PASSWORD,SMTP_HOST,SMTP_USER,SMTP_PASSWORD,GROQ_API_KEY,MCRS_INTERNAL_API_KEY,OPENWEATHER_API_KEY
           command_timeout: 30m
           script: |
             set -euo pipefail
@@ -523,6 +525,9 @@ jobs:
             SMTP_PASSWORD=${SMTP_PASSWORD}
 
             GROQ_API_KEY=${GROQ_API_KEY}
+
+            MCRS_INTERNAL_API_KEY=${MCRS_INTERNAL_API_KEY}
+            OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
             ENVEOF
             chmod 600 "$ENVFILE"
 
@@ -554,6 +559,30 @@ jobs:
               GROQ_SAVED=$(grep "^GROQ_API_KEY=" "$APP_DIR/.env.groq.local" | cut -d= -f2-)
               sed -i "s|^GROQ_API_KEY=.*|GROQ_API_KEY=${GROQ_SAVED}|" "$ENVFILE"
               echo "  GROQ_API_KEY restaurée depuis .env.groq.local"
+            fi
+            # Persistance MCRS_INTERNAL_API_KEY (même mécanisme que GROQ_API_KEY —
+            # clé partagée avec ml-api/Blucash, doit rester stable entre déploiements
+            # tant que STAGING_MCRS_INTERNAL_API_KEY n'est pas configurée côté GitHub)
+            MCRS_WRITTEN=$(grep "^MCRS_INTERNAL_API_KEY=" "$ENVFILE" | cut -d= -f2-)
+            if [ -n "$MCRS_WRITTEN" ]; then
+              echo "MCRS_INTERNAL_API_KEY=${MCRS_WRITTEN}" > "$APP_DIR/.env.mcrs.local"
+              chmod 600 "$APP_DIR/.env.mcrs.local"
+              echo "  MCRS_INTERNAL_API_KEY sauvegardée"
+            elif [ -f "$APP_DIR/.env.mcrs.local" ]; then
+              MCRS_SAVED=$(grep "^MCRS_INTERNAL_API_KEY=" "$APP_DIR/.env.mcrs.local" | cut -d= -f2-)
+              sed -i "s|^MCRS_INTERNAL_API_KEY=.*|MCRS_INTERNAL_API_KEY=${MCRS_SAVED}|" "$ENVFILE"
+              echo "  MCRS_INTERNAL_API_KEY restaurée depuis .env.mcrs.local"
+            fi
+            # Persistance OPENWEATHER_API_KEY (même mécanisme)
+            OWM_WRITTEN=$(grep "^OPENWEATHER_API_KEY=" "$ENVFILE" | cut -d= -f2-)
+            if [ -n "$OWM_WRITTEN" ]; then
+              echo "OPENWEATHER_API_KEY=${OWM_WRITTEN}" > "$APP_DIR/.env.openweather.local"
+              chmod 600 "$APP_DIR/.env.openweather.local"
+              echo "  OPENWEATHER_API_KEY sauvegardée"
+            elif [ -f "$APP_DIR/.env.openweather.local" ]; then
+              OWM_SAVED=$(grep "^OPENWEATHER_API_KEY=" "$APP_DIR/.env.openweather.local" | cut -d= -f2-)
+              sed -i "s|^OPENWEATHER_API_KEY=.*|OPENWEATHER_API_KEY=${OWM_SAVED}|" "$ENVFILE"
+              echo "  OPENWEATHER_API_KEY restaurée depuis .env.openweather.local"
             fi
             echo "==> .env.staging écrit"
 

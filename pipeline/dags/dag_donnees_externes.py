@@ -7,7 +7,9 @@ Collecte tous les facteurs externes nécessaires aux features ML MCRS :
   2. fetch_mincommerce         — scraping/API MINCOMMERCE Cameroun
   3. fetch_beac_indicateurs    — indicateurs BEAC (taux directeur, inflation)
   4. fetch_ins_cameroun        — données INS (IPC, emploi)
-  5. fetch_meteo_open_meteo    — météo zones IMF via Open-Meteo API
+  5. fetch_meteo_open_meteo    — météo zones IMF via Open-Meteo API (32j, sans clé)
+  5b. fetch_meteo_openweather  — météo via OpenWeatherMap (5j, clé requise, no-op sinon)
+  5c. fetch_meteo_nasa_power   — météo via NASA POWER (32j, sans clé)
   6. fetch_evenements          — calendrier fêtes, marchés, élections
   7. mapper_produits           — mapping codes sources → app.produits_generiques
   8. dbt_stg_externes          — dbt run staging.stg_prix_produits + stg_indicateurs_macro + stg_meteo
@@ -30,7 +32,9 @@ from scripts.donnees_externes_utils import (
     fetch_evenements_calendrier,
     fetch_indicateurs_beac,
     fetch_indicateurs_ins_cameroun,
+    fetch_meteo_nasa_power,
     fetch_meteo_open_meteo,
+    fetch_meteo_openweather,
     fetch_prix_marche_agents_terrain,
     fetch_prix_mincommerce,
     maj_app_donnees_meteo,
@@ -123,7 +127,19 @@ with DAG(
         # correspondait jamais aux zone_id réellement utilisés
         # ("YDE-NLONGKAK" etc., pas "YAOUNDE") — cf. _recuperer_zones_actives()
         # dans scripts/donnees_externes_utils.py.
-        doc="Météo Open-Meteo (past_days) pour les zones clients réelles -> app.donnees_meteo",
+        doc="Météo Open-Meteo (past_days, 32j d'historique) -> app.donnees_meteo",
+    )
+
+    meteo_openweather = PythonOperator(
+        task_id="fetch_meteo_openweather",
+        python_callable=fetch_meteo_openweather,
+        doc="Météo OpenWeatherMap (prévision 5j/3h, clé requise) -> app.donnees_meteo, no-op si absente",
+    )
+
+    meteo_nasa = PythonOperator(
+        task_id="fetch_meteo_nasa_power",
+        python_callable=fetch_meteo_nasa_power,
+        doc="Météo NASA POWER (gratuite, sans clé, 32j d'historique) -> app.donnees_meteo",
     )
 
     evenements = PythonOperator(
@@ -192,8 +208,21 @@ with DAG(
     )
 
     # Fetch en parallèle
-    debut >> [prix_terrain, prix_mincom, beac, ins, meteo, evenements]
+    debut >> [
+        prix_terrain,
+        prix_mincom,
+        beac,
+        ins,
+        meteo,
+        meteo_openweather,
+        meteo_nasa,
+        evenements,
+    ]
     [prix_terrain, prix_mincom] >> mapping
-    [mapping, beac, ins, meteo, evenements] >> dbt_stg >> dbt_int
+    (
+        [mapping, beac, ins, meteo, meteo_openweather, meteo_nasa, evenements]
+        >> dbt_stg
+        >> dbt_int
+    )
     dbt_int >> [maj_prix, maj_macro, maj_meteo]
     [maj_prix, maj_macro, maj_meteo] >> journal >> fin
