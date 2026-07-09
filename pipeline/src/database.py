@@ -88,6 +88,14 @@ def db_session() -> Generator[Cursor, None, None]:
         _safe_rollback(conn)
         raise
     finally:
+        # Défense en profondeur (cf. readonly_session()) : garantit qu'aucun
+        # état de session ne survit au retour de la connexion dans le pool
+        # Supabase (transaction mode), quelle qu'en soit la source.
+        try:
+            conn.autocommit = True
+            cur.execute("DISCARD ALL")
+        except Exception:
+            logger.warning("Impossible d'exécuter DISCARD ALL avant fermeture de la session")
         cur.close()
         conn.close()
 
@@ -103,13 +111,23 @@ def readonly_session() -> Generator[Cursor, None, None]:
     transaction. `conn.close()` ferme le socket côté client psycopg2, mais
     le pooler Supabase (port 6543, mode transaction) garde la connexion
     backend physique ouverte et la réattribue telle quelle à la prochaine
-    connexion — sans ce reset explicite, une tâche db_session() ultérieure
+    connexion — sans reset explicite, une tâche db_session() ultérieure
     peut hériter d'une session encore en lecture seule et échouer sur son
     premier UPDATE/INSERT avec "cannot execute ... in a read-only
     transaction", sans rapport apparent avec cette fonction-ci (bug constaté
     en conditions réelles sur dag_ml_scoring : maj_priorites_dossiers /
     detecter_drift échouaient aléatoirement selon quelle connexion pooler
     leur était assignée).
+
+    Un premier correctif basé sur `conn.set_session(readonly=False)` avant
+    fermeture s'est révélé insuffisant (le bug est réapparu) : `set_session`
+    ne garantit pas d'émettre la commande SQL dans tous les cas côté
+    psycopg2. `DISCARD ALL` est la commande Postgres dédiée à la
+    réinitialisation complète d'une session avant qu'un pooler ne la
+    réattribue (c'est ce que ferait `server_reset_query` sur un pooler
+    correctement configuré — apparemment absent côté Supabase pour ce
+    tier) : exécutée explicitement via un curseur, elle réinitialise aussi
+    bien `READ ONLY` que tout autre GUC de session, de façon garantie.
     """
     conn = get_connection()
     conn.set_session(readonly=True, autocommit=True)
@@ -119,11 +137,11 @@ def readonly_session() -> Generator[Cursor, None, None]:
     except (Psycopg2DBError, psycopg2.Error) as exc:
         _translate_psycopg2_error(exc)
     finally:
-        cur.close()
         try:
-            conn.set_session(readonly=False, autocommit=True)
+            cur.execute("DISCARD ALL")
         except Exception:
-            logger.warning("Impossible de réinitialiser la session en lecture-écriture avant fermeture")
+            logger.warning("Impossible d'exécuter DISCARD ALL avant fermeture de la session lecture seule")
+        cur.close()
         conn.close()
 
 

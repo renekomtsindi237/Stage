@@ -251,8 +251,12 @@ blocages plus profonde que prévu — chacun corrigé et reveérifié par un nou
   `conn.close()` ferme le socket client, pas la connexion backend que le pooler recycle telle
   quelle. Une tâche `db_session()` ultérieure pouvait hériter d'une connexion encore en lecture
   seule et échouer sur son premier `UPDATE`/`INSERT` (`maj_priorites_dossiers`/`detecter_drift` en
-  `up_for_retry` aléatoire). Corrigé : `readonly_session()` réinitialise explicitement la session en
-  lecture-écriture avant de fermer la connexion.
+  `up_for_retry` aléatoire). Premier correctif (`conn.set_session(readonly=False)` avant fermeture)
+  insuffisant — le bug est réapparu sur un déclenchement suivant. Corrigé plus robustement :
+  `cur.execute("DISCARD ALL")` explicite dans `readonly_session()` **et** `db_session()` (défense en
+  profondeur des deux côtés) — `DISCARD ALL` est la commande Postgres dédiée à la réinitialisation
+  complète d'une session avant qu'un pooler ne la réattribue. Revérifié sur un déclenchement complet
+  supplémentaire : 17/17 tâches à `success` du premier coup, aucun `up_for_retry`.
 - **Comparaison de dates tz-aware/tz-naive** dans `detecter_drift_psi_segmente` (`scored_at` est
   `TIMESTAMPTZ`, `pd.Timestamp.now()` sans fuseau) — `TypeError` Pandas. Corrigé (`utc=True`
   explicite des deux côtés).
@@ -272,29 +276,56 @@ blocages plus profonde que prévu — chacun corrigé et reveérifié par un nou
   projet dbt réel — la logique correspondante vit dans 2 modèles seulement
   (`int_profil_recouvrement_client`, `feat_client_externe`). Corrigé.
 
-**Vérification finale** : trois déclenchements réels complets de `dag_ml_scoring` le 2026-07-08,
-le dernier avec les 17 tâches à `success` (`declencher_retrain` `skipped`, comportement correct
-sans drift) — `scorer_clients` a écrit 85 scores réels (`ml.client_scores`), `generer_alertes_ml` a
-produit 20 alertes réelles, `GET /external/scores/CLF001` confirme un score et un `model_version`
-frais.
+**Vérification finale** : quatre déclenchements réels complets de `dag_ml_scoring` le
+2026-07-08/09, le dernier avec les 17 tâches à `success` du premier coup (`declencher_retrain`
+`skipped`, comportement correct sans drift, aucun `up_for_retry`) — `scorer_clients` a écrit des
+scores réels (`ml.client_scores`), `generer_alertes_ml` a produit des alertes réelles,
+`GET /external/scores/CLF001` confirme un score et un `model_version` frais.
+
+### Corrigés (2026-07-09 — alimentation de raw.export_cbs / raw.collectes_terrain)
+
+À la demande explicite de l'utilisateur, `raw` n'est plus une couche vide : nouveau DAG
+`dag_raw_sync` (`pipeline/dags/dag_raw_sync.py`, quotidien 06h45, avant `dag_ml_scoring` à 07h30)
+qui recopie `app.creances`/`app.clients_informels` → `raw.export_cbs` et `app.collectes_terrain`
+(statut `CONFIRMEE`) → `raw.collectes_terrain`, dans la forme texte brut que `stg_clients.sql`/
+`stg_creances.sql`/`stg_collectes_epargne.sql` attendaient depuis l'origine sans jamais l'obtenir
+(`pipeline/dags/scripts/raw_sync_utils.py`). **Ce n'est pas un export CBS ni une synchronisation
+mobile externe réelle** — les deux ne sont toujours pas connectées ; ce job miroir les données déjà
+réelles de `app.*` pour que la couche `raw → staging` fonctionne enfin comme conçue, plutôt que de
+laisser les modèles `staging` dépendre d'un seed figé une fois pour toutes.
+
+Migration `V61__raw_schema_landing_tables.sql` : `CREATE SCHEMA raw` (jamais fait avant) + les deux
+tables, en colonnes `TEXT` non typées (cohérent avec la sémantique "raw = non nettoyé" que les
+modèles `staging` se chargent de typer/valider).
+
+**Vérifié en staging** : `sync_export_cbs` → 93 lignes, `sync_collectes_terrain` → 14 lignes ;
+`stg_clients` (0 → 69 lignes réelles), `stg_creances` (93 lignes), `stg_collectes_epargne`
+(14 lignes) rebuilds avec succès contre ces données fraîches ; `int_profil_recouvrement_client`
+passe de 9 à 69 clients réels. Un déclenchement complet de `dag_ml_scoring` après cet ajout
+confirme les 17 tâches toujours à `success`.
 
 ### Non résolus
 
 - **`LABELS_QUERY` (`pipeline/src/ml/feature_engineering.py`), utilisée par `dag_ml_training`
   uniquement** : mêmes symptômes probables que les requêtes corrigées ci-dessus (`staging.stg_clients`
   comme pilote, `app.kpi_recouvrement_snapshots.client_id` qui n'existe pas — cette table est un
-  agrégat de portefeuille, pas par client). Non auditée ni corrigée — `dag_ml_training` n'a pas été
-  déclenché aujourd'hui, hors périmètre de cette vérification centrée sur le scoring.
+  agrégat de portefeuille, pas par client) **et** la définition du label elle-même est
+  conceptuellement bancale (vérifie qu'*une* créance est en classe C/D/E quelque part, pas
+  spécifiquement l'état du client 90 jours après `date_reference` — ce n'est pas un vrai label
+  walk-forward). Corriger juste les noms de colonnes produirait des labels silencieusement faux ;
+  nécessite une vraie session de conception, pas un renommage. `dag_ml_training` n'a pas été
+  déclenché — `train_mcrs_champion.py --donnees` (déjà fonctionnel, revu par l'utilisateur) reste
+  le chemin d'entraînement recommandé en attendant.
 - **`_alertes_baisse_collecte`/`_alertes_cobac_aggravee`** (`ml_alertes_utils.py`) restent
-  non-fonctionnelles (dégradation déjà en place, cf. ci-dessus) : dépendent de `raw.export_cbs`
-  (aucune ingestion CBS réelle) et d'un historique quotidien de classification COBAC qui n'existe
-  nulle part dans le schéma actuel.
-- **Ingestion `raw.*` jamais implémentée** (`export_cbs`, `prix_marche`, `transactions_mtn`,
-  `transactions_orange`) : construit pour une architecture `raw → staging` qui n'a jamais été
-  câblée — les données réelles arrivent directement dans `app.*` via l'API Spring Boot. Les
-  fonctionnalités qui en dépendent structurellement (prix marché, alertes CBS, historique de
-  classification) resteront indisponibles tant qu'aucune ingestion réelle (CBS SFTP, MTN/Orange
-  Mobile Money, scraping/API de prix) n'est branchée — limite déjà connue, pas nouvelle.
+  non-fonctionnelles (dégradation déjà en place) : dépendent d'un historique quotidien de
+  classification COBAC qui n'existe nulle part dans le schéma actuel (pas résolu par l'alimentation
+  de `raw.export_cbs`, qui ne porte qu'un miroir de l'état courant, pas un historique par date).
+- **`raw.prix_marche`/`raw.transactions_mtn`/`raw.transactions_orange` toujours vides** — aucune
+  source de données n'existe nulle part (ni `raw`, ni `app`) pour ces trois-là, contrairement à
+  `export_cbs`/`collectes_terrain` : prix marché, MTN et Orange Money ne sont pas des miroirs
+  possibles de données déjà en base, ils nécessitent une vraie intégration externe (scraping/API de
+  prix, API MTN/Orange Mobile Money) — limite explicitement laissée telle quelle par décision de
+  l'utilisateur le 2026-07-09.
 - **`ml-api` sans authentification serveur-à-serveur, exposé sur l'IP publique** — corrigé (cf.
   section précédente, header `X-Internal-Key`). Restructuration réseau (isoler `ml-api` du réseau
   public) explicitement écartée avec l'utilisateur — `backend` et `ml-api` partagent
