@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +42,8 @@ class RecouvrementServiceImplTest {
     @Mock ActionRecouvrementRepository   actionRepo;
     @Mock AccordReechelonnementRepository accordRepo;
     @Mock UserRepository                 userRepo;
+    @Mock CreanceRepository              creanceRepo;
+    @Mock ApplicationEventPublisher      eventPublisher;
     @InjectMocks RecouvrementServiceImpl recouvrementService;
 
     private User rrUser;

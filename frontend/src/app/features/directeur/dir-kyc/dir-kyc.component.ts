@@ -9,7 +9,12 @@ import {
   ElementRef,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+} from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import {
@@ -308,20 +313,24 @@ export class DirKycComponent implements OnInit {
       observations: value.observations?.trim() || null,
     };
 
-    this.api.post<ApiWrapped<KycDossier>>("/api/v1/kyc/dossiers", payload).subscribe({
-      next: (r) => {
-        const dossier = r.data ?? (r as unknown as KycDossier);
-        this.selected.set(dossier);
-        this.createSubmitting.set(false);
-        this.createSuccess.set("Dossier KYC créé avec succès.");
-        this.closeCreatePanel();
-        this.load(0);
-      },
-      error: (err: { error?: { message?: string } }) => {
-        this.createError.set(err?.error?.message ?? "Impossible de créer le dossier KYC.");
-        this.createSubmitting.set(false);
-      },
-    });
+    this.api
+      .post<ApiWrapped<KycDossier>>("/api/v1/kyc/dossiers", payload)
+      .subscribe({
+        next: (r) => {
+          const dossier = r.data ?? (r as unknown as KycDossier);
+          this.selected.set(dossier);
+          this.createSubmitting.set(false);
+          this.createSuccess.set("Dossier KYC créé avec succès.");
+          this.closeCreatePanel();
+          this.load(0);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.createError.set(
+            err?.error?.message ?? "Impossible de créer le dossier KYC.",
+          );
+          this.createSubmitting.set(false);
+        },
+      });
   }
 
   closeDetail() {

@@ -61,6 +61,7 @@ class RecouvrementControllerTest {
                 "Fomo Martin",            // nomClient
                 new BigDecimal("450000"), // montantImpaye
                 95,                       // joursRetard
+                null,                     // prioriteScoring
                 CategorieCobtac.DOUTEUSE, // categorieCobtac
                 new BigDecimal("25"),     // tauxProvision
                 new BigDecimal("112500"), // montantProvision
@@ -268,6 +269,7 @@ class RecouvrementControllerTest {
                 "Fomo Martin",            // nomClient
                 new BigDecimal("450000"), // montantImpaye
                 95,                       // joursRetard
+                null,                     // prioriteScoring
                 CategorieCobtac.DOUTEUSE, // categorieCobtac
                 new BigDecimal("25"),     // tauxProvision
                 new BigDecimal("112500"), // montantProvision

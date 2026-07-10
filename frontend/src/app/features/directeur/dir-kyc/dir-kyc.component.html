@@ -42,31 +42,59 @@
           <div class="create-grid">
             <div class="form-field">
               <label>Client ID <span style="color: red">*</span></label>
-              <input class="form-input" type="text" formControlName="clientId" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="clientId"
+              />
             </div>
             <div class="form-field">
               <label>Nom <span style="color: red">*</span></label>
-              <input class="form-input" type="text" formControlName="nomClient" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="nomClient"
+              />
             </div>
             <div class="form-field">
               <label>Prénom</label>
-              <input class="form-input" type="text" formControlName="prenomClient" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="prenomClient"
+              />
             </div>
             <div class="form-field">
               <label>Date de naissance</label>
-              <input class="form-input" type="date" formControlName="dateNaissance" />
+              <input
+                class="form-input"
+                type="date"
+                formControlName="dateNaissance"
+              />
             </div>
             <div class="form-field">
               <label>Lieu de naissance</label>
-              <input class="form-input" type="text" formControlName="lieuNaissance" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="lieuNaissance"
+              />
             </div>
             <div class="form-field">
               <label>Nationalité</label>
-              <input class="form-input" type="text" formControlName="nationalite" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="nationalite"
+              />
             </div>
             <div class="form-field">
               <label>Téléphone</label>
-              <input class="form-input" type="text" formControlName="telephone" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="telephone"
+              />
             </div>
             <div class="form-field">
               <label>Email</label>
@@ -82,11 +110,19 @@
             </div>
             <div class="form-field">
               <label>Profession</label>
-              <input class="form-input" type="text" formControlName="profession" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="profession"
+              />
             </div>
             <div class="form-field">
               <label>Employeur</label>
-              <input class="form-input" type="text" formControlName="employeur" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="employeur"
+              />
             </div>
             <div class="form-field">
               <label>Revenu mensuel estimé</label>
@@ -100,36 +136,57 @@
             <div class="form-field">
               <label>Type de pièce d'identité</label>
               <select class="form-input" formControlName="typePieceIdentite">
-                @for (t of [
-                  'CNI_RECTO',
-                  'CNI_VERSO',
-                  'PASSEPORT',
-                  'PERMIS_CONDUIRE',
-                  'CARTE_SEJOUR',
-                  'AUTRE'
-                ]; track t) {
+                @for (
+                  t of [
+                    "CNI_RECTO",
+                    "CNI_VERSO",
+                    "PASSEPORT",
+                    "PERMIS_CONDUIRE",
+                    "CARTE_SEJOUR",
+                    "AUTRE",
+                  ];
+                  track t
+                ) {
                   <option [value]="t">{{ typeDocLabel(t) }}</option>
                 }
               </select>
             </div>
             <div class="form-field">
               <label>Numéro de pièce</label>
-              <input class="form-input" type="text" formControlName="numeroPiece" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="numeroPiece"
+              />
             </div>
             <div class="form-field">
               <label>Date d'émission</label>
-              <input class="form-input" type="date" formControlName="dateEmissionPiece" />
+              <input
+                class="form-input"
+                type="date"
+                formControlName="dateEmissionPiece"
+              />
             </div>
             <div class="form-field">
               <label>Date d'expiration</label>
-              <input class="form-input" type="date" formControlName="dateExpirationPiece" />
+              <input
+                class="form-input"
+                type="date"
+                formControlName="dateExpirationPiece"
+              />
             </div>
             <div class="form-field">
               <label>Lieu d'émission</label>
-              <input class="form-input" type="text" formControlName="lieuEmissionPiece" />
+              <input
+                class="form-input"
+                type="text"
+                formControlName="lieuEmissionPiece"
+              />
             </div>
             <div class="form-field">
-              <label>Niveau KYC demandé <span style="color: red">*</span></label>
+              <label
+                >Niveau KYC demandé <span style="color: red">*</span></label
+              >
               <select class="form-input" formControlName="niveauDemande">
                 @for (n of niveaux; track n) {
                   <option [value]="n">{{ niveauLabel(n) }}</option>
@@ -153,7 +210,11 @@
           </div>
 
           <div class="sub-panel-actions">
-            <button class="btn btn-ghost btn-sm" type="button" (click)="closeCreatePanel()">
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              (click)="closeCreatePanel()"
+            >
               Annuler
             </button>
             <button
@@ -162,7 +223,7 @@
               [disabled]="createSubmitting() || createForm.invalid"
               (click)="submitCreateDossier()"
             >
-              {{ createSubmitting() ? 'Création...' : 'Créer le dossier' }}
+              {{ createSubmitting() ? "Création..." : "Créer le dossier" }}
             </button>
           </div>
         </form>
