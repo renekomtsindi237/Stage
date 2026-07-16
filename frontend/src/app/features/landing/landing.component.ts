@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { Router, RouterLink } from "@angular/router";
+import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { AuthService } from "../../core/auth/auth.service";
 import { TranslatePipe } from "@ngx-translate/core";
 
@@ -19,6 +20,33 @@ import { TranslatePipe } from "@ngx-translate/core";
 export class LandingComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly sanitizer = inject(DomSanitizer);
+
+  private readonly docs = {
+    guide: {
+      titleKey: "landing.guide_title",
+      url: "https://pub-8ce5d37bb51240a187e672188a13c136.r2.dev/GUIDE%20D%E2%80%99UTILISATION%20COMPLET%20DE%20MICRORECOUV.pdf",
+    },
+    api: {
+      titleKey: "landing.api_guide_title",
+      url: "https://pub-8ce5d37bb51240a187e672188a13c136.r2.dev/Guide%20d'int%C3%A9gration%20d'API.pdf",
+    },
+  } as const;
+
+  activeDoc: { titleKey: string; url: string; safeUrl: SafeResourceUrl } | null =
+    null;
+
+  openDoc(key: keyof typeof this.docs): void {
+    const doc = this.docs[key];
+    this.activeDoc = {
+      ...doc,
+      safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(doc.url),
+    };
+  }
+
+  closeDoc(): void {
+    this.activeDoc = null;
+  }
 
   readonly features = [
     {

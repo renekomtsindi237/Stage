@@ -199,6 +199,12 @@
   "landing": {
     "nav_login": "Connexion",
     "nav_admin": "Admin",
+    "nav_guide": "Guide d'utilisation",
+    "nav_developers": "Espace développeurs",
+    "guide_title": "Guide d'utilisation MicroRecouv",
+    "api_guide_title": "Guide d'intégration d'API MicroRecouv",
+    "guide_open_new_tab": "Ouvrir dans un nouvel onglet",
+    "guide_close": "Fermer le guide",
     "hero_badge": "Plateforme de microfinance — Cameroun",
     "hero_title_1": "Gérez vos crédits",
     "hero_title_accent": "simplement et en sécurité",

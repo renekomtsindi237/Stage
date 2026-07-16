@@ -199,6 +199,12 @@
   "landing": {
     "nav_login": "Sign In",
     "nav_admin": "Admin",
+    "nav_guide": "User guide",
+    "nav_developers": "Developers",
+    "guide_title": "MicroRecouv user guide",
+    "api_guide_title": "MicroRecouv API integration guide",
+    "guide_open_new_tab": "Open in new tab",
+    "guide_close": "Close guide",
     "hero_badge": "Microfinance platform — Cameroon",
     "hero_title_1": "Manage your loans",
     "hero_title_accent": "simply and securely",

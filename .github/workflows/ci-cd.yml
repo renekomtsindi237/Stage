@@ -70,7 +70,7 @@ env:
   REGISTRY:        ghcr.io
   JAVA_VERSION:    "21"
   PYTHON_VERSION:  "3.11"
-  NODE_VERSION:    "22"
+  NODE_VERSION:    "24"
   BACKEND_IMAGE:   ${{ github.repository }}/imf-backend
   ML_API_IMAGE:    ${{ github.repository }}/imf-ml-api
   AIRFLOW_IMAGE:   ${{ github.repository }}/imf-airflow

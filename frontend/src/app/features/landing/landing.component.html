@@ -9,6 +9,26 @@
       />
     </div>
     <div class="landing__nav-actions">
+      <button
+        type="button"
+        class="landing__nav-link landing__nav-link--outline"
+        (click)="openDoc('guide')"
+      >
+        <span class="material-icons-round">menu_book</span>
+        <span class="landing__nav-label">{{
+          "landing.nav_guide" | translate
+        }}</span>
+      </button>
+      <button
+        type="button"
+        class="landing__nav-link landing__nav-link--outline"
+        (click)="openDoc('api')"
+      >
+        <span class="material-icons-round">code</span>
+        <span class="landing__nav-label">{{
+          "landing.nav_developers" | translate
+        }}</span>
+      </button>
       <a routerLink="/login" class="landing__nav-link landing__nav-link--ghost">
         <span class="material-icons-round">login</span>
         <span class="landing__nav-label">{{
@@ -206,4 +226,42 @@
       </p>
     </div>
   </footer>
+
+  <!-- ── Modale documents (guide utilisateur / guide API) ── -->
+  @if (activeDoc; as doc) {
+    <div class="guide-modal" (click)="closeDoc()">
+      <div class="guide-modal__panel" (click)="$event.stopPropagation()">
+        <div class="guide-modal__header">
+          <h3>
+            <span class="material-icons-round">menu_book</span>
+            {{ doc.titleKey | translate }}
+          </h3>
+          <div class="guide-modal__actions">
+            <a
+              [href]="doc.url"
+              target="_blank"
+              rel="noopener"
+              class="guide-modal__link"
+            >
+              <span class="material-icons-round">open_in_new</span>
+              {{ "landing.guide_open_new_tab" | translate }}
+            </a>
+            <button
+              type="button"
+              class="guide-modal__close"
+              (click)="closeDoc()"
+              [attr.aria-label]="'landing.guide_close' | translate"
+            >
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+        </div>
+        <iframe
+          [src]="doc.safeUrl"
+          class="guide-modal__frame"
+          [title]="doc.titleKey | translate"
+        ></iframe>
+      </div>
+    </div>
+  }
 </div>
