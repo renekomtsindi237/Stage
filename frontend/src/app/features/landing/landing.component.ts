@@ -9,6 +9,12 @@ import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { AuthService } from "../../core/auth/auth.service";
 import { TranslatePipe } from "@ngx-translate/core";
 
+interface DocPreview {
+  titleKey: string;
+  url: string;
+  safeUrl: SafeResourceUrl;
+}
+
 @Component({
   selector: "app-landing",
   standalone: true,
@@ -33,8 +39,7 @@ export class LandingComponent implements OnInit {
     },
   } as const;
 
-  activeDoc: { titleKey: string; url: string; safeUrl: SafeResourceUrl } | null =
-    null;
+  activeDoc: DocPreview | null = null;
 
   openDoc(key: keyof typeof this.docs): void {
     const doc = this.docs[key];
