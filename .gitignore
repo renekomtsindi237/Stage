@@ -117,6 +117,11 @@ ml/models/
 !pipeline/models/fintech/*.json
 !pipeline/models/fintech/features_fintech.csv
 
+# Exception : modèle MCRS "champion" promu en production (backup VPS staging, 2026-07-16)
+!pipeline/models/mcrs/champion/*.pkl
+!pipeline/models/mcrs/champion/*.npy
+!pipeline/models/mcrs/champion/*.json
+
 # ── Airflow ───────────────────────────────
 pipeline/dags/__pycache__/
 airflow.cfg

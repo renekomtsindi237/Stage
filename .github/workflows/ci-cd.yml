@@ -504,6 +504,13 @@ jobs:
               cd "$APP_DIR"
             fi
 
+            # ── Restaurer le modèle MCRS champion (versionné dans le repo) ──
+            mkdir -p /ml/models/mcrs/{champion,challenger,archive}
+            if [ -d "$APP_DIR/pipeline/models/mcrs/champion" ]; then
+              cp -a "$APP_DIR/pipeline/models/mcrs/champion/." /ml/models/mcrs/champion/
+              echo "==> Modèle MCRS champion restauré depuis le repo"
+            fi
+
             # ── Écriture .env.staging ─────────────────────────────────────
             cat > "$ENVFILE" << ENVEOF
             # Généré automatiquement par GitHub Actions — NE PAS MODIFIER MANUELLEMENT
@@ -967,6 +974,13 @@ jobs:
               cp -a /tmp/imf-clone/. "$APP_DIR/"
               rm -rf /tmp/imf-clone
               cd "$APP_DIR"
+            fi
+
+            # ── Restaurer le modèle MCRS champion (versionné dans le repo) ──
+            mkdir -p /ml/models/mcrs/{champion,challenger,archive}
+            if [ -d "$APP_DIR/pipeline/models/mcrs/champion" ]; then
+              cp -a "$APP_DIR/pipeline/models/mcrs/champion/." /ml/models/mcrs/champion/
+              echo "==> Modèle MCRS champion restauré depuis le repo"
             fi
 
             cat > "$ENVFILE" << ENVEOF
