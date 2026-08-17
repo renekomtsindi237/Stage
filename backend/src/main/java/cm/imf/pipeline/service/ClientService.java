@@ -7,7 +7,6 @@ import cm.imf.pipeline.exception.ResourceNotFoundException;
 import cm.imf.pipeline.security.DataMaskingUtils;
 import cm.imf.pipeline.security.TenantContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -22,8 +21,8 @@ public class ClientService implements IClientService {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Value("${imf.pipeline.staging-schema:staging}")
-    private String stagingSchema;
+    private static final String CREANCES_ACTIVES =
+            "'ACTIVE','RECOUVREMENT_AMIABLE','MISE_EN_DEMEURE','CONTENTIEUX','REECHELONNEE'";
 
     private static final RowMapper<ClientResponse> CLIENT_ROW_MAPPER = (rs, rowNum) ->
             new ClientResponse(
@@ -41,29 +40,31 @@ public class ClientService implements IClientService {
                 SELECT c.client_id_externe AS id_client,
                        c.nom_complet       AS nom_client,
                        c.telephone_principal AS telephone_client,
-                       c.agence_code       AS agence_principale,
-                       COALESCE(p.total_encours, 0) AS encours,
+                       a.nom               AS agence_principale,
+                       COALESCE(cr.total_encours, 0) AS encours,
                        CASE
-                           WHEN COALESCE(p.max_retard, 0) >= 90 THEN 'DEFAILLANT'
-                           WHEN COALESCE(p.max_retard, 0) >= 30 THEN 'EN_RETARD'
+                           WHEN COALESCE(cr.max_retard, 0) >= 90 THEN 'DEFAILLANT'
+                           WHEN COALESCE(cr.max_retard, 0) >= 30 THEN 'EN_RETARD'
                            ELSE 'ACTIF'
                        END AS statut
-                FROM %s.stg_clients c
+                FROM app.clients_informels c
+                LEFT JOIN app.agences a ON a.id = c.agence_id
                 LEFT JOIN (
-                    SELECT nom_client,
-                           SUM(solde_restant) AS total_encours,
-                           MAX(jours_retard)  AS max_retard
-                    FROM %s.stg_prets
-                    WHERE statut_pret IN ('EN_COURS', 'EN_RETARD', 'EN_RECOUVREMENT')
-                    GROUP BY nom_client
-                ) p ON p.nom_client = c.nom_complet
-                WHERE c.nom_complet ILIKE ?
-                   OR c.telephone_principal LIKE ?
+                    SELECT client_informel_id,
+                           SUM(montant_impaye) AS total_encours,
+                           MAX(jours_retard)   AS max_retard
+                    FROM app.creances
+                    WHERE statut IN (%s)
+                    GROUP BY client_informel_id
+                ) cr ON cr.client_informel_id = c.id
+                WHERE c.imf_id = ?
+                  AND (c.nom_complet ILIKE ? OR c.telephone_principal LIKE ?)
                 ORDER BY c.nom_complet
                 LIMIT ?
-                """.formatted(stagingSchema, stagingSchema);
+                """.formatted(CREANCES_ACTIVES);
         String pattern = "%" + query + "%";
-        return masquerSiNecessaire(jdbcTemplate.query(sql, CLIENT_ROW_MAPPER, pattern, pattern, limit));
+        Long imfId = TenantContext.currentImfId();
+        return masquerSiNecessaire(jdbcTemplate.query(sql, CLIENT_ROW_MAPPER, imfId, pattern, pattern, limit));
     }
 
     public ClientResponse getById(String idClient) {
@@ -71,26 +72,28 @@ public class ClientService implements IClientService {
                 SELECT c.client_id_externe AS id_client,
                        c.nom_complet       AS nom_client,
                        c.telephone_principal AS telephone_client,
-                       c.agence_code       AS agence_principale,
-                       COALESCE(p.total_encours, 0) AS encours,
+                       a.nom               AS agence_principale,
+                       COALESCE(cr.total_encours, 0) AS encours,
                        CASE
-                           WHEN COALESCE(p.max_retard, 0) >= 90 THEN 'DEFAILLANT'
-                           WHEN COALESCE(p.max_retard, 0) >= 30 THEN 'EN_RETARD'
+                           WHEN COALESCE(cr.max_retard, 0) >= 90 THEN 'DEFAILLANT'
+                           WHEN COALESCE(cr.max_retard, 0) >= 30 THEN 'EN_RETARD'
                            ELSE 'ACTIF'
                        END AS statut
-                FROM %s.stg_clients c
+                FROM app.clients_informels c
+                LEFT JOIN app.agences a ON a.id = c.agence_id
                 LEFT JOIN (
-                    SELECT nom_client,
-                           SUM(solde_restant) AS total_encours,
-                           MAX(jours_retard)  AS max_retard
-                    FROM %s.stg_prets
-                    WHERE statut_pret IN ('EN_COURS', 'EN_RETARD', 'EN_RECOUVREMENT')
-                    GROUP BY nom_client
-                ) p ON p.nom_client = c.nom_complet
-                WHERE c.client_id_externe = ?
-                """.formatted(stagingSchema, stagingSchema);
+                    SELECT client_informel_id,
+                           SUM(montant_impaye) AS total_encours,
+                           MAX(jours_retard)   AS max_retard
+                    FROM app.creances
+                    WHERE statut IN (%s)
+                    GROUP BY client_informel_id
+                ) cr ON cr.client_informel_id = c.id
+                WHERE c.imf_id = ? AND c.client_id_externe = ?
+                """.formatted(CREANCES_ACTIVES);
 
-        ClientResponse client = jdbcTemplate.query(sql, CLIENT_ROW_MAPPER, idClient)
+        Long imfId = TenantContext.currentImfId();
+        ClientResponse client = jdbcTemplate.query(sql, CLIENT_ROW_MAPPER, imfId, idClient)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Client", idClient));
@@ -99,29 +102,31 @@ public class ClientService implements IClientService {
 
     public List<ClientResponse> list(int page, int size, String search, String statut, String agence) {
         List<Object> params = new ArrayList<>();
+        params.add(TenantContext.currentImfId());
 
         StringBuilder inner = new StringBuilder("""
                 SELECT c.client_id_externe AS id_client,
                        c.nom_complet       AS nom_client,
                        c.telephone_principal AS telephone_client,
-                       c.agence_code       AS agence_principale,
-                       COALESCE(p.total_encours, 0) AS encours,
+                       a.nom               AS agence_principale,
+                       COALESCE(cr.total_encours, 0) AS encours,
                        CASE
-                           WHEN COALESCE(p.max_retard, 0) >= 90 THEN 'DEFAILLANT'
-                           WHEN COALESCE(p.max_retard, 0) >= 30 THEN 'EN_RETARD'
+                           WHEN COALESCE(cr.max_retard, 0) >= 90 THEN 'DEFAILLANT'
+                           WHEN COALESCE(cr.max_retard, 0) >= 30 THEN 'EN_RETARD'
                            ELSE 'ACTIF'
                        END AS statut
-                FROM %s.stg_clients c
+                FROM app.clients_informels c
+                LEFT JOIN app.agences a ON a.id = c.agence_id
                 LEFT JOIN (
-                    SELECT nom_client,
-                           SUM(solde_restant) AS total_encours,
-                           MAX(jours_retard)  AS max_retard
-                    FROM %s.stg_prets
-                    WHERE statut_pret IN ('EN_COURS', 'EN_RETARD', 'EN_RECOUVREMENT')
-                    GROUP BY nom_client
-                ) p ON p.nom_client = c.nom_complet
-                WHERE 1=1
-                """.formatted(stagingSchema, stagingSchema));
+                    SELECT client_informel_id,
+                           SUM(montant_impaye) AS total_encours,
+                           MAX(jours_retard)   AS max_retard
+                    FROM app.creances
+                    WHERE statut IN (%s)
+                    GROUP BY client_informel_id
+                ) cr ON cr.client_informel_id = c.id
+                WHERE c.imf_id = ?
+                """.formatted(CREANCES_ACTIVES));
 
         if (search != null && !search.isBlank()) {
             inner.append(" AND (c.nom_complet ILIKE ? OR c.telephone_principal LIKE ?)");
@@ -129,7 +134,7 @@ public class ClientService implements IClientService {
             params.add("%" + search.trim() + "%");
         }
         if (agence != null && !agence.isBlank()) {
-            inner.append(" AND c.agence_code ILIKE ?");
+            inner.append(" AND a.nom ILIKE ?");
             params.add("%" + agence.trim() + "%");
         }
 
@@ -148,22 +153,24 @@ public class ClientService implements IClientService {
 
     public long count(String search, String statut, String agence) {
         List<Object> params = new ArrayList<>();
+        params.add(TenantContext.currentImfId());
 
         StringBuilder inner = new StringBuilder("""
                 SELECT CASE
-                           WHEN COALESCE(p.max_retard, 0) >= 90 THEN 'DEFAILLANT'
-                           WHEN COALESCE(p.max_retard, 0) >= 30 THEN 'EN_RETARD'
+                           WHEN COALESCE(cr.max_retard, 0) >= 90 THEN 'DEFAILLANT'
+                           WHEN COALESCE(cr.max_retard, 0) >= 30 THEN 'EN_RETARD'
                            ELSE 'ACTIF'
                        END AS statut
-                FROM %s.stg_clients c
+                FROM app.clients_informels c
+                LEFT JOIN app.agences a ON a.id = c.agence_id
                 LEFT JOIN (
-                    SELECT nom_client, MAX(jours_retard) AS max_retard
-                    FROM %s.stg_prets
-                    WHERE statut_pret IN ('EN_COURS', 'EN_RETARD', 'EN_RECOUVREMENT')
-                    GROUP BY nom_client
-                ) p ON p.nom_client = c.nom_complet
-                WHERE 1=1
-                """.formatted(stagingSchema, stagingSchema));
+                    SELECT client_informel_id, MAX(jours_retard) AS max_retard
+                    FROM app.creances
+                    WHERE statut IN (%s)
+                    GROUP BY client_informel_id
+                ) cr ON cr.client_informel_id = c.id
+                WHERE c.imf_id = ?
+                """.formatted(CREANCES_ACTIVES));
 
         if (search != null && !search.isBlank()) {
             inner.append(" AND (c.nom_complet ILIKE ? OR c.telephone_principal LIKE ?)");
@@ -171,7 +178,7 @@ public class ClientService implements IClientService {
             params.add("%" + search.trim() + "%");
         }
         if (agence != null && !agence.isBlank()) {
-            inner.append(" AND c.agence_code ILIKE ?");
+            inner.append(" AND a.nom ILIKE ?");
             params.add("%" + agence.trim() + "%");
         }
 

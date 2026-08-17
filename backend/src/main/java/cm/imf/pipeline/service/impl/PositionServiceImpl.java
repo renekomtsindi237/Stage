@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -315,13 +316,23 @@ public class PositionServiceImpl implements IPositionService {
                     rs.getString("ville_agence"),
                     rs.getDouble("latitude"),
                     rs.getDouble("longitude"),
-                    rs.getObject("precision_gps_m", Double.class),
-                    rs.getObject("altitude_m",      Double.class),
-                    rs.getObject("vitesse_kmh",     Double.class),
+                    nullableDouble(rs, "precision_gps_m"),
+                    nullableDouble(rs, "altitude_m"),
+                    nullableDouble(rs, "vitesse_kmh"),
                     rs.getBoolean("en_deplacement"),
                     rs.getString("source"),
                     capturedAt
             );
+        }
+
+        /**
+         * Le driver PostgreSQL JDBC ne supporte pas la conversion directe
+         * numeric → Double via getObject(col, Double.class) — on passe par
+         * BigDecimal pour préserver le null sans lever de PSQLException.
+         */
+        private static Double nullableDouble(ResultSet rs, String column) throws SQLException {
+            BigDecimal value = rs.getBigDecimal(column);
+            return value != null ? value.doubleValue() : null;
         }
     }
 }
