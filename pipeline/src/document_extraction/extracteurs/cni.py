@@ -76,7 +76,10 @@ def _lire_champs_par_etiquette(resultat: ResultatExtraction, lignes: list[str]) 
     if naissance_brut:
         date_norm = normaliser_date(naissance_brut)
         ajouter(
-            "dateNaissance", date_norm or naissance_brut, 0.75 if date_norm else 0.4, "ocr_regex"
+            "dateNaissance",
+            date_norm or naissance_brut,
+            0.75 if date_norm else 0.4,
+            "ocr_regex",
         )
 
     expiration_brut = chercher_apres_etiquette(

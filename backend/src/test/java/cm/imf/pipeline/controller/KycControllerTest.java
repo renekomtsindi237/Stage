@@ -10,6 +10,7 @@ import cm.imf.pipeline.enums.NiveauRisque;
 import cm.imf.pipeline.enums.ResultatVerificationKyc;
 import cm.imf.pipeline.enums.StatutKyc;
 import cm.imf.pipeline.service.IKycService;
+import cm.imf.pipeline.service.KycDocumentAnalysisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,6 +41,7 @@ class KycControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper mapper;
     @MockBean  IKycService kycService;
+    @MockBean  KycDocumentAnalysisService analyseIa;
 
     // ── Fixtures ──────────────────────────────────────────────────────────────
 

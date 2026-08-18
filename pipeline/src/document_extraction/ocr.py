@@ -39,32 +39,13 @@ class OcrIndisponible(RuntimeError):
     """Levée quand Tesseract n'est pas installé/accessible sur la machine."""
 
 
-# Tesseract vise ~300 DPI / une hauteur de caractère d'au moins ~25-30px.
-# Les photos de pièces prises au téléphone dépassent rarement cette densité
-# une fois le texte rapporté à la taille réelle des champs — sur-échantillonner
-# avant OCR améliore nettement la précision sur les mises en page denses
-# (permis, CNI multi-champs).
-_LARGEUR_MIN_CIBLE = 2000
-
-
-def _suréchantillonner(img: Image.Image) -> Image.Image:
-    largeur, hauteur = img.size
-    if largeur >= _LARGEUR_MIN_CIBLE:
-        return img
-    facteur = _LARGEUR_MIN_CIBLE / largeur
-    nouvelle_taille = (int(largeur * facteur), int(hauteur * facteur))
-    return img.resize(nouvelle_taille, Image.LANCZOS)
-
-
 def _pretraiter(image_bytes: bytes) -> Image.Image:
     """
-    Améliore la lisibilité pour l'OCR : sur-échantillonnage, niveaux de gris,
-    contraste, débruitage. Réduit significativement le taux d'erreur sur des
-    scans de qualité variable (photos prises au téléphone, compression JPEG,
-    éclairage inégal, mises en page à champs denses).
+    Améliore la lisibilité pour l'OCR : niveaux de gris, contraste, débruitage.
+    Réduit significativement le taux d'erreur sur des scans de qualité variable
+    (photos prises au téléphone, compression JPEG, éclairage inégal).
     """
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    img = _suréchantillonner(img)
 
     if not _HAS_CV2:
         return img.convert("L")
@@ -115,7 +96,6 @@ def extraire_zone_mrz(image_bytes: bytes) -> list[str]:
     img = Image.open(io.BytesIO(image_bytes)).convert("L")
     largeur, hauteur = img.size
     zone = img.crop((0, int(hauteur * 0.62), largeur, hauteur))
-    zone = _suréchantillonner(zone)
 
     config = "--psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<"
     try:

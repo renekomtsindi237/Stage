@@ -58,7 +58,9 @@ def extraire(image_bytes: bytes) -> ResultatExtraction:
             date_part, _, lieu_part = numerotes["3"].partition(",")
             date_norm = normaliser_date(date_part)
             if date_norm:
-                resultat.champs["dateNaissance"] = ChampExtrait(date_norm, 0.75, "ocr_regex")
+                resultat.champs["dateNaissance"] = ChampExtrait(
+                    date_norm, 0.75, "ocr_regex"
+                )
             if lieu_part.strip():
                 resultat.champs["lieuNaissance"] = ChampExtrait(
                     lieu_part.strip(), 0.65, "ocr_regex"
@@ -66,7 +68,9 @@ def extraire(image_bytes: bytes) -> ResultatExtraction:
         if "4a" in numerotes:
             date_norm = normaliser_date(numerotes["4a"])
             if date_norm:
-                resultat.champs["dateEmissionPiece"] = ChampExtrait(date_norm, 0.75, "ocr_regex")
+                resultat.champs["dateEmissionPiece"] = ChampExtrait(
+                    date_norm, 0.75, "ocr_regex"
+                )
         if "4b" in numerotes:
             date_norm = normaliser_date(numerotes["4b"])
             if date_norm:
@@ -78,7 +82,9 @@ def extraire(image_bytes: bytes) -> ResultatExtraction:
                 numerotes["4c"], 0.6, "ocr_regex"
             )
         if "5" in numerotes:
-            resultat.champs["numeroPiece"] = ChampExtrait(numerotes["5"], 0.75, "ocr_regex")
+            resultat.champs["numeroPiece"] = ChampExtrait(
+                numerotes["5"], 0.75, "ocr_regex"
+            )
 
         # Repli étiquette classique pour les champs non trouvés via la numérotation
         # (anciennes mises en page, ou face verso ne contenant que la légende)
@@ -88,9 +94,13 @@ def extraire(image_bytes: bytes) -> ResultatExtraction:
                 resultat.champs["nom"] = ChampExtrait(nom.strip(), 0.5, "ocr_layout")
 
         if "prenom" not in resultat.champs:
-            prenom = chercher_apres_etiquette(lignes, ["PRENOMS", "PRENOM", "GIVEN NAMES"])
+            prenom = chercher_apres_etiquette(
+                lignes, ["PRENOMS", "PRENOM", "GIVEN NAMES"]
+            )
             if prenom:
-                resultat.champs["prenom"] = ChampExtrait(prenom.strip(), 0.5, "ocr_layout")
+                resultat.champs["prenom"] = ChampExtrait(
+                    prenom.strip(), 0.5, "ocr_layout"
+                )
 
         if "dateNaissance" not in resultat.champs:
             naissance_brut = chercher_apres_etiquette(
