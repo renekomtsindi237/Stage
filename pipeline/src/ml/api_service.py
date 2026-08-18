@@ -54,6 +54,7 @@ from pipeline.src.ml.mcrs_model import (
     MCRSModel,
     ScoreResult,
 )
+from pipeline.src.rag import RagService
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -134,6 +135,10 @@ def _get_model() -> MCRSModel:
 # Service d'extraction de documents KYC — aucun état lourd à charger
 # (contrairement au modèle MCRS), instanciable directement au démarrage.
 _document_service = DocumentExtractionService()
+
+# Service RAG — charge l'index TF-IDF précalculé au premier appel (lazy),
+# jamais d'échec au démarrage même si l'index est absent.
+_rag_service = RagService()
 
 
 # ─── Authentification interne ────────────────────────────────────────────────
@@ -368,6 +373,13 @@ class ReviewSubmission(BaseModel):
 
 class ManualReviewConfig(BaseModel):
     mode: str = Field(..., description="'critical'|'always'|'none'")
+
+
+class RagRechercheRequest(BaseModel):
+    requete: str = Field(
+        ..., min_length=2, description="Question ou requête en langage naturel"
+    )
+    k: int = Field(default=4, ge=1, le=10, description="Nombre d'extraits à retourner")
 
 
 class ExtractionDocumentRequest(BaseModel):
@@ -756,6 +768,29 @@ def niveaux_kyc_exigences():
             "description": exig.description,
         }
         for niveau, exig in EXIGENCES_KYC.items()
+    }
+
+
+# ─── RAG — recherche documentaire pour le chatbot IA ─────────────────────────
+#
+# Recherche uniquement (retrieval) — la génération de la réponse finale est
+# déléguée à Groq (AiChatController.java), ce service ne fait qu'identifier
+# les extraits de documentation les plus pertinents pour une question donnée.
+# Auto-hébergé : TF-IDF (scikit-learn), aucun modèle d'embeddings, aucune
+# API externe pour cette étape.
+
+
+@app.post(
+    "/rag/rechercher",
+    tags=["RAG"],
+    dependencies=[Depends(_verifier_cle_interne)],
+)
+def rag_rechercher(request: RagRechercheRequest):
+    """Retourne les extraits de documentation les plus pertinents pour une requête."""
+    resultats = _rag_service.rechercher(request.requete, k=request.k)
+    return {
+        "disponible": _rag_service.disponible(),
+        "resultats": [r.to_dict() for r in resultats],
     }
 
 

@@ -4,26 +4,31 @@ import cm.imf.pipeline.dto.response.ApiResponse;
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.security.TenantContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 /**
- * Proxy IA — Groq API (compatible OpenAI) avec function calling.
+ * Proxy IA — Groq API (compatible OpenAI) avec function calling + RAG.
  *
- * Llama-3.3-70b-versatile peut appeler 7 outils backend pour répondre
- * aux questions sur les données réelles de l'IMF (PAR, MCRS, collectes,
- * dossiers, alertes, agents, tickets support).
+ * Le modèle (configurable, imf.ai.model) peut appeler 7 outils backend pour
+ * répondre aux questions sur les données réelles de l'IMF (PAR, MCRS,
+ * collectes, dossiers, alertes, agents, tickets support), et reçoit en plus
+ * un contexte documentaire (RAG, cf. pipeline/src/rag) récupéré depuis la
+ * documentation de conception du projet.
  *
  * Flux :
+ *   0. Recherche RAG sur la dernière question utilisateur (ml-api, non bloquant)
  *   1. Tour 1 → Groq avec tools définis → si finish_reason = "tool_calls"
  *   2. Exécution SQL des outils demandés
  *   3. Tour 2 → Groq avec résultats → réponse finale en français
@@ -32,12 +37,19 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/ai")
-@RequiredArgsConstructor
 @Slf4j
 public class AiChatController {
 
     private final JdbcTemplate jdbc;
     private final ObjectMapper  mapper;
+    private final RestClient    mlRestClient;
+
+    public AiChatController(JdbcTemplate jdbc, ObjectMapper mapper,
+                             @Qualifier("mlRestClient") RestClient mlRestClient) {
+        this.jdbc = jdbc;
+        this.mapper = mapper;
+        this.mlRestClient = mlRestClient;
+    }
 
     @Value("${imf.ai.api-key:}")
     private String apiKey;
@@ -45,7 +57,7 @@ public class AiChatController {
     @Value("${imf.ai.base-url:https://api.groq.com/openai/v1}")
     private String baseUrl;
 
-    @Value("${imf.ai.model:llama-3.3-70b-versatile}")
+    @Value("${imf.ai.model:openai/gpt-oss-120b}")
     private String model;
 
     @Value("${imf.ai.max-tokens:2048}")
@@ -93,13 +105,62 @@ public class AiChatController {
 
         Long imfId = TenantContext.currentImfId();
         try {
-            String systemPrompt = BASE_SYSTEM + "\n" + buildContexteInitial(user, imfId);
+            String derniereQuestion = derniereQuestionUtilisateur(req.messages());
+            String contexteRag = rechercherContexteRag(derniereQuestion);
+            String systemPrompt = BASE_SYSTEM + "\n" + buildContexteInitial(user, imfId) + contexteRag;
             List<Map<String, Object>> messages = buildMessages(systemPrompt, req.messages());
             String answer = callGroq(messages, true, imfId);
             return ok(answer);
         } catch (Exception e) {
             log.error("Erreur appel IA : {}", e.getMessage());
             return ok("Désolé, je rencontre une difficulté technique. Réessayez dans quelques instants.");
+        }
+    }
+
+    private String derniereQuestionUtilisateur(List<ChatMessage> messages) {
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            if ("user".equals(messages.get(i).role())) return messages.get(i).content();
+        }
+        return "";
+    }
+
+    /**
+     * RAG — recherche documentaire (TF-IDF, auto-hébergé, cf. pipeline/src/rag)
+     * sur la documentation de conception/cahier des charges du projet. Complète
+     * les 7 outils de requête DB : ceux-ci donnent les DONNÉES en temps réel,
+     * le RAG donne le CONTEXTE métier/réglementaire écrit (définitions, règles
+     * de gestion, choix d'architecture). Dégradation silencieuse si le service
+     * ml-api ou l'index RAG est indisponible — ne bloque jamais la conversation.
+     */
+    @SuppressWarnings("unchecked")
+    private String rechercherContexteRag(String question) {
+        if (question == null || question.isBlank()) return "";
+        try {
+            Map<String, Object> requete = Map.of("requete", question, "k", 3);
+            Map<String, Object> reponse = mlRestClient.post()
+                    .uri("/rag/rechercher")
+                    .body(requete)
+                    .retrieve()
+                    .body(Map.class);
+
+            if (reponse == null) return "";
+            var resultats = (List<Map<String, Object>>) reponse.getOrDefault("resultats", List.of());
+            if (resultats.isEmpty()) return "";
+
+            StringBuilder sb = new StringBuilder("\n=== CONTEXTE DOCUMENTAIRE (extraits de la conception du projet) ===\n");
+            for (var r : resultats) {
+                sb.append("— [").append(r.get("source")).append(" / ").append(r.get("titreSection")).append("]\n");
+                sb.append(r.get("texte")).append("\n\n");
+            }
+            sb.append("Utilise ce contexte s'il répond à la question ; ignore-le sinon.\n=== FIN CONTEXTE DOCUMENTAIRE ===\n");
+            return sb.toString();
+
+        } catch (RestClientException e) {
+            log.debug("RAG indisponible (non bloquant) : {}", e.getMessage());
+            return "";
+        } catch (Exception e) {
+            log.warn("Erreur recherche RAG (non bloquant) : {}", e.getMessage());
+            return "";
         }
     }
 

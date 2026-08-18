@@ -105,6 +105,10 @@ data/
 *.arrow
 *.json.gz
 
+# Exception : index RAG précalculé (petit artefact, nécessaire au runtime
+# ml-api — pipeline/src/rag/ingestion.py régénère ce fichier depuis la doc)
+!pipeline/src/rag/data/
+
 # ── Screens (design mockups à la racine uniquement)
 /screens/
 
@@ -124,6 +128,10 @@ ml/models/
 !pipeline/models/mcrs/champion/*.pkl
 !pipeline/models/mcrs/champion/*.npy
 !pipeline/models/mcrs/champion/*.json
+
+# Exception : index RAG précalculé (petit artefact TF-IDF, nécessaire au
+# runtime ml-api — pipeline/src/rag/ingestion.py le régénère depuis la doc)
+!pipeline/src/rag/data/*.pkl
 
 # ── Airflow ───────────────────────────────
 pipeline/dags/__pycache__/
