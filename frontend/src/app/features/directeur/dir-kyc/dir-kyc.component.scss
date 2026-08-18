@@ -295,6 +295,34 @@
 .info-grid {
   padding: 8px 0;
 }
+
+// ── Exigences du niveau ──────────────────────────────
+.exigence-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 8px;
+}
+.exigence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-danger-bg, rgba(220, 38, 38, 0.1));
+  color: var(--color-danger, #dc2626);
+  &.exigence-ok {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+  &.exigence-info {
+    background: var(--color-info-bg);
+    color: var(--color-info);
+    font-weight: 500;
+  }
+}
 .info-row {
   display: flex;
   justify-content: space-between;

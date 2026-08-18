@@ -503,6 +503,43 @@
         </span>
       </div>
 
+      <!-- ── Exigences du niveau demandé ────────────────────── -->
+      @if (exigenceActuelle(); as exigence) {
+        <details class="detail-section exigences-niveau" open>
+          <summary class="section-title">
+            Exigences {{ niveauLabel(selected()!.niveauDemande) }}
+          </summary>
+          <p class="text-xs text-muted" style="margin: 4px 0 10px">
+            {{ exigence.description }}
+          </p>
+          <div class="exigence-list">
+            @for (champ of exigence.champsIdentiteRequis; track champ) {
+              <span
+                class="exigence-chip"
+                [class.exigence-ok]="champExigenceSatisfait(champ)"
+              >
+                {{ champExigenceSatisfait(champ) ? "✓" : "○" }}
+                {{ champLabel(champ) }}
+              </span>
+            }
+            @for (doc of exigence.documentsComplementairesRequis; track doc) {
+              <span
+                class="exigence-chip"
+                [class.exigence-ok]="documentComplementaireFourni(doc)"
+              >
+                {{ documentComplementaireFourni(doc) ? "✓" : "○" }}
+                {{ typeDocLabel(doc) }}
+              </span>
+            }
+            @if (exigence.exigeMrzValide) {
+              <span class="exigence-chip exigence-info">
+                ℹ zone MRZ valide requise sur la pièce d'identité
+              </span>
+            }
+          </div>
+        </details>
+      }
+
       <!-- ── Identité ────────────────────────────────────── -->
       <details class="detail-section" open>
         <summary class="section-title">

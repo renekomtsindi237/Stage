@@ -7,6 +7,7 @@ import cm.imf.pipeline.enums.NiveauKyc;
 import cm.imf.pipeline.enums.NiveauRisque;
 import cm.imf.pipeline.enums.StatutKyc;
 import cm.imf.pipeline.service.IKycService;
+import cm.imf.pipeline.service.KycDocumentAnalysisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -41,6 +43,15 @@ import java.util.UUID;
 public class KycController {
 
     private final IKycService kycService;
+    private final KycDocumentAnalysisService analyseIa;
+
+    // ── Exigences par niveau ──────────────────────────────────────────────────
+
+    @Operation(summary = "Exigences d'extraction par niveau KYC (champs requis, documents complémentaires)")
+    @GetMapping("/niveaux-exigences")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> niveauxExigences() {
+        return ResponseEntity.ok(ApiResponse.ok(analyseIa.exigencesKycParNiveau()));
+    }
 
     // ── Dossiers ──────────────────────────────────────────────────────────────
 

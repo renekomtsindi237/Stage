@@ -45,6 +45,26 @@ public class KycDocumentAnalysisService {
     }
 
     /**
+     * Exigences d'extraction par niveau KYC (champs requis, MRZ exigée ou non,
+     * documents complémentaires) — source unique de vérité côté module
+     * document_extraction, exposée au frontend pour afficher précisément ce
+     * qui manque encore pour compléter un niveau donné.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> exigencesKycParNiveau() {
+        try {
+            Map<String, Object> resultat = mlRestClient.get()
+                    .uri("/document/niveaux-kyc")
+                    .retrieve()
+                    .body(Map.class);
+            return resultat != null ? resultat : Map.of();
+        } catch (RestClientException e) {
+            log.warn("Impossible de récupérer les exigences KYC par niveau : {}", e.getMessage());
+            return Map.of();
+        }
+    }
+
+    /**
      * Analyse le document et renseigne directement les champs IA de l'entité
      * (donneesExtraites, ecartsDetectes, analyseIaAt, analyseIaErreur).
      * Ne lève jamais d'exception — un échec d'analyse n'empêche jamais l'upload du document.

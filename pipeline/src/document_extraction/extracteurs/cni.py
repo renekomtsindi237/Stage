@@ -1,15 +1,17 @@
 """
 Extraction des champs de la Carte Nationale d'Identité camerounaise.
 
-Recto : pas de MRZ — nom, prénoms, date de naissance, sexe, dates de
-délivrance/expiration lus par OCR + reconnaissance d'étiquettes bilingues
-(FR/EN, mise en page CNI Cameroun).
+Plusieurs mises en page circulent (ancien format vs. format à puce plus
+récent) et la répartition exacte des champs entre recto et verso varie
+selon la génération de carte — lieu de naissance, profession et taille
+peuvent apparaître sur l'une ou l'autre face. L'extraction par étiquette
+est donc appliquée aux DEUX faces indifféremment ; seule la zone MRZ
+(présente uniquement au verso dans tous les formats observés) reste
+spécifique à `extraire_verso`.
 
 Verso : contient une zone MRZ (format TD1, 3×30 caractères) — utilisée en
 priorité pour numéro de pièce / date de naissance / sexe / date d'expiration
-(fiabilité proche de 100% si l'OCR a bien lu la zone). Les champs qui ne sont
-pas encodés dans la MRZ (lieu de naissance, profession, nom de la mère) sont
-lus par étiquette.
+(fiabilité proche de 100% si l'OCR a bien lu la zone).
 """
 
 from __future__ import annotations
@@ -19,43 +21,95 @@ from ..schema import ChampExtrait, ResultatExtraction, TypePiece
 from ._utils import chercher_apres_etiquette, normaliser_date
 
 
-def extraire_recto(image_bytes: bytes) -> ResultatExtraction:
-    resultat = ResultatExtraction(type_piece=TypePiece.CNI_RECTO)
-    try:
-        lignes = ocr.extraire_lignes(image_bytes)
-        resultat.texte_brut = "\n".join(lignes)
-        resultat.mrz_valide = None  # pas de MRZ sur le recto
+def _lire_champs_par_etiquette(resultat: ResultatExtraction, lignes: list[str]) -> None:
+    """
+    Champs susceptibles d'apparaître sur le recto OU le verso selon la
+    génération de carte — appliqué aux deux faces, sans écraser une valeur
+    déjà obtenue avec une confiance supérieure (ex: MRZ).
+    """
 
-        nom = chercher_apres_etiquette(
-            lignes, ["NOM/SURNAME", "NOM/", "SURNAME", "NOM"]
-        )
-        if nom:
-            resultat.champs["nom"] = ChampExtrait(nom.strip(), 0.7, "ocr_layout")
+    def ajouter(champ: str, valeur: str | None, confiance: float, source: str) -> None:
+        if not valeur:
+            return
+        existant = resultat.champs.get(champ)
+        if existant is None or confiance > existant.confiance:
+            resultat.champs[champ] = ChampExtrait(valeur.strip(), confiance, source)
 
-        prenom = chercher_apres_etiquette(
+    ajouter(
+        "nom",
+        chercher_apres_etiquette(lignes, ["NOM/SURNAME", "NOM/", "SURNAME", "NOM"]),
+        0.7,
+        "ocr_layout",
+    )
+    ajouter(
+        "prenom",
+        chercher_apres_etiquette(
             lignes, ["PRENOMS/GIVEN NAMES", "PRENOM/", "GIVEN NAMES", "PRENOMS"]
-        )
-        if prenom:
-            resultat.champs["prenom"] = ChampExtrait(prenom.strip(), 0.7, "ocr_layout")
+        ),
+        0.7,
+        "ocr_layout",
+    )
+    ajouter(
+        "lieuNaissance",
+        chercher_apres_etiquette(lignes, ["LIEU DE NAISSANCE", "PLACE OF BIRTH"]),
+        0.65,
+        "ocr_layout",
+    )
+    ajouter(
+        "profession",
+        chercher_apres_etiquette(
+            lignes, ["PROFESSION/OCCUPATION", "PROFESSION", "OCCUPATION"]
+        ),
+        0.6,
+        "ocr_layout",
+    )
+    ajouter(
+        "taille",
+        chercher_apres_etiquette(lignes, ["TAILLE/HEIGHT", "TAILLE", "HEIGHT"]),
+        0.55,
+        "ocr_layout",
+    )
 
-        naissance_brut = chercher_apres_etiquette(
-            lignes, ["DATE DE NAISSANCE", "DATE OF BIRTH"]
+    naissance_brut = chercher_apres_etiquette(
+        lignes, ["DATE DE NAISSANCE", "DATE OF BIRTH"]
+    )
+    if naissance_brut:
+        date_norm = normaliser_date(naissance_brut)
+        ajouter(
+            "dateNaissance", date_norm or naissance_brut, 0.75 if date_norm else 0.4, "ocr_regex"
         )
-        if naissance_brut:
-            date_norm = normaliser_date(naissance_brut)
-            resultat.champs["dateNaissance"] = ChampExtrait(
-                date_norm or naissance_brut, 0.75 if date_norm else 0.4, "ocr_regex"
-            )
 
-        expiration_brut = chercher_apres_etiquette(
-            lignes, ["DATE D'EXPIRY", "DATE OF EXPIRY", "EXPIRY"]
+    expiration_brut = chercher_apres_etiquette(
+        lignes, ["DATE D'EXPIRATION", "DATE D'EXPIRY", "DATE OF EXPIRY", "EXPIRY"]
+    )
+    if expiration_brut:
+        date_norm = normaliser_date(expiration_brut)
+        ajouter(
+            "dateExpirationPiece",
+            date_norm or expiration_brut,
+            0.75 if date_norm else 0.4,
+            "ocr_regex",
         )
-        if expiration_brut:
-            date_norm = normaliser_date(expiration_brut)
-            resultat.champs["dateExpirationPiece"] = ChampExtrait(
-                date_norm or expiration_brut, 0.75 if date_norm else 0.4, "ocr_regex"
-            )
 
+    delivrance_brut = chercher_apres_etiquette(
+        lignes, ["DATE DE DELIVRANCE", "DATE OF ISSUE"]
+    )
+    if delivrance_brut:
+        date_norm = normaliser_date(delivrance_brut)
+        ajouter(
+            "dateEmissionPiece",
+            date_norm or delivrance_brut,
+            0.7 if date_norm else 0.4,
+            "ocr_regex",
+        )
+
+    lieu_delivrance = chercher_apres_etiquette(
+        lignes, ["LE DGSN/THE DGSN", "LIEU DE DELIVRANCE"]
+    )
+    if lieu_delivrance:
+        ajouter("lieuEmissionPiece", lieu_delivrance, 0.55, "ocr_layout")
+
+    if "sexe" not in resultat.champs:
         for ligne in lignes:
             if ligne.strip().upper() in ("M", "F", "SEXE/SEX", "SEX"):
                 continue
@@ -63,9 +117,16 @@ def extraire_recto(image_bytes: bytes) -> ResultatExtraction:
                 resultat.champs["sexe"] = ChampExtrait(ligne.strip(), 0.6, "ocr_layout")
                 break
 
+
+def extraire_recto(image_bytes: bytes) -> ResultatExtraction:
+    resultat = ResultatExtraction(type_piece=TypePiece.CNI_RECTO)
+    try:
+        lignes = ocr.extraire_lignes(image_bytes)
+        resultat.texte_brut = "\n".join(lignes)
+        resultat.mrz_valide = None  # pas de MRZ sur le recto (tous formats observés)
+        _lire_champs_par_etiquette(resultat, lignes)
     except ocr.OcrIndisponible as exc:
         resultat.erreurs.append(str(exc))
-
     return resultat
 
 
@@ -90,39 +151,7 @@ def extraire_verso(image_bytes: bytes) -> ResultatExtraction:
 
         lignes = ocr.extraire_lignes(image_bytes)
         resultat.texte_brut = "\n".join(lignes)
-
-        lieu_naissance = chercher_apres_etiquette(
-            lignes, ["LIEU DE NAISSANCE", "PLACE OF BIRTH"]
-        )
-        if lieu_naissance and "lieuNaissance" not in resultat.champs:
-            resultat.champs["lieuNaissance"] = ChampExtrait(
-                lieu_naissance.strip(), 0.65, "ocr_layout"
-            )
-
-        profession = chercher_apres_etiquette(
-            lignes, ["PROFESSION/OCCUPATION", "PROFESSION", "OCCUPATION"]
-        )
-        if profession:
-            resultat.champs["profession"] = ChampExtrait(
-                profession.strip(), 0.6, "ocr_layout"
-            )
-
-        delivrance_brut = chercher_apres_etiquette(
-            lignes, ["DATE DE DELIVRANCE", "DATE OF ISSUE"]
-        )
-        if delivrance_brut:
-            date_norm = normaliser_date(delivrance_brut)
-            resultat.champs["dateEmissionPiece"] = ChampExtrait(
-                date_norm or delivrance_brut, 0.7 if date_norm else 0.4, "ocr_regex"
-            )
-
-        lieu_delivrance = chercher_apres_etiquette(
-            lignes, ["LE DGSN/THE DGSN", "LIEU DE DELIVRANCE"]
-        )
-        if lieu_delivrance:
-            resultat.champs["lieuEmissionPiece"] = ChampExtrait(
-                lieu_delivrance.strip(), 0.55, "ocr_layout"
-            )
+        _lire_champs_par_etiquette(resultat, lignes)
 
     except ocr.OcrIndisponible as exc:
         resultat.erreurs.append(str(exc))

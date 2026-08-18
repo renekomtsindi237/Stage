@@ -39,6 +39,13 @@ interface ApiWrapped<T> {
   data: T;
 }
 
+interface NiveauExigence {
+  champsIdentiteRequis: string[];
+  exigeMrzValide: boolean;
+  documentsComplementairesRequis: string[];
+  description: string;
+}
+
 // ── Constantes ───────────────────────────────────────────────────────────────
 
 const NIVEAU_ORDER: Record<NiveauKyc, number> = {
@@ -196,8 +203,21 @@ export class DirKycComponent implements OnInit {
     return ((NIVEAU_ORDER[d.niveauActuel] - 1) / 2) * 100;
   });
 
+  // ── Exigences par niveau KYC (source unique : pipeline/document_extraction) ──
+  niveauxExigences = signal<Record<string, NiveauExigence>>({});
+
   ngOnInit() {
     this.load();
+    this.loadNiveauxExigences();
+  }
+
+  private loadNiveauxExigences() {
+    this.api
+      .get<Record<string, NiveauExigence>>("/api/v1/kyc/niveaux-exigences")
+      .subscribe({
+        next: (r) => this.niveauxExigences.set(r ?? {}),
+        error: () => this.niveauxExigences.set({}),
+      });
   }
 
   private resetCreateForm() {
@@ -506,6 +526,40 @@ export class DirKycComponent implements OnInit {
       ...(d.niveauDemande !== "NIVEAU_1" ? DOCS_PAR_NIVEAU["NIVEAU_2"] : []),
       ...(d.niveauDemande === "NIVEAU_3" ? DOCS_PAR_NIVEAU["NIVEAU_3"] : []),
     ];
+  }
+
+  // ── Exigences du niveau demandé — checklist de complétude ───────────────────
+
+  exigenceActuelle(): NiveauExigence | null {
+    const d = this.selected();
+    if (!d) return null;
+    return this.niveauxExigences()[d.niveauDemande] ?? null;
+  }
+
+  champExigenceSatisfait(champ: string): boolean {
+    // donneesExtraites ne contient que des champs déjà filtrés par
+    // confiance côté backend (KycDocumentAnalysisService) — la présence
+    // d'une valeur non vide suffit ici pour considérer le champ satisfait.
+    return this.documents().some((doc) => {
+      const c = doc.donneesExtraites?.[champ];
+      return typeof c === "string" ? c.trim().length > 0 : !!c;
+    });
+  }
+
+  documentComplementaireFourni(typeDoc: string): boolean {
+    return this.documents().some((doc) => doc.typeDocument === typeDoc);
+  }
+
+  champLabel(champ: string): string {
+    const labels: Record<string, string> = {
+      nom: "Nom",
+      prenom: "Prénom",
+      dateNaissance: "Date de naissance",
+      numeroPiece: "Numéro de pièce",
+      dateExpirationPiece: "Date d'expiration",
+      lieuNaissance: "Lieu de naissance",
+    };
+    return labels[champ] ?? champ;
   }
 
   statutBadge(s: StatutKyc): string {
