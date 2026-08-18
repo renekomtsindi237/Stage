@@ -28,6 +28,14 @@ SOURCES_RELATIVES = [
     "docs/presentation",
 ]
 
+# Fichiers Markdown isolés (hors dossiers ci-dessus) — vue d'ensemble/README,
+# utiles pour répondre aux questions générales "c'est quoi ce projet ?".
+FICHIERS_ISOLES_RELATIFS = [
+    "README.md",
+    "docs/README.md",
+    "docs/ROADMAP.md",
+]
+
 INDEX_PATH_RELATIF = "pipeline/src/rag/data/index.pkl"
 
 
@@ -46,6 +54,17 @@ def construire_corpus(racine: Path):
             chunks_fichier = decouper_document(chemin_relatif, texte)
             chunks.extend(chunks_fichier)
             print(f"  {chemin_relatif} -> {len(chunks_fichier)} chunks")
+
+    for fichier_rel in FICHIERS_ISOLES_RELATIFS:
+        fichier = racine / fichier_rel
+        if not fichier.exists():
+            print(f"  (absent, ignoré : {fichier_rel})")
+            continue
+        texte = fichier.read_text(encoding="utf-8")
+        chemin_relatif = fichier.relative_to(racine)
+        chunks_fichier = decouper_document(chemin_relatif, texte)
+        chunks.extend(chunks_fichier)
+        print(f"  {chemin_relatif} -> {len(chunks_fichier)} chunks")
     return chunks
 
 
