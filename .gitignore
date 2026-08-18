@@ -5,6 +5,9 @@
 # ── Rapport de stage (contenu académique privé) ───
 rapport/
 
+# ── Documentation de conception détaillée (usage personnel) ───
+doc-conception-perso/
+
 # ── Secrets & Env ─────────────────────────
 .env
 .env.*
