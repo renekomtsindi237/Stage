@@ -461,7 +461,13 @@
     "col_niveau": "Risk level",
     "col_defaut": "P(default 30d)",
     "col_action": "Recommended action",
-    "empty": "No score available. Re-run the ML pipeline from Analytics."
+    "empty": "No score available. Re-run the ML pipeline from Analytics.",
+    "action_aucune": "No action",
+    "action_relance_preventive": "Preventive follow-up",
+    "action_visite_terrain": "Field visit",
+    "action_restructuration": "Restructuring",
+    "action_mise_en_demeure": "Formal notice",
+    "action_escalade_juridique": "Legal escalation"
   },
   "dir_agences": {
     "title": "Branch management",

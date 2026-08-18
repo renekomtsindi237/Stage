@@ -4,7 +4,6 @@ import {
   signal,
   AfterViewInit,
   OnDestroy,
-  OnInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   ElementRef,
@@ -80,9 +79,7 @@ const ICON_INACTIVE = makeIcon("#94a3b8", 14); // gris — dernière position co
   templateUrl: "./dir-carte-agents.component.html",
   styleUrls: ["./dir-carte-agents.component.scss"],
 })
-export class DirCarteAgentsComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class DirCarteAgentsComponent implements AfterViewInit, OnDestroy {
   private readonly api = inject(ApiService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sse = inject(SseService);
@@ -103,16 +100,16 @@ export class DirCarteAgentsComponent
   error = signal("");
   showAllPositions = signal(true);
 
+  // Réagir aux changements de thème (swap des tiles) — doit être un champ
+  // (contexte d'injection valide) et non appelé depuis ngOnInit (→ NG0203).
+  // No-op tant que la carte n'est pas encore créée (avant ngAfterViewInit).
+  private readonly themeEffect = effect(() => {
+    const dark = this.theme.isDark();
+    this.swapTiles(dark);
+  });
+
   get displayedAgents(): AgentPositionResponse[] {
     return this.showAllPositions() ? this.allAgents() : this.activeAgents();
-  }
-
-  ngOnInit() {
-    // Réagir aux changements de thème (swap des tiles)
-    effect(() => {
-      const dark = this.theme.isDark();
-      this.swapTiles(dark);
-    });
   }
 
   ngAfterViewInit() {

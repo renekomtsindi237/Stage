@@ -95,7 +95,7 @@
                   <div class="score-bar">
                     <div
                       class="score-fill"
-                      [style.width.%]="r.score * 100"
+                      [style.width.%]="scoreBarWidth(r.score)"
                       [class]="niveauClass(r.niveauRisque)"
                     ></div>
                   </div>
@@ -111,7 +111,7 @@
               </td>
               <td>{{ r.probabiliteDefaut | number: "1.1-1" }}%</td>
               <td class="text-sm text-muted">
-                {{ r.actionRecommandee ?? "—" }}
+                {{ actionLabel(r.actionRecommandee) | translate }}
               </td>
             </tr>
           }

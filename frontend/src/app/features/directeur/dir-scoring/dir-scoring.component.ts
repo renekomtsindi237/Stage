@@ -92,4 +92,22 @@ export class DirScoringComponent implements OnInit {
     };
     return map[n] ?? "";
   }
+
+  actionLabel(a?: string): string {
+    if (!a) return "—";
+    const map: Record<string, string> = {
+      AUCUNE: "dir_scoring.action_aucune",
+      RELANCE_PREVENTIVE: "dir_scoring.action_relance_preventive",
+      VISITE_TERRAIN: "dir_scoring.action_visite_terrain",
+      RESTRUCTURATION: "dir_scoring.action_restructuration",
+      MISE_EN_DEMEURE: "dir_scoring.action_mise_en_demeure",
+      ESCALADE_JURIDIQUE: "dir_scoring.action_escalade_juridique",
+    };
+    return map[a] ?? a;
+  }
+
+  /** score_mcrs est renvoyé sur une échelle 0-850 (style score crédit) */
+  scoreBarWidth(score: number): number {
+    return Math.min(100, Math.max(0, (score / 850) * 100));
+  }
 }

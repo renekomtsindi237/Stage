@@ -336,6 +336,24 @@
   flex: 1;
   min-width: 0;
 }
+.doc-analyse-ia {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  line-height: 1.5;
+  &--ecart {
+    background: var(--color-warning-bg, var(--color-info-bg));
+    border-left: 3px solid var(--color-warning, var(--color-info));
+    color: var(--color-warning, var(--color-info));
+  }
+  &--ok {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+  &--indispo {
+    background: var(--color-bg);
+  }
+}
 
 // ── Alertes ──────────────────────────────────────────
 .alert-box {

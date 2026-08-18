@@ -461,7 +461,13 @@
     "col_niveau": "Niveau de risque",
     "col_defaut": "P(défaut 30j)",
     "col_action": "Action recommandée",
-    "empty": "Aucun score disponible. Relancez le pipeline ML depuis Analytics."
+    "empty": "Aucun score disponible. Relancez le pipeline ML depuis Analytics.",
+    "action_aucune": "Aucune action",
+    "action_relance_preventive": "Relance préventive",
+    "action_visite_terrain": "Visite terrain",
+    "action_restructuration": "Restructuration",
+    "action_mise_en_demeure": "Mise en demeure",
+    "action_escalade_juridique": "Escalade juridique"
   },
   "dir_agences": {
     "title": "Gestion des Agences",

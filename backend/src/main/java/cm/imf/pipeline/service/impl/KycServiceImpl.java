@@ -6,6 +6,7 @@ import cm.imf.pipeline.entity.*;
 import cm.imf.pipeline.enums.*;
 import cm.imf.pipeline.repository.*;
 import cm.imf.pipeline.service.IKycService;
+import cm.imf.pipeline.service.KycDocumentAnalysisService;
 import cm.imf.pipeline.service.R2StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class KycServiceImpl implements IKycService {
     private final KycDocumentRepository     documentRepo;
     private final KycVerificationRepository verificationRepo;
     private final R2StorageService          r2;
+    private final KycDocumentAnalysisService analyseIa;
 
     // ── Initier un dossier KYC ────────────────────────────────────────────────
 
@@ -196,6 +198,12 @@ public class KycServiceImpl implements IKycService {
         } else {
             // Fallback PostgreSQL base64 si R2 non configuré
             doc.setContenuBase64(req.contenuBase64());
+        }
+
+        // Analyse IA automatique des pièces d'identité (OCR + extraction structurée) —
+        // signale les écarts au DSI, ne bloque et ne valide jamais le document seule.
+        if (analyseIa.estAnalysable(req.typeDocument(), mimeType)) {
+            analyseIa.analyser(doc, fileBytes, mimeType, dossier);
         }
 
         doc = documentRepo.save(doc);

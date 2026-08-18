@@ -96,6 +96,8 @@ public class AnalysteController {
                            COALESCE(ci.nom_complet, cs.client_id_externe) AS nom,
                            ROUND(cs.score_mcrs * 850)::INT            AS score_mcrs,
                            cs.cobac_classe                            AS classe_risque,
+                           cs.niveau_risque                           AS niveau_risque,
+                           cs.action_recommandee                      AS action_recommandee,
                            cs.probabilite_defaut_30j                  AS probabilite_defaut
                     FROM ml.client_scores cs
                     LEFT JOIN app.clients_informels ci
@@ -155,6 +157,8 @@ public class AnalysteController {
         m.put("nom",              r.getOrDefault("nom", clientId));
         m.put("score",            r.get("score_mcrs"));
         m.put("classe",           mapCobacClasse(Objects.toString(r.get("classe_risque"), "C")));
+        m.put("niveauRisque",     r.get("niveau_risque"));
+        m.put("actionRecommandee", r.get("action_recommandee"));
         m.put("probabiliteDefaut", r.get("probabilite_defaut"));
         m.put("facteurPrincipal", "—");
         return m;

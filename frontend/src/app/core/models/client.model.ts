@@ -87,6 +87,12 @@ export interface KycDossier {
   updatedAt?: string;
 }
 
+export interface KycEcartIa {
+  champ: string;
+  valeurSaisie: string;
+  valeurDetectee: string;
+}
+
 export interface KycDocument {
   uid: string;
   dossierUid: string;
@@ -102,6 +108,12 @@ export interface KycDocument {
   createdAt?: string;
   /** URL relative vers /api/v1/kyc/documents/{uid}/download — null si pas de contenu */
   documentUrl?: string | null;
+  /** Champs lus par l'IA sur la pièce scannée — absent si non analysée */
+  donneesExtraites?: Record<string, string | null> | null;
+  /** Divergences vs. champs saisis dans le dossier — signalement seul, ne bloque rien */
+  ecartsDetectes?: KycEcartIa[] | null;
+  analyseIaAt?: string | null;
+  analyseIaErreur?: string | null;
 }
 
 // Legacy alias (backward compat)

@@ -635,6 +635,27 @@
                       {{ doc.dateExpirationDoc | date: "dd/MM/yyyy" }}
                     </div>
                   }
+                  @if (doc.ecartsDetectes && doc.ecartsDetectes.length > 0) {
+                    <div class="doc-analyse-ia doc-analyse-ia--ecart">
+                      <div class="text-xs font-semibold">
+                        ⚠ Écarts détectés par l'analyse IA — à vérifier
+                      </div>
+                      @for (ecart of doc.ecartsDetectes; track ecart.champ) {
+                        <div class="text-xs">
+                          {{ ecart.champ }} : saisi «{{ ecart.valeurSaisie }}»
+                          — pièce «{{ ecart.valeurDetectee }}»
+                        </div>
+                      }
+                    </div>
+                  } @else if (doc.donneesExtraites) {
+                    <div class="doc-analyse-ia doc-analyse-ia--ok">
+                      <span class="text-xs">✓ Analyse IA : champs cohérents avec le dossier</span>
+                    </div>
+                  } @else if (doc.analyseIaErreur) {
+                    <div class="doc-analyse-ia doc-analyse-ia--indispo">
+                      <span class="text-xs text-muted">Analyse IA indisponible pour ce document</span>
+                    </div>
+                  }
                 </div>
                 <div class="doc-actions">
                   @if (downloadUrl(doc); as url) {

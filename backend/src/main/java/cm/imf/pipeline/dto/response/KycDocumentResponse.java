@@ -5,6 +5,8 @@ import cm.imf.pipeline.enums.TypeDocumentKyc;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
 
 public record KycDocumentResponse(
         String uid,
@@ -20,7 +22,14 @@ public record KycDocumentResponse(
         OffsetDateTime dateVerification,
         OffsetDateTime createdAt,
         /** URL relative pour télécharger/prévisualiser le document — null si indisponible */
-        String documentUrl
+        String documentUrl,
+        /** Champs lus par l'IA sur la pièce scannée — null si non analysée */
+        Map<String, Object> donneesExtraites,
+        /** Divergences détectées vs. champs saisis dans le dossier — vide si aucune */
+        List<Map<String, Object>> ecartsDetectes,
+        OffsetDateTime analyseIaAt,
+        /** Message si l'analyse IA a échoué — informatif, jamais bloquant */
+        String analyseIaErreur
 ) {
     public static KycDocumentResponse from(KycDocument d) {
         String uid = d.getUid() != null ? d.getUid().toString() : null;
@@ -40,7 +49,11 @@ public record KycDocumentResponse(
                 d.getVerifiePar() != null ? d.getVerifiePar().getUsername() : null,
                 d.getDateVerification(),
                 d.getCreatedAt(),
-                (uid != null && hasContenu) ? "/api/v1/kyc/documents/" + uid + "/download" : null
+                (uid != null && hasContenu) ? "/api/v1/kyc/documents/" + uid + "/download" : null,
+                d.getDonneesExtraites(),
+                d.getEcartsDetectes(),
+                d.getAnalyseIaAt(),
+                d.getAnalyseIaErreur()
         );
     }
 }
