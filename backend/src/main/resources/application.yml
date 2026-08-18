@@ -127,7 +127,12 @@ imf:
   ai:
     api-key: ${GROQ_API_KEY:}
     base-url: https://api.groq.com/openai/v1
-    model: llama-3.3-70b-versatile
+    # llama-3.3-70b-versatile a été retiré du catalogue Groq (404 model_not_found,
+    # constaté en production le 2026-08-18) — remplacé par un modèle de raisonnement
+    # équivalent en taille, qui supporte toujours le function calling (tools) utilisé
+    # par les 7 outils de AiChatController. Réponse finale dans `content`, chaîne de
+    # raisonnement dans `reasoning` (ignorée par callGroq — voir AiChatController).
+    model: ${GROQ_MODEL:openai/gpt-oss-120b}
     max-tokens: 2048
 
 server:
