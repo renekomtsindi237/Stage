@@ -2,13 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Dépendances système (compilateur pour xgboost/shap)
+# Dépendances système (compilateur pour xgboost/shap + OCR pour document_extraction)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ libpq-dev curl \
+    tesseract-ocr tesseract-ocr-fra libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Dépendances Python (subset ML + FastAPI uniquement)
-COPY requirements.txt /tmp/requirements.txt
+# Dépendances Python (subset ML + FastAPI + OCR document_extraction)
+COPY requirements.txt requirements-ocr.txt /tmp/
 RUN pip install --no-cache-dir \
     psycopg2-binary==2.9.9 \
     pandas==2.2.2 \
@@ -23,7 +24,8 @@ RUN pip install --no-cache-dir \
     "uvicorn[standard]==0.30.1" \
     pydantic==2.7.1 \
     pydantic-settings==2.3.1 \
-    httpx==0.27.0
+    httpx==0.27.0 \
+    -r /tmp/requirements-ocr.txt
 
 COPY src/ /app/pipeline/src/
 

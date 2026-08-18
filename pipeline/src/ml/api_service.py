@@ -19,6 +19,7 @@ uvicorn pipeline.src.ml.api_service:app --host 0.0.0.0 --port 8090 --workers 2
 
 from __future__ import annotations
 
+import base64
 import json
 import logging
 import os
@@ -42,6 +43,11 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+from pipeline.src.document_extraction import (
+    EXIGENCES_KYC,
+    DocumentExtractionService,
+    TypePiece,
+)
 from pipeline.src.ml.mcrs_model import (
     ALL_FEATURES,
     FEATURE_DEFAULTS,
@@ -123,6 +129,11 @@ def _get_model() -> MCRSModel:
             detail="Modèle MCRS non chargé. Réessayez dans quelques instants.",
         )
     return _model
+
+
+# Service d'extraction de documents KYC — aucun état lourd à charger
+# (contrairement au modèle MCRS), instanciable directement au démarrage.
+_document_service = DocumentExtractionService()
 
 
 # ─── Authentification interne ────────────────────────────────────────────────
@@ -357,6 +368,13 @@ class ReviewSubmission(BaseModel):
 
 class ManualReviewConfig(BaseModel):
     mode: str = Field(..., description="'critical'|'always'|'none'")
+
+
+class ExtractionDocumentRequest(BaseModel):
+    type_piece: str = Field(
+        ..., description="CNI_RECTO|CNI_VERSO|PASSEPORT|PERMIS_CONDUIRE|CARTE_SEJOUR"
+    )
+    contenu_base64: str = Field(..., description="Image de la pièce, encodée en base64")
 
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
@@ -685,6 +703,60 @@ def reload_model():
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Modèle introuvable : {exc}",
         ) from exc
+
+
+# ─── Documents KYC (module document_extraction) ──────────────────────────────
+#
+# OCR + extraction structurée auto-hébergés (Tesseract + parsing MRZ ICAO
+# 9303, aucune API externe payante) — appelés par le backend Spring Boot
+# (KycDocumentAnalysisService) à l'upload d'une pièce d'identité KYC.
+# Le module lui-même (pipeline/src/document_extraction/) est autonome et
+# réutilisable tel quel dans d'autres projets.
+
+
+@app.post(
+    "/document/extraire",
+    tags=["Documents KYC"],
+    dependencies=[Depends(_verifier_cle_interne)],
+)
+def extraire_document(request: ExtractionDocumentRequest):
+    """Extrait le texte et les champs structurés d'une pièce d'identité scannée."""
+    try:
+        type_piece = TypePiece(request.type_piece)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Type de pièce inconnu : {request.type_piece}",
+        ) from exc
+
+    try:
+        image_bytes = base64.b64decode(request.contenu_base64)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="contenu_base64 invalide",
+        ) from exc
+
+    resultat = _document_service.extraire(image_bytes, type_piece)
+    return resultat.to_dict()
+
+
+@app.get("/document/niveaux-kyc", tags=["Documents KYC"])
+def niveaux_kyc_exigences():
+    """
+    Exigences d'extraction par niveau KYC (COBAC R-2005/01) — champs requis,
+    validité MRZ exigée ou non, documents complémentaires attendus. Sert à
+    piloter l'affichage frontend des éléments encore manquants par niveau.
+    """
+    return {
+        niveau.value: {
+            "champsIdentiteRequis": exig.champs_identite_requis,
+            "exigeMrzValide": exig.exige_mrz_valide,
+            "documentsComplementairesRequis": exig.documents_complementaires_requis,
+            "description": exig.description,
+        }
+        for niveau, exig in EXIGENCES_KYC.items()
+    }
 
 
 # ─── Gestionnaire d'erreurs global ───────────────────────────────────────────

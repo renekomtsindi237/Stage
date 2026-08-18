@@ -3,13 +3,11 @@ package cm.imf.pipeline.service;
 import cm.imf.pipeline.entity.KycDocument;
 import cm.imf.pipeline.entity.KycDossier;
 import cm.imf.pipeline.enums.TypeDocumentKyc;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -17,10 +15,9 @@ import java.util.*;
 /**
  * Analyse IA des pièces d'identité KYC scannées (OCR + extraction structurée).
  *
- * Utilise un modèle vision Groq (API compatible OpenAI, même clé que le
- * chatbot IA — cf. AiChatController) pour lire les champs visibles sur la
- * pièce (nom, date de naissance, numéro, dates d'émission/expiration) et les
- * compare aux champs saisis dans le dossier KYC.
+ * Délègue au module Python auto-hébergé {@code pipeline/src/document_extraction}
+ * (endpoint {@code POST /document/extraire} du service ml-api) — Tesseract OCR +
+ * parsing MRZ ICAO 9303 déterministe, aucune dépendance à une API externe payante.
  *
  * Ne bloque et ne valide JAMAIS automatiquement un document : le résultat
  * (données extraites + écarts) sert uniquement à assister la vérification
@@ -29,42 +26,18 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class KycDocumentAnalysisService {
 
-    private final ObjectMapper mapper;
+    private final RestClient mlRestClient;
 
-    @Value("${imf.ai.api-key:}")
-    private String apiKey;
-
-    @Value("${imf.ai.base-url:https://api.groq.com/openai/v1}")
-    private String baseUrl;
-
-    /** Modèle Groq à capacité vision — configurable sans redéploiement de code. */
-    @Value("${imf.ai.vision-model:meta-llama/llama-4-scout-17b-16e-instruct}")
-    private String visionModel;
+    public KycDocumentAnalysisService(@Qualifier("mlRestClient") RestClient mlRestClient) {
+        this.mlRestClient = mlRestClient;
+    }
 
     private static final Set<TypeDocumentKyc> TYPES_PIECE_IDENTITE = EnumSet.of(
             TypeDocumentKyc.CNI_RECTO, TypeDocumentKyc.CNI_VERSO,
             TypeDocumentKyc.PASSEPORT, TypeDocumentKyc.PERMIS_CONDUIRE,
             TypeDocumentKyc.CARTE_SEJOUR);
-
-    private static final String PROMPT = """
-            Tu analyses le scan d'une pièce d'identité camerounaise. Lis attentivement
-            tous les champs visibles et renvoie UNIQUEMENT un objet JSON strict (pas de
-            texte autour, pas de markdown) avec exactement ces clés — mets null si un
-            champ n'est pas visible sur cette face du document :
-            {
-              "nom": string ou null,
-              "prenom": string ou null,
-              "dateNaissance": string ou null (format AAAA-MM-JJ),
-              "lieuNaissance": string ou null,
-              "numeroPiece": string ou null,
-              "dateEmissionPiece": string ou null (format AAAA-MM-JJ),
-              "dateExpirationPiece": string ou null (format AAAA-MM-JJ),
-              "lieuEmissionPiece": string ou null
-            }
-            """;
 
     public boolean estAnalysable(TypeDocumentKyc type, String mimeType) {
         return TYPES_PIECE_IDENTITE.contains(type)
@@ -74,55 +47,54 @@ public class KycDocumentAnalysisService {
     /**
      * Analyse le document et renseigne directement les champs IA de l'entité
      * (donneesExtraites, ecartsDetectes, analyseIaAt, analyseIaErreur).
-     * Ne lève jamais d'exception — un échec IA n'empêche jamais l'upload du document.
+     * Ne lève jamais d'exception — un échec d'analyse n'empêche jamais l'upload du document.
      */
+    @SuppressWarnings("unchecked")
     public void analyser(KycDocument doc, byte[] fileBytes, String mimeType, KycDossier dossier) {
         doc.setAnalyseIaAt(OffsetDateTime.now());
 
-        if (apiKey == null || apiKey.isBlank()) {
-            doc.setAnalyseIaErreur("Analyse IA non configurée (GROQ_API_KEY absent).");
-            return;
-        }
         try {
-            Map<String, Object> extrait = extraireChamps(fileBytes, mimeType);
-            doc.setDonneesExtraites(extrait);
-            doc.setEcartsDetectes(comparerAuDossier(extrait, dossier));
+            Map<String, Object> requete = Map.of(
+                    "type_piece", doc.getTypeDocument().name(),
+                    "contenu_base64", Base64.getEncoder().encodeToString(fileBytes)
+            );
+
+            Map<String, Object> resultat = mlRestClient.post()
+                    .uri("/document/extraire")
+                    .body(requete)
+                    .retrieve()
+                    .body(Map.class);
+
+            if (resultat == null) {
+                doc.setAnalyseIaErreur("Réponse vide du service d'extraction de documents.");
+                return;
+            }
+
+            var champsBruts = (Map<String, Map<String, Object>>) resultat.getOrDefault("champs", Map.of());
+            Map<String, Object> donnees = new LinkedHashMap<>();
+            champsBruts.forEach((nomChamp, detail) -> {
+                Object valeur = detail.get("valeur");
+                if (valeur != null) {
+                    donnees.put(nomChamp, valeur);
+                }
+            });
+
+            doc.setDonneesExtraites(donnees);
+            doc.setEcartsDetectes(comparerAuDossier(donnees, dossier));
+
+            List<String> erreursExtraction = (List<String>) resultat.get("erreurs");
+            if (erreursExtraction != null && !erreursExtraction.isEmpty() && donnees.isEmpty()) {
+                doc.setAnalyseIaErreur(String.join(" ; ", erreursExtraction));
+            }
+
+        } catch (RestClientException e) {
+            log.warn("Service d'extraction de documents indisponible pour document KYC {} : {}",
+                    doc.getUid(), e.getMessage());
+            doc.setAnalyseIaErreur("Analyse indisponible : service d'extraction injoignable.");
         } catch (Exception e) {
             log.warn("Analyse IA échouée pour document KYC {} : {}", doc.getUid(), e.getMessage());
             doc.setAnalyseIaErreur("Analyse indisponible : " + e.getMessage());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> extraireChamps(byte[] fileBytes, String mimeType) throws Exception {
-        String dataUri = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(fileBytes);
-
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
-
-        List<Map<String, Object>> content = List.of(
-                Map.of("type", "text", "text", PROMPT),
-                Map.of("type", "image_url", "image_url", Map.of("url", dataUri))
-        );
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("model", visionModel);
-        body.put("messages", List.of(Map.of("role", "user", "content", content)));
-        body.put("max_tokens", 500);
-        body.put("temperature", 0.0);
-        body.put("response_format", Map.of("type", "json_object"));
-
-        var resp = new RestTemplate().exchange(
-                baseUrl + "/chat/completions",
-                HttpMethod.POST,
-                new HttpEntity<>(body, headers),
-                Map.class
-        );
-
-        var choices = (List<Map<String, Object>>) resp.getBody().get("choices");
-        var message = (Map<String, Object>) choices.get(0).get("message");
-        String jsonContent = (String) message.get("content");
-        return mapper.readValue(jsonContent, Map.class);
     }
 
     private List<Map<String, Object>> comparerAuDossier(Map<String, Object> extrait, KycDossier dossier) {

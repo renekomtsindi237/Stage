@@ -1,0 +1,9 @@
+# Dépendances du module document_extraction (OCR + extraction de champs KYC)
+# Installées dans pipeline/Dockerfile.ml (service ml-api).
+# Nécessite aussi le binaire système tesseract-ocr + le paquet de langue
+# tesseract-ocr-fra (cf. Dockerfile.ml) — pas installable via pip seul.
+
+pytesseract==0.3.10
+pillow==10.3.0
+opencv-python-headless==4.9.0.80
+numpy==1.26.4
