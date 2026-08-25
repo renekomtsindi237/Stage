@@ -8,6 +8,9 @@ rapport/
 # ── Documentation de conception détaillée (usage personnel) ───
 doc-conception-perso/
 
+# ── Proposition pour un projet distinct (Lakehouse microfinance) ───
+proposition-lakehouse/
+
 # ── Secrets & Env ─────────────────────────
 .env
 .env.*
