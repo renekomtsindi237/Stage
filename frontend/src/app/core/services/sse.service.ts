@@ -78,15 +78,15 @@ export class SseService implements OnDestroy {
             withCredentials: true,
           })
           .subscribe({
-          next: () => {
-            if (this.auth.isLoggedIn()) {
-              this.reconnectTimer = setTimeout(() => this.connect(), 5000);
-            }
-          },
-          error: () => {
-            /* auth interceptor handles logout */
-          },
-        });
+            next: () => {
+              if (this.auth.isLoggedIn()) {
+                this.reconnectTimer = setTimeout(() => this.connect(), 5000);
+              }
+            },
+            error: () => {
+              /* auth interceptor handles logout */
+            },
+          });
         return;
       }
       this.reconnectTimer = setTimeout(() => {
