@@ -1,6 +1,6 @@
 @startuml composants_architecture
 !theme plain
-title Diagramme de composants — Architecture IMF Pipeline\nVue complète : Mobile · Web · Backend · Pipeline · ML · Infrastructure
+title Diagramme de composants — Architecture IMF Pipeline\nVue complète : Mobile · Web · Bureau · Backend · Pipeline · ML · Infrastructure
 
 skinparam componentStyle rectangle
 skinparam packageStyle frame
@@ -45,6 +45,12 @@ package "Frontend Web Angular 17" as WEB {
     W_AUTH --> W_JWT
     W_DIR --> W_SSE
     W_MAP --> W_SSE
+}
+
+package "Client bureau Tauri 2\n(Windows — installeur NSIS)" as DESKTOP {
+    [Fenêtre native\n(WebView2)] as D_WIN
+    [Build Angular desktop\napiUrl = imf.rene.it.com] as D_ANG
+    D_WIN --> D_ANG : charge le dist
 }
 
 ' ══════════════════════════════════════════════════════════════════
@@ -197,6 +203,7 @@ C_GPS --> B_AGENT : Envoi HTTPS\n(position GPS de l'agent)
 C_FCM <-- FCM_SVC : Notifications push Firebase
 
 WEB --> BACKEND : Requêtes HTTPS\n(session authentifiée — cookie sécurisé)
+DESKTOP --> BACKEND : Requêtes HTTPS\n(JWT Bearer — origine tauri.localhost)
 B_SSE --> W_SSE : Événements temps réel (SSE)
 
 BACKEND --> PG_APP : JDBC / JPA (Spring Data)

@@ -2,6 +2,7 @@ import { Injectable, OnDestroy, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Subject, Observable } from "rxjs";
 import { AuthService } from "../auth/auth.service";
+import { environment } from "../../../environments/environment";
 
 export interface SseEvent {
   type: string;
@@ -41,8 +42,8 @@ export class SseService implements OnDestroy {
 
     const token = this.auth.getToken();
     const url = token
-      ? `/api/v1/sse/stream?token=${encodeURIComponent(token)}`
-      : "/api/v1/sse/stream";
+      ? `${environment.apiUrl}/api/v1/sse/stream?token=${encodeURIComponent(token)}`
+      : `${environment.apiUrl}/api/v1/sse/stream`;
     this.eventSource = new EventSource(url);
 
     this.eventSource.onmessage = (e) => {
@@ -72,7 +73,11 @@ export class SseService implements OnDestroy {
       this.reconnectAttempts++;
       if (this.reconnectAttempts >= this.MAX_RECONNECT) {
         this.reconnectAttempts = 0;
-        this.http.get("/api/v1/users/me", { withCredentials: true }).subscribe({
+        this.http
+          .get(`${environment.apiUrl}/api/v1/users/me`, {
+            withCredentials: true,
+          })
+          .subscribe({
           next: () => {
             if (this.auth.isLoggedIn()) {
               this.reconnectTimer = setTimeout(() => this.connect(), 5000);

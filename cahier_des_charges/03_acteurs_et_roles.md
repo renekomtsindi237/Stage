@@ -42,7 +42,7 @@
 **Profil :** Directeur d'agence ou directeur général de l'IMF. Décideur stratégique disposant d'une vision transversale sur l'ensemble des activités.
 
 **Responsabilités :**
-- Consulter le dashboard de pilotage global : KPI collectes + PAR COBAC + scores MCRS + benchmarks inter-agences.
+- Consulter le dashboard de pilotage global (web ou client bureau Windows) : KPI collectes + PAR COBAC + scores MCRS + benchmarks inter-agences.
 - Comparer les performances de son agence (ou de l'ensemble des agences) sur une période donnée.
 - Suivre les tendances des prix des produits génériques des marchés locaux (facteurs de risque external CSI).
 - Prendre des décisions stratégiques (ajustement objectifs de collecte, politique de provisionnement, déclenchement audit).
@@ -93,15 +93,19 @@
 
 Acteur système représentant les appareils mobiles des agents. Génère des collectes avec UUID v4 en mode offline, les stocke localement (SQLite) et les synchronise en batch avec l'API lors du retour en zone connectée.
 
-### 2.2 Pipeline Airflow
+### 2.2 Application bureau Tauri
+
+Acteur système représentant le client Windows installé sur les postes d'agence. Encapsule le frontend Angular, s'authentifie par JWT Bearer et appelle l'API publique `https://imf.rene.it.com`.
+
+### 2.3 Pipeline Airflow
 
 Acteur système qui orchestre l'ensemble des traitements de données automatiques : ingestion, transformation dbt, calcul des KPI, scoring MCRS, détection de dérive, génération d'alertes.
 
-### 2.3 Système Core Banking (CBS)
+### 2.4 Système Core Banking (CBS)
 
 Acteur système externe représentant le logiciel de gestion des prêts de l'IMF. Produit des exports périodiques (fichiers) contenant les données de créances (encours, statuts, retards de paiement). Non contrôlé par ce projet.
 
-### 2.4 Sources de données externes
+### 2.5 Sources de données externes
 
 - **Open-Meteo / MétéoCam** : données météorologiques par zone géographique (précipitations, sécheresse).
 - **MINCOMMERCE / relevés terrain** : prix des produits génériques sur les marchés locaux camerounais.

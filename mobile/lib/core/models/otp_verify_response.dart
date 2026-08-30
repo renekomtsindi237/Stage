@@ -8,6 +8,7 @@ class OtpVerifyResponse {
   final String? imfCode;
   final String? imfNom;
   final int expiresIn;
+  final DateTime? sessionExpiresAt;
 
   OtpVerifyResponse({
     required this.status,
@@ -19,6 +20,7 @@ class OtpVerifyResponse {
     this.imfCode,
     this.imfNom,
     required this.expiresIn,
+    this.sessionExpiresAt,
   });
 
   factory OtpVerifyResponse.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,9 @@ class OtpVerifyResponse {
       imfCode: json['imfCode'] as String?,
       imfNom: json['imfNom'] as String?,
       expiresIn: (json['expiresIn'] as num?)?.toInt() ?? 3600,
+      sessionExpiresAt: json['sessionExpiresAt'] != null
+          ? DateTime.tryParse(json['sessionExpiresAt'] as String)
+          : null,
     );
   }
 }

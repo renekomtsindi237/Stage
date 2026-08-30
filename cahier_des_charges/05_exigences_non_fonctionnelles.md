@@ -109,5 +109,10 @@
 ### ENF-C02 — Mobile
 - L'application Flutter doit fonctionner sur Android 8.0+ (API 26+).
 
+### ENF-C04 — Client bureau
+- L'application bureau Tauri doit s'installer via un Setup.exe NSIS sur Windows 10/11 x64, sans droits administrateur (mode utilisateur courant).
+- Elle doit apparaître dans le menu Démarrer et pouvoir être désinstallée depuis Paramètres Windows.
+- Elle doit se connecter à l'API `https://imf.rene.it.com` (JWT Bearer, CORS origines Tauri).
+
 ### ENF-C03 — Internationalisation
 - L'application web doit supporter le français (langue principale) et l'anglais (secondaire) via `ngx-translate`.

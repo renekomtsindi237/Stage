@@ -1,144 +1,143 @@
-import 'dart:convert';
-import 'dart:math';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/collecte_locale.dart';
+import '../utils/uuid_v4.dart';
 import 'api_service.dart';
+import 'local_database.dart';
 
 class SyncService {
-  static const _keyPending  = 'collectes_pending';
-  static const _keyLastSync = 'last_sync_result';
-  static const _keyDeviceId = 'device_id';
+  SyncService(this._api, this._db);
 
   final ApiService _api;
+  final LocalDatabase _db;
 
-  SyncService(this._api);
+  Future<List<CollecteLocale>> getPendingCollectes() => _db.pendingCollectes();
 
-  // ── Gestion locale ───────────────────────────────────────────────────────────
-
-  Future<List<CollecteLocale>> getPendingCollectes() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(_keyPending);
-    if (raw == null || raw.isEmpty) return [];
-    try {
-      return CollecteLocale.listFromJson(raw);
-    } catch (_) {
-      return [];
-    }
-  }
+  Future<List<CollecteLocale>> getSyncedCollectes() => _db.syncedCollectes();
 
   Future<void> ajouterCollecteLocale(CollecteLocale collecte) async {
-    final pending = await getPendingCollectes();
-    if (pending.any((c) => c.uuidMobile == collecte.uuidMobile)) return;
-    pending.add(collecte);
-    await _savePending(pending);
-  }
-
-  Future<void> _savePending(List<CollecteLocale> items) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyPending, CollecteLocale.listToJson(items));
+    await _db.insertCollecte(collecte);
   }
 
   Future<SyncResult?> getLastSyncResult() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(_keyLastSync);
-    if (raw == null) return null;
+    final json = await _db.getJson('last_sync');
+    if (json == null) return null;
     try {
-      return SyncResult.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      return SyncResult.fromJson(json);
     } catch (_) {
       return null;
     }
   }
 
-  Future<String> _getOrCreateDeviceId() async {
-    final prefs = await SharedPreferences.getInstance();
-    var id = prefs.getString(_keyDeviceId);
-    if (id == null || id.isEmpty) {
-      id = _generateUuid();
-      await prefs.setString(_keyDeviceId, id);
-    }
-    return id;
-  }
-
-  // ── Synchronisation ──────────────────────────────────────────────────────────
-
-  /// Envoie les collectes en attente au backend via POST /api/v1/sync/collectes.
-  /// Retourne null si aucune collecte en attente.
+  /// Pousse l'outbox locale vers le serveur courant, puis vide le GPS en attente.
   Future<SyncResult?> syncNow() async {
     final pending = await getPendingCollectes();
-    if (pending.isEmpty) return null;
+    SyncResult? result;
+    if (pending.isNotEmpty) {
+      result = await _pushCollectes(pending);
+    }
+    await flushGps();
+    return result;
+  }
 
-    final deviceId = await _getOrCreateDeviceId();
-    final syncId   = _generateUuid();
-    final now      = DateTime.now();
-    // Formate un OffsetDateTime lisible par Java (ex: 2026-06-24T10:30:00+01:00)
-    final offset  = now.timeZoneOffset;
-    final sign    = offset.isNegative ? '-' : '+';
-    final hh      = offset.inHours.abs().toString().padLeft(2, '0');
-    final mm      = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
-    final ts      = '${now.toLocal().toIso8601String().split('.').first}$sign$hh:$mm';
+  Future<SyncResult> _pushCollectes(List<CollecteLocale> pending) async {
+    final deviceId = await _db.deviceId();
+    final syncId = generateUuidV4();
+    final now = DateTime.now();
+    final offset = now.timeZoneOffset;
+    final sign = offset.isNegative ? '-' : '+';
+    final hh = offset.inHours.abs().toString().padLeft(2, '0');
+    final mm = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+    final ts =
+        '${now.toLocal().toIso8601String().split('.').first}$sign$hh:$mm';
 
     final body = {
-      'syncId':              syncId,
-      'deviceId':            deviceId,
+      'syncId': syncId,
+      'deviceId': deviceId,
       'clientSyncTimestamp': ts,
       'items': pending.map((c) {
         final item = <String, dynamic>{
           'idCollecteMobile': c.uuidMobile,
-          'clientId':         c.clientIdExterne,
-          'dateCollecte':     c.dateCollecte,
-          'montantCollecte':  c.montantCollecte,
-          'canalPaiement':    c.canalPaiement,
+          'clientId': c.clientIdExterne,
+          'dateCollecte': c.dateCollecte,
+          'montantCollecte': c.montantCollecte,
+          'canalPaiement': c.canalPaiement,
         };
-        if (c.referenceTransaction != null) item['referenceTransaction'] = c.referenceTransaction;
-        if (c.observation != null)          item['observation']          = c.observation;
-        if (c.latitude != null)             item['latitude']             = c.latitude;
-        if (c.longitude != null)            item['longitude']            = c.longitude;
+        if (c.referenceTransaction != null) {
+          item['referenceTransaction'] = c.referenceTransaction;
+        }
+        if (c.observation != null) item['observation'] = c.observation;
+        if (c.latitude != null) item['latitude'] = c.latitude;
+        if (c.longitude != null) item['longitude'] = c.longitude;
         return item;
       }).toList(),
     };
 
-    final data = await _api.post<Map<String, dynamic>>(
+    final raw = await _api.post<Map<String, dynamic>>(
       '/api/v1/sync/collectes',
       data: body,
       fromJson: (d) => d as Map<String, dynamic>,
     );
-
+    final data = SyncResult.unwrapPayload(raw);
     final result = SyncResult.fromJson(data);
 
-    // Retire les collectes traitées (SUCCESS ou DOUBLON) du stockage local
     final resultats = (data['resultats'] as List<dynamic>?) ?? [];
-    final treatedIds = resultats
-        .where((r) {
-          final code = (r as Map<String, dynamic>)['code']?.toString() ?? '';
-          return code == 'SUCCESS' || code == 'DOUBLON';
-        })
-        .map((r) => (r as Map<String, dynamic>)['idCollecteMobile']?.toString() ?? '')
-        .where((id) => id.isNotEmpty)
-        .toSet();
-
-    if (treatedIds.isNotEmpty) {
-      final remaining = pending.where((c) => !treatedIds.contains(c.uuidMobile)).toList();
-      await _savePending(remaining);
+    final byId = <String, Map<String, dynamic>>{};
+    for (final r in resultats) {
+      final map = r as Map<String, dynamic>;
+      final id = map['idCollecteMobile']?.toString() ?? '';
+      if (id.isNotEmpty) byId[id] = map;
     }
 
-    // Persiste le résumé de la dernière sync
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyLastSync, jsonEncode({
-      'totalRecu':  result.totalRecu,
-      'acceptees':  result.acceptees,
-      'doublons':   result.doublons,
-      'rejetees':   result.rejetees,
-      'syncedAt':   result.syncedAt.toIso8601String(),
-    }));
-
+    final treatedIds = <String>{};
+    for (final c in pending) {
+      final row = byId[c.uuidMobile];
+      final code = row?['code']?.toString() ?? '';
+      final message = row?['message']?.toString() ?? code;
+      if (code == 'SUCCESS' || code == 'DOUBLON') {
+        await _db.archiveCollecte(
+          c: c,
+          code: code,
+          serverUrl: _api.baseUrl,
+        );
+        treatedIds.add(c.uuidMobile);
+      } else if (code.isNotEmpty) {
+        await _db.markCollecteError(c.uuidMobile, code, message);
+      }
+    }
+    await _db.deleteCollectes(treatedIds);
+    await _db.putJson('last_sync', {
+      'totalRecu': result.totalRecu,
+      'acceptees': result.acceptees,
+      'doublons': result.doublons,
+      'rejetees': result.rejetees,
+      'syncedAt': result.syncedAt.toIso8601String(),
+      'serverUrl': _api.baseUrl,
+    });
     return result;
   }
 
-  static String _generateUuid() {
-    final r = Random.secure();
-    String seg(int len) =>
-        List.generate(len, (_) => r.nextInt(16).toRadixString(16)).join();
-    final v = (8 + r.nextInt(4)).toRadixString(16);
-    return '${seg(8)}-${seg(4)}-4${seg(3)}-$v${seg(3)}-${seg(12)}';
+  Future<int> flushGps() async {
+    final queue = await _db.pendingGps();
+    if (queue.isEmpty) return 0;
+    final sent = <int>{};
+    for (final item in queue) {
+      try {
+        await _api.put<void>('/api/v1/agents/me/position', data: item.payload);
+        sent.add(item.id);
+      } catch (_) {}
+    }
+    await _db.deleteGps(sent);
+    return sent.length;
+  }
+
+  Future<void> switchServer(String url) async {
+    _api.setBaseUrl(url);
+    await _db.putKv('server_url', url);
+    await _db.clearCatalogCache();
+  }
+
+  Future<String> currentServerUrl() async {
+    final stored = await _db.getKv('server_url');
+    if (stored != null && stored.isNotEmpty) return stored;
+    return _api.baseUrl;
   }
 }

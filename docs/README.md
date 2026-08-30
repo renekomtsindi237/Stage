@@ -21,6 +21,7 @@ docs/
 │   └── 08_sequence_auth.puml
 │
 ├── ROADMAP.md                  ← Feuille de route V1 → V4
+├── desktop.md                  ← Client bureau Tauri (installeur Windows)
 └── V0/                         ← Archive (ancienne vision du projet — obsolète)
 ```
 
@@ -34,7 +35,7 @@ docs/
 | `02_sequence_collecte.puml` | Séquence | Flux collecte offline-first (saisie → sync → validation → pipeline) |
 | `03_sequence_scoring_mcrs.puml` | Séquence | Pipeline MCRS journalier (features → scoring → SHAP → alertes → drift) |
 | `04_classes_domaine.puml` | Classes | Modèle de domaine complet (toutes les entités et relations) |
-| `05_composants.puml` | Composants | Vue architecture par composants (Flutter, Angular, Spring Boot, Airflow, dbt, ML, PostgreSQL, Redis) |
+| `05_composants.puml` | Composants | Vue architecture par composants (Flutter, Angular, Tauri, Spring Boot, Airflow, dbt, ML, PostgreSQL, Redis) |
 | `06_deploiement.puml` | Déploiement | Architecture Docker Compose cible |
 | `07_activite_recouvrement.puml` | Activité | Workflow COBAC de recouvrement (RELANCE → MISE_EN_DEMEURE → CONTENTIEUX → REECHELONNEMENT/RADIATION) |
 | `08_sequence_auth.puml` | Séquence | Authentification JWT multi-tenant (login, requêtes, refresh) |
@@ -57,6 +58,7 @@ java -jar plantuml.jar docs/uml/*.puml
 - `conception/` — Architecture globale, modèle de données, pipeline, API, sécurité, choix technologiques.
 - `analyse/` — Analyse de l'existant, benchmark, besoins métier, cas d'utilisation, règles de gestion.
 - `docs/ROADMAP.md` — Feuille de route V1 → V4.
+- `docs/desktop.md` — Client bureau Tauri : installation, logo `MicroRecouv.png`, build, CORS.
 
 ---
 

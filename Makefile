@@ -13,7 +13,7 @@ IMAGE_TAG ?= latest
         build build-backend build-frontend build-pipeline build-web \
         push-backend push-frontend push-web \
         dbt-run migrate test-backend test-web lint \
-        infra backend-local
+        infra backend-local desktop-dev desktop-build
 
 help:
 	@echo ""
@@ -39,6 +39,9 @@ help:
 	@echo ""
 	@echo "  make dbt-run       Lancer les transformations dbt"
 	@echo "  make migrate       Appliquer les migrations Flyway"
+	@echo ""
+	@echo "  make desktop-dev   Lancer le client bureau Tauri (dev)"
+	@echo "  make desktop-build Construire l'installeur Windows"
 	@echo ""
 	@echo "  make test-backend  Tests unitaires Spring Boot"
 	@echo "  make test-web      Tests Angular"
@@ -145,6 +148,13 @@ test-backend:
 
 build-backend-jar:
 	cd backend && mvn clean package -DskipTests
+
+# ── Desktop (Tauri) ───────────────────────────────────────────────────────
+desktop-dev:
+	cd desktop && npm run dev
+
+desktop-build:
+	cd desktop && npm run build
 
 # ── Web ───────────────────────────────────────────────────────────────────
 install-web:

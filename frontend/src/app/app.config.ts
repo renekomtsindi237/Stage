@@ -1,5 +1,10 @@
 import { ApplicationConfig, provideZoneChangeDetection } from "@angular/core";
-import { provideRouter, withComponentInputBinding } from "@angular/router";
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withHashLocation,
+} from "@angular/router";
+import { environment } from "../environments/environment";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideTranslateService } from "@ngx-translate/core";
@@ -14,7 +19,9 @@ Chart.register(...registerables);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes, withComponentInputBinding()),
+    environment.useHash
+      ? provideRouter(routes, withHashLocation(), withComponentInputBinding())
+      : provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
     provideAnimations(),
     provideTranslateService({ lang: "fr" }),

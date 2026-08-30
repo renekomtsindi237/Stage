@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../core/config/app_config.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/local_database.dart';
 import '../../widgets/lang_switch_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -54,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _loading = true);
 
     final auth = context.read<AuthProvider>();
+    auth.clearError();
     final ok = await auth.requestOtp(_emailCtrl.text.trim());
 
     if (!mounted) return;
@@ -130,9 +134,31 @@ class _LoginScreenState extends State<LoginScreen>
                     // Logo
                     _buildLogo(l10n),
                     const SizedBox(height: 40),
+                    if (context.watch<AuthProvider>().errorMessage != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: Text(
+                          context.watch<AuthProvider>().errorMessage!,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                      ),
+                    ],
                     // Card
                     _buildCard(l10n),
                     const SizedBox(height: 28),
+                    _buildServerPicker(l10n),
+                    const SizedBox(height: 20),
                     // Footer
                     _buildFooter(l10n),
                     const SizedBox(height: 32),
@@ -325,6 +351,57 @@ class _LoginScreenState extends State<LoginScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildServerPicker(AppL10n l10n) {
+    final api = context.read<ApiService>();
+    final selected = AppConfig.profileForUrl(api.baseUrl);
+    return Column(
+      children: [
+        Text(
+          l10n.serverCurrent(api.baseUrl),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: _mutedColor),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 6,
+          children: ServerProfile.values.map((profile) {
+            final active = profile == selected;
+            return GestureDetector(
+              onTap: () async {
+                final url = AppConfig.urlFor(profile);
+                api.setBaseUrl(url);
+                await context.read<LocalDatabase>().putKv('server_url', url);
+                if (mounted) setState(() {});
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: active ? _navy : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: active ? _navy : _border),
+                ),
+                child: Text(
+                  switch (profile) {
+                    ServerProfile.production => l10n.serverProduction,
+                    ServerProfile.staging => l10n.serverStaging,
+                    ServerProfile.local => l10n.serverLocal,
+                  },
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: active ? Colors.white : _navy,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

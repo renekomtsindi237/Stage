@@ -57,6 +57,12 @@ Token expiré :
 
 L'application Flutter utilise le stockage sécurisé (`flutter_secure_storage`) pour conserver le refresh token. Les requêtes incluent le header `Authorization: Bearer <access_token>` (pas de cookies dans l'app mobile).
 
+### 2.4 Application bureau (Tauri)
+
+Le client bureau charge Angular depuis `https://tauri.localhost` et appelle `https://imf.rene.it.com`. Les cookies `SameSite=Strict` ne sont pas envoyés en cross-origin. Le JWT est donc transmis comme sur le mobile : header `Authorization: Bearer`, jeton conservé dans `localStorage`.
+
+Le CORS Spring fusionne toujours les origines Tauri (`https://tauri.localhost`, `http://tauri.localhost`, `tauri://localhost`, origines `asset.localhost`) avec la liste `CORS_ALLOWED_ORIGINS`. Un redéploiement de l’API est requis après cette évolution.
+
 ---
 
 ## 3. Autorisation — RBAC
@@ -175,7 +181,8 @@ Chaque action sur une collecte ou une créance enregistre dans la table d'audit 
 | Composant | Mesure de sécurité |
 |---|---|
 | Nginx reverse proxy | TLS 1.3, HSTS, rate limiting |
-| Spring Boot | CORS limité aux origines connues, CSRF désactivé (JWT stateless) |
+| Spring Boot | CORS limité aux origines connues (web + Tauri), CSRF désactivé (JWT stateless) |
+| Client bureau Tauri | JWT Bearer, CSP restreignant `connect-src` à l’API `imf.rene.it.com` |
 | PostgreSQL | Accès réseau interne Docker uniquement, pas de port 5432 exposé |
 | Airflow | Interface Web protégée par auth Airflow, accès réseau interne |
 | Redis | Pas de persistance, accès réseau interne uniquement |

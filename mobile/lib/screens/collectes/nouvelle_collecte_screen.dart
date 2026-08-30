@@ -1,7 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,18 +9,13 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/client.dart';
 import '../../core/models/collecte_locale.dart';
+import '../../core/providers/sync_provider.dart';
 import '../../core/services/client_service.dart';
-import '../../core/services/sync_service.dart';
+import '../../core/services/connectivity_service.dart';
 import '../../core/services/agent_service.dart';
+import '../../core/utils/uuid_v4.dart';
+import '../../widgets/connectivity_banner.dart';
 import '../../widgets/lang_switch_button.dart';
-
-String _generateUuid() {
-  final r = Random.secure();
-  String seg(int len) =>
-      List.generate(len, (_) => r.nextInt(16).toRadixString(16)).join();
-  final v = (8 + r.nextInt(4)).toRadixString(16);
-  return '${seg(8)}-${seg(4)}-4${seg(3)}-$v${seg(3)}-${seg(12)}';
-}
 
 class NouvelleCollecteScreen extends StatefulWidget {
   const NouvelleCollecteScreen({super.key});
@@ -131,7 +125,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
 
       final now = DateTime.now();
       final collecte = CollecteLocale(
-        uuidMobile: _generateUuid(),
+        uuidMobile: generateUuidV4(),
         clientIdExterne: _selectedClient!.idClient.toString(),
         nomClient: _selectedClient!.fullName,
         montantCollecte: amount,
@@ -142,7 +136,11 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
         createdAt: now,
       );
 
-      await context.read<SyncService>().ajouterCollecteLocale(collecte);
+      final sync = context.read<SyncProvider>();
+      await sync.ajouterCollecte(collecte);
+      if (await context.read<ConnectivityService>().isConnected()) {
+        await sync.syncNow();
+      }
 
       if (pos != null && mounted) {
         try {
@@ -180,6 +178,7 @@ class _NouvelleCollecteScreenState extends State<NouvelleCollecteScreen> {
       backgroundColor: context.bg,
       body: Column(
         children: [
+          const ConnectivityBanner(),
           _buildTopBar(context, l10n),
           Expanded(
             child: ListView(

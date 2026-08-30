@@ -102,7 +102,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       JWT_SECRET:                    ${JWT_SECRET}
       # CORS : domaine public Cloudflare + accès direct IP (debug/CI)
-      CORS_ALLOWED_ORIGINS:          "https://imf.rene.it.com,http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:9091"
+      CORS_ALLOWED_ORIGINS:          "https://imf.rene.it.com,http://${VPS_IP:-84.247.128.40}:9090,http://${VPS_IP:-84.247.128.40}:9091,http://localhost:*,http://tauri.localhost,https://tauri.localhost,tauri://localhost,http://asset.localhost,https://asset.localhost,asset://localhost"
       REDIS_HOST:                    127.0.0.1
       REDIS_PORT:                    6380
       # backend et ml-api tournent tous deux en network_mode: host (pas de

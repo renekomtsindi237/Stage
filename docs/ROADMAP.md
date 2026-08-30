@@ -51,13 +51,19 @@
 - Internationalisation fr/en, thème dark/light
 - Mise à jour temps réel via SSE
 
-### 6. Application Mobile (Flutter)
+### 6. Client bureau (Tauri 2)
+- Encapsule le frontend Angular dans une WebView Windows
+- Installeur NSIS `MicroRecouv_1.0.0_x64-setup.exe` (menu Démarrer, raccourci Bureau, logo `MicroRecouv.png`)
+- API de production : `https://imf.rene.it.com`
+- JWT Bearer + CORS origines Tauri
+
+### 7. Application Mobile (Flutter)
 - Saisie collecte offline-first (SQLite local)
 - UUID v4 génération locale (déduplication côté serveur)
 - Synchronisation batch automatique au retour en zone connectée
 - Notifications push Firebase FCM
 
-### 7. Documentation
+### 8. Documentation
 - 8 diagrammes UML PlantUML (`docs/uml/`)
 - Cahier des charges complet (`cahier_des_charges/` — 6 documents)
 - Conception complète (`conception/` — 6 documents)
@@ -105,6 +111,7 @@
 | Modèle MCRS (MCRSModel Python) | ✅ Terminé | Mai 2026 |
 | Diagrammes UML (8 diagrammes) | ✅ Terminé | Mai 2026 |
 | Dashboard web (Angular) | ✅ Terminé | Mai 2026 |
+| Client bureau Tauri (installeur NSIS) | ✅ Terminé | Août 2026 |
 | Application mobile Flutter | 🔄 En cours | Juin 2026 |
 | Tests d'intégration backend | 🔄 En cours | Juin 2026 |
 | Rédaction mémoire | 🔄 En cours | Juillet 2026 |

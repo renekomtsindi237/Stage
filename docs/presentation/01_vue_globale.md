@@ -25,10 +25,10 @@ Les établissements de microfinance (EMF) camerounais font face à deux défis o
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │  COUCHE 1 — PRÉSENTATION                                             │
-│  Angular 18 (web)                     Flutter 3.24 (mobile)         │
-│  Dashboards, KPI, alertes             Collectes offline-first        │
-└──────────────────────┬────────────────────────────┬─────────────────┘
-                       │  HTTP/REST + SSE            │  HTTP/REST (sync batch)
+│  Angular 17 (web)   Tauri 2 (bureau Windows)   Flutter (mobile)     │
+│  Dashboards, KPI    Installeur NSIS            Collectes offline    │
+└──────────────┬──────────────┬─────────────────────┬─────────────────┘
+               │ HTTP/REST+SSE│ JWT Bearer          │ HTTP/REST (sync)
 ┌──────────────────────▼────────────────────────────▼─────────────────┐
 │  COUCHE 2 — API APPLICATIVE                                          │
 │  Spring Boot 3.3 / Java 21                                           │
@@ -93,7 +93,7 @@ Les établissements de microfinance (EMF) camerounais font face à deux défis o
                            │
               ┌────────────▼────────────────────┐
               │  Backend Spring Boot             │
-              │  SSE → Angular dashboard         │
+              │  SSE → Angular / Tauri           │
               │  FCM → Flutter (notifications)   │
               └─────────────────────────────────┘
 ```
@@ -129,7 +129,8 @@ Le pipeline ingère chaque jour les prix de produits génériques sur les march�
 | Composant | Technologie | Rôle |
 |---|---|---|
 | Mobile | Flutter 3.24 + SQLite | Collectes offline-first |
-| Web | Angular 18 + signals | Dashboards temps réel |
+| Web | Angular 17 + signals | Dashboards temps réel |
+| Bureau | Tauri 2 (NSIS) | Même UI Angular, installeur Windows |
 | API | Spring Boot 3.3 / Java 21 | Logique métier, sécurité |
 | Base de données | PostgreSQL 16 | Stockage opérationnel + DW |
 | Orchestration | Apache Airflow 2.9 | Planification des pipelines |

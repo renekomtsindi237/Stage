@@ -40,6 +40,16 @@ class AgentDashboardData {
     return 0.0;
   }
 
+  Map<String, dynamic> toJson() => {
+        'objectifJour': objectifJour,
+        'collecteJour': collecteJour,
+        'collectesCount': collectesCount,
+        'clientsVisites': clientsVisites,
+        'clientsTotal': clientsTotal,
+        'synchronise': synchronise,
+        'alertesClients': alertesClients.map((e) => e.toJson()).toList(),
+      };
+
   factory AgentDashboardData.empty() {
     return AgentDashboardData(
       objectifJour: 50000.0,
@@ -74,4 +84,11 @@ class AgentAlerte {
       message: json['message'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'clientId': clientId,
+        'nom': nom,
+        'severite': severite,
+        'message': message,
+      };
 }

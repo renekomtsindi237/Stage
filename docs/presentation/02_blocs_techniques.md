@@ -12,7 +12,7 @@ L'agent de terrain utilise l'application pour enregistrer les collectes d'éparg
 ```
 mobile/lib/
 ├── core/
-│   ├── models/collecte_locale.dart   → entité locale (UUID + statut sync)
+│   ├── models/collecte_locale.dart   → entité locale (UUID + SQLite)
 │   ├── models/user.dart              → profil + avatarUrl
 │   ├── services/api_service.dart     → client HTTP Dio (JWT auto, refresh, multipart)
 │   ├── services/sync_service.dart    → logique de synchronisation batch
@@ -32,18 +32,17 @@ mobile/lib/
 1. Agent ouvre NouvelleCollecteScreen
 2. Sélectionne le client → montant → canal (MTN / Orange / ESPECES / WAVE)
 3. _generateUuid() génère un UUID v4 RFC 4122 valide
-4. CollecteLocale sauvegardée dans SharedPreferences avec statut = EN_ATTENTE
+4. CollecteLocale sauvegardée dans SQLite (`collectes_pending`) ; GPS en `gps_pending`
 5. ...agent reprend la connexion...
-6. SyncService.sync() est déclenché
+6. SyncService.syncNow() est déclenché
 7. Collecte les EN_ATTENTE, construit le payload :
    {
      syncId, deviceId, clientSyncTimestamp,
      items: [{ idCollecteMobile (UUID), clientId, montantCollecte, ... }]
    }
-8. POST /api/v1/sync/collectes
-9. Pour chaque résultat : code == "SUCCESS" → supprimé localement
-                          code == "DOUBLON" → supprimé (déjà en base)
-                          code == "ERREUR"  → gardé pour retry
+8. POST /api/v1/sync/collectes + flush GPS
+9. SUCCESS / DOUBLON → journal `collectes_synced` ; CONFLIT / ERREUR → gardés
+10. Bascule serveur (local / staging / prod) : outbox conservée, cache retéléchargé
 ```
 
 ### Génération de l'UUID v4 (format RFC 4122)
@@ -383,7 +382,35 @@ readonly avatarUrl   = computed(() => this.currentUser()?.avatarUrl ?? null);
 
 ---
 
-## Bloc 8 — Kafka + Flink (streaming temps réel)
+## Bloc 8 — Client bureau Tauri (Windows)
+
+### Ce que fait ce bloc
+Le même frontend Angular est empaqueté dans une fenêtre native. Les postes d’agence (directeur, recouvrement, DSI, analyste) installent un Setup.exe comme une application bureautique. L’API reste `https://imf.rene.it.com`.
+
+### Organisation
+
+```
+desktop/
+├── package.json                  → scripts tauri (dev / build)
+├── src-tauri/
+│   ├── tauri.conf.json           → fenêtre, CSP, installeur NSIS
+│   ├── src/lib.rs                → point d’entrée Rust
+│   └── icons/                    → icon.ico depuis MicroRecouv.png
+frontend/src/environments/environment.desktop.ts
+                                  → apiUrl + navigation hash
+```
+
+### Installation
+
+Fichier livré : `desktop/dist/MicroRecouv_1.0.0_x64-setup.exe`.
+
+Menu Démarrer (dossier MicroRecouv), raccourci Bureau optionnel, désinstallation depuis Paramètres Windows. Icône : logo `MicroRecouv.png` (Setup + application). Auth : JWT Bearer (pas les cookies `SameSite=Strict`). CORS : origines `https://tauri.localhost` fusionnées côté Spring.
+
+Guide : `docs/desktop.md`. Régénérer les icônes : `cd desktop && npm run icons`.
+
+---
+
+## Bloc 9 — Kafka + Flink (streaming temps réel)
 
 ### Ce que fait ce bloc
 Traitement des événements en flux continu pour les alertes qui ne peuvent pas attendre le prochain batch Airflow.

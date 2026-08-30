@@ -28,7 +28,7 @@ class PageResponse<T> {
           .toList(),
       totalElements: json['totalElements'] as int? ?? 0,
       totalPages: json['totalPages'] as int? ?? 0,
-      number: json['number'] as int? ?? 0,
+      number: json['number'] as int? ?? json['page'] as int? ?? 0,
       size: json['size'] as int? ?? 20,
       first: json['first'] as bool? ?? true,
       last: json['last'] as bool? ?? true,

@@ -143,6 +143,8 @@ server:
 app:
   api:
     encryption-key: ${API_ENCRYPTION_KEY:microrecouv_api_enc_key_change_in_prod_32c}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,https://*.imf.cm,http://84.247.128.40:*,https://imf.rene.it.com,http://tauri.localhost,https://tauri.localhost,tauri://localhost,http://asset.localhost,https://asset.localhost,asset://localhost}
   security:
     cookie-secure: false   # true en prod (application-prod.yml)
     rate-limit:

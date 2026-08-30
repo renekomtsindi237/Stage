@@ -123,7 +123,22 @@ dbt Core (open source) transforme les données SQL avec :
 
 ---
 
-## 8. Application Mobile — Flutter
+## 8. Client bureau — Tauri 2
+
+### Choix et alternatives considérées
+| Technologie | Avantages | Inconvénients | Décision |
+|---|---|---|---|
+| **Tauri 2** | Binaire léger (~6 Mo), WebView système, installeur NSIS, réutilise Angular | Dépend de WebView2 sous Windows | **Retenu** |
+| Electron | Écosystème mature | Chromium embarqué, 150–200 Mo, RAM élevée sur PC d’agence | Non retenu |
+| Flutter Desktop | Une base avec le mobile | Ne reprend pas les dashboards Angular | Non retenu |
+| PWA seule | Aucun installeur à maintenir | Pas de Setup.exe ni d’entrée « Applications » native | Complément, pas suffisant |
+
+### Justification
+Les postes d’agence (directeur, recouvrement, DSI) ont besoin d’une application installable comme les outils bureautiques, sans réécrire l’interface. Tauri charge le `dist` Angular et parle à l’API déjà déployée (`https://imf.rene.it.com`). L’installeur NSIS crée le menu Démarrer, propose un raccourci Bureau et s’enregistre pour la désinstallation Windows.
+
+---
+
+## 9. Application Mobile — Flutter
 
 ### Justification
 - **Cross-platform** : une seule base de code pour Android (cible principale : Android 8+).
@@ -136,7 +151,7 @@ dbt Core (open source) transforme les données SQL avec :
 
 ---
 
-## 9. Infrastructure — Docker Compose
+## 10. Infrastructure — Docker Compose
 
 ### Architecture de déploiement
 
@@ -159,7 +174,7 @@ services:
 
 ---
 
-## 10. Récapitulatif de la pile technologique
+## 11. Récapitulatif de la pile technologique
 
 | Couche | Technologie | Version | Licence |
 |---|---|---|---|
@@ -172,6 +187,7 @@ services:
 | ML — Explicabilité | SHAP | 0.45 | MIT |
 | ML — Utilitaires | scikit-learn | 1.4 | BSD |
 | Frontend Web | Angular | 17 | MIT |
+| Client bureau | Tauri | 2 | MIT / Apache 2.0 |
 | Mobile | Flutter / Dart | 3.19 | BSD |
 | Migrations DB | Flyway | 9 | Apache 2.0 |
 | Infrastructure | Docker Compose | v2 | Apache 2.0 |

@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "start": "ng serve --proxy-config proxy.conf.json --port 4200",
+    "start:desktop": "ng serve --configuration desktop --port 4200",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
     "build:staging": "ng build --configuration staging",
+    "build:desktop": "ng build --configuration desktop",
     "lint": "ng lint",
     "test": "ng test --no-watch --browsers=ChromeHeadless"
   },

@@ -1,3 +1,4 @@
+import '../config/session_policy.dart';
 import '../models/auth_response.dart';
 import '../models/otp_verify_response.dart';
 import '../models/user.dart';
@@ -24,11 +25,15 @@ class AuthService {
       fromJson: (data) => OtpVerifyResponse.fromJson(data as Map<String, dynamic>),
     );
 
+    final now = DateTime.now();
     await _storage.saveAuthData(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
       role: response.role,
       username: response.username,
+      authenticatedAt: now,
+      sessionExpiresAt:
+          response.sessionExpiresAt ?? SessionPolicy.expiryFrom(now),
     );
 
     return response;
@@ -79,6 +84,11 @@ class AuthService {
     }
   }
 
+  /// Expire la session sans appeler le serveur (fin des 24 h, hors ligne).
+  Future<void> expireLocalSession() async {
+    await _storage.clearAll();
+  }
+
   Future<User> getCurrentUser() async {
     return _api.get<User>(
       '/api/v1/users/me',
@@ -87,8 +97,22 @@ class AuthService {
   }
 
   Future<bool> isLoggedIn() async {
-    return _storage.hasAccessToken();
+    if (!await _storage.hasAccessToken()) return false;
+    if (!await isSessionValid()) {
+      await expireLocalSession();
+      return false;
+    }
+    return true;
   }
+
+  Future<bool> isSessionValid() async {
+    return SessionPolicy.isValid(
+      authenticatedAt: await _storage.getAuthenticatedAt(),
+      expiresAt: await _storage.getSessionExpiresAt(),
+    );
+  }
+
+  Future<DateTime?> getSessionExpiresAt() => _storage.getSessionExpiresAt();
 
   Future<String?> getToken() async => _storage.getAccessToken();
 

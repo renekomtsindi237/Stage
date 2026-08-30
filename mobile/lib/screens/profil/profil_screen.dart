@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
+import '../../core/config/app_config.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/user.dart';
@@ -11,7 +13,9 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/locale_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/connectivity_service.dart';
 import '../../core/services/location_service.dart';
+import '../../core/services/sync_service.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -136,6 +140,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
               children: [
                 _avatarCard(context, initials, name, user, l10n),
                 const SizedBox(height: 24),
+                _sectionLabel(context, l10n.profilSectionSession),
+                const SizedBox(height: 8),
+                _sessionCard(context, auth, l10n),
+                const SizedBox(height: 24),
                 _sectionLabel(context, l10n.profilSectionGps),
                 const SizedBox(height: 8),
                 _gpsCard(context, location, l10n),
@@ -154,11 +162,54 @@ class _ProfilScreenState extends State<ProfilScreen> {
                   child: _themeRow(context, theme, l10n),
                 ),
                 const SizedBox(height: 24),
+                _sectionLabel(context, l10n.serverSection),
+                const SizedBox(height: 8),
+                _serverCard(context, l10n),
+                const SizedBox(height: 24),
                 _sectionLabel(context, l10n.profilSectionAccount),
                 const SizedBox(height: 8),
                 Container(
                   decoration: context.cardBoxR(12),
                   child: _logoutRow(context, auth, l10n),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sessionCard(BuildContext context, AuthProvider auth, AppL10n l10n) {
+    final expires = auth.sessionExpiresAt;
+    final fmt = DateFormat('dd/MM/yyyy HH:mm');
+    final label = expires != null
+        ? l10n.sessionValidUntil(fmt.format(expires.toLocal()))
+        : l10n.sessionDurationHint;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: context.cardBoxR(12),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule_rounded, color: AppColors.teal, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: context.text,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.sessionDurationHint,
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: context.textSec),
                 ),
               ],
             ),
@@ -306,7 +357,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       final fullUrl = avatarUrl.startsWith('http')
           ? avatarUrl
-          : '${ApiService.baseUrl}$avatarUrl';
+          : '${context.read<ApiService>().baseUrl}$avatarUrl';
       return ClipOval(
         child: Image.network(
           fullUrl,
@@ -569,6 +620,109 @@ class _ProfilScreenState extends State<ProfilScreen> {
         ],
       ),
     );
+  }
+
+  Widget _serverCard(BuildContext context, AppL10n l10n) {
+    final api = context.read<ApiService>();
+    final current = api.baseUrl;
+    final selected = AppConfig.profileForUrl(current);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: context.cardBoxR(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.serverCurrent(current),
+            style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: context.textSec),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ServerProfile.values.map((profile) {
+              final active = profile == selected;
+              return GestureDetector(
+                onTap: active ? null : () => _switchServer(context, profile, l10n),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: active ? AppColors.teal.withOpacity(0.14) : context.surfaceUp,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: active ? AppColors.teal : context.border,
+                    ),
+                  ),
+                  child: Text(
+                    switch (profile) {
+                      ServerProfile.production => l10n.serverProduction,
+                      ServerProfile.staging => l10n.serverStaging,
+                      ServerProfile.local => l10n.serverLocal,
+                    },
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: active ? AppColors.teal : context.textSec,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _switchServer(
+    BuildContext context,
+    ServerProfile profile,
+    AppL10n l10n,
+  ) async {
+    final url = AppConfig.urlFor(profile);
+    final pending = (await context.read<SyncService>().getPendingCollectes()).length;
+    if (!context.mounted) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ctx.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.serverSwitchTitle,
+          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700, color: ctx.text),
+        ),
+        content: Text(
+          pending > 0
+              ? '${l10n.serverSwitchContent}\n\n${l10n.serverSwitchPending(pending)}'
+              : l10n.serverSwitchContent,
+          style: TextStyle(fontFamily: 'Inter', color: ctx.textSec),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel, style: TextStyle(fontFamily: 'Inter', color: ctx.textSec)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l10n.serverSwitchConfirm,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w700,
+                color: AppColors.teal,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+    await context.read<SyncService>().switchServer(url);
+    context.read<ConnectivityService>().invalidateProbe();
+    if (context.mounted) setState(() {});
+    await context.read<AuthProvider>().logout();
   }
 
   Widget _sectionLabel(BuildContext context, String label) {

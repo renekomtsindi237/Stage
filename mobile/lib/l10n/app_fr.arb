@@ -84,6 +84,15 @@
   "profilSectionGps": "Localisation GPS",
   "profilSectionAppearance": "Apparence",
   "profilSectionAccount": "Compte",
+  "profilSectionSession": "Session",
+  "sessionValidUntil": "Valable jusqu'au {time}",
+  "@sessionValidUntil": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "sessionExpired": "Session de 24 h expirée. Reconnectez-vous.",
+  "sessionDurationHint": "24 h à partir de l'heure de connexion (horodatage terrain).",
   "profilGpsActive": "Actif",
   "profilGpsOffline": "Hors-ligne (positions en file)",
   "profilGpsError": "Erreur",
@@ -172,6 +181,7 @@
   },
   "historiqueEmptyTitle": "Aucune collecte en attente",
   "historiqueEmptySubtitle": "Toutes vos collectes sont synchronisées.",
+  "historiqueSyncedTitle": "Déjà envoyées au serveur",
   "historiqueListTitle": "Collectes ({n})",
   "@historiqueListTitle": {
     "placeholders": {
@@ -201,7 +211,29 @@
   "errorDefaultMessage": "Quelque chose s'est mal passé. Veuillez réessayer ou revenir à l'accueil.",
 
   "offlineTitle": "Connexion indisponible",
-  "offlineDescription": "Vérifiez votre connexion Wi-Fi ou données mobiles.\nL'application fonctionne en mode hors-ligne pour les collectes.",
+  "offlineDescription": "Vérifiez votre connexion Wi-Fi ou données mobiles.\nClients, collectes et tableau de bord restent disponibles depuis le cache local (72 h).",
+  "offlineBanner": "Hors ligne — clients et collectes depuis l'appareil",
+  "offlineCachedChip": "Données locales",
+  "offlineNoClientsCache": "Aucun client en cache. Connectez-vous une fois au réseau pour télécharger le portefeuille.",
+  "serverSection": "Serveur",
+  "serverProduction": "En ligne (prod)",
+  "serverStaging": "Staging",
+  "serverLocal": "Serveur local",
+  "serverSwitchTitle": "Changer de serveur ?",
+  "serverSwitchContent": "Les collectes en attente restent sur l'appareil et seront envoyées au nouveau serveur après reconnexion. Le cache clients sera retéléchargé.",
+  "serverSwitchPending": "{count} collecte(s) encore locales seront transférées.",
+  "@serverSwitchPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serverSwitchConfirm": "Changer et se reconnecter",
+  "serverCurrent": "Actuel : {url}",
+  "@serverCurrent": {
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  },
   "offlineBadge": "Vos collectes sont sauvegardées localement",
   "offlineChecking": "Vérification...",
   "offlineCheckButton": "Vérifier la connexion",

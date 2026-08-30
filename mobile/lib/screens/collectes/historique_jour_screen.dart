@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +10,7 @@ import '../../core/providers/locale_provider.dart';
 import '../../core/providers/sync_provider.dart';
 import '../../core/services/sync_service.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/connectivity_banner.dart';
 import '../../widgets/lang_switch_button.dart';
 
 class HistoriqueJourScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class HistoriqueJourScreen extends StatefulWidget {
 
 class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
   List<CollecteLocale> _pending = [];
+  List<CollecteLocale> _synced = [];
   SyncResult? _lastSync;
   bool _loading = true;
 
@@ -33,10 +35,12 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
     setState(() => _loading = true);
     final svc = context.read<SyncService>();
     final pending = await svc.getPendingCollectes();
+    final synced = await svc.getSyncedCollectes();
     final last = await svc.getLastSyncResult();
     if (mounted) {
       setState(() {
         _pending = pending;
+        _synced = synced;
         _lastSync = last;
         _loading = false;
       });
@@ -52,6 +56,11 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
     final dateLocale = locale.isFrench ? 'fr_FR' : 'en_US';
     final today = DateFormat('EEEE d MMMM yyyy', dateLocale).format(DateTime.now());
     final sync = context.watch<SyncProvider>();
+    if (!_loading && sync.pendingCount != _pending.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _load();
+      });
+    }
     final total = _pending.fold<double>(0, (s, c) => s + c.montantCollecte);
 
     return Scaffold(
@@ -71,7 +80,11 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
         ],
       ),
-      body: _loading
+      body: Column(
+        children: [
+          const ConnectivityBanner(),
+          Expanded(
+            child: _loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
           : RefreshIndicator(
               onRefresh: _load,
@@ -299,7 +312,79 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(color: AppColors.warning, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: c.lastCode == 'CONFLIT' || c.lastCode == 'ERREUR'
+                                  ? AppColors.error
+                                  : AppColors.warning,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ]),
+                      );
+                    }),
+                  ],
+                  if (_synced.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.historiqueSyncedTitle,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: context.text,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ..._synced.take(20).map((c) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(14),
+                        decoration: context.cardBoxR(12),
+                        child: Row(children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.cloud_done_rounded,
+                              color: AppColors.success,
+                              size: 19,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  c.nomClient ?? c.clientIdExterne,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: context.text,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${c.canalPaiement} · ${c.lastCode ?? 'SUCCESS'}',
+                                  style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: context.textSec),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            '${fmt.format(c.montantCollecte.toInt())} F',
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.gold,
+                            ),
                           ),
                         ]),
                       );
@@ -309,6 +394,9 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 3),
     );
   }

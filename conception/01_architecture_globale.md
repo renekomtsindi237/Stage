@@ -14,9 +14,9 @@ Le système est organisé en **quatre couches principales** interconnectées, ch
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        COUCHE PRÉSENTATION                          │
-│   Application Web (Angular 17)     Application Mobile (Flutter)     │
-└─────────────────────────┬───────────────────────┬───────────────────┘
-                          │ HTTP/REST + SSE        │ HTTP/REST (sync)
+│  Web Angular 17   Bureau Tauri 2   Mobile Flutter (offline-first)   │
+└──────────────┬──────────────┬───────────────────────┬───────────────┘
+               │ HTTP/REST+SSE│ HTTP/REST + JWT Bearer│ HTTP/REST (sync)
 ┌─────────────────────────▼───────────────────────▼───────────────────┐
 │                        COUCHE APPLICATIVE                           │
 │              Backend API REST (Spring Boot 3.3 / Java 21)           │
@@ -46,7 +46,7 @@ Le système est organisé en **quatre couches principales** interconnectées, ch
 - Internationalisation : `ngx-translate` (français/anglais).
 - Thème sombre/clair via variables CSS.
 - Mise à jour temps réel des dashboards via **Server-Sent Events (SSE)**.
-- Cookies JWT httpOnly avec `withCredentials: true`.
+- Cookies JWT httpOnly avec `withCredentials: true` (navigateur, même origine).
 
 **Modules principaux :**
 - `dashboard/` : DashboardDirecteurComponent, DashboardRecouvrementComponent, DashboardAgentComponent.
@@ -59,6 +59,16 @@ Le système est organisé en **quatre couches principales** interconnectées, ch
 - Génération d'UUID v4 côté mobile pour chaque collecte (déduplication).
 - Synchronisation batch vers `POST /api/collectes-epargne/sync` au retour en zone connectée.
 - Notifications push via Firebase Cloud Messaging (FCM).
+
+### 2.3 Application bureau — Tauri 2 (Windows)
+- Encapsule le build Angular (`configuration desktop`) dans une WebView native.
+- Installeur NSIS `MicroRecouv_1.0.0_x64-setup.exe` : menu Démarrer, raccourci Bureau, désinstallation Windows, icône `MicroRecouv.png`.
+- L’API cible est `https://imf.rene.it.com` (`environment.desktop.ts`).
+- Navigation hash (`/#/...`) pour les routes SPA dans le protocole Tauri.
+- Authentification par JWT Bearer (`localStorage`), comme le mobile : les cookies `SameSite=Strict` ne traversent pas `https://tauri.localhost`.
+- CORS backend : origines `https://tauri.localhost`, `http://tauri.localhost`, `tauri://localhost` toujours fusionnées à `CORS_ALLOWED_ORIGINS`.
+
+Détail : `docs/desktop.md`.
 
 ---
 

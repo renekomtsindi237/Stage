@@ -1,13 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
 import 'connectivity_service.dart';
+import 'local_database.dart';
 
 /// Un ping GPS en attente de synchronisation (stocké offline).
 class PositionLocale {
@@ -58,14 +57,14 @@ enum GpsState { idle, active, offline, error }
 ///    dès le retour de la connexion.
 ///  - Le tracking continue même hors-ligne.
 class LocationService extends ChangeNotifier {
-  static const _queueKey      = 'gps_position_queue';
   static const _pingInterval  = Duration(minutes: 5);
   static const _distanceFilter = 30.0; // mètres
 
   final ApiService          _api;
   final ConnectivityService _connectivity;
+  final LocalDatabase       _db;
 
-  LocationService(this._api, this._connectivity);
+  LocationService(this._api, this._connectivity, this._db);
 
   // ── État public ──────────────────────────────────────────────────────────────
 
@@ -272,71 +271,38 @@ class LocationService extends ChangeNotifier {
     }
   }
 
-  // ── Queue offline (SharedPreferences) ────────────────────────────────────────
+  // ── Queue offline (SQLite) ────────────────────────────────────────────────────
 
   Future<void> _enqueue(PositionLocale pos) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(_queueKey) ?? '[]';
-    final list  = (jsonDecode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
-    // Limiter la queue à 500 positions pour éviter la saturation
-    if (list.length >= 500) list.removeAt(0);
-    list.add(pos.toJson());
-    await prefs.setString(_queueKey, jsonEncode(list));
-    _pendingCount = list.length;
+    await _db.enqueueGps(pos.toJson());
+    _pendingCount = await _db.gpsPendingCount();
     notifyListeners();
   }
 
   Future<void> _flushQueue() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(_queueKey);
-    if (raw == null || raw == '[]') {
+    final queue = await _db.pendingGps();
+    if (queue.isEmpty) {
       _pendingCount = 0;
       notifyListeners();
       return;
     }
 
-    List<Map<String, dynamic>> queue;
-    try {
-      queue = (jsonDecode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
-    } catch (_) {
-      await prefs.remove(_queueKey);
-      _pendingCount = 0;
-      notifyListeners();
-      return;
-    }
-
-    final failed = <Map<String, dynamic>>[];
+    final sent = <int>{};
     for (final item in queue) {
       try {
-        await _api.put<void>('/api/v1/agents/me/position', data: item);
-      } catch (_) {
-        failed.add(item);
-      }
+        await _api.put<void>('/api/v1/agents/me/position', data: item.payload);
+        sent.add(item.id);
+      } catch (_) {}
     }
-
-    if (failed.isEmpty) {
-      await prefs.remove(_queueKey);
-    } else {
-      await prefs.setString(_queueKey, jsonEncode(failed));
-    }
-    _pendingCount = failed.length;
-    _state = failed.isEmpty ? GpsState.active : GpsState.offline;
+    await _db.deleteGps(sent);
+    _pendingCount = await _db.gpsPendingCount();
+    _state = _pendingCount == 0 ? GpsState.active : GpsState.offline;
     notifyListeners();
-    debugPrint('[GPS] Queue vidée: ${queue.length - failed.length} envoyées, ${failed.length} en attente');
+    debugPrint('[GPS] Queue vidée: ${sent.length} envoyées, $_pendingCount en attente');
   }
 
   Future<void> _loadPendingCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(_queueKey);
-    if (raw == null || raw == '[]') {
-      _pendingCount = 0;
-      return;
-    }
-    try {
-      _pendingCount = (jsonDecode(raw) as List<dynamic>).length;
-    } catch (_) {
-      _pendingCount = 0;
-    }
+    _pendingCount = await _db.gpsPendingCount();
   }
 
   void _updateState() {

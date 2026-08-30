@@ -17,7 +17,11 @@ node "Poste Agent Terrain\n(Android / iOS)" as FLUTTER_APP {
 }
 
 node "Poste Directeur / DSI / Analyste\n(Navigateur Web)" as BROWSER {
-    artifact "Chrome / Firefox\n(SPA Angular — cookie sécurisé)" as BROWSER_SRC
+    artifact "Chrome / Firefox / Edge\n(SPA Angular — cookie sécurisé)" as BROWSER_SRC
+}
+
+node "Poste d'agence Windows 10/11\n(application installée)" as DESKTOP_APP {
+    artifact "MicroRecouv.exe\n(Tauri 2 + Angular\nAPI https://imf.rene.it.com)" as DESKTOP_SRC
 }
 
 cloud "Firebase FCM\n(Google Cloud)" as FCM_CLOUD {
@@ -117,6 +121,7 @@ node "Serveur Applicatif\n(Ubuntu 24.04 LTS — 8 vCPU / 16 Go RAM)" as HOST {
 
 FLUTTER_APP --> NGINX : HTTPS :443\n(synchronisation collectes\net envoi position GPS)
 BROWSER --> NGINX : HTTPS :443\n(SPA Angular + appels API)
+DESKTOP_APP --> NGINX : HTTPS :443\n(JWT Bearer — origine Tauri)
 NGINX --> ANGULAR : HTTP (fichiers statiques SPA)
 NGINX --> SPRING : Requêtes HTTP proxy\n(API versionnée /api/v1/ et pipeline interne /internal/)
 

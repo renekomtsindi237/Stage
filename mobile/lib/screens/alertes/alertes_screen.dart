@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +7,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/alerte.dart';
 import '../../core/services/alerte_service.dart';
+import '../../widgets/connectivity_banner.dart';
 import '../../widgets/lang_switch_button.dart';
 
 class AlertesScreen extends StatefulWidget {
@@ -108,6 +109,7 @@ class _AlertesScreenState extends State<AlertesScreen> {
       backgroundColor: context.bg,
       body: Column(
         children: [
+          const ConnectivityBanner(),
           _buildTopBar(l10n),
           _buildFilterRow(l10n),
           Expanded(child: _buildContent(l10n)),

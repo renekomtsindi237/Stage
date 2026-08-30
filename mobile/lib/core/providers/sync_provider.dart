@@ -4,6 +4,7 @@ import '../models/collecte_locale.dart';
 import '../services/sync_service.dart';
 import '../services/sse_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/offline_catalog_service.dart';
 
 enum ScoringState { idle, pending, done, unavailable }
 
@@ -19,8 +20,14 @@ class SyncProvider extends ChangeNotifier {
   final SyncService         _syncService;
   final SseService          _sseService;
   final ConnectivityService _connectivityService;
+  final OfflineCatalogService? _catalog;
 
-  SyncProvider(this._syncService, this._sseService, this._connectivityService) {
+  SyncProvider(
+    this._syncService,
+    this._sseService,
+    this._connectivityService, {
+    OfflineCatalogService? catalog,
+  })  : _catalog = catalog {
     _init();
   }
 
@@ -53,9 +60,9 @@ class SyncProvider extends ChangeNotifier {
   void _listenConnectivity() {
     _connectivityService.onConnectivityChanged.listen((results) async {
       final connected = results.any((r) => r.name != 'none');
-      if (connected && pendingCount > 0) {
-        // Reconnexion avec des collectes en attente → auto-sync
-        await syncNow();
+      if (connected) {
+        await _catalog?.refresh();
+        if (pendingCount > 0) await syncNow();
         _sseService.connect();
       }
     });
@@ -99,6 +106,7 @@ class SyncProvider extends ChangeNotifier {
 
       lastResult   = result;
       pendingCount = (await _syncService.getPendingCollectes()).length;
+      await _catalog?.refresh();
 
       if (result.acceptees > 0) {
         // Scoring en cours côté serveur — on attend le SSE

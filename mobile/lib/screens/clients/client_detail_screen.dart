@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/theme_helper.dart';
 import '../../core/models/client.dart';
 import '../../core/services/client_service.dart';
+import '../../widgets/connectivity_banner.dart';
 import '../../widgets/error_widget.dart';
 import '../../widgets/lang_switch_button.dart';
 import '../../widgets/skeleton_loader.dart';
@@ -70,7 +71,11 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
           ),
         ],
       ),
-      body: _loading
+      body: Column(
+        children: [
+          const ConnectivityBanner(),
+          Expanded(
+            child: _loading
           ? ListView(
               padding: const EdgeInsets.all(16),
               children: const [
@@ -82,6 +87,9 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _loadClient)
               : _buildContent(),
+          ),
+        ],
+      ),
     );
   }
 

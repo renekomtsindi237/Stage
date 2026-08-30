@@ -13,16 +13,15 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  static final String baseUrl = AppConfig.apiBaseUrl;
-
   late final Dio _dio;
   final StorageService _storage;
   bool _isRefreshing = false;
+  String _baseUrl;
 
-  ApiService(this._storage) {
+  ApiService(this._storage, {String? baseUrl}) : _baseUrl = baseUrl ?? AppConfig.compileTimeUrl {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: _baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 30),
@@ -234,6 +233,29 @@ class ApiService {
         return ApiException('Erreur serveur interne', statusCode: statusCode);
       default:
         return ApiException(message, statusCode: statusCode);
+    }
+  }
+
+  String get baseUrl => _baseUrl;
+
+  void setBaseUrl(String url) {
+    _baseUrl = url.trim().replaceAll(RegExp(r'/$'), '');
+    _dio.options.baseUrl = _baseUrl;
+  }
+
+  /// Sonde courte : le serveur répond-il ? (sans JWT)
+  Future<bool> pingHealth() async {
+    try {
+      final response = await _dio.get(
+        '/api/v1/health',
+        options: Options(
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+        ),
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
     }
   }
 

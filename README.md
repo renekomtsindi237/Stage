@@ -45,7 +45,7 @@ Concevoir et mettre en œuvre une solution end-to-end qui centralise les donnée
 
 ## 3. Réponse proposée
 
-MicroRecouv relie cinq éléments :
+MicroRecouv relie six éléments :
 
 | Élément | Rôle dans la solution |
 |---|---|
@@ -54,6 +54,7 @@ MicroRecouv relie cinq éléments :
 | Pipeline Airflow/dbt | Ingestion, nettoyage, transformation, historisation et orchestration des traitements |
 | PostgreSQL | Stockage opérationnel, zone brute, entrepôt décisionnel et données ML |
 | Application web Angular | Dashboards, suivi des KPI, alertes et gestion des dossiers |
+| Application bureau Tauri | Même interface Angular, empaquetée pour Windows, API `https://imf.rene.it.com` |
 
 Le fonctionnement est le suivant :
 
@@ -64,7 +65,7 @@ Le fonctionnement est le suivant :
 4. L'API valide la collecte et élimine les doublons.
 5. Airflow et dbt consolident les collectes, les exports CBS et les données externes.
 6. Le système calcule les KPI, la classification COBAC, les alertes et les scores.
-7. Les agents, responsables et directeurs consultent les résultats dans le web ou le mobile.
+7. Les agents, responsables et directeurs consultent les résultats dans le web, le bureau ou le mobile.
 ```
 
 ## 4. Le score de risque MCRS
@@ -106,6 +107,7 @@ Le résultat n'est pas une simple note : le système fournit des explications SH
 - données de prix, météo et facteurs macroéconomiques ;
 - score MCRS, explications SHAP, alertes et détection de dérive ;
 - dashboards pour les agents, responsables, directeurs et analystes ;
+- client bureau Windows (installeur NSIS Tauri) branché sur `https://imf.rene.it.com` ;
 - sécurité JWT/RBAC et isolation multi-tenant par `imf_id`.
 
 ### Fonctionnalités exclues
@@ -117,7 +119,8 @@ La V0 ne gère pas l'instruction ou le déblocage des crédits, la comptabilité
 ```text
 Application mobile Flutter (offline) ─┐
                                      ├─ REST/JWT ─> API Spring Boot ─> PostgreSQL
-Application web Angular ─────────────┘                  │                  │
+Application web Angular ─────────────┤                  │                  │
+Application bureau Tauri ────────────┘                  │                  │
                                                        │                  ├─ app.* : métier
                                                        │                  ├─ raw/staging/dw.* : données
                                                        │                  └─ ml.* : features et scores
@@ -138,6 +141,7 @@ raw.* → staging.* → intermediate.* → dw.*
 |---|---|---:|
 | API REST | Spring Boot 3.2, Java 17 | 8080 |
 | Application web | Angular 17, Angular Material | 4200 |
+| Application bureau | Tauri 2 (WebView + Angular) | — |
 | Application mobile | Flutter / Dart | — |
 | Pipeline | Airflow 2.8.4, Python 3.11, dbt 1.8.6 | 8089 |
 | Service de scoring | FastAPI | 8090 |
@@ -152,7 +156,8 @@ raw.* → staging.* → intermediate.* → dw.*
 - GNU Make ;
 - Java 17 et Maven pour le développement du backend ;
 - Node.js et npm pour le développement du frontend ;
-- Flutter pour exécuter l'application mobile.
+- Flutter pour exécuter l'application mobile ;
+- Rust (rustup) et les outils de build C++ Windows pour le client bureau Tauri.
 
 ### Démarrer tous les services avec Docker
 
@@ -182,7 +187,23 @@ make backend-local
 cd frontend && npm ci && npm start
 ```
 
-Les deux dernières commandes sont à lancer dans des terminaux séparés. Pour arrêter les services :
+Les deux dernières commandes sont à lancer dans des terminaux séparés.
+
+### Client bureau (Tauri)
+
+Le frontend Angular est empaqueté dans une fenêtre native. L'API utilisée est `https://imf.rene.it.com`.
+
+```bash
+cd desktop && npm ci
+npm run dev      # développement (ng serve + fenêtre Tauri)
+npm run build    # produit MicroRecouv_1.0.0_x64-setup.exe
+```
+
+L'installeur se trouve dans `desktop/dist/MicroRecouv_1.0.0_x64-setup.exe`. Double-cliquer l'installe comme Word ou Excel : menu Démarrer, raccourci Bureau (proposé à la fin), désinstallation depuis Paramètres Windows. L'application se connecte à `https://imf.rene.it.com`. L'icône (Setup, `.exe`, Bureau) est le logo `MicroRecouv.png` ; la régénérer avec `cd desktop && npm run icons` puis reconstruire. Guide : [docs/desktop.md](docs/desktop.md).
+
+Le backend doit autoriser les origines Tauri (`http://tauri.localhost`, `https://tauri.localhost`). C'est déjà prévu dans `app.cors.allowed-origins` : après modification, redéployer l'API.
+
+Pour arrêter les services :
 
 ```bash
 make down ENV=dev
@@ -198,6 +219,8 @@ make pipeline-test      # tester le pipeline Python
 make pipeline-lint      # lancer ruff et mypy
 make dbt-run ENV=dev    # exécuter les modèles dbt
 make migrate            # appliquer les migrations Flyway
+make desktop-dev        # lancer le client bureau Tauri
+make desktop-build      # construire l'installeur Windows
 ```
 
 ## 10. Organisation du dépôt
@@ -205,6 +228,7 @@ make migrate            # appliquer les migrations Flyway
 ```text
 backend/             API Spring Boot, sécurité et migrations Flyway
 frontend/            Application web Angular
+desktop/             Client bureau Tauri (encapsule le frontend Angular)
 mobile/              Application Flutter offline-first
 pipeline/            DAGs Airflow, ETL Python, dbt et modèles ML
 schemas/             Schémas Avro et modèles générés
@@ -226,6 +250,7 @@ Ce README est autonome. Les documents suivants approfondissent certains sujets :
 - [Cas d'utilisation](analyse/04_cas_utilisation.md) ;
 - [Architecture globale](conception/01_architecture_globale.md) ;
 - [Conception de l'API](conception/04_conception_api.md) ;
-- [Index de la documentation V0](docs/README.md).
+- [Client bureau Tauri](docs/desktop.md) ;
+- [Index de la documentation](docs/README.md).
 
 *Projet de fin d'études — Institut Universitaire Saint Jean, Yaoundé — 2026*

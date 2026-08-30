@@ -20,6 +20,7 @@ class SseEvent {
 /// Reconnexion automatique avec back-off exponentiel (max 30s).
 class SseService {
   final StorageService _storage;
+  final ApiService _api;
 
   /// Dio dédié SSE — timeout très long pour garder la connexion ouverte.
   late final Dio _dio;
@@ -29,9 +30,9 @@ class SseService {
   bool _disposed = false;
   int  _retryDelay = 3;
 
-  SseService(this._storage) {
+  SseService(this._storage, this._api) {
     _dio = Dio(BaseOptions(
-      baseUrl: ApiService.baseUrl,
+      baseUrl: _api.baseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(minutes: 10),
     ));
@@ -50,6 +51,7 @@ class SseService {
     final token = await _storage.getAccessToken();
     if (token == null) return;
 
+    _dio.options.baseUrl = _api.baseUrl;
     try {
       final response = await _dio.get<ResponseBody>(
         '/api/v1/sse/stream',

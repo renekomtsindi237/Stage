@@ -125,6 +125,30 @@ class AuthServiceTest {
     }
 
     @Test
+    void refresh_agent_apres_24h_est_refuse() {
+        User agent = User.builder()
+                .id(2L)
+                .username("agent.terrain")
+                .email("agent@test.cm")
+                .role(Role.AGENT)
+                .actif(true)
+                .build();
+        RefreshToken stored = RefreshToken.builder()
+                .user(agent)
+                .tokenHash(hashOf("old_refresh"))
+                .createdAt(OffsetDateTime.now().minusHours(25))
+                .expiresAt(OffsetDateTime.now().plusDays(6))
+                .build();
+
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(stored));
+
+        assertThatThrownBy(() -> authService.refresh(new RefreshRequest("old_refresh")))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Session expirée");
+        verify(refreshTokenRepository).delete(stored);
+    }
+
+    @Test
     void logout_supprime_le_token() {
         authService.logout("some_refresh_token");
         verify(refreshTokenRepository).deleteByTokenHash(anyString());

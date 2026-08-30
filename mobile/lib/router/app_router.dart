@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../core/providers/auth_provider.dart';
+import '../core/providers/auth_refresh.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/landing/landing_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -22,6 +23,7 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
+    refreshListenable: authRefresh,
     redirect: (context, state) {
       final auth = context.read<AuthProvider>();
       final location = state.matchedLocation;

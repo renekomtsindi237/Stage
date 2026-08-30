@@ -29,7 +29,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HexFormat;
 import java.util.Optional;
 
@@ -47,6 +49,10 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder        passwordEncoder;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    /** Session agent mobile : 24 h à partir de l'horodatage OTP (Africa/Douala). */
+    static final Duration AGENT_MOBILE_SESSION = Duration.ofHours(24);
+    static final ZoneId WORK_ZONE = ZoneId.of("Africa/Douala");
 
     // ── Login direct SUPER_ADMIN et SUPPORT (email + mot de passe, sans OTP) ──
 
@@ -85,6 +91,12 @@ public class AuthService implements IAuthService {
         }
 
         User user = stored.getUser();
+        if (isAgentMobileSessionExpired(stored, user)) {
+            refreshTokenRepository.delete(stored);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Session expirée. Reconnectez-vous.");
+        }
+
         String newAccessToken = jwtTokenProvider.generateAccessToken(user);
 
         return new AuthResponse(
@@ -182,8 +194,12 @@ public class AuthService implements IAuthService {
             log.info("Compte activé à la première connexion OTP : {}", user.getUsername());
         }
 
-        userRepository.updateLastLogin(user.getId(), OffsetDateTime.now());
-        return OtpVerifyResponse.authenticated(issueTokens(user));
+        userRepository.updateLastLogin(user.getId(), OffsetDateTime.now(WORK_ZONE));
+        AuthResponse tokens = issueTokens(user);
+        OffsetDateTime sessionExpiresAt = user.getRole() == Role.AGENT
+                ? OffsetDateTime.now(WORK_ZONE).plus(AGENT_MOBILE_SESSION)
+                : null;
+        return OtpVerifyResponse.authenticated(tokens, sessionExpiresAt);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -194,11 +210,14 @@ public class AuthService implements IAuthService {
 
         refreshTokenRepository.deleteByUser(user);
 
+        long refreshMs = user.getRole() == Role.AGENT
+                ? AGENT_MOBILE_SESSION.toMillis()
+                : jwtTokenProvider.getRefreshTokenExpiryMs();
+
         refreshTokenRepository.save(RefreshToken.builder()
                 .user(user)
                 .tokenHash(hash(refreshTokenValue))
-                .expiresAt(OffsetDateTime.now().plusSeconds(
-                        jwtTokenProvider.getRefreshTokenExpiryMs() / 1000))
+                .expiresAt(OffsetDateTime.now(WORK_ZONE).plusSeconds(refreshMs / 1000))
                 .build());
 
         return new AuthResponse(
@@ -213,6 +232,17 @@ public class AuthService implements IAuthService {
                 user.isMustChangePassword(),
                 jwtTokenProvider.getAccessTokenExpiryMs()
         );
+    }
+
+    private boolean isAgentMobileSessionExpired(RefreshToken stored, User user) {
+        if (user.getRole() != Role.AGENT) return false;
+        OffsetDateTime start = stored.getCreatedAt();
+        if (start == null) {
+            start = stored.getExpiresAt() != null
+                    ? stored.getExpiresAt().minus(AGENT_MOBILE_SESSION)
+                    : OffsetDateTime.now(WORK_ZONE).minus(AGENT_MOBILE_SESSION);
+        }
+        return OffsetDateTime.now(WORK_ZONE).isAfter(start.plus(AGENT_MOBILE_SESSION));
     }
 
     private String hash(String value) {

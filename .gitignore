@@ -50,6 +50,12 @@ frontend/node_modules/
 frontend/dist/
 frontend/.angular/
 
+# ── Desktop (Tauri) ───────────────────────
+desktop/node_modules/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+desktop/dist/
+
 # ── Python venv ───────────────────────────
 .venv/
 __pycache__/

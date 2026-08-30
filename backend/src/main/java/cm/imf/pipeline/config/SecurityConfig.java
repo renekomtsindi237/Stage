@@ -4,6 +4,7 @@ import cm.imf.pipeline.filter.ApiKeyAuthenticationFilter;
 import cm.imf.pipeline.security.JwtAuthenticationFilter;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,6 +28,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,8 +42,8 @@ import java.util.List;
  * pour valider le token et peupler le SecurityContext avant que Spring ne
  * vérifie les droits d'accès.
  *
- * CORS : en développement on autorise localhost:* pour le client Angular.
- * En production, seuls les sous-domaines *.imf.cm sont autorisés.
+ * CORS : origines lues depuis app.cors.allowed-origins (CORS_ALLOWED_ORIGINS).
+ * Inclut localhost, le domaine public, et les origines Tauri du client bureau.
  *
  * BCrypt avec un coût de 12 est suffisant pour un contexte de microfinance,
  * même si les recommandations récentes penchent plutôt vers Argon2id.
@@ -54,6 +57,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter    jwtAuthFilter;
     private final ApiKeyAuthenticationFilter apiKeyAuthFilter;
     private final UserDetailsService         userDetailsService;
+
+    @Value("${app.cors.allowed-origins}")
+    private String corsAllowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -193,13 +199,22 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // En dev : localhost sur n'importe quel port (4200 Angular, 8080 backend, etc.)
-        config.setAllowedOriginPatterns(List.of(
-                "http://localhost:*",
-                "https://*.imf.cm",
-                "http://84.247.128.40:*",   // VPS staging (accès direct IP)
-                "https://imf.rene.it.com"   // domaine staging Cloudflare
-        ));
+        List<String> origins = new ArrayList<>(Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList());
+        for (String desktopOrigin : List.of(
+                "http://tauri.localhost",
+                "https://tauri.localhost",
+                "tauri://localhost",
+                "http://asset.localhost",
+                "https://asset.localhost",
+                "asset://localhost")) {
+            if (!origins.contains(desktopOrigin)) {
+                origins.add(desktopOrigin);
+            }
+        }
+        config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of(
                 "Authorization", "Content-Type", "X-Requested-With",

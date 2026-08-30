@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +10,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/sync_provider.dart';
 import '../../core/services/agent_service.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/connectivity_banner.dart';
 import '../../widgets/lang_switch_button.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -75,6 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: context.bg,
       body: Column(
         children: [
+          const ConnectivityBanner(),
           _buildTopBar(context, sync, initials, name, role),
           Expanded(
             child: RefreshIndicator(
@@ -85,6 +87,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 children: [
                   _buildSyncBanner(sync, l10n),
+                  if (context.read<AgentService>().lastFromCache) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.offlineCachedChip,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        color: context.textSec,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   _buildActiviteCard(_dashboardData, l10n),
                   const SizedBox(height: 16),

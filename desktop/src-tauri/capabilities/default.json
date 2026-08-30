@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Capacités de la fenêtre principale MicroRecouv",
+  "windows": ["main"],
+  "permissions": ["core:default", "opener:default"]
+}

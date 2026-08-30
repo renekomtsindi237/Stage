@@ -8,7 +8,10 @@ import {
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
+import { HttpClient } from "@angular/common/http";
 import { ApiService } from "../../../core/http/api.service";
+import { AuthService } from "../../../core/auth/auth.service";
+import { environment } from "../../../../environments/environment";
 
 interface AuditEntry {
   id: string;
@@ -38,6 +41,8 @@ interface AuditPage {
 })
 export class DsiAuditComponent implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
   loading = signal(true);
@@ -75,6 +80,24 @@ export class DsiAuditComponent implements OnInit {
   }
 
   exportCsv() {
-    window.open("/api/v1/admin/audit/trail/export?format=csv", "_blank");
+    const token = this.auth.getToken();
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+    this.http
+      .get(`${environment.apiUrl}/api/v1/admin/audit/trail/export?format=csv`, {
+        headers,
+        responseType: "blob",
+      })
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "audit-trail.csv";
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+      });
   }
 }

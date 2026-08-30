@@ -83,6 +83,15 @@
   "profilSectionGps": "GPS Location",
   "profilSectionAppearance": "Appearance",
   "profilSectionAccount": "Account",
+  "profilSectionSession": "Session",
+  "sessionValidUntil": "Valid until {time}",
+  "@sessionValidUntil": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "sessionExpired": "24-hour session expired. Please sign in again.",
+  "sessionDurationHint": "24 hours from the login timestamp.",
   "profilGpsActive": "Active",
   "profilGpsOffline": "Offline (positions queued)",
   "profilGpsError": "Error",
@@ -171,6 +180,7 @@
   },
   "historiqueEmptyTitle": "No pending collection",
   "historiqueEmptySubtitle": "All your collections are synchronized.",
+  "historiqueSyncedTitle": "Already sent to the server",
   "historiqueListTitle": "Collections ({n})",
   "@historiqueListTitle": {
     "placeholders": {
@@ -200,7 +210,29 @@
   "errorDefaultMessage": "Something went wrong. Please try again or go back to home.",
 
   "offlineTitle": "Connection unavailable",
-  "offlineDescription": "Check your Wi-Fi or mobile data connection.\nThe app works in offline mode for collections.",
+  "offlineDescription": "Check your Wi-Fi or mobile data.\nClients, collections and the dashboard stay available from the local cache (72 h).",
+  "offlineBanner": "Offline — clients and collections from this device",
+  "offlineCachedChip": "Local data",
+  "offlineNoClientsCache": "No clients cached. Connect once to download your portfolio.",
+  "serverSection": "Server",
+  "serverProduction": "Online (prod)",
+  "serverStaging": "Staging",
+  "serverLocal": "Local server",
+  "serverSwitchTitle": "Switch server?",
+  "serverSwitchContent": "Pending collections stay on this device and will be sent to the new server after you sign in again. The client cache will be downloaded again.",
+  "serverSwitchPending": "{count} local collection(s) will be transferred.",
+  "@serverSwitchPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serverSwitchConfirm": "Switch and sign in again",
+  "serverCurrent": "Current: {url}",
+  "@serverCurrent": {
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  },
   "offlineBadge": "Your collections are saved locally",
   "offlineChecking": "Checking...",
   "offlineCheckButton": "Check connection",

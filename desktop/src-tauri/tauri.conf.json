@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "MicroRecouv",
+  "version": "1.0.0",
+  "identifier": "com.rene.microrecouv",
+  "build": {
+    "frontendDist": "../../frontend/dist/microrecouv-frontend/browser",
+    "devUrl": "http://localhost:4200",
+    "beforeDevCommand": "npm run start:desktop --prefix ../frontend",
+    "beforeBuildCommand": "npm run build:desktop --prefix ../frontend"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "MicroRecouv",
+        "width": 1440,
+        "height": 920,
+        "minWidth": 1100,
+        "minHeight": 700,
+        "resizable": true,
+        "maximizable": true,
+        "minimizable": true,
+        "closable": true,
+        "decorations": true,
+        "fullscreen": false,
+        "center": true,
+        "useHttpsScheme": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' asset: https://asset.localhost https://tauri.localhost; connect-src 'self' ipc: http://ipc.localhost https://ipc.localhost https://imf.rene.it.com wss://imf.rene.it.com http://localhost:* ws://localhost:* https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://fonts.googleapis.com https://fonts.gstatic.com https://*.r2.dev; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; img-src 'self' asset: http://asset.localhost https://asset.localhost https://tauri.localhost data: blob: https: http:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; frame-src 'self' https://*.r2.dev https://imf.rene.it.com",
+      "dangerousDisableAssetCspModification": ["style-src", "style-src-elem"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "Openxtech",
+    "homepage": "https://imf.rene.it.com",
+    "copyright": "Copyright © 2026 Openxtech — MicroRecouv",
+    "category": "Finance",
+    "shortDescription": "Gestion et recouvrement pour les institutions de microfinance",
+    "longDescription": "MicroRecouv est le client bureau de la plateforme de centralisation, d'analyse et d'aide au recouvrement pour les institutions de microfinance. L'application se connecte à https://imf.rene.it.com.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["French", "English"],
+        "displayLanguageSelector": true,
+        "startMenuFolder": "MicroRecouv",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "compression": "lzma"
+      }
+    }
+  }
+}

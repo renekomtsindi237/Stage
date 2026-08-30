@@ -30,10 +30,11 @@ Concevoir et implémenter un pipeline de données end-to-end permettant aux inst
 - **OBJ-7** : Implémenter l'explicabilité du modèle via SHAP TreeExplainer (top 10 features par client) et la détection de dérive (PSI > 0.20 → retraining automatique).
 - **OBJ-8** : Valider le modèle par validation croisée temporelle walk-forward (5 folds, 12 mois d'entraînement, 3 mois de test, 1 mois de gap).
 
-### 2.4 Application web et mobile
+### 2.4 Application web, bureau et mobile
 
 - **OBJ-9** : Développer un dashboard DIRECTEUR temps réel présentant les KPI collecte, le PAR COBAC par agence, les scores MCRS et les benchmarks inter-agences.
 - **OBJ-10** : Implémenter la synchronisation offline-first de l'application mobile Flutter avec déduplication UUID côté serveur.
+- **OBJ-10b** : Fournir un client bureau Windows (Tauri) installable comme une application bureautique, encapsulant le frontend Angular et connecté à `https://imf.rene.it.com`.
 
 ### 2.5 Conformité et sécurité
 
@@ -53,6 +54,7 @@ Concevoir et implémenter un pipeline de données end-to-end permettant aux inst
 | **Dashboards** | DIRECTEUR (KPI globaux + benchmarks), RESPONSABLE_RECOUVREMENT (dossiers + PAR), AGENT (objectifs + collectes) |
 | **Pipeline** | Airflow DAGs, dbt transformations, feature store ML |
 | **Mobile** | Saisie collecte offline, consultation KPI agent, push notifications |
+| **Bureau** | Installeur Windows NSIS (Tauri), mêmes dashboards Angular, API `https://imf.rene.it.com` |
 
 ### 3.2 Ce qui est exclu
 
@@ -69,6 +71,7 @@ Concevoir et implémenter un pipeline de données end-to-end permettant aux inst
 | Data Warehouse | Schéma étoile `dw.*`, vues de reporting, snapshots historiques |
 | Modèle MCRS | Score composite [0,1] avec AUC > 0.78 sur validation walk-forward |
 | Application web | Dashboard DIRECTEUR temps réel avec mise à jour SSE |
+| Application bureau | Installeur NSIS Windows, même interface Angular, API de production |
 | Application mobile | Sync offline-first avec déduplication côté serveur |
 | Documentation | Cahier des charges, conception, UML (8 diagrammes), mémoire de fin d'études |
 

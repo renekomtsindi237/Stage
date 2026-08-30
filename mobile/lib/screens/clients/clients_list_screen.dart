@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:microrecouv/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -7,6 +7,7 @@ import '../../core/constants/theme_helper.dart';
 import '../../core/models/client.dart';
 import '../../core/services/client_service.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/connectivity_banner.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_widget.dart';
 import '../../widgets/lang_switch_button.dart';
@@ -105,6 +106,7 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
       ),
       body: Column(
         children: [
+          const ConnectivityBanner(),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: TextField(
@@ -142,7 +144,7 @@ class _ClientsListScreenState extends State<ClientsListScreen> {
                         ? EmptyState(
                             icon: Icons.people_outline,
                             title: l10n.clientsEmptyTitle,
-                            subtitle: l10n.clientsEmptySubtitle,
+                            subtitle: l10n.offlineNoClientsCache,
                             onRetry: _loadClients,
                           )
                         : RefreshIndicator(
