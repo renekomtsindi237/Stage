@@ -82,6 +82,7 @@ mobile/android/local.properties
 mobile/ios/Pods/
 mobile/ios/.symlinks/
 mobile/coverage/
+mobile/dist/
 mobile/pubspec.lock
 mobile/.dart_tool/
 .flutter-plugins

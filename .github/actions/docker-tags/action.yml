@@ -1,0 +1,41 @@
+name: Docker tags
+description: >
+  Calcule les tags d'image (sha / staging / latest) en local.
+  Évite docker/metadata-action, dont le téléchargement codeload
+  échoue en 400 sur le runner auto-hébergé.
+
+inputs:
+  image:
+    description: Nom complet de l'image (ex. ghcr.io/org/repo/imf-backend)
+    required: true
+
+outputs:
+  tags:
+    description: Tags séparés par des retours à la ligne
+    value: ${{ steps.set.outputs.tags }}
+  labels:
+    description: Labels OCI (une ligne, virgules)
+    value: ${{ steps.set.outputs.labels }}
+
+runs:
+  using: composite
+  steps:
+    - id: set
+      shell: bash
+      run: |
+        set -euo pipefail
+        IMAGE='${{ inputs.image }}'
+        SHORT_SHA='${{ github.sha }}'
+        SHORT_SHA="${SHORT_SHA:0:7}"
+        {
+          echo "tags<<EOF"
+          echo "${IMAGE}:sha-${SHORT_SHA}"
+          if [ '${{ github.ref }}' = 'refs/heads/main' ] || [ '${{ github.ref }}' = 'refs/heads/staging' ]; then
+            echo "${IMAGE}:staging"
+          fi
+          if [ '${{ github.ref }}' = 'refs/heads/main' ]; then
+            echo "${IMAGE}:latest"
+          fi
+          echo "EOF"
+          echo "labels=org.opencontainers.image.revision=${{ github.sha }},org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
+        } >> "$GITHUB_OUTPUT"

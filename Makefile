@@ -13,7 +13,7 @@ IMAGE_TAG ?= latest
         build build-backend build-frontend build-pipeline build-web \
         push-backend push-frontend push-web \
         dbt-run migrate test-backend test-web lint \
-        infra backend-local desktop-dev desktop-build
+        infra backend-local desktop-dev desktop-build mobile-apk
 
 help:
 	@echo ""
@@ -42,6 +42,7 @@ help:
 	@echo ""
 	@echo "  make desktop-dev   Lancer le client bureau Tauri (dev)"
 	@echo "  make desktop-build Construire l'installeur Windows"
+	@echo "  make mobile-apk    Construire l'APK Android (API prod)"
 	@echo ""
 	@echo "  make test-backend  Tests unitaires Spring Boot"
 	@echo "  make test-web      Tests Angular"
@@ -155,6 +156,13 @@ desktop-dev:
 
 desktop-build:
 	cd desktop && npm run build
+
+mobile-apk:
+	cd mobile && flutter pub get && flutter build apk --release \
+	  --dart-define=API_BASE_URL=https://imf.rene.it.com
+	mkdir -p mobile/dist
+	cp mobile/build/app/outputs/flutter-apk/app-release.apk \
+	  mobile/dist/MicroRecouv-1.0.4.apk
 
 # ── Web ───────────────────────────────────────────────────────────────────
 install-web:

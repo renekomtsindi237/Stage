@@ -223,15 +223,11 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker metadata
+      - name: Docker tags
         id: meta
-        uses: docker/metadata-action@v5
+        uses: ./.github/actions/docker-tags
         with:
-          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}
-          tags: |
-            type=sha,format=short
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}
       - uses: docker/build-push-action@v5
         with:
           context: .
@@ -257,15 +253,11 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker metadata
+      - name: Docker tags
         id: meta
-        uses: docker/metadata-action@v5
+        uses: ./.github/actions/docker-tags
         with:
-          images: ${{ env.REGISTRY }}/${{ env.ML_API_IMAGE }}
-          tags: |
-            type=sha,format=short
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          image: ${{ env.REGISTRY }}/${{ env.ML_API_IMAGE }}
       - uses: docker/build-push-action@v5
         with:
           context: ./pipeline
@@ -291,15 +283,11 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker metadata
+      - name: Docker tags
         id: meta
-        uses: docker/metadata-action@v5
+        uses: ./.github/actions/docker-tags
         with:
-          images: ${{ env.REGISTRY }}/${{ env.AIRFLOW_IMAGE }}
-          tags: |
-            type=sha,format=short
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          image: ${{ env.REGISTRY }}/${{ env.AIRFLOW_IMAGE }}
       - uses: docker/build-push-action@v5
         with:
           context: ./pipeline
@@ -325,15 +313,11 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker metadata
+      - name: Docker tags
         id: meta
-        uses: docker/metadata-action@v5
+        uses: ./.github/actions/docker-tags
         with:
-          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}
-          tags: |
-            type=sha,format=short
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}
       - uses: docker/build-push-action@v5
         with:
           context: ./frontend
