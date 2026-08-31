@@ -24,7 +24,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        IMAGE='${{ inputs.image }}'
+        IMAGE=$(echo '${{ inputs.image }}' | tr '[:upper:]' '[:lower:]')
         SHORT_SHA='${{ github.sha }}'
         SHORT_SHA="${SHORT_SHA:0:7}"
         {
