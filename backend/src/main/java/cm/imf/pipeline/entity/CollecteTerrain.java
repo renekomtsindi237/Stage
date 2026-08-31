@@ -39,11 +39,10 @@ public class CollecteTerrain extends BaseEntity {
     private cm.imf.pipeline.entity.Imf imf;
 
     @NotBlank
-    @Column(name = "client_id", nullable = false, length = 30)
+    @Column(name = "client_id", nullable = false, length = 100)
     private String clientId;
 
-    @NotBlank
-    @Column(name = "pret_id", nullable = false, length = 30)
+    @Column(name = "pret_id", length = 100)
     private String pretId;
 
     @NotNull
@@ -57,7 +56,7 @@ public class CollecteTerrain extends BaseEntity {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "canal_paiement", nullable = false, length = 20)
+    @Column(name = "canal_paiement", nullable = false, length = 30)
     private CanalPaiement canalPaiement;
 
     @Column(name = "reference_transaction", length = 100)

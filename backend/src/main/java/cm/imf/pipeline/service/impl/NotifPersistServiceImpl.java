@@ -71,11 +71,15 @@ public class NotifPersistServiceImpl implements INotifPersistService {
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSyncCompleted(SyncCompletedEvent event) {
-        Long imfId = TenantContext.currentImfId();
-        if (imfId == null) return;
-        String msg = "Sync de " + event.getAgentUsername() + " terminée.";
-        save(SseEventDto.TYPE_SYNC_COMPLETED,
-                "Synchronisation terminée", msg, null, imfId, event.getSyncResponse());
+        try {
+            Long imfId = TenantContext.currentImfId();
+            if (imfId == null) return;
+            String msg = "Sync de " + event.getAgentUsername() + " terminée.";
+            save(SseEventDto.TYPE_SYNC_COMPLETED,
+                    "Synchronisation terminée", msg, null, imfId, event.getSyncResponse());
+        } catch (Exception e) {
+            log.warn("Notification sync ignorée : {}", e.getMessage());
+        }
     }
 
     // ── INotifPersistService ──────────────────────────────────────────────────

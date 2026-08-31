@@ -268,6 +268,49 @@ class CollecteSyncServiceTest {
     // ── getSyncStatus ─────────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("processSync — pretId absent → SANS_PRET, pas d'exception")
+    void processSync_pretId_absent_defaut() {
+        when(syncLogRepository.existsBySyncId(syncId)).thenReturn(false);
+        when(syncLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(collecteRepository.existsByIdCollecteMobile(any())).thenReturn(false);
+        when(collecteRepository.save(any())).thenAnswer(inv -> {
+            CollecteTerrain c = inv.getArgument(0);
+            c.setId(7L);
+            return c;
+        });
+
+        CollecteRequest sansPret = new CollecteRequest(
+                "MOB-ORANGE", "CLF015", null, LocalDate.now(),
+                new BigDecimal("40000"), CanalPaiement.ORANGE, null, null, null, null);
+
+        SyncResponse result = syncService.processSync(
+                validRequest(List.of(sansPret)), agent, "10.0.0.1");
+
+        assertThat(result.stats().succes()).isEqualTo(1);
+        ArgumentCaptor<CollecteTerrain> captor = ArgumentCaptor.forClass(CollecteTerrain.class);
+        verify(collecteRepository).save(captor.capture());
+        assertThat(captor.getValue().getPretId()).isEqualTo("SANS_PRET");
+        assertThat(captor.getValue().getCanalPaiement()).isEqualTo(CanalPaiement.ORANGE);
+    }
+
+    @Test
+    @DisplayName("processSync — contrainte SQL sur un item → ERREUR item, pas 500")
+    void processSync_contrainte_sql_ne_plante_pas_le_batch() {
+        when(syncLogRepository.existsBySyncId(syncId)).thenReturn(false);
+        when(syncLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(collecteRepository.existsByIdCollecteMobile(any())).thenReturn(false);
+        when(collecteRepository.save(any())).thenThrow(
+                new org.springframework.dao.DataIntegrityViolationException("canal_paiement check"));
+
+        SyncResponse result = syncService.processSync(
+                validRequest(List.of(validItem("MOB-500"))), agent, "10.0.0.1");
+
+        assertThat(result.stats().erreurs()).isEqualTo(1);
+        assertThat(result.stats().succes()).isEqualTo(0);
+        assertThat(result.resultats().get(0).code()).isEqualTo(SyncItemResult.CODE_ERREUR);
+    }
+
+    @Test
     @DisplayName("getSyncStatus — aucune sync → message explicite")
     void getSyncStatus_aucune_sync() {
         when(syncLogRepository.findByDeviceIdOrderBySyncStartedAtDesc("DEVICE-999"))

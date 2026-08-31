@@ -11,12 +11,15 @@ import cm.imf.pipeline.event.SyncCompletedEvent;
 import cm.imf.pipeline.i18n.SyncMessages;
 import cm.imf.pipeline.repository.CollecteRepository;
 import cm.imf.pipeline.repository.SyncLogRepository;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -45,6 +48,10 @@ public class CollecteSyncService implements ICollecteSyncService {
     private final CollecteRepository      collecteRepository;
     private final SyncLogRepository       syncLogRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    /** Optionnel : isolé pour les tests unitaires (Mockito n'injecte pas toujours le TM). */
+    @Autowired(required = false)
+    private PlatformTransactionManager transactionManager;
 
     /**
      * Traite un batch de synchronisation.
@@ -107,10 +114,14 @@ public class CollecteSyncService implements ICollecteSyncService {
             }
         }
 
-        // ── Publication de l'événement SSE + scoring ──────────────────────────
-        Long imfId = agent.getImf() != null ? agent.getImf().getId() : null;
-        eventPublisher.publishEvent(
-                new SyncCompletedEvent(this, response, agent.getUsername(), clientIds, imfId));
+        // ── Publication de l'événement SSE + scoring (ne doit jamais 500 la sync) ──
+        try {
+            Long imfId = agent.getImf() != null ? agent.getImf().getId() : null;
+            eventPublisher.publishEvent(
+                    new SyncCompletedEvent(this, response, agent.getUsername(), clientIds, imfId));
+        } catch (Exception e) {
+            log.warn("Événement post-sync ignoré : {}", e.getMessage());
+        }
 
         log.info("Sync terminée — syncId: {}, statut: {}, succes: {}/{}, conflits: {}",
                 request.syncId(), statutGlobal, stats.succes(), stats.total(), stats.conflits());
@@ -124,6 +135,22 @@ public class CollecteSyncService implements ICollecteSyncService {
      */
     private SyncItemResult processOneItem(CollecteRequest item, User agent,
                                            String syncId, String deviceId) {
+        if (transactionManager == null) {
+            return processOneItemInternal(item, agent);
+        }
+        TransactionTemplate tt = new TransactionTemplate(transactionManager);
+        tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        try {
+            return tt.execute(status -> processOneItemInternal(item, agent));
+        } catch (Exception e) {
+            log.error("Erreur traitement item sync {} : {}", item.idCollecteMobile(), e.getMessage(), e);
+            return SyncItemResult.erreur(
+                    item.idCollecteMobile(),
+                    SyncMessages.erreurTechnique(e.getClass().getSimpleName()));
+        }
+    }
+
+    private SyncItemResult processOneItemInternal(CollecteRequest item, User agent) {
         try {
             // ── Cas 1 : doublon par ID mobile (même appareil, réenvoi) ────────
             if (collecteRepository.existsByIdCollecteMobile(item.idCollecteMobile())) {
@@ -163,12 +190,14 @@ public class CollecteSyncService implements ICollecteSyncService {
             }
 
             // ── Cas 5 : enregistrement nominal ───────────────────────────────
+            String pretId = (item.pretId() == null || item.pretId().isBlank())
+                    ? "SANS_PRET" : item.pretId();
             CollecteTerrain collecte = CollecteTerrain.builder()
                     .idCollecteMobile(item.idCollecteMobile())
                     .agent(agent)
                     .imf(agent.getImf())
                     .clientId(item.clientId())
-                    .pretId(item.pretId())
+                    .pretId(pretId)
                     .dateCollecte(item.dateCollecte())
                     .montantCollecte(item.montantCollecte())
                     .canalPaiement(item.canalPaiement())

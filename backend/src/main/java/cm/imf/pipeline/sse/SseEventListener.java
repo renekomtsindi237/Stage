@@ -74,10 +74,15 @@ public class SseEventListener {
     @Async
     @EventListener
     public void onSyncCompleted(SyncCompletedEvent event) {
-        SseEventDto dto = SseEventDto.syncCompleted(
-                event.getSyncResponse(), event.getAgentUsername());
-        registry.broadcastAll(dto);
-        log.debug("SSE broadcast SyncCompleted — agent: {}, syncId: {}",
-                event.getAgentUsername(), event.getSyncResponse().syncId());
+        try {
+            if (event.getSyncResponse() == null) return;
+            SseEventDto dto = SseEventDto.syncCompleted(
+                    event.getSyncResponse(), event.getAgentUsername());
+            registry.broadcastAll(dto);
+            log.debug("SSE broadcast SyncCompleted — agent: {}, syncId: {}",
+                    event.getAgentUsername(), event.getSyncResponse().syncId());
+        } catch (Exception e) {
+            log.warn("SSE SyncCompleted ignoré : {}", e.getMessage());
+        }
     }
 }
