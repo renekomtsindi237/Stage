@@ -1,194 +1,204 @@
 <div class="clients-layout" [class.has-detail]="!!dossier()">
   <div class="clients-list">
-<div class="page-content">
-  <input
-    #fileInput
-    type="file"
-    accept=".xlsx,.xls"
-    style="display: none"
-    (change)="onFileSelected($event)"
-  />
+    <div class="page-content">
+      <input
+        #fileInput
+        type="file"
+        accept=".xlsx,.xls"
+        style="display: none"
+        (change)="onFileSelected($event)"
+      />
 
-  <div class="page-header">
-    <div>
-      <h2>{{ "dir_clients.title" | translate }}</h2>
-      <p class="text-muted text-sm">
-        {{ page()?.totalElements ?? 0 | number }}
-        {{ "dir_clients.total_suffix" | translate }}
-      </p>
-    </div>
-    <div class="header-actions">
-      <a [href]="templateUrl()" download class="btn btn-ghost btn-sm">
-        <span class="material-icons-round" style="font-size: 16px"
-          >download</span
-        >
-        {{ "dir_clients.template" | translate }}
-      </a>
-      <button
-        class="btn btn-secondary btn-sm"
-        (click)="triggerImport()"
-        [disabled]="importing()"
-      >
-        @if (importing()) {
-          <span class="spinner-xs"></span>
-          {{ "dir_clients.import_loading" | translate }}
-        } @else {
-          <span class="material-icons-round" style="font-size: 16px"
-            >upload_file</span
+      <div class="page-header">
+        <div>
+          <h2>{{ "dir_clients.title" | translate }}</h2>
+          <p class="text-muted text-sm">
+            {{ page()?.totalElements ?? 0 | number }}
+            {{ "dir_clients.total_suffix" | translate }}
+          </p>
+        </div>
+        <div class="header-actions">
+          <a [href]="templateUrl()" download class="btn btn-ghost btn-sm">
+            <span class="material-icons-round" style="font-size: 16px"
+              >download</span
+            >
+            {{ "dir_clients.template" | translate }}
+          </a>
+          <button
+            class="btn btn-secondary btn-sm"
+            (click)="triggerImport()"
+            [disabled]="importing()"
           >
-          {{ "dir_clients.import_btn" | translate }}
-        }
-      </button>
-    </div>
-  </div>
+            @if (importing()) {
+              <span class="spinner-xs"></span>
+              {{ "dir_clients.import_loading" | translate }}
+            } @else {
+              <span class="material-icons-round" style="font-size: 16px"
+                >upload_file</span
+              >
+              {{ "dir_clients.import_btn" | translate }}
+            }
+          </button>
+        </div>
+      </div>
 
-  @if (importResult()) {
-    <div
-      class="import-banner"
-      [class.import-banner--error]="importResult()!.erreurs > 0"
-    >
-      <strong>{{
-        "dir_clients.banner_added"
-          | translate: { count: importResult()!.importe }
-      }}</strong
-      >,
-      {{
-        "dir_clients.banner_updated"
-          | translate: { count: importResult()!.miseAJour }
-      }}
-      @if (importResult()!.lignesErreur.length > 0) {
-        <ul class="import-errors">
-          @for (e of importResult()!.lignesErreur; track $index) {
-            <li>{{ e }}</li>
-          }
-        </ul>
-      }
-      <button class="btn btn-ghost btn-xs" (click)="importResult.set(null)">
-        ✕
-      </button>
-    </div>
-  }
-
-  <div
-    class="card filter-bar"
-    [formGroup]="filterForm"
-    style="margin-bottom: 16px"
-  >
-    <input
-      class="form-control"
-      formControlName="search"
-      [placeholder]="'dir_clients.search_placeholder' | translate"
-      style="flex: 1"
-    />
-    <select class="form-control" formControlName="statut" style="width: auto">
-      <option value="">{{ "dir_clients.filter_all" | translate }}</option>
-      <option value="ACTIF">
-        {{ "dir_clients.filter_active" | translate }}
-      </option>
-      <option value="EN_RETARD">
-        {{ "dir_clients.filter_late" | translate }}
-      </option>
-      <option value="DEFAILLANT">
-        {{ "dir_clients.filter_default" | translate }}
-      </option>
-    </select>
-    <button class="btn btn-primary" (click)="load()">
-      {{ "dir_clients.search_btn" | translate }}
-    </button>
-  </div>
-
-  <div class="card">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>{{ "dir_clients.col_client" | translate }}</th>
-          <th>{{ "dir_clients.col_id" | translate }}</th>
-          <th>{{ "dir_clients.col_encours" | translate }}</th>
-          <th>{{ "dir_clients.col_statut" | translate }}</th>
-          <th>{{ "dir_clients.col_agence" | translate }}</th>
-          <th>{{ "dir_clients.col_actions" | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading()) {
-          @for (_ of [1, 2, 3, 4, 5]; track $index) {
-            <tr>
-              @for (__ of [1, 2, 3, 4, 5, 6]; track $index) {
-                <td>
-                  <div class="skeleton" style="height: 14px; width: 80%"></div>
-                </td>
+      @if (importResult()) {
+        <div
+          class="import-banner"
+          [class.import-banner--error]="importResult()!.erreurs > 0"
+        >
+          <strong>{{
+            "dir_clients.banner_added"
+              | translate: { count: importResult()!.importe }
+          }}</strong
+          >,
+          {{
+            "dir_clients.banner_updated"
+              | translate: { count: importResult()!.miseAJour }
+          }}
+          @if (importResult()!.lignesErreur.length > 0) {
+            <ul class="import-errors">
+              @for (e of importResult()!.lignesErreur; track $index) {
+                <li>{{ e }}</li>
               }
-            </tr>
+            </ul>
           }
-        } @else {
-          @for (c of page()?.content ?? []; track c.idClient) {
-            <tr>
-              <td>
-                <p class="font-semibold">{{ c.nomClient }}</p>
-                <p class="text-sm text-muted">{{ c.telephoneClient ?? "—" }}</p>
-              </td>
-              <td class="text-muted text-sm">{{ c.idClient }}</td>
-              <td>{{ c.encours | fcfa }}</td>
-              <td>
-                <span
-                  class="badge"
-                  [class]="
-                    c.statut === 'ACTIF'
-                      ? 'badge-basse'
-                      : c.statut === 'EN_RETARD'
-                        ? 'badge-moyenne'
-                        : 'badge-critique'
-                  "
-                >
-                  {{
-                    "dir_clients.status_" + (c.statut ?? "ACTIF") | translate
-                  }}
-                </span>
-              </td>
-              <td class="text-sm text-muted">
-                {{ c.agencePrincipale ?? "—" }}
-              </td>
-              <td>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  type="button"
-                  (click)="openDossier(c)"
-                  [attr.title]="'dir_clients.view_dossier' | translate"
-                  [attr.aria-label]="'dir_clients.view_dossier' | translate"
-                >
-                  <span class="material-icons-round">visibility</span>
-                </button>
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
+          <button class="btn btn-ghost btn-xs" (click)="importResult.set(null)">
+            ✕
+          </button>
+        </div>
+      }
 
-    @if (page() && (page()?.totalPages ?? 0) > 1) {
-      <div class="pagination">
-        <button
-          class="btn btn-ghost btn-sm"
-          [disabled]="currentPage() === 0"
-          (click)="goPage(currentPage() - 1)"
+      <div
+        class="card filter-bar"
+        [formGroup]="filterForm"
+        style="margin-bottom: 16px"
+      >
+        <input
+          class="form-control"
+          formControlName="search"
+          [placeholder]="'dir_clients.search_placeholder' | translate"
+          style="flex: 1"
+        />
+        <select
+          class="form-control"
+          formControlName="statut"
+          style="width: auto"
         >
-          <span class="material-icons-round">chevron_left</span>
-        </button>
-        <span class="text-sm"
-          >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
-          {{ page()?.totalPages }}</span
-        >
-        <button
-          class="btn btn-ghost btn-sm"
-          [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
-          (click)="goPage(currentPage() + 1)"
-        >
-          <span class="material-icons-round">chevron_right</span>
+          <option value="">{{ "dir_clients.filter_all" | translate }}</option>
+          <option value="ACTIF">
+            {{ "dir_clients.filter_active" | translate }}
+          </option>
+          <option value="EN_RETARD">
+            {{ "dir_clients.filter_late" | translate }}
+          </option>
+          <option value="DEFAILLANT">
+            {{ "dir_clients.filter_default" | translate }}
+          </option>
+        </select>
+        <button class="btn btn-primary" (click)="load()">
+          {{ "dir_clients.search_btn" | translate }}
         </button>
       </div>
-    }
-  </div>
-</div>
+
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ "dir_clients.col_client" | translate }}</th>
+              <th>{{ "dir_clients.col_id" | translate }}</th>
+              <th>{{ "dir_clients.col_encours" | translate }}</th>
+              <th>{{ "dir_clients.col_statut" | translate }}</th>
+              <th>{{ "dir_clients.col_agence" | translate }}</th>
+              <th>{{ "dir_clients.col_actions" | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+              @for (_ of [1, 2, 3, 4, 5]; track $index) {
+                <tr>
+                  @for (__ of [1, 2, 3, 4, 5, 6]; track $index) {
+                    <td>
+                      <div
+                        class="skeleton"
+                        style="height: 14px; width: 80%"
+                      ></div>
+                    </td>
+                  }
+                </tr>
+              }
+            } @else {
+              @for (c of page()?.content ?? []; track c.idClient) {
+                <tr>
+                  <td>
+                    <p class="font-semibold">{{ c.nomClient }}</p>
+                    <p class="text-sm text-muted">
+                      {{ c.telephoneClient ?? "—" }}
+                    </p>
+                  </td>
+                  <td class="text-muted text-sm">{{ c.idClient }}</td>
+                  <td>{{ c.encours | fcfa }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class]="
+                        c.statut === 'ACTIF'
+                          ? 'badge-basse'
+                          : c.statut === 'EN_RETARD'
+                            ? 'badge-moyenne'
+                            : 'badge-critique'
+                      "
+                    >
+                      {{
+                        "dir_clients.status_" + (c.statut ?? "ACTIF")
+                          | translate
+                      }}
+                    </span>
+                  </td>
+                  <td class="text-sm text-muted">
+                    {{ c.agencePrincipale ?? "—" }}
+                  </td>
+                  <td>
+                    <button
+                      class="btn btn-ghost btn-sm"
+                      type="button"
+                      (click)="openDossier(c)"
+                      [attr.title]="'dir_clients.view_dossier' | translate"
+                      [attr.aria-label]="'dir_clients.view_dossier' | translate"
+                    >
+                      <span class="material-icons-round">visibility</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+
+        @if (page() && (page()?.totalPages ?? 0) > 1) {
+          <div class="pagination">
+            <button
+              class="btn btn-ghost btn-sm"
+              [disabled]="currentPage() === 0"
+              (click)="goPage(currentPage() - 1)"
+            >
+              <span class="material-icons-round">chevron_left</span>
+            </button>
+            <span class="text-sm"
+              >{{ "common.page" | translate }} {{ currentPage() + 1 }} /
+              {{ page()?.totalPages }}</span
+            >
+            <button
+              class="btn btn-ghost btn-sm"
+              [disabled]="currentPage() >= (page()?.totalPages ?? 1) - 1"
+              (click)="goPage(currentPage() + 1)"
+            >
+              <span class="material-icons-round">chevron_right</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
   </div>
 
   @if (dossier(); as d) {

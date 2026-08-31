@@ -190,24 +190,22 @@ export class AuthService {
   }
 
   private refreshProfile() {
-    this.http
-      .get<unknown>(`${environment.apiUrl}/api/v1/users/me`)
-      .subscribe({
-        next: (raw) => {
-          const me = this.unwrapData<{ avatarUrl?: string | null }>(raw);
-          const user = this.currentUser();
-          if (!user || !me) return;
-          const updated: User = {
-            ...user,
-            avatarUrl: me.avatarUrl ?? null,
-          };
-          localStorage.setItem(USER_KEY, JSON.stringify(updated));
-          this.currentUser.set(updated);
-        },
-        error: () => {
-          /* Conservé en local si le profil distant est injoignable (latence). */
-        },
-      });
+    this.http.get<unknown>(`${environment.apiUrl}/api/v1/users/me`).subscribe({
+      next: (raw) => {
+        const me = this.unwrapData<{ avatarUrl?: string | null }>(raw);
+        const user = this.currentUser();
+        if (!user || !me) return;
+        const updated: User = {
+          ...user,
+          avatarUrl: me.avatarUrl ?? null,
+        };
+        localStorage.setItem(USER_KEY, JSON.stringify(updated));
+        this.currentUser.set(updated);
+      },
+      error: () => {
+        /* Conservé en local si le profil distant est injoignable (latence). */
+      },
+    });
   }
 
   private unwrapData<T>(res: unknown): T | null {

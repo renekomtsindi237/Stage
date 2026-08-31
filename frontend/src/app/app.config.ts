@@ -24,7 +24,11 @@ export const appConfig: ApplicationConfig = {
       ? provideRouter(routes, withHashLocation(), withComponentInputBinding())
       : provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
-      withInterceptors([jwtInterceptor, resilienceInterceptor, errorInterceptor]),
+      withInterceptors([
+        jwtInterceptor,
+        resilienceInterceptor,
+        errorInterceptor,
+      ]),
     ),
     provideAnimations(),
     provideTranslateService({ lang: "fr" }),

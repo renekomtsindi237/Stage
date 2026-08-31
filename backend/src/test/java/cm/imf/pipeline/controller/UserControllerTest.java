@@ -1,5 +1,6 @@
 package cm.imf.pipeline.controller;
 
+import cm.imf.pipeline.dto.response.UserResponse;
 import cm.imf.pipeline.entity.User;
 import cm.imf.pipeline.enums.Role;
 import cm.imf.pipeline.service.IUserService;
@@ -43,6 +44,7 @@ class UserControllerTest {
     @DisplayName("GET /api/users/me — retourne le profil de l'utilisateur connecté")
     void getMe_200() throws Exception {
         User user = buildUser();
+        when(userService.getByUsername("agent01")).thenReturn(UserResponse.from(user));
 
         mockMvc.perform(get("/api/v1/users/me").with(user(user)))
                 .andExpect(status().isOk())
