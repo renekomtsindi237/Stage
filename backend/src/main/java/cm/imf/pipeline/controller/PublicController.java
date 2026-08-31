@@ -83,8 +83,12 @@ public class PublicController {
         }
 
         // 2. Fallback : fichier local
-        if (data == null && imf.getLogoUrl() != null && imf.getLogoUrl().startsWith("/api/uploads/")) {
-            String relativePath = imf.getLogoUrl().substring("/api/uploads/".length());
+        if (data == null && imf.getLogoUrl() != null
+                && (imf.getLogoUrl().startsWith("/api/uploads/")
+                    || imf.getLogoUrl().startsWith("/api/v1/uploads/"))) {
+            String relativePath = imf.getLogoUrl().contains("/uploads/")
+                    ? imf.getLogoUrl().substring(imf.getLogoUrl().indexOf("/uploads/") + "/uploads/".length())
+                    : imf.getLogoUrl().substring("/api/uploads/".length());
             try {
                 data        = Files.readAllBytes(Paths.get(uploadDir, relativePath));
                 contentType = detectMediaType(relativePath);
@@ -124,6 +128,27 @@ public class PublicController {
             log.error("profile.png manquant dans le classpath static/");
             return ResponseEntity.notFound().build();
         }
+    }
+
+    /**
+     * Proxy avatar R2 lorsque aucun domaine public n'est configuré.
+     * Clé attendue : avatars/{userId}/{uuid}.ext
+     */
+    @GetMapping("/avatar/{*key}")
+    public ResponseEntity<byte[]> getStoredAvatar(@PathVariable String key) {
+        String clean = key.startsWith("/") ? key.substring(1) : key;
+        if (!clean.startsWith("avatars/") || clean.contains("..")) {
+            return ResponseEntity.notFound().build();
+        }
+        byte[] data = r2.download(clean);
+        if (data == null) {
+            return ResponseEntity.notFound().build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(detectMediaType(clean));
+        headers.setCacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePublic());
+        headers.setContentLength(data.length);
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
     }
 
     // ── POST /api/v1/public/contact-support ──────────────────────────────────

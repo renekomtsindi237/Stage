@@ -25,22 +25,22 @@ import java.net.URI;
 @Service
 public class R2StorageService {
 
-    @Value("${imf.r2.enabled:false}")
+    @Value("${app.r2.enabled:false}")
     private boolean enabled;
 
-    @Value("${imf.r2.endpoint:}")
+    @Value("${app.r2.endpoint:}")
     private String endpoint;
 
-    @Value("${imf.r2.bucket:imf-ml}")
+    @Value("${app.r2.bucket:imf-ml}")
     private String bucket;
 
-    @Value("${imf.r2.access-key:}")
+    @Value("${app.r2.access-key:}")
     private String accessKey;
 
-    @Value("${imf.r2.secret-key:}")
+    @Value("${app.r2.secret-key:}")
     private String secretKey;
 
-    @Value("${imf.r2.public-url-base:}")
+    @Value("${app.r2.public-url-base:}")
     private String publicUrlBase;
 
     private S3Client client;

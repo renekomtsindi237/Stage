@@ -353,9 +353,12 @@
                 <td>
                   <button
                     class="btn btn-ghost btn-sm"
+                    type="button"
                     (click)="selectDossier(d); $event.stopPropagation()"
+                    [attr.title]="'dir_kyc.detail_btn' | translate"
+                    [attr.aria-label]="'dir_kyc.detail_btn' | translate"
                   >
-                    {{ "dir_kyc.detail_btn" | translate }}
+                    <span class="material-icons-round">visibility</span>
                   </button>
                 </td>
               </tr>

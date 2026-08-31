@@ -48,6 +48,8 @@ services:
       redis:
         condition: service_healthy
     expose: ["8080"]
+    volumes:
+      - backend_staging_uploads:/uploads
     networks: [imf_staging]
 
   web:
@@ -157,6 +159,7 @@ services:
 volumes:
   redis_staging_data:
   airflow_staging_logs:
+  backend_staging_uploads:
 
 networks:
   imf_staging:

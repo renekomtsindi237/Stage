@@ -1,6 +1,7 @@
 package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.ApiResponse;
+import cm.imf.pipeline.dto.response.ClientDossierResponse;
 import cm.imf.pipeline.dto.response.ClientResponse;
 import cm.imf.pipeline.dto.response.PageResponse;
 import cm.imf.pipeline.service.IClientService;
@@ -45,5 +46,11 @@ public class ClientController {
     @GetMapping("/{idClient}")
     public ResponseEntity<ApiResponse<ClientResponse>> getById(@PathVariable String idClient) {
         return ResponseEntity.ok(ApiResponse.ok(clientService.getById(idClient)));
+    }
+
+    @Operation(summary = "Dossier client complet (identité, créances, KYC, collectes)")
+    @GetMapping("/{idClient}/dossier")
+    public ResponseEntity<ApiResponse<ClientDossierResponse>> getDossier(@PathVariable String idClient) {
+        return ResponseEntity.ok(ApiResponse.ok(clientService.getDossier(idClient)));
     }
 }

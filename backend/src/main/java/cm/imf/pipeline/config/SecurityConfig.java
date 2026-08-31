@@ -88,7 +88,7 @@ public class SecurityConfig {
                         // Endpoints publics : ping/health pour mobile, auth, docs Swagger
                         .requestMatchers("/ping", "/health", "/api/v1/ping", "/api/v1/health").permitAll()
                         .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
-                        .requestMatchers("/uploads/**", "/api/v1/uploads/**").permitAll()
+                        .requestMatchers("/uploads/**", "/api/v1/uploads/**", "/api/uploads/**").permitAll()
                         .requestMatchers("/public/**", "/api/v1/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs", "/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()

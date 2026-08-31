@@ -96,7 +96,7 @@ services:
       JWT_SECRET:             ${JWT_SECRET}
       JWT_REFRESH_SECRET:     ${JWT_REFRESH_SECRET}
       SMTP_HOST:              ${SMTP_HOST}
-      SMTP_PORT:              ${SMTP_PORT:-465}
+      SMTP_PORT:              ${SMTP_PORT:-587}
       SMTP_USER:              ${SMTP_USER}
       SMTP_PASSWORD:          ${SMTP_PASSWORD}
       INTERNAL_API_KEY:       ${SPRING_API_KEY}
@@ -114,6 +114,8 @@ services:
         condition: on-failure
         max_attempts: 3
     expose: ["8080"]
+    volumes:
+      - backend_prod_uploads:/uploads
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
       interval: 30s
@@ -155,6 +157,7 @@ volumes:
   redis_prod_data:
   airflow_prod_logs:
   nginx_prod_logs:
+  backend_prod_uploads:
 
 networks:
   imf_prod_pipeline:

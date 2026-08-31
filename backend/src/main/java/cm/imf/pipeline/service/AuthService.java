@@ -151,7 +151,7 @@ public class AuthService implements IAuthService {
                 .build());
 
         emailService.sendOtpEmail(user.getEmail(), user.getUsername(), code);
-        log.info("OTP envoyé à l'utilisateur : {}", user.getUsername());
+        log.info("OTP mis en file d'envoi pour : {} — l'accusé d'envoi SMTP est asynchrone", user.getUsername());
 
         return new OtpInitResponse(MSG);
     }

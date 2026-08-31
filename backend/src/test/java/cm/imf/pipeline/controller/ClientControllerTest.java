@@ -64,4 +64,25 @@ class ClientControllerTest {
                 .andExpect(jsonPath("$.data.idClient").value("CLI-001"))
                 .andExpect(jsonPath("$.data.telephoneClient").value("+237612345678"));
     }
+
+    @Test
+    @WithMockUser(roles = "DIRECTEUR")
+    @DisplayName("GET /api/v1/clients/{id}/dossier — dossier complet")
+    void getDossier_200() throws Exception {
+        when(clientService.getDossier("CLI-001")).thenReturn(
+                new cm.imf.pipeline.dto.response.ClientDossierResponse(
+                        "CLI-001", "Marie Nkomo", "+237612345678", null,
+                        "Agence Nord", "Z1", true, 150000.0, 12, "EN_RETARD",
+                        "1988-04-12", "F", "COMMERCE", null, 8, 80000.0,
+                        null, null, null, null, 3, null, null, "Marché central",
+                        null, null, List.of(), List.of()
+                )
+        );
+
+        mockMvc.perform(get("/api/v1/clients/CLI-001/dossier"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.idClient").value("CLI-001"))
+                .andExpect(jsonPath("$.data.nomClient").value("Marie Nkomo"))
+                .andExpect(jsonPath("$.data.secteurPrincipal").value("COMMERCE"));
+    }
 }

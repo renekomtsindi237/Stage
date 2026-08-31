@@ -50,7 +50,7 @@ public class UserService implements IUserService {
     @Value("${app.upload.max-size-mb:2}")
     private int maxSizeMb;
 
-    @Value("${imf.r2.public-url-base:}")
+    @Value("${app.r2.public-url-base:}")
     private String r2PublicUrlBase;
 
     // ── Lecture ──────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ public class UserService implements IUserService {
                 throw new BusinessException("Erreur lors de la sauvegarde du fichier",
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            avatarUrl = "/api/uploads/avatars/" + filename;
+            avatarUrl = "/api/v1/uploads/avatars/" + filename;
             log.info("Avatar enregistré localement : user={} file={}", user.getId(), filename);
         }
 
@@ -246,9 +246,15 @@ public class UserService implements IUserService {
             }
         }
 
-        // Local : URL de type /api/uploads/avatars/...
-        if (avatarUrl.startsWith("/api/uploads/avatars/")) {
-            String filename = avatarUrl.substring("/api/uploads/avatars/".length());
+        // Local : URL de type /api/v1/uploads/avatars/... ou ancien /api/uploads/avatars/...
+        String localPrefix = null;
+        if (avatarUrl.startsWith("/api/v1/uploads/avatars/")) {
+            localPrefix = "/api/v1/uploads/avatars/";
+        } else if (avatarUrl.startsWith("/api/uploads/avatars/")) {
+            localPrefix = "/api/uploads/avatars/";
+        }
+        if (localPrefix != null) {
+            String filename = avatarUrl.substring(localPrefix.length());
             try {
                 Files.deleteIfExists(Paths.get(uploadDir, "avatars", filename));
             } catch (IOException ignored) {}

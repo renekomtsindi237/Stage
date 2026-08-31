@@ -33,7 +33,7 @@ public class UserController {
     @Operation(summary = "Profil de l'utilisateur connecté")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMe(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.ok(UserResponse.from(user)));
+        return ResponseEntity.ok(ApiResponse.ok(userService.getByUsername(user.getUsername())));
     }
 
     @Operation(summary = "Enregistrer ou mettre à jour le token FCM (push notifications)")

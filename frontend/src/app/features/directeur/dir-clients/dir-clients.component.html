@@ -1,3 +1,5 @@
+<div class="clients-layout" [class.has-detail]="!!dossier()">
+  <div class="clients-list">
 <div class="page-content">
   <input
     #fileInput
@@ -147,7 +149,13 @@
                 {{ c.agencePrincipale ?? "—" }}
               </td>
               <td>
-                <button class="btn btn-ghost btn-sm">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  (click)="openDossier(c)"
+                  [attr.title]="'dir_clients.view_dossier' | translate"
+                  [attr.aria-label]="'dir_clients.view_dossier' | translate"
+                >
                   <span class="material-icons-round">visibility</span>
                 </button>
               </td>
@@ -180,4 +188,226 @@
       </div>
     }
   </div>
+</div>
+  </div>
+
+  @if (dossier(); as d) {
+    <aside class="client-detail">
+      <div class="detail-header">
+        <div>
+          <h3>{{ d.nomClient }}</h3>
+          <p class="text-muted text-sm">{{ d.idClient }}</p>
+        </div>
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          (click)="closeDossier()"
+        >
+          {{ "dir_clients.dossier_close" | translate }}
+        </button>
+      </div>
+
+      @if (dossierLoading()) {
+        <p class="text-sm text-muted">
+          {{ "dir_clients.dossier_loading" | translate }}
+        </p>
+      }
+
+      <div class="detail-chips">
+        <span
+          class="badge"
+          [class]="
+            d.statut === 'ACTIF'
+              ? 'badge-basse'
+              : d.statut === 'EN_RETARD'
+                ? 'badge-moyenne'
+                : 'badge-critique'
+          "
+        >
+          {{ "dir_clients.status_" + (d.statut ?? "ACTIF") | translate }}
+        </span>
+        @if (d.actif === false) {
+          <span class="badge badge-critique">{{
+            "dir_clients.inactive" | translate
+          }}</span>
+        }
+      </div>
+
+      <section class="detail-section">
+        <h4>{{ "dir_clients.section_identity" | translate }}</h4>
+        <dl class="detail-dl">
+          <div>
+            <dt>{{ "dir_clients.phone" | translate }}</dt>
+            <dd>{{ d.telephoneClient ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.phone2" | translate }}</dt>
+            <dd>{{ d.telephoneSecondaire ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.birth" | translate }}</dt>
+            <dd>{{ d.dateNaissance ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.sex" | translate }}</dt>
+            <dd>{{ d.sexe ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.agency" | translate }}</dt>
+            <dd>{{ d.agencePrincipale ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.zone" | translate }}</dt>
+            <dd>{{ d.zoneId ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.address" | translate }}</dt>
+            <dd>{{ d.adresseActivite ?? "—" }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="detail-section">
+        <h4>{{ "dir_clients.section_activity" | translate }}</h4>
+        <dl class="detail-dl">
+          <div>
+            <dt>{{ "dir_clients.sector" | translate }}</dt>
+            <dd>{{ d.secteurPrincipal ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.subsector" | translate }}</dt>
+            <dd>{{ d.sousSecteur ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.experience" | translate }}</dt>
+            <dd>{{ d.anneesExperience ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.income" | translate }}</dt>
+            <dd>
+              @if (d.revenuMensuelEstime != null) {
+                {{ d.revenuMensuelEstime | fcfa }}
+              } @else {
+                —
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.market" | translate }}</dt>
+            <dd>{{ d.marchePrincipal ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.family" | translate }}</dt>
+            <dd>{{ d.situationFamiliale ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.dependents" | translate }}</dt>
+            <dd>{{ d.nombrePersonnesCharge ?? "—" }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.education" | translate }}</dt>
+            <dd>{{ d.niveauEducation ?? "—" }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="detail-section">
+        <h4>{{ "dir_clients.section_portfolio" | translate }}</h4>
+        <dl class="detail-dl">
+          <div>
+            <dt>{{ "dir_clients.col_encours" | translate }}</dt>
+            <dd>{{ d.encours | fcfa }}</dd>
+          </div>
+          <div>
+            <dt>{{ "dir_clients.days_late" | translate }}</dt>
+            <dd>{{ d.maxJoursRetard ?? 0 }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="detail-section">
+        <h4>{{ "dir_clients.section_kyc" | translate }}</h4>
+        @if (d.kyc) {
+          <dl class="detail-dl">
+            <div>
+              <dt>{{ "dir_clients.col_statut" | translate }}</dt>
+              <dd>{{ d.kyc.statut }}</dd>
+            </div>
+            <div>
+              <dt>{{ "dir_clients.kyc_level" | translate }}</dt>
+              <dd>{{ d.kyc.niveauActuel }}</dd>
+            </div>
+            <div>
+              <dt>{{ "dir_clients.kyc_risk" | translate }}</dt>
+              <dd>{{ d.kyc.niveauRisque }} ({{ d.kyc.scoreRisque ?? "—" }})</dd>
+            </div>
+            <div>
+              <dt>{{ "dir_clients.kyc_id" | translate }}</dt>
+              <dd>
+                {{ d.kyc.typePieceIdentite ?? "—" }}
+                {{ d.kyc.numeroPiece ? "· " + d.kyc.numeroPiece : "" }}
+              </dd>
+            </div>
+            <div>
+              <dt>{{ "dir_clients.kyc_expiry" | translate }}</dt>
+              <dd>{{ d.kyc.dateExpirationKyc ?? "—" }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <p class="text-sm text-muted">
+            {{ "dir_clients.kyc_none" | translate }}
+          </p>
+        }
+      </section>
+
+      <section class="detail-section">
+        <h4>
+          {{ "dir_clients.section_loans" | translate }}
+          ({{ d.creances.length }})
+        </h4>
+        @if (d.creances.length === 0) {
+          <p class="text-sm text-muted">
+            {{ "dir_clients.loans_none" | translate }}
+          </p>
+        } @else {
+          <ul class="detail-list">
+            @for (cr of d.creances; track cr.idPret) {
+              <li>
+                <p class="font-semibold">{{ cr.idPret }}</p>
+                <p class="text-sm text-muted">
+                  {{ cr.statut }} · {{ cr.joursRetard ?? 0 }} j ·
+                  {{ cr.montantImpaye | fcfa }}
+                </p>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="detail-section">
+        <h4>
+          {{ "dir_clients.section_collections" | translate }}
+          ({{ d.collectes.length }})
+        </h4>
+        @if (d.collectes.length === 0) {
+          <p class="text-sm text-muted">
+            {{ "dir_clients.collections_none" | translate }}
+          </p>
+        } @else {
+          <ul class="detail-list">
+            @for (col of d.collectes; track col.idCollecte) {
+              <li>
+                <p class="font-semibold">{{ col.montant | fcfa }}</p>
+                <p class="text-sm text-muted">
+                  {{ col.dateCollecte ?? "—" }} ·
+                  {{ col.canalPaiement ?? "—" }} ·
+                  {{ col.agentUsername ?? "—" }}
+                </p>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </aside>
+  }
 </div>

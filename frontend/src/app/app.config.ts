@@ -12,6 +12,7 @@ import { provideTranslateHttpLoader } from "@ngx-translate/http-loader";
 import { Chart, registerables } from "chart.js";
 import { routes } from "./app.routes";
 import { jwtInterceptor } from "./core/http/jwt.interceptor";
+import { resilienceInterceptor } from "./core/http/resilience.interceptor";
 import { errorInterceptor } from "./core/http/error.interceptor";
 
 Chart.register(...registerables);
@@ -22,7 +23,9 @@ export const appConfig: ApplicationConfig = {
     environment.useHash
       ? provideRouter(routes, withHashLocation(), withComponentInputBinding())
       : provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withInterceptors([jwtInterceptor, resilienceInterceptor, errorInterceptor]),
+    ),
     provideAnimations(),
     provideTranslateService({ lang: "fr" }),
     ...provideTranslateHttpLoader({ prefix: "/assets/i18n/", suffix: ".json" }),

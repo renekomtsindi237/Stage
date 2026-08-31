@@ -12,7 +12,7 @@ import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
 import { RouterLink } from "@angular/router";
 import { ApiService } from "../../../core/http/api.service";
-import { Client } from "../../../core/models/client.model";
+import { Client, ClientDossier } from "../../../core/models/client.model";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
 
@@ -57,6 +57,8 @@ export class DirClientsComponent implements OnInit {
   currentPage = signal(0);
   importing = signal(false);
   importResult = signal<ImportResult | null>(null);
+  dossier = signal<ClientDossier | null>(null);
+  dossierLoading = signal(false);
 
   filterForm = this.fb.group({ search: [""], statut: [""], agence: [""] });
 
@@ -113,5 +115,36 @@ export class DirClientsComponent implements OnInit {
       },
       error: () => this.importing.set(false),
     });
+  }
+
+  openDossier(c: Client) {
+    this.dossierLoading.set(true);
+    this.dossier.set({
+      idClient: c.idClient,
+      nomClient: c.nomClient,
+      telephoneClient: c.telephoneClient,
+      agencePrincipale: c.agencePrincipale,
+      encours: c.encours,
+      statut: c.statut,
+      actif: true,
+      creances: [],
+      collectes: [],
+    });
+    this.api
+      .get<ClientDossier>(
+        `/api/v1/clients/${encodeURIComponent(c.idClient)}/dossier`,
+      )
+      .subscribe({
+        next: (d) => {
+          this.dossier.set(d);
+          this.dossierLoading.set(false);
+        },
+        error: () => this.dossierLoading.set(false),
+      });
+  }
+
+  closeDossier() {
+    this.dossier.set(null);
+    this.dossierLoading.set(false);
   }
 }

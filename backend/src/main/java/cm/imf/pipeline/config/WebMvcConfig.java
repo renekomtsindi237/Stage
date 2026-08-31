@@ -43,7 +43,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**", "/api/v1/uploads/**")
+        registry.addResourceHandler("/uploads/**", "/api/v1/uploads/**", "/api/uploads/**")
                 .addResourceLocations("file:" + uploadDir + "/");
     }
 }

@@ -128,6 +128,7 @@ services:
       MCRS_INTERNAL_API_KEY:         ${MCRS_INTERNAL_API_KEY:-}
     volumes:
       - /ml/models:/ml/models:ro
+      - backend_uploads:/uploads
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- --timeout=8 http://localhost:9200/actuator/health | grep -q UP || exit 1"]
       interval: 30s
@@ -296,3 +297,4 @@ services:
 volumes:
   airflow_pgdata:
   airflow_logs:
+  backend_uploads:

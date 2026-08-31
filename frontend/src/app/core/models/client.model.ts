@@ -7,6 +7,70 @@ export interface Client {
   statut?: "ACTIF" | "EN_RETARD" | "DEFAILLANT";
 }
 
+export interface ClientDossierKyc {
+  uid: string;
+  statut: string;
+  niveauActuel: string;
+  niveauRisque: string;
+  scoreRisque?: number;
+  dateExpirationKyc?: string;
+  typePieceIdentite?: string;
+  numeroPiece?: string;
+}
+
+export interface ClientDossierCreance {
+  idPret: string;
+  statut: string;
+  montantInitial?: number;
+  montantImpaye?: number;
+  capitalRestantDu?: number;
+  joursRetard?: number;
+  categoriePar?: string;
+  typeGarantie?: string;
+  dateDeblocage?: string;
+  dateOuverture?: string;
+}
+
+export interface ClientDossierCollecte {
+  idCollecte: string;
+  montant?: number;
+  canalPaiement?: string;
+  dateCollecte?: string;
+  statut?: string;
+  agentUsername?: string;
+}
+
+export interface ClientDossier {
+  idClient: string;
+  nomClient: string;
+  telephoneClient?: string;
+  telephoneSecondaire?: string;
+  agencePrincipale?: string;
+  zoneId?: string;
+  actif: boolean;
+  encours?: number;
+  maxJoursRetard?: number;
+  statut?: string;
+  dateNaissance?: string;
+  sexe?: string;
+  secteurPrincipal?: string;
+  sousSecteur?: string;
+  anneesExperience?: number;
+  revenuMensuelEstime?: number;
+  marchePrincipal?: string;
+  frequenceMarche?: string;
+  niveauEducation?: string;
+  situationFamiliale?: string;
+  nombrePersonnesCharge?: number;
+  latitudeActivite?: number | null;
+  longitudeActivite?: number | null;
+  adresseActivite?: string;
+  createdAt?: string;
+  kyc?: ClientDossierKyc | null;
+  creances: ClientDossierCreance[];
+  collectes: ClientDossierCollecte[];
+}
+
 export interface Collecte {
   id?: string;
   clientId: string;

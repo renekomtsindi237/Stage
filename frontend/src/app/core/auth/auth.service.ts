@@ -27,6 +27,14 @@ export class AuthService {
     return name.slice(0, 2).toUpperCase();
   });
 
+  constructor() {
+    queueMicrotask(() => {
+      if (this.getToken()) {
+        this.refreshProfile();
+      }
+    });
+  }
+
   getToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   }
@@ -79,11 +87,18 @@ export class AuthService {
       ? new HttpHeaders({ Authorization: `Bearer ${token}` })
       : undefined;
     return this.http
-      .post<{
-        data: { avatarUrl: string };
-      }>(`${environment.apiUrl}/api/v1/users/me/avatar`, formData, { headers })
+      .post<unknown>(`${environment.apiUrl}/api/v1/users/me/avatar`, formData, {
+        headers,
+      })
       .pipe(
-        map((res) => res.data.avatarUrl),
+        map((res) => {
+          const data = this.unwrapData<{ avatarUrl?: string }>(res);
+          const url = data?.avatarUrl;
+          if (!url) {
+            throw new Error("URL avatar absente");
+          }
+          return url;
+        }),
         tap((url) => this._patchAvatarUrl(url)),
       );
   }
@@ -171,6 +186,35 @@ export class AuthService {
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     this.currentUser.set(user);
+    this.refreshProfile();
+  }
+
+  private refreshProfile() {
+    this.http
+      .get<unknown>(`${environment.apiUrl}/api/v1/users/me`)
+      .subscribe({
+        next: (raw) => {
+          const me = this.unwrapData<{ avatarUrl?: string | null }>(raw);
+          const user = this.currentUser();
+          if (!user || !me) return;
+          const updated: User = {
+            ...user,
+            avatarUrl: me.avatarUrl ?? null,
+          };
+          localStorage.setItem(USER_KEY, JSON.stringify(updated));
+          this.currentUser.set(updated);
+        },
+        error: () => {
+          /* Conservé en local si le profil distant est injoignable (latence). */
+        },
+      });
+  }
+
+  private unwrapData<T>(res: unknown): T | null {
+    if (res && typeof res === "object" && "data" in res) {
+      return (res as { data: T }).data;
+    }
+    return (res as T) ?? null;
   }
 
   private loadUser(): User | null {

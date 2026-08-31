@@ -48,6 +48,9 @@ spring:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 20000
+          timeout: 20000
+          writetimeout: 20000
 
 # JWT
 jwt:

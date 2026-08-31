@@ -45,6 +45,9 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
       mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 20000
+      mail.smtp.timeout: 20000
+      mail.smtp.writetimeout: 20000
 
 logging:
   level:
