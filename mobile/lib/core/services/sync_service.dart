@@ -57,6 +57,7 @@ class SyncService {
         final item = <String, dynamic>{
           'idCollecteMobile': c.uuidMobile,
           'clientId': c.clientIdExterne,
+          'pretId': 'SANS_PRET',
           'dateCollecte': c.dateCollecte,
           'montantCollecte': c.montantCollecte,
           'canalPaiement': c.canalPaiement,

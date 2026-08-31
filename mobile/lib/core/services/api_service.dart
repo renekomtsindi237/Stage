@@ -22,9 +22,9 @@ class ApiService {
     _dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 90),
+        receiveTimeout: const Duration(seconds: 90),
+        sendTimeout: const Duration(seconds: 90),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -104,6 +104,27 @@ class ApiService {
         await _storage.clearAll();
       } finally {
         _isRefreshing = false;
+      }
+    }
+
+    final extra = error.requestOptions.extra;
+    final retries = extra['retries'] as int? ?? 0;
+    final method = error.requestOptions.method.toUpperCase();
+    final retryableType = error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError;
+    final status = error.response?.statusCode;
+    final retryableStatus = status == 408 || status == 429 || status == 502 || status == 503 || status == 504;
+
+    if (retries < 2 && method == 'GET' && (retryableType || retryableStatus)) {
+      extra['retries'] = retries + 1;
+      await Future<void>.delayed(Duration(milliseconds: 800 * (retries + 1)));
+      try {
+        handler.resolve(await _dio.fetch(error.requestOptions));
+        return;
+      } catch (_) {
+        // On retombe sur l'erreur originale ci-dessous.
       }
     }
 

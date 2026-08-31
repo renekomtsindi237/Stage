@@ -88,18 +88,30 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  DateTime? _syncStartedAt;
+
   /// Lance la synchronisation manuelle ou automatique.
   Future<SyncResult?> syncNow() async {
-    if (syncing) return null;
-    syncing      = true;
-    syncError    = null;
-    scoringState = ScoringState.idle;
+    if (syncing) {
+      final started = _syncStartedAt;
+      if (started == null ||
+          DateTime.now().difference(started) < const Duration(seconds: 40)) {
+        return null;
+      }
+      // Sync bloquée (réseau très lent / timeout non levé) : on autorise un nouvel essai.
+    }
+    syncing        = true;
+    _syncStartedAt = DateTime.now();
+    syncError      = null;
+    scoringState   = ScoringState.idle;
     notifyListeners();
 
     try {
       final result = await _syncService.syncNow();
       if (result == null) {
+        syncError = 'Aucune collecte à envoyer ou serveur injoignable.';
         syncing = false;
+        _syncStartedAt = null;
         notifyListeners();
         return null;
       }
@@ -120,6 +132,7 @@ class SyncProvider extends ChangeNotifier {
       syncError = e.toString().replaceFirst('ApiException(', '').replaceFirst(')', '');
     } finally {
       syncing = false;
+      _syncStartedAt = null;
       notifyListeners();
     }
     return null;

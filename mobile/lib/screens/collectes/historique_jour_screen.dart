@@ -8,6 +8,7 @@ import '../../core/constants/theme_helper.dart';
 import '../../core/models/collecte_locale.dart';
 import '../../core/providers/locale_provider.dart';
 import '../../core/providers/sync_provider.dart';
+import '../../core/services/connectivity_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/connectivity_banner.dart';
@@ -29,6 +30,52 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  Future<void> _onSyncPressed() async {
+    final l10n = AppL10n.of(context);
+    final sync = context.read<SyncProvider>();
+    if (sync.syncing) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.historiqueSyncing),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final online = await context.read<ConnectivityService>().isConnected();
+    if (!mounted) return;
+    if (!online) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.offlineBanner),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFFB71C1C),
+        ),
+      );
+      return;
+    }
+
+    final result = await sync.syncNow();
+    if (!mounted) return;
+    await _load();
+    if (!mounted) return;
+
+    if (result != null) {
+      context.push('/collectes/sync-result', extra: result);
+      return;
+    }
+
+    final err = sync.syncError ?? l10n.loginNetworkError;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(err),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFFDC2626),
+      ),
+    );
   }
 
   Future<void> _load() async {
@@ -154,11 +201,32 @@ class _HistoriqueJourScreenState extends State<HistoriqueJourScreen> {
                     ]),
                   ),
                   const SizedBox(height: 14),
+                  if (sync.syncError != null && sync.syncError!.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        sync.syncError!,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   if (_pending.isNotEmpty)
                     SizedBox(
                       height: 48,
                       child: ElevatedButton.icon(
-                        onPressed: sync.syncing ? null : () => sync.syncNow(),
+                        onPressed: sync.syncing ? null : _onSyncPressed,
                         icon: sync.syncing
                             ? const SizedBox(
                                 width: 18,

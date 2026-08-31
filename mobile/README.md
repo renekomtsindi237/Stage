@@ -41,7 +41,29 @@ flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8080
 
 Défaut : production (`https://imf.rene.it.com`).
 
-## Lancer
+## APK smartphone (production)
+
+```bash
+cd mobile
+flutter pub get
+python android/app/src/main/res/generate_icons.py
+flutter build apk --release --dart-define=API_BASE_URL=https://imf.rene.it.com
+```
+
+Fichier livré : `mobile/build/app/outputs/flutter-apk/app-release.apk`  
+Copie pratique : `mobile/dist/MicroRecouv-1.0.4.apk` (`make mobile-apk` à la racine).
+
+Installation sur le téléphone :
+
+1. Ouvrir le fichier `MicroRecouv-1.0.2.apk` (identifiant `cm.rene.microrecouv`, distinct d’un éventuel reste Xiaomi `cm.imf.microrecouv` invisible).
+2. Android → Paramètres → Sécurité → **autoriser l’installation depuis cette source**.
+3. Installer.
+4. Se connecter **une fois** avec un compte AGENT (OTP, réseau obligatoire).
+5. Ensuite : collectes hors ligne jusqu’à 24 h de session / 72 h de cache.
+
+L’APK pointe vers `https://imf.rene.it.com`. Signature sideload du projet (`android/app/microrecouv-sideload.jks`), pas Play Store. Les prochaines versions construites avec cette clé s’installent par-dessus.
+
+## Lancer (émulateur / câble)
 
 ```bash
 cd mobile

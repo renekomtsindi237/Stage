@@ -494,15 +494,27 @@ abstract class AppL10n {
   String get profilSectionAccount;
 
   /// No description provided for @profilSectionSession.
+  ///
+  /// In fr, this message translates to:
+  /// **'Session'**
   String get profilSectionSession;
 
   /// No description provided for @sessionValidUntil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valable jusqu\'au {time}'**
   String sessionValidUntil(String time);
 
   /// No description provided for @sessionExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Session de 24 h expirée. Reconnectez-vous.'**
   String get sessionExpired;
 
   /// No description provided for @sessionDurationHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'24 h à partir de l\'heure de connexion (horodatage terrain).'**
   String get sessionDurationHint;
 
   /// No description provided for @profilGpsActive.
@@ -968,30 +980,57 @@ abstract class AppL10n {
   String get offlineNoClientsCache;
 
   /// No description provided for @serverSection.
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur'**
   String get serverSection;
 
   /// No description provided for @serverProduction.
+  ///
+  /// In fr, this message translates to:
+  /// **'En ligne (prod)'**
   String get serverProduction;
 
   /// No description provided for @serverStaging.
+  ///
+  /// In fr, this message translates to:
+  /// **'Staging'**
   String get serverStaging;
 
   /// No description provided for @serverLocal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur local'**
   String get serverLocal;
 
   /// No description provided for @serverSwitchTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer de serveur ?'**
   String get serverSwitchTitle;
 
   /// No description provided for @serverSwitchContent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les collectes en attente restent sur l\'appareil et seront envoyées au nouveau serveur après reconnexion. Le cache clients sera retéléchargé.'**
   String get serverSwitchContent;
 
   /// No description provided for @serverSwitchPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} collecte(s) encore locales seront transférées.'**
   String serverSwitchPending(int count);
 
   /// No description provided for @serverSwitchConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer et se reconnecter'**
   String get serverSwitchConfirm;
 
   /// No description provided for @serverCurrent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actuel : {url}'**
   String serverCurrent(String url);
 
   /// No description provided for @offlineBadge.

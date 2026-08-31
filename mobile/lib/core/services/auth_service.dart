@@ -2,6 +2,7 @@ import '../config/session_policy.dart';
 import '../models/auth_response.dart';
 import '../models/otp_verify_response.dart';
 import '../models/user.dart';
+import '../utils/api_unwrap.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
 
@@ -92,7 +93,7 @@ class AuthService {
   Future<User> getCurrentUser() async {
     return _api.get<User>(
       '/api/v1/users/me',
-      fromJson: (data) => User.fromJson(data as Map<String, dynamic>),
+      fromJson: (data) => User.fromJson(unwrapApiMap(data)),
     );
   }
 

@@ -106,6 +106,8 @@ class AuthProvider extends ChangeNotifier {
       _watchSession();
       notifyListeners();
       notifyAuthChanged();
+      await _loadCurrentUser();
+      notifyListeners();
       // Démarrer le GPS automatiquement pour les agents terrain
       if (response.role == 'AGENT') {
         _locationService?.startTracking();
