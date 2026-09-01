@@ -15,8 +15,19 @@
         {{ lastAmount() | number: "1.0-0" }} {{ "common.fcfa" | translate }}
       </p>
       <p class="text-muted text-sm">{{ selectedClient()?.nomClient }}</p>
-      <div style="display: flex; gap: 8px; justify-content: center; margin-top: 20px">
-        <button class="btn btn-primary" type="button" (click)="newEncaissement()">
+      <div
+        style="
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+          margin-top: 20px;
+        "
+      >
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="newEncaissement()"
+        >
           {{ "caisse.nouveau_encaissement" | translate }}
         </button>
         <a routerLink="/caisse/dashboard" class="btn btn-ghost">{{
@@ -25,128 +36,127 @@
       </div>
     </div>
   } @else {
-  <div class="card">
-    <!-- Client -->
-    <div class="form-group">
-      <label>{{ "common.name" | translate }}</label>
-      @if (!selectedClient()) {
-        <div class="search-bar">
-          <span class="material-icons-round">search</span>
+    <div class="card">
+      <!-- Client -->
+      <div class="form-group">
+        <label>{{ "common.name" | translate }}</label>
+        @if (!selectedClient()) {
+          <div class="search-bar">
+            <span class="material-icons-round">search</span>
+            <input
+              type="text"
+              [placeholder]="'caisse.search_client_placeholder' | translate"
+              (input)="search($any($event.target).value)"
+            />
+          </div>
+          @if (searchResults().length) {
+            <div class="client-results">
+              @for (c of searchResults(); track c.idClient) {
+                <div class="client-result" (click)="select(c)">
+                  <p class="font-semibold">{{ c.nomClient }}</p>
+                  <p class="text-sm text-muted">{{ c.idClient }}</p>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="client-selected">
+            <span
+              class="material-icons-round"
+              style="color: var(--color-success)"
+              >check_circle</span
+            >
+            <div class="flex-1">
+              <p class="font-semibold">
+                {{ selectedClient()!.nomClient }}
+              </p>
+              <p class="text-sm text-muted">{{ selectedClient()!.idClient }}</p>
+            </div>
+            <button
+              class="btn btn-ghost btn-sm"
+              (click)="selectedClient.set(null)"
+            >
+              {{ "collecte.change" | translate }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-group">
+          <label>{{ "caisse.montant_fcfa" | translate }}</label>
           <input
-            type="text"
-            [placeholder]="'caisse.search_client_placeholder' | translate"
-            (input)="search($any($event.target).value)"
+            type="number"
+            class="form-control"
+            formControlName="montant"
+            placeholder="0"
           />
         </div>
-        @if (searchResults().length) {
-          <div class="client-results">
-            @for (c of searchResults(); track c.idClient) {
-              <div class="client-result" (click)="select(c)">
-                <p class="font-semibold">{{ c.nomClient }}</p>
-                <p class="text-sm text-muted">{{ c.idClient }}</p>
-              </div>
-            }
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ "collecte.type_operation" | translate }}</label>
+            <select class="form-control" formControlName="typeOperation">
+              <option value="REMBOURSEMENT">
+                {{ "collecte.remboursement" | translate }}
+              </option>
+              <option value="EPARGNE">
+                {{ "collecte.epargne" | translate }}
+              </option>
+            </select>
           </div>
-        }
-      } @else {
-        <div class="client-selected">
-          <span class="material-icons-round" style="color: var(--color-success)"
-            >check_circle</span
-          >
-          <div class="flex-1">
-            <p class="font-semibold">
-              {{ selectedClient()!.nomClient }}
-            </p>
-            <p class="text-sm text-muted">{{ selectedClient()!.idClient }}</p>
+          <div class="form-group">
+            <label>{{ "caisse.canal_paiement" | translate }}</label>
+            <select class="form-control" formControlName="canal">
+              <option value="ESPECES">
+                {{ "caisse.canal_especes" | translate }}
+              </option>
+              <option value="MOBILE_MONEY">
+                {{ "caisse.canal_mobile_money" | translate }}
+              </option>
+              <option value="VIREMENT">
+                {{ "caisse.canal_virement" | translate }}
+              </option>
+              <option value="CHEQUE">
+                {{ "caisse.canal_cheque" | translate }}
+              </option>
+            </select>
           </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap">
+          @if (confirming()) {
+            <div class="alert" style="flex: 1; min-width: 220px; margin: 0">
+              {{ "caisse.confirm_amount" | translate }}
+              <strong
+                >{{ form.value.montant | number: "1.0-0" }}
+                {{ "common.fcfa" | translate }}</strong
+              >
+            </div>
+          }
           <button
-            class="btn btn-ghost btn-sm"
-            (click)="selectedClient.set(null)"
+            type="button"
+            class="btn btn-ghost"
+            routerLink="/caisse/dashboard"
           >
-            {{ "collecte.change" | translate }}
+            {{ "common.cancel" | translate }}
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="flex: 1; justify-content: center"
+            [disabled]="loading() || !selectedClient()"
+          >
+            @if (loading()) {
+              <span class="material-icons-round spin">refresh</span>
+            } @else if (confirming()) {
+              {{ "caisse.confirm_submit" | translate }}
+            } @else {
+              {{ "caisse.save_encaissement" | translate }}
+            }
           </button>
         </div>
-      }
+      </form>
     </div>
-
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="form-group">
-        <label>{{ "caisse.montant_fcfa" | translate }}</label>
-        <input
-          type="number"
-          class="form-control"
-          formControlName="montant"
-          placeholder="0"
-        />
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>{{ "collecte.type_operation" | translate }}</label>
-          <select class="form-control" formControlName="typeOperation">
-            <option value="REMBOURSEMENT">
-              {{ "collecte.remboursement" | translate }}
-            </option>
-            <option value="EPARGNE">
-              {{ "collecte.epargne" | translate }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>{{ "caisse.canal_paiement" | translate }}</label>
-          <select class="form-control" formControlName="canal">
-            <option value="ESPECES">
-              {{ "caisse.canal_especes" | translate }}
-            </option>
-            <option value="MOBILE_MONEY">
-              {{ "caisse.canal_mobile_money" | translate }}
-            </option>
-            <option value="VIREMENT">
-              {{ "caisse.canal_virement" | translate }}
-            </option>
-            <option value="CHEQUE">
-              {{ "caisse.canal_cheque" | translate }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap">
-        @if (confirming()) {
-          <div
-            class="alert"
-            style="flex: 1; min-width: 220px; margin: 0"
-          >
-            {{ "caisse.confirm_amount" | translate }}
-            <strong
-              >{{ form.value.montant | number: "1.0-0" }}
-              {{ "common.fcfa" | translate }}</strong
-            >
-          </div>
-        }
-        <button
-          type="button"
-          class="btn btn-ghost"
-          routerLink="/caisse/dashboard"
-        >
-          {{ "common.cancel" | translate }}
-        </button>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          style="flex: 1; justify-content: center"
-          [disabled]="loading() || !selectedClient()"
-        >
-          @if (loading()) {
-            <span class="material-icons-round spin">refresh</span>
-          } @else if (confirming()) {
-            {{ "caisse.confirm_submit" | translate }}
-          } @else {
-            {{ "caisse.save_encaissement" | translate }}
-          }
-        </button>
-      </div>
-    </form>
-  </div>
   }
 </div>

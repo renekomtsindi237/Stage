@@ -24,10 +24,7 @@ import { AuthService } from "../../core/auth/auth.service";
       <app-sidebar />
       <div class="shell-main">
         <app-topbar />
-        <main
-          class="shell-content"
-          [class.shell-content--dense]="dense"
-        >
+        <main class="shell-content" [class.shell-content--dense]="dense">
           <router-outlet />
         </main>
       </div>

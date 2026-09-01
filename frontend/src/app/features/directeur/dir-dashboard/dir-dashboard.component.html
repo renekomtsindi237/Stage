@@ -7,8 +7,13 @@
 
 @if (!loading() && data()) {
   <div class="card" style="margin-bottom: 16px; padding: 16px 20px">
-    <h4 style="margin: 0 0 10px">{{ "dir_dashboard.questions_title" | translate }}</h4>
-    <ol class="dir-questions" style="margin: 0; padding-left: 18px; font-size: 14px">
+    <h4 style="margin: 0 0 10px">
+      {{ "dir_dashboard.questions_title" | translate }}
+    </h4>
+    <ol
+      class="dir-questions"
+      style="margin: 0; padding-left: 18px; font-size: 14px"
+    >
       <li>
         {{ "dir_dashboard.q1" | translate }}
         <strong>{{ data()!.par30 | number: "1.1-1" }}%</strong>

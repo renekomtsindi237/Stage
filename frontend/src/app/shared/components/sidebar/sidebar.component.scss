@@ -31,8 +31,9 @@
   }
 
   &__logo-img {
-    width: 120px;
-    height: auto;
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
     display: block;
   }
 

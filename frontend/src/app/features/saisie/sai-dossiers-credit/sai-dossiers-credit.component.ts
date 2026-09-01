@@ -176,9 +176,13 @@ export class SaiDossiersCreditComponent implements OnInit {
           this.contratAbsent.set(false);
           this.showGenererForm.set(false);
           this.generating.set(false);
-          this.toast.showI18nSuccess("sai_dossiers.toast_gen_title", "sai_dossiers.toast_gen_body", {
-            ref: c.referenceContrat,
-          });
+          this.toast.showI18nSuccess(
+            "sai_dossiers.toast_gen_title",
+            "sai_dossiers.toast_gen_body",
+            {
+              ref: c.referenceContrat,
+            },
+          );
         },
         error: (err: unknown) => {
           this.generating.set(false);

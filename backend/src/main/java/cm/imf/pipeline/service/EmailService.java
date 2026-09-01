@@ -468,7 +468,7 @@ public class EmailService {
                             <img src="cid:%s"
                                  alt="%s"
                                  style="display:block;margin:0 auto;
-                                        max-height:72px;max-width:240px;
+                                        max-height:72px;max-width:72px;
                                         width:auto;height:auto" />
                             <p style="margin:10px 0 0;color:rgba(255,255,255,0.75);
                                       font-size:12px;letter-spacing:0.3px">

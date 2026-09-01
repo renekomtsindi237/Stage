@@ -120,11 +120,7 @@ export class AcDossiersComponent implements OnInit {
   }
 
   sorted(): DossierCredit[] {
-    return sortRows(
-      this.page()?.content ?? [],
-      this.sortKey(),
-      this.sortDir(),
-    );
+    return sortRows(this.page()?.content ?? [], this.sortKey(), this.sortDir());
   }
 
   exportCsv() {

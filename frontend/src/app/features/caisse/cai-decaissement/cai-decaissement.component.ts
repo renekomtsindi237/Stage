@@ -63,9 +63,13 @@ export class CaiDecaissementComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.toast.showI18nError("caisse.toast_not_found", "caisse.toast_not_found_body", {
-            ref,
-          });
+          this.toast.showI18nError(
+            "caisse.toast_not_found",
+            "caisse.toast_not_found_body",
+            {
+              ref,
+            },
+          );
           this.searchLoading.set(false);
           this.cdr.markForCheck();
         },

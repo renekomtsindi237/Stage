@@ -18,7 +18,12 @@ import { EscCloseDirective } from "../../../shared/directives/esc-close.directiv
   selector: "app-platform-imfs",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, EscCloseDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    EscCloseDirective,
+  ],
   templateUrl: "./platform-imfs.component.html",
   styleUrls: ["./platform-imfs.component.scss"],
 })

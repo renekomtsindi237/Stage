@@ -102,7 +102,7 @@ export class DirDashboardComponent implements OnInit {
       !d.par30 &&
       !d.par90 &&
       !d.collectesDuJour &&
-      !(d.alertesActives?.length)
+      !d.alertesActives?.length
     );
   }
 

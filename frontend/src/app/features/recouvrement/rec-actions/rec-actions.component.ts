@@ -246,17 +246,26 @@ export class RecActionsComponent implements OnInit {
   submitAction() {
     const d = this.selectedDossier();
     if (!d) {
-      this.toast.showI18nError("common.required", "rec_actions.toast_need_dossier");
+      this.toast.showI18nError(
+        "common.required",
+        "rec_actions.toast_need_dossier",
+      );
       return;
     }
     if (!this.form.typeAction) {
-      this.toast.showI18nError("common.required", "rec_actions.toast_need_type");
+      this.toast.showI18nError(
+        "common.required",
+        "rec_actions.toast_need_type",
+      );
       return;
     }
     if (this.isEncaissement) {
       const montant = parseFloat(this.form.promesseMontant);
       if (!Number.isFinite(montant) || montant <= 0) {
-        this.toast.showI18nError("common.required", "rec_actions.toast_need_amount");
+        this.toast.showI18nError(
+          "common.required",
+          "rec_actions.toast_need_amount",
+        );
         return;
       }
     }
@@ -277,7 +286,8 @@ export class RecActionsComponent implements OnInit {
     if (this.form.promesseDate) body["promesseDate"] = this.form.promesseDate;
     if (this.form.promesseMontant)
       body["promesseMontant"] = parseFloat(this.form.promesseMontant);
-    if (this.form.canalPaiement) body["canalPaiement"] = this.form.canalPaiement;
+    if (this.form.canalPaiement)
+      body["canalPaiement"] = this.form.canalPaiement;
     if (this.form.referenceTransaction)
       body["referenceTransaction"] = this.form.referenceTransaction.trim();
     if (this.form.numeroTelephonePaiement)
@@ -285,7 +295,8 @@ export class RecActionsComponent implements OnInit {
         this.form.numeroTelephonePaiement.trim();
     if (this.form.fraisEngages)
       body["fraisEngages"] = parseFloat(this.form.fraisEngages);
-    if (this.form.observation) body["observation"] = this.form.observation.trim();
+    if (this.form.observation)
+      body["observation"] = this.form.observation.trim();
 
     this.api
       .post<unknown>(`/api/v1/recouvrement/dossiers/${d.uid}/actions`, body)

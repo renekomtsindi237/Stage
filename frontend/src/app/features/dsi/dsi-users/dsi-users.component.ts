@@ -149,7 +149,10 @@ export class DsiUsersComponent implements OnInit {
         next: () => {
           this.saving.set(false);
           this.showEditModal.set(false);
-          this.toast.showI18nSuccess("common.success", "dsi_users.toast_update");
+          this.toast.showI18nSuccess(
+            "common.success",
+            "dsi_users.toast_update",
+          );
           this.load();
         },
         error: (err: unknown) => {
@@ -173,9 +176,13 @@ export class DsiUsersComponent implements OnInit {
         next: () => {
           this.deleting.set(false);
           this.showDeleteConfirm.set(false);
-          this.toast.showI18nSuccess("dsi_users.toast_delete_title", "dsi_users.toast_delete_body", {
-            username: this.selectedUser()!.username,
-          });
+          this.toast.showI18nSuccess(
+            "dsi_users.toast_delete_title",
+            "dsi_users.toast_delete_body",
+            {
+              username: this.selectedUser()!.username,
+            },
+          );
           this.load();
         },
         error: (err: unknown) => {
@@ -192,9 +199,13 @@ export class DsiUsersComponent implements OnInit {
       next: () => {
         this.creating.set(false);
         this.showModal.set(false);
-        this.toast.showI18nSuccess("dsi_users.toast_create_title", "dsi_users.toast_create_body", {
-          username: this.createForm.value.username,
-        });
+        this.toast.showI18nSuccess(
+          "dsi_users.toast_create_title",
+          "dsi_users.toast_create_body",
+          {
+            username: this.createForm.value.username,
+          },
+        );
         this.createForm.reset({ role: "AGENT" });
         this.load();
       },

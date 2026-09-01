@@ -85,9 +85,13 @@ export class OtpComponent implements OnInit, OnDestroy {
     this.auth.verifyOtp(this.email, code).subscribe({
       next: () => {
         this.loading.set(false);
-        this.toast.showI18nSuccess("toast.welcome_title", "toast.welcome_body", {
-          name: this.auth.fullName(),
-        });
+        this.toast.showI18nSuccess(
+          "toast.welcome_title",
+          "toast.welcome_body",
+          {
+            name: this.auth.fullName(),
+          },
+        );
         this.notifService.init();
         this.router.navigate([this.auth.defaultRouteForRole()]);
       },

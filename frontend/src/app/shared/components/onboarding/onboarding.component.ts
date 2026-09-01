@@ -9,43 +9,23 @@ import { TranslatePipe } from "@ngx-translate/core";
 import { AuthService } from "../../../core/auth/auth.service";
 
 const ROLE_STEPS: Record<string, string[]> = {
-  DIRECTEUR: [
-    "onboarding.dir_1",
-    "onboarding.dir_2",
-    "onboarding.dir_3",
-  ],
-  CHEF_AGENCE: [
-    "onboarding.chef_1",
-    "onboarding.chef_2",
-    "onboarding.chef_3",
-  ],
+  DIRECTEUR: ["onboarding.dir_1", "onboarding.dir_2", "onboarding.dir_3"],
+  CHEF_AGENCE: ["onboarding.chef_1", "onboarding.chef_2", "onboarding.chef_3"],
   RESPONSABLE_RECOUVREMENT: [
     "onboarding.rr_1",
     "onboarding.rr_2",
     "onboarding.rr_3",
   ],
   AGENT: ["onboarding.agent_1", "onboarding.agent_2", "onboarding.agent_3"],
-  AGENT_CREDIT: [
-    "onboarding.ac_1",
-    "onboarding.ac_2",
-    "onboarding.ac_3",
-  ],
+  AGENT_CREDIT: ["onboarding.ac_1", "onboarding.ac_2", "onboarding.ac_3"],
   CAISSIER: [
     "onboarding.caisse_1",
     "onboarding.caisse_2",
     "onboarding.caisse_3",
   ],
-  ANALYSTE: [
-    "onboarding.anl_1",
-    "onboarding.anl_2",
-    "onboarding.anl_3",
-  ],
+  ANALYSTE: ["onboarding.anl_1", "onboarding.anl_2", "onboarding.anl_3"],
   DSI: ["onboarding.dsi_1", "onboarding.dsi_2", "onboarding.dsi_3"],
-  SUPPORT: [
-    "onboarding.sup_1",
-    "onboarding.sup_2",
-    "onboarding.sup_3",
-  ],
+  SUPPORT: ["onboarding.sup_1", "onboarding.sup_2", "onboarding.sup_3"],
 };
 
 @Component({

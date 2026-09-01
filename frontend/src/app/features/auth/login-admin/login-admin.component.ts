@@ -51,9 +51,13 @@ export class LoginAdminComponent {
     this.auth.login(email!, motDePasse!).subscribe({
       next: () => {
         this.loading.set(false);
-        this.toast.showI18nSuccess("toast.welcome_title", "toast.welcome_body", {
-          name: this.auth.fullName(),
-        });
+        this.toast.showI18nSuccess(
+          "toast.welcome_title",
+          "toast.welcome_body",
+          {
+            name: this.auth.fullName(),
+          },
+        );
         this.router.navigate([this.auth.defaultRouteForRole()]);
       },
       error: () => {

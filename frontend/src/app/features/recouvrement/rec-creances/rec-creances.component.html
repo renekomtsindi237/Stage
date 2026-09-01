@@ -223,9 +223,7 @@
           "rec_creances.kpi_phase" | translate
         }}</span>
         <span class="badge" [ngClass]="phaseClass(selectedDossier()!.phase)">
-          {{
           {{ selectedDossier()!.phase | statutLabel }}
-          }}
         </span>
       </div>
       <div class="kpi-item">

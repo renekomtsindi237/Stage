@@ -101,7 +101,10 @@
             dag.derniereExec | appDate
           }}</span>
           @if (dag.statut === "FAILED") {
-            <p class="text-sm" style="color: var(--color-danger); margin: 8px 0 0; width: 100%">
+            <p
+              class="text-sm"
+              style="color: var(--color-danger); margin: 8px 0 0; width: 100%"
+            >
               {{ "anl_pipeline.failed_hint" | translate }}
             </p>
           }

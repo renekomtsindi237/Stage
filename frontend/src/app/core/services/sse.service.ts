@@ -100,7 +100,10 @@ export class SseService implements OnDestroy {
   private scheduleReconnect() {
     if (this.stopped || !this.auth.isLoggedIn()) return;
     this.reconnectAttempts++;
-    const delay = Math.min(30_000, 2000 * 2 ** Math.min(this.reconnectAttempts - 1, 4));
+    const delay = Math.min(
+      30_000,
+      2000 * 2 ** Math.min(this.reconnectAttempts - 1, 4),
+    );
     this.reconnectTimer = setTimeout(() => this.open(), delay);
   }
 

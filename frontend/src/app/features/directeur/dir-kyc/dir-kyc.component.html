@@ -34,7 +34,8 @@
 
         @if (createError()) {
           <div class="alert-box alert-critique">
-            <strong>{{ "common.error" | translate }}</strong> {{ createError() }}
+            <strong>{{ "common.error" | translate }}</strong>
+            {{ createError() }}
           </div>
         }
         @if (createSuccess()) {
@@ -710,7 +711,7 @@
                                 : {
                                     champ: ecart.champ,
                                     saisie: ecart.valeurSaisie,
-                                    detectee: ecart.valeurDetectee
+                                    detectee: ecart.valeurDetectee,
                                   }
                           }}
                         </div>
@@ -818,10 +819,7 @@
 
         <!-- Upload panel -->
         @if (showUploadPanel()) {
-          <div
-            class="upload-panel"
-            (appEscClose)="showUploadPanel.set(false)"
-          >
+          <div class="upload-panel" (appEscClose)="showUploadPanel.set(false)">
             <h5 class="text-sm font-semibold" style="margin-bottom: 10px">
               {{ "dir_kyc.upload_title" | translate }}
             </h5>

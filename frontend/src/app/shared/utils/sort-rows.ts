@@ -1,9 +1,5 @@
 /** Tri client d'une page de tableau (colonne cliquable). */
-export function sortRows<T>(
-  rows: T[],
-  key: string,
-  dir: "asc" | "desc",
-): T[] {
+export function sortRows<T>(rows: T[], key: string, dir: "asc" | "desc"): T[] {
   if (!key) return rows;
   const mul = dir === "asc" ? 1 : -1;
   return [...rows].sort((a, b) => {
@@ -15,8 +11,6 @@ export function sortRows<T>(
     if (typeof av === "number" && typeof bv === "number") {
       return (av - bv) * mul;
     }
-    return (
-      String(av).localeCompare(String(bv), "fr", { numeric: true }) * mul
-    );
+    return String(av).localeCompare(String(bv), "fr", { numeric: true }) * mul;
   });
 }

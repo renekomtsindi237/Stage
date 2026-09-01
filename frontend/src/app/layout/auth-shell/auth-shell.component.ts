@@ -22,8 +22,8 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
           src="assets/logo.png"
           alt="MicroRecouv"
           class="auth-logo-img"
-          width="240"
-          height="130"
+          width="160"
+          height="160"
         />
       </div>
       <router-outlet />
@@ -76,8 +76,9 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
         justify-content: center;
       }
       .auth-logo-img {
-        width: 200px;
-        height: auto;
+        width: 160px;
+        height: 160px;
+        object-fit: contain;
         filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.12));
       }
     `,

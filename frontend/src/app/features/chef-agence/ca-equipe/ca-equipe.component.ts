@@ -116,7 +116,9 @@ export class CaEquipeComponent implements OnInit {
   });
 
   readonly maxMontant = computed(() => {
-    const vals = this.perfFiltered().map((m) => Number(m.collectesMontant) || 0);
+    const vals = this.perfFiltered().map(
+      (m) => Number(m.collectesMontant) || 0,
+    );
     return Math.max(1, ...vals, 0);
   });
 

@@ -200,25 +200,34 @@
               </div>
               <div class="perf-metrics">
                 <div>
-                  <span class="k">{{ "ca_equipe.perf_collectes" | translate }}</span>
+                  <span class="k">{{
+                    "ca_equipe.perf_collectes" | translate
+                  }}</span>
                   <span class="v"
                     >{{ m.collectesCount }} ·
                     {{ m.collectesMontant | fcfa }}</span
                   >
                 </div>
                 <div>
-                  <span class="k">{{ "ca_equipe.perf_clients" | translate }}</span>
+                  <span class="k">{{
+                    "ca_equipe.perf_clients" | translate
+                  }}</span>
                   <span class="v">{{ m.clientsTouches }}</span>
                 </div>
                 <div>
-                  <span class="k">{{ "ca_equipe.perf_dossiers" | translate }}</span>
+                  <span class="k">{{
+                    "ca_equipe.perf_dossiers" | translate
+                  }}</span>
                   <span class="v"
-                    >{{ m.dossiersValides }}/{{ m.dossiersSoumis }}
-                    ({{ m.tauxValidation }}%)</span
+                    >{{ m.dossiersValides }}/{{ m.dossiersSoumis }} ({{
+                      m.tauxValidation
+                    }}%)</span
                   >
                 </div>
                 <div>
-                  <span class="k">{{ "ca_equipe.perf_rejetes" | translate }}</span>
+                  <span class="k">{{
+                    "ca_equipe.perf_rejetes" | translate
+                  }}</span>
                   <span class="v">{{ m.dossiersRejetes }}</span>
                 </div>
               </div>

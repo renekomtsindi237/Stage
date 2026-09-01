@@ -73,7 +73,10 @@
                     t.statut | statutLabel
                   }}</span>
                   @if (isSlaOverdue(t)) {
-                    <span class="text-sm" style="color: var(--color-danger); margin-left: 6px">
+                    <span
+                      class="text-sm"
+                      style="color: var(--color-danger); margin-left: 6px"
+                    >
                       {{ "sup_tickets.sla_overdue" | translate }}
                     </span>
                   }

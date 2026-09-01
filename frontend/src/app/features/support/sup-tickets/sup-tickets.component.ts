@@ -147,7 +147,10 @@ export class SupTicketsComponent implements OnInit {
       .patch(`/api/v1/support/tickets/${id}`, { statut: "FERME" })
       .subscribe({
         next: () => {
-          this.toast.showI18nSuccess("sup_tickets.toast_close_title", "sup_tickets.toast_take_body");
+          this.toast.showI18nSuccess(
+            "sup_tickets.toast_close_title",
+            "sup_tickets.toast_take_body",
+          );
           this.selected.set(null);
           this.load();
         },

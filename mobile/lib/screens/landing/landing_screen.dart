@@ -413,8 +413,8 @@ class _LandingScreenState extends State<LandingScreen>
 
   Widget _buildLogo() {
     return Container(
+      width: 72,
       height: 72,
-      constraints: const BoxConstraints(maxWidth: 210),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -431,7 +431,7 @@ class _LandingScreenState extends State<LandingScreen>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.all(6),
           child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
         ),
       ),

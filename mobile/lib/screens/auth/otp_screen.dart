@@ -217,8 +217,8 @@ class _OtpScreenState extends State<OtpScreen>
     return Column(
       children: [
         Container(
-          width: 220,
-          height: 118,
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -234,7 +234,7 @@ class _OtpScreenState extends State<OtpScreen>
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              padding: const EdgeInsets.all(8),
               child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
             ),
           ),

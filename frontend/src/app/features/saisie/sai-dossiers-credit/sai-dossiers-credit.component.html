@@ -71,7 +71,9 @@
               </td>
               <td class="text-sm text-muted">
                 {{
-                  d.dateDecision ? (d.dateDecision | appDate: "dd/MM/yyyy") : "—"
+                  d.dateDecision
+                    ? (d.dateDecision | appDate: "dd/MM/yyyy")
+                    : "—"
                 }}
               </td>
             </tr>
@@ -155,7 +157,8 @@
         <span
           class="badge"
           [ngClass]="statutClass(selectedDossier()!.statut)"
-          >{{ selectedDossier()!.statut | statutLabel }}</span>
+          >{{ selectedDossier()!.statut | statutLabel }}</span
+        >
         >
       </div>
     </div>
