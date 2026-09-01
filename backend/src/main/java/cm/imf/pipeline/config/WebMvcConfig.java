@@ -43,7 +43,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String primary = uploadDir.endsWith("/") ? uploadDir : uploadDir + "/";
+        String tmp = System.getProperty("java.io.tmpdir");
+        if (!tmp.endsWith("/") && !tmp.endsWith("\\")) {
+            tmp = tmp + "/";
+        }
         registry.addResourceHandler("/uploads/**", "/api/v1/uploads/**", "/api/uploads/**")
-                .addResourceLocations("file:" + uploadDir + "/");
+                .addResourceLocations(
+                        "file:" + primary,
+                        "file:" + tmp + "imf-uploads/");
     }
 }

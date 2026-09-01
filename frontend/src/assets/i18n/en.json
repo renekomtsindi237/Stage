@@ -300,6 +300,7 @@
     "alertes_handle": "Handle",
     "activity_title": "Recent activity",
     "activity_history": "View history",
+    "activity_empty": "No recent activity yet.",
     "par_chart_title": "Portfolio at Risk (PAR) Evolution",
     "questions_title": "Today's 3 questions",
     "q1": "Where does PAR 30 stand?",
@@ -1015,7 +1016,12 @@
     "statut_running": "Running",
     "statut_pending": "Pending",
     "failed_hint": "Failure: open Airflow logs for the red task, then rerun this DAG.",
-    "failed_no_logs": "No log URL — check Airflow or DAG reporting."
+    "failed_no_logs": "No log URL — check Airflow or DAG reporting.",
+    "modal_kicker": "Global run",
+    "modal_title": "MCRS model retraining",
+    "modal_starting": "Starting pipeline and model retraining…",
+    "modal_airflow_ok": "Airflow DAGs submitted in parallel.",
+    "modal_close": "Close"
   },
   "anl_drift": {
     "title": "ML Drift Analysis",

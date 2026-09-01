@@ -98,7 +98,7 @@ public class KpiController {
         } catch (Exception e) {
             log.debug("alertes_predictives indisponibles (kpi/dashboard) : {}", e.getMessage());
         }
-        result.put("alertesActives", alertes);
+        result.put("alertesActives", alertes.stream().map(KpiController::normalizeAlerte).toList());
 
         result.put("activiteRecente", loadActiviteRecente(imfId));
 
@@ -256,7 +256,7 @@ public class KpiController {
                     LIMIT 10
                     """, imfId);
             if (!fromAudit.isEmpty()) {
-                return fromAudit;
+                return fromAudit.stream().map(KpiController::normalizeActivite).toList();
             }
         } catch (Exception e) {
             log.debug("audit_trail indisponible (kpi/dashboard) : {}", e.getMessage());
@@ -274,7 +274,7 @@ public class KpiController {
                     WHERE ct.imf_id = ?
                     ORDER BY ct.created_at DESC
                     LIMIT 10
-                    """, imfId);
+                    """, imfId).stream().map(KpiController::normalizeActivite).toList();
         } catch (Exception e) {
             log.debug("collectes_terrain indisponible (activité) : {}", e.getMessage());
             return List.of();
@@ -308,6 +308,51 @@ public class KpiController {
         }
         result.put("collectesDuJour", montant);
         result.put("collectesDuJourNb", nb);
+    }
+
+    private static Map<String, Object> normalizeAlerte(Map<String, Object> row) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", str(first(row, "id")));
+        m.put("nomClient", str(first(row, "nomClient", "nom_client")));
+        m.put("severite", str(first(row, "severite", "urgence")));
+        m.put("message", str(first(row, "message", "titre")));
+        m.put("createdAt", iso(first(row, "createdAt", "created_at")));
+        return m;
+    }
+
+    private static Map<String, Object> normalizeActivite(Map<String, Object> row) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", str(first(row, "id")));
+        m.put("type", str(first(row, "type")));
+        m.put("description", str(first(row, "description")));
+        m.put("auteur", str(first(row, "auteur")));
+        m.put("createdAt", iso(first(row, "createdAt", "created_at")));
+        return m;
+    }
+
+    private static Object first(Map<String, Object> row, String... keys) {
+        for (String wanted : keys) {
+            for (Map.Entry<String, Object> e : row.entrySet()) {
+                if (e.getKey() != null && e.getKey().equalsIgnoreCase(wanted) && e.getValue() != null) {
+                    return e.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String str(Object v) {
+        return v == null ? "" : v.toString();
+    }
+
+    private static String iso(Object v) {
+        if (v == null) return null;
+        if (v instanceof java.sql.Timestamp ts) return ts.toInstant().toString();
+        if (v instanceof java.time.OffsetDateTime odt) return odt.toInstant().toString();
+        if (v instanceof java.time.Instant i) return i.toString();
+        if (v instanceof java.util.Date d) return d.toInstant().toString();
+        String s = v.toString().trim();
+        return s.isEmpty() ? null : s.replace(' ', 'T');
     }
 
     private List<Map<String, Object>> evolutionParMockee() {

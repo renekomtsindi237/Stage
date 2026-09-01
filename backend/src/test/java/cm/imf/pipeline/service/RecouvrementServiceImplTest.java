@@ -288,4 +288,18 @@ class RecouvrementServiceImplTest {
         verify(dossierRepo).search(eq(1L), isNull(), isNull(), eq("dupont"), any());
         verify(dossierRepo, never()).findByImfId(anyLong(), any());
     }
+
+    @Test
+    @DisplayName("DTO dossier : dateDerniereAction repli sur date d'ouverture")
+    void dto_fallback_date_derniere_action() {
+        RecouvrementDossier d = buildDossier(40, new BigDecimal("100000"));
+        d.setDateOuverture(java.time.OffsetDateTime.parse("2026-03-01T08:00:00Z"));
+        d.setDateDerniereAction(null);
+        d.setCreatedAt(java.time.OffsetDateTime.parse("2026-03-01T08:00:00Z"));
+        d.setUpdatedAt(java.time.OffsetDateTime.parse("2026-03-01T08:00:00Z"));
+
+        DossierRecouvrementResponse res = DossierRecouvrementResponse.from(d);
+
+        assertThat(res.dateDerniereAction()).isEqualTo(d.getDateOuverture());
+    }
 }

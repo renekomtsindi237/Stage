@@ -99,43 +99,88 @@ public class PdfExportService implements IPdfExportService {
     // ── Rapport KPI ───────────────────────────────────────────────────────────
 
     public byte[] exportKpiRapportPDF(LocalDate dateDebut, LocalDate dateFin) {
-        // PAR stats
-        String parSql = """
-                SELECT z.zone_id, z.nom_zone,
-                       COUNT(*) FILTER (WHERE fp.jours_retard > 0)  AS nb_en_retard,
-                       COUNT(*) FILTER (WHERE fp.jours_retard > 30) AS nb_par30,
-                       COUNT(*) FILTER (WHERE fp.jours_retard > 90) AS nb_par90,
-                       SUM(fp.solde_restant) AS encours_total
-                FROM %s.fact_remboursements fp
-                JOIN %s.dim_agence z ON fp.id_agence = z.id_agence
-                JOIN %s.dim_date d ON fp.date_key = d.date_key
-                WHERE d.date_valeur BETWEEN ? AND ?
-                GROUP BY z.zone_id, z.nom_zone
-                ORDER BY nb_par30 DESC
-                """.formatted(dwSchema, dwSchema, dwSchema);
-
-        List<Map<String, Object>> parRows = jdbcTemplate.queryForList(parSql,
-                dateDebut.format(DateTimeFormatter.ISO_DATE),
-                dateFin.format(DateTimeFormatter.ISO_DATE));
-
-        // Collecte stats
-        String collecteSql = """
-                SELECT da.nom_agence, fc.canal,
-                       COUNT(*) AS nb_collectes,
-                       SUM(fc.montant) AS montant_total
-                FROM %s.fact_collectes fc
-                JOIN %s.dim_date d ON fc.date_key = d.date_key
-                JOIN %s.dim_agence da ON fc.id_agence = da.id_agence
-                WHERE d.date_valeur BETWEEN ? AND ?
-                GROUP BY da.nom_agence, fc.canal
-                ORDER BY da.nom_agence, fc.canal
-                """.formatted(dwSchema, dwSchema, dwSchema);
-
-        List<Map<String, Object>> collecteRows = jdbcTemplate.queryForList(collecteSql,
-                dateDebut.format(DateTimeFormatter.ISO_DATE),
-                dateFin.format(DateTimeFormatter.ISO_DATE));
-
+        List<Map<String, Object>> parRows = loadParRows(dateDebut, dateFin);
+        List<Map<String, Object>> collecteRows = loadCollecteRows(dateDebut, dateFin);
         return buildKpiPdf(dateDebut, dateFin, parRows, collecteRows);
+    }
+
+    private List<Map<String, Object>> loadParRows(LocalDate dateDebut, LocalDate dateFin) {
+        try {
+            String parSql = """
+                    SELECT z.zone_id, z.nom_zone,
+                           COUNT(*) FILTER (WHERE fp.jours_retard > 0)  AS nb_en_retard,
+                           COUNT(*) FILTER (WHERE fp.jours_retard > 30) AS nb_par30,
+                           COUNT(*) FILTER (WHERE fp.jours_retard > 90) AS nb_par90,
+                           SUM(fp.solde_restant) AS encours_total
+                    FROM %s.fact_remboursements fp
+                    JOIN %s.dim_agence z ON fp.id_agence = z.id_agence
+                    JOIN %s.dim_date d ON fp.date_key = d.date_key
+                    WHERE d.date_valeur BETWEEN ? AND ?
+                    GROUP BY z.zone_id, z.nom_zone
+                    ORDER BY nb_par30 DESC
+                    """.formatted(dwSchema, dwSchema, dwSchema);
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(parSql,
+                    dateDebut.format(DateTimeFormatter.ISO_DATE),
+                    dateFin.format(DateTimeFormatter.ISO_DATE));
+            if (!rows.isEmpty()) {
+                return rows;
+            }
+        } catch (Exception e) {
+            log.warn("Warehouse PAR indisponible pour le PDF KPI : {}", e.getMessage());
+        }
+        try {
+            return jdbcTemplate.queryForList("""
+                    SELECT 'Portefeuille' AS zone_id,
+                           COALESCE(MAX(nom_client), 'Toutes agences') AS nom_zone,
+                           COUNT(*) FILTER (WHERE jours_retard > 0)  AS nb_en_retard,
+                           COUNT(*) FILTER (WHERE jours_retard > 30) AS nb_par30,
+                           COUNT(*) FILTER (WHERE jours_retard > 90) AS nb_par90,
+                           COALESCE(SUM(montant_impaye), 0) AS encours_total
+                    FROM app.creances
+                    """);
+        } catch (Exception e) {
+            log.warn("Repli app.creances indisponible pour le PDF KPI : {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    private List<Map<String, Object>> loadCollecteRows(LocalDate dateDebut, LocalDate dateFin) {
+        try {
+            String collecteSql = """
+                    SELECT da.nom_agence, fc.canal,
+                           COUNT(*) AS nb_collectes,
+                           SUM(fc.montant) AS montant_total
+                    FROM %s.fact_collectes fc
+                    JOIN %s.dim_date d ON fc.date_key = d.date_key
+                    JOIN %s.dim_agence da ON fc.id_agence = da.id_agence
+                    WHERE d.date_valeur BETWEEN ? AND ?
+                    GROUP BY da.nom_agence, fc.canal
+                    ORDER BY da.nom_agence, fc.canal
+                    """.formatted(dwSchema, dwSchema, dwSchema);
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(collecteSql,
+                    dateDebut.format(DateTimeFormatter.ISO_DATE),
+                    dateFin.format(DateTimeFormatter.ISO_DATE));
+            if (!rows.isEmpty()) {
+                return rows;
+            }
+        } catch (Exception e) {
+            log.warn("Warehouse collectes indisponible pour le PDF KPI : {}", e.getMessage());
+        }
+        try {
+            return jdbcTemplate.queryForList("""
+                    SELECT 'Terrain' AS nom_agence,
+                           COALESCE(ct.canal_paiement::text, 'TERRAIN') AS canal,
+                           COUNT(*) AS nb_collectes,
+                           COALESCE(SUM(ct.montant_collecte), 0) AS montant_total
+                    FROM app.collectes_terrain ct
+                    WHERE ct.date_collecte BETWEEN ? AND ?
+                    GROUP BY ct.canal_paiement
+                    ORDER BY canal
+                    """, dateDebut, dateFin);
+        } catch (Exception e) {
+            log.warn("Repli app.collectes_terrain indisponible pour le PDF KPI : {}", e.getMessage());
+            return List.of();
+        }
     }
 
     // ── Builders PDF ─────────────────────────────────────────────────────────

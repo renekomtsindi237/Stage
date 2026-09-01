@@ -54,16 +54,9 @@ export class SseService implements OnDestroy {
 
     const token = this.auth.getToken();
     const base = `${environment.apiUrl}/api/v1/sse/stream`;
-    // Cookie httpOnly same-origin en premier (URL courte). JWT en query
-    // seulement en desktop / API distante, ou après 2 échecs cookie.
-    const needQueryToken =
-      !!environment.apiUrl ||
-      environment.desktop ||
-      this.reconnectAttempts >= 2;
-    const url =
-      needQueryToken && token
-        ? `${base}?token=${encodeURIComponent(token)}`
-        : base;
+    // EventSource ne peut pas envoyer Authorization : JWT en query si disponible,
+    // cookie httpOnly en complément (withCredentials).
+    const url = token ? `${base}?token=${encodeURIComponent(token)}` : base;
     this.eventSource = new EventSource(url, { withCredentials: true });
 
     this.eventSource.onopen = () => {

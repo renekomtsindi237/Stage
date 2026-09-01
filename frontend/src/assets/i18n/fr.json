@@ -300,6 +300,7 @@
     "alertes_handle": "Traiter",
     "activity_title": "Activité récente",
     "activity_history": "Voir l'historique",
+    "activity_empty": "Aucune activité récente pour le moment.",
     "par_chart_title": "Évolution du Portefeuille à Risque (PAR)",
     "questions_title": "Les 3 questions du jour",
     "q1": "Où en est le PAR 30 ?",
@@ -1015,7 +1016,12 @@
     "statut_running": "En cours",
     "statut_pending": "En attente",
     "failed_hint": "Échec : ouvrez les logs Airflow pour la tâche en rouge, puis relancez ce DAG.",
-    "failed_no_logs": "Pas d'URL de logs — vérifiez Airflow ou le reporting DAG."
+    "failed_no_logs": "Pas d'URL de logs — vérifiez Airflow ou le reporting DAG.",
+    "modal_kicker": "Exécution globale",
+    "modal_title": "Réentraînement du modèle MCRS",
+    "modal_starting": "Démarrage du pipeline et du réentraînement…",
+    "modal_airflow_ok": "DAGs Airflow soumis en parallèle.",
+    "modal_close": "Fermer"
   },
   "anl_drift": {
     "title": "Analyse du Drift ML",

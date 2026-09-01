@@ -2,6 +2,7 @@ package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.ApiResponse;
 import cm.imf.pipeline.security.TenantContext;
+import cm.imf.pipeline.service.PipelineOrchestrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import java.util.*;
 public class AnalysteController {
 
     private final JdbcTemplate jdbc;
+    private final PipelineOrchestrationService pipeline;
 
     // ── Records DTOs inline ───────────────────────────────────────────────────
 
@@ -54,17 +56,6 @@ public class AnalysteController {
             double driftPsi,
             List<Map<String, Object>> scoringDistribution,
             List<Map<String, Object>> alertesRecentes
-    ) {}
-
-    record DagStatusDto(
-            String id, String nom, String statut,
-            String duree, String derniereExec
-    ) {}
-
-    record PipelineStatusDto(
-            String derniereExecution,
-            String statutGlobal,
-            List<DagStatusDto> dags
     ) {}
 
     record FeatureContrib(String nom, double psi, double contribution) {}
@@ -379,58 +370,17 @@ public class AnalysteController {
 
     @Operation(summary = "Statut global du pipeline Airflow")
     @GetMapping("/pipeline/status")
-    public ResponseEntity<ApiResponse<PipelineStatusDto>> pipelineStatus() {
-        List<DagStatusDto> dags;
-        String derniereExecution;
-        String statutGlobal;
-
-        try {
-            List<Map<String, Object>> rows = jdbc.queryForList("""
-                    SELECT dr.dag_id, dr.state,
-                           MAX(dr.start_date)    AS dernierExec,
-                           AVG(EXTRACT(EPOCH FROM (dr.end_date - dr.start_date))) AS dureeS
-                    FROM airflow.dag_run dr
-                    GROUP BY dr.dag_id, dr.state
-                    ORDER BY MAX(dr.start_date) DESC
-                    """);
-            dags = rows.stream().map(r -> new DagStatusDto(
-                    Objects.toString(r.get("dag_id"), ""),
-                    labelDag(Objects.toString(r.get("dag_id"), "")),
-                    mapStatut(Objects.toString(r.get("state"), "success")),
-                    formatDuree(r.get("dureeS") instanceof Number n ? n.doubleValue() : 0),
-                    Objects.toString(r.get("dernierExec"), "")
-            )).toList();
-            derniereExecution = dags.isEmpty() ? "" : dags.get(0).derniereExec();
-            long failed  = dags.stream().filter(d -> "FAILED".equals(d.statut())).count();
-            long running = dags.stream().filter(d -> "RUNNING".equals(d.statut())).count();
-            statutGlobal = running > 0 ? "RUNNING" : failed > 0 ? "FAILED" : dags.isEmpty() ? "IDLE" : "SUCCESS";
-        } catch (Exception e) {
-            log.warn("airflow.dag_run indisponible (pipeline/status) : {}", e.getMessage());
-            dags = List.of(
-                    new DagStatusDto("imf_ingestion_daily",    "Ingestion données quotidienne", "SUCCESS", "2m 15s", "2026-06-18T02:00:00Z"),
-                    new DagStatusDto("imf_scoring_mcrs",       "Scoring MCRS clients",          "SUCCESS", "4m 32s", "2026-06-18T04:00:00Z"),
-                    new DagStatusDto("imf_repayment_forecast", "Prévision remboursements",      "SUCCESS", "6m 05s", "2026-06-16T06:00:00Z"),
-                    new DagStatusDto("imf_rgpd_cleanup",       "Nettoyage RGPD",                "SUCCESS", "1m 10s", "2026-06-15T03:00:00Z"),
-                    new DagStatusDto("imf_reporting_mensuel",  "Reporting mensuel",             "FAILED",  "—",      "2026-06-01T00:00:00Z"),
-                    new DagStatusDto("imf_sync_mobile",        "Synchronisation mobile",        "SUCCESS", "0m 45s", "2026-06-18T08:00:00Z")
-            );
-            derniereExecution = "2026-06-18T08:00:00Z";
-            statutGlobal = "FAILED";
-        }
-
-        return ResponseEntity.ok(ApiResponse.ok(new PipelineStatusDto(derniereExecution, statutGlobal, dags)));
+    public ResponseEntity<ApiResponse<PipelineOrchestrationService.PipelineStatusDto>> pipelineStatus() {
+        return ResponseEntity.ok(ApiResponse.ok(pipeline.status()));
     }
 
     // ── POST /api/v1/analyste/pipeline/trigger ────────────────────────────────
 
-    @Operation(summary = "Déclencher manuellement le pipeline Airflow")
+    @Operation(summary = "Déclencher manuellement le pipeline Airflow et le réentraînement MCRS")
     @PostMapping("/pipeline/trigger")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> pipelineTrigger() {
+    public ResponseEntity<ApiResponse<PipelineOrchestrationService.TriggerResult>> pipelineTrigger() {
         log.info("Déclenchement manuel du pipeline Airflow demandé");
-        return ResponseEntity.ok(ApiResponse.ok(Map.of(
-                "message",   "Pipeline déclenché avec succès",
-                "timestamp", java.time.Instant.now().toString()
-        )));
+        return ResponseEntity.ok(ApiResponse.ok(pipeline.trigger()));
     }
 
     // ── GET /api/v1/analyste/ml/drift ────────────────────────────────────────
@@ -625,22 +575,6 @@ public class AnalysteController {
             case "imf_sync_mobile"         -> "Synchronisation mobile";
             default                        -> dagId;
         };
-    }
-
-    private String mapStatut(String airflowState) {
-        return switch (airflowState.toLowerCase()) {
-            case "success"  -> "SUCCESS";
-            case "running"  -> "RUNNING";
-            case "failed"   -> "FAILED";
-            default         -> "PENDING";
-        };
-    }
-
-    private String formatDuree(double secondes) {
-        if (secondes <= 0) return "—";
-        int mins = (int) (secondes / 60);
-        int secs = (int) (secondes % 60);
-        return mins + "m " + secs + "s";
     }
 
     private List<EvolPsi> evolutionPsiDefaulte() {

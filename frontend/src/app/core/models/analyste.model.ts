@@ -2,6 +2,7 @@ export interface PipelineStatus {
   derniereExecution: string;
   statutGlobal: "RUNNING" | "SUCCESS" | "FAILED" | "IDLE";
   dags: DagStatus[];
+  run?: PipelineRun | null;
 }
 
 export interface DagStatus {
@@ -13,6 +14,32 @@ export interface DagStatus {
   lignesEcrites?: number;
   derniereExec?: string;
   logUrl?: string;
+}
+
+export interface PipelineRun {
+  runId: string;
+  statut: "RUNNING" | "SUCCESS" | "FAILED";
+  etapeCourante: number;
+  etapesTotal: number;
+  message: string;
+  modeleVersion?: string;
+  airflowDeclenche?: boolean;
+  etapes: PipelineRunStep[];
+}
+
+export interface PipelineRunStep {
+  id: string;
+  nom: string;
+  statut: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED";
+  detail?: string;
+  lignesLues?: number;
+  lignesEcrites?: number;
+}
+
+export interface PipelineTriggerResult {
+  message: string;
+  run: PipelineRun;
+  dejaEnCours: boolean;
 }
 
 export interface MlDrift {

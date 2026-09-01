@@ -7,7 +7,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
-      if (err.status === 401) {
+      const url = req.url ?? "";
+      const skipLogout =
+        url.includes("/users/me/avatar") ||
+        url.includes("/public/") ||
+        url.includes("/auth/") ||
+        url.includes("/sse/");
+      if (err.status === 401 && !skipLogout) {
         auth.logout();
       }
       return throwError(() => err);

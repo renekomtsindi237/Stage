@@ -162,6 +162,10 @@ app:
   upload:
     dir: ${UPLOAD_DIR:/uploads}
     max-size-mb: 5
+  airflow:
+    url: ${AIRFLOW_API_URL:}
+    username: ${AIRFLOW_API_USERNAME:admin}
+    password: ${AIRFLOW_API_PASSWORD:}
   r2:
     enabled: ${R2_ENABLED:false}
     endpoint: ${R2_ENDPOINT:}

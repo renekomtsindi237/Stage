@@ -59,7 +59,8 @@ public record DossierRecouvrementResponse(
                 d.getFraisRecouvrement(),
                 d.getPhase(),
                 d.getDateOuverture(),
-                d.getDateDerniereAction(),
+                d.getDateDerniereAction() != null ? d.getDateDerniereAction()
+                        : (d.getDateOuverture() != null ? d.getDateOuverture() : d.getUpdatedAt()),
                 d.getAgentResponsable() != null ? d.getAgentResponsable().getUsername() : null,
                 d.isClos(),
                 d.getDateCloture(),

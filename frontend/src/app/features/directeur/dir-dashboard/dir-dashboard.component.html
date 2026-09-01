@@ -102,7 +102,7 @@
       @for (a of (data()?.alertesActives ?? []).slice(0, 4); track a.id) {
         <div
           class="alerte-item severity-bar"
-          [class]="a.severite.toLowerCase()"
+          [class]="(a.severite || '').toLowerCase()"
         >
           <div class="alerte-item__header">
             <app-alert-badge [severite]="a.severite" />
@@ -138,6 +138,10 @@
           style="height: 44px; margin-bottom: 8px; border-radius: 8px"
         ></div>
       }
+    } @else if (!(data()?.activiteRecente?.length)) {
+      <p class="text-muted" style="font-size: 13px">
+        {{ "dir_dashboard.activity_empty" | translate }}
+      </p>
     } @else {
       @for (
         item of (data()?.activiteRecente ?? []).slice(0, 6);

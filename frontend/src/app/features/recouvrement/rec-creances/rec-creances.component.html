@@ -1,4 +1,4 @@
-<div class="page-content">
+<div class="page-content rec-creances">
   <div class="page-header">
     <div>
       <h2>{{ "rec_creances.title" | translate }}</h2>
@@ -6,19 +6,9 @@
         {{ page()?.totalElements ?? 0 }} dossier(s)
       </p>
     </div>
-    <div style="display: flex; gap: 8px">
-      <button class="btn btn-ghost" (click)="exportCsv()" type="button">
-        <span class="material-icons-round">download</span>
-        {{ "common.export" | translate }}
-      </button>
-      <button class="btn btn-primary" (click)="openCreate()">
-        <span class="material-icons-round">add</span>
-        {{ "rec_creances.new_btn" | translate }}
-      </button>
-    </div>
   </div>
 
-  <!-- Filtres -->
+  <!-- Filtres + actions -->
   <div class="filter-bar">
     <div class="search-wrap">
       <span class="material-icons-round search-icon">search</span>
@@ -53,10 +43,22 @@
       />
       {{ "rec_creances.filter_show_closed" | translate }}
     </label>
+
+    <div class="filter-bar__actions">
+      <button class="btn btn-ghost" (click)="exportCsv()" type="button">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <span class="material-icons-round">add</span>
+        {{ "rec_creances.new_btn" | translate }}
+      </button>
+    </div>
   </div>
 
   <!-- Table -->
-  <div class="card">
+  <div class="card table-card">
+    <div class="table-wrap">
     <table class="data-table">
       <thead>
         <tr>
@@ -114,8 +116,11 @@
                   {{ d.phase | statutLabel }}
                 </span>
               </td>
-              <td class="text-sm text-muted">
-                {{ d.dateDerniereAction | appDate: "dd/MM/yy" }}
+              <td class="text-sm text-muted last-action">
+                {{
+                  (d.dateDerniereAction || d.dateOuverture)
+                    | appDate: "dd/MM/yy"
+                }}
               </td>
               <td>
                 @if (d.clos) {
@@ -151,6 +156,7 @@
         }
       </tbody>
     </table>
+    </div>
 
     @if ((page()?.totalPages ?? 0) > 1) {
       <div class="pagination">

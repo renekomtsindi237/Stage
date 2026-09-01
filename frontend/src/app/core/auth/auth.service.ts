@@ -89,6 +89,7 @@ export class AuthService {
     return this.http
       .post<unknown>(`${environment.apiUrl}/api/v1/users/me/avatar`, formData, {
         headers,
+        withCredentials: true,
       })
       .pipe(
         map((res) => {

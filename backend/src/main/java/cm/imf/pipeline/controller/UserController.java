@@ -76,6 +76,9 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> uploadAvatar(
             @AuthenticationPrincipal User user,
             @RequestParam("file") MultipartFile file) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Non authentifié");
+        }
         return ResponseEntity.ok(ApiResponse.ok(userService.uploadAvatar(user, file)));
     }
 

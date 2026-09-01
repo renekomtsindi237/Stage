@@ -127,6 +127,9 @@ public class UserService implements IUserService {
 
     @Transactional
     public UserResponse uploadAvatar(User user, MultipartFile file) {
+        if (user == null || user.getId() == null) {
+            throw new BusinessException("Non authentifié", HttpStatus.UNAUTHORIZED);
+        }
         if (file == null || file.isEmpty()) {
             throw new BusinessException("Fichier manquant", HttpStatus.BAD_REQUEST);
         }
@@ -215,16 +218,26 @@ public class UserService implements IUserService {
 
     private String saveLocalAvatar(byte[] bytes, String ext) {
         String filename = UUID.randomUUID() + ext;
+        Path dir = Paths.get(uploadDir, "avatars");
         try {
-            Path dir = Paths.get(uploadDir, "avatars");
             Files.createDirectories(dir);
             Files.write(dir.resolve(filename), bytes);
+            return "/api/v1/uploads/avatars/" + filename;
         } catch (IOException e) {
-            log.error("Sauvegarde avatar locale impossible ({}): {}", uploadDir, e.getMessage());
-            throw new BusinessException("Erreur lors de la sauvegarde du fichier",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            Path fallback = Paths.get(System.getProperty("java.io.tmpdir"), "imf-uploads", "avatars");
+            try {
+                Files.createDirectories(fallback);
+                Files.write(fallback.resolve(filename), bytes);
+                log.warn("Avatar écrit dans le répertoire de repli {} ({} : {})",
+                        fallback, uploadDir, e.getMessage());
+                return "/api/v1/uploads/avatars/" + filename;
+            } catch (IOException e2) {
+                log.error("Sauvegarde avatar impossible ({} puis {}) : {}",
+                        uploadDir, fallback, e2.getMessage());
+                throw new BusinessException("Erreur lors de la sauvegarde du fichier",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
-        return "/api/v1/uploads/avatars/" + filename;
     }
 
     private byte[] readAvatarBytes(String avatarUrl) {
@@ -243,7 +256,11 @@ public class UserService implements IUserService {
         }
         Path path = Paths.get(uploadDir, "avatars", filename);
         try {
-            return Files.exists(path) ? Files.readAllBytes(path) : null;
+            if (Files.exists(path)) {
+                return Files.readAllBytes(path);
+            }
+            Path fallback = Paths.get(System.getProperty("java.io.tmpdir"), "imf-uploads", "avatars", filename);
+            return Files.exists(fallback) ? Files.readAllBytes(fallback) : null;
         } catch (IOException e) {
             return null;
         }

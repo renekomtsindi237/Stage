@@ -5,12 +5,12 @@
   </div>
   <button
     class="btn btn-outline"
-    [disabled]="forcing()"
+    [disabled]="forcing() || run()?.statut === 'RUNNING'"
     (click)="forceExecution()"
   >
     <span class="material-icons-round">play_arrow</span>
     {{
-      forcing()
+      forcing() || run()?.statut === "RUNNING"
         ? ("anl_pipeline.force_loading" | translate)
         : ("anl_pipeline.force_btn" | translate)
     }}
@@ -129,3 +129,76 @@
     }
   }
 </div>
+
+@if (modalOpen()) {
+  <div
+    class="retrain-overlay"
+    (click)="closeModal()"
+    (appEscClose)="closeModal()"
+  >
+    <div class="retrain-modal" (click)="$event.stopPropagation()">
+      <div class="retrain-modal__header">
+        <div>
+          <p class="retrain-kicker">{{ "anl_pipeline.modal_kicker" | translate }}</p>
+          <h3>{{ "anl_pipeline.modal_title" | translate }}</h3>
+        </div>
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          [disabled]="run()?.statut === 'RUNNING'"
+          (click)="closeModal()"
+        >
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="retrain-progress">
+        <div class="retrain-progress__bar">
+          <span [style.width.%]="progressPct()"></span>
+        </div>
+        <div class="retrain-progress__meta">
+          <strong>{{ progressPct() }}%</strong>
+          <span>{{
+            run()?.modeleVersion || "MCRS"
+          }}</span>
+        </div>
+      </div>
+
+      <p class="retrain-message">
+        {{ run()?.message || ("anl_pipeline.modal_starting" | translate) }}
+      </p>
+      @if (run()?.airflowDeclenche) {
+        <p class="retrain-airflow">
+          {{ "anl_pipeline.modal_airflow_ok" | translate }}
+        </p>
+      }
+
+      <ul class="retrain-steps">
+        @for (step of run()?.etapes ?? []; track step.id) {
+          <li [class]="'retrain-step retrain-step--' + statutClass(step.statut)">
+            <span
+              class="material-icons-round"
+              [class.spin]="step.statut === 'RUNNING'"
+            >
+              {{ dagIcon(step.statut) }}
+            </span>
+            <div>
+              <p class="retrain-step__name">{{ step.nom }}</p>
+              <p class="retrain-step__detail">{{ step.detail }}</p>
+            </div>
+            <div class="retrain-step__lines">
+              <span>{{ formatLines(step.lignesLues) }}</span>
+              <small>{{ "anl_pipeline.dag_rows_read" | translate }}</small>
+            </div>
+          </li>
+        }
+      </ul>
+
+      @if (run()?.statut === "SUCCESS") {
+        <button class="btn btn-primary" type="button" (click)="closeModal()">
+          {{ "anl_pipeline.modal_close" | translate }}
+        </button>
+      }
+    </div>
+  </div>
+}
