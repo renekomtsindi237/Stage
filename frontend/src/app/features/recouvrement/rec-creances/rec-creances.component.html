@@ -59,103 +59,106 @@
   <!-- Table -->
   <div class="card table-card">
     <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>{{ "rec_creances.col_client" | translate }}</th>
-          <th>{{ "rec_creances.col_id_pret" | translate }}</th>
-          <th class="text-right">
-            {{ "rec_creances.col_montant" | translate }}
-          </th>
-          <th>{{ "rec_creances.col_retard" | translate }}</th>
-          <th>{{ "rec_creances.col_cobac" | translate }}</th>
-          <th>{{ "rec_creances.col_phase" | translate }}</th>
-          <th>{{ "rec_creances.col_last_action" | translate }}</th>
-          <th>{{ "rec_creances.col_statut" | translate }}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading()) {
-          @for (_ of [1, 2, 3, 4, 5]; track $index) {
-            <tr>
-              @for (__ of [1, 2, 3, 4, 5, 6, 7, 8]; track $index) {
-                <td>
-                  <div class="skeleton" style="height: 14px; width: 80%"></div>
-                </td>
-              }
-            </tr>
-          }
-        } @else {
-          @for (d of filteredContent; track d.uid) {
-            <tr
-              [class.row-selected]="selectedDossier()?.uid === d.uid"
-              (click)="openDetail(d)"
-              style="cursor: pointer"
-            >
-              <td class="font-semibold">{{ d.nomClient || "—" }}</td>
-              <td class="text-muted text-sm">{{ d.idPret }}</td>
-              <td class="text-right text-danger font-semibold">
-                {{ d.montantImpaye | fcfa }}
-              </td>
-              <td>
-                <span
-                  class="retard-chip"
-                  [class.retard-severe]="d.joursRetard > 90"
-                >
-                  {{ d.joursRetard }}{{ "common.days_abbr" | translate }}
-                </span>
-              </td>
-              <td>
-                <span class="badge" [ngClass]="cobacClass(d.categorieCobtac)">
-                  {{ d.categorieCobtac || "—" }} · {{ d.tauxProvision }}%
-                </span>
-              </td>
-              <td>
-                <span class="badge" [ngClass]="phaseClass(d.phase)">
-                  {{ d.phase | statutLabel }}
-                </span>
-              </td>
-              <td class="text-sm text-muted last-action">
-                {{
-                  (d.dateDerniereAction || d.dateOuverture)
-                    | appDate: "dd/MM/yy"
-                }}
-              </td>
-              <td>
-                @if (d.clos) {
-                  <span class="badge badge-dark">{{
-                    "rec_creances.status_closed" | translate
-                  }}</span>
-                } @else {
-                  <span class="badge badge-basse">{{
-                    "rec_creances.status_open" | translate
-                  }}</span>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ "rec_creances.col_client" | translate }}</th>
+            <th>{{ "rec_creances.col_id_pret" | translate }}</th>
+            <th class="text-right">
+              {{ "rec_creances.col_montant" | translate }}
+            </th>
+            <th>{{ "rec_creances.col_retard" | translate }}</th>
+            <th>{{ "rec_creances.col_cobac" | translate }}</th>
+            <th>{{ "rec_creances.col_phase" | translate }}</th>
+            <th>{{ "rec_creances.col_last_action" | translate }}</th>
+            <th>{{ "rec_creances.col_statut" | translate }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            @for (_ of [1, 2, 3, 4, 5]; track $index) {
+              <tr>
+                @for (__ of [1, 2, 3, 4, 5, 6, 7, 8]; track $index) {
+                  <td>
+                    <div
+                      class="skeleton"
+                      style="height: 14px; width: 80%"
+                    ></div>
+                  </td>
                 }
-              </td>
-              <td>
-                <span
-                  class="material-icons-round text-muted"
-                  style="font-size: 18px; vertical-align: middle"
-                >
-                  chevron_right
-                </span>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="9" style="padding: 0">
-                <app-empty-state
-                  icon="account_balance"
-                  [title]="'rec_creances.empty' | translate"
-                  [ctaLabel]="'rec_creances.new_btn' | translate"
-                />
-              </td>
-            </tr>
+              </tr>
+            }
+          } @else {
+            @for (d of filteredContent; track d.uid) {
+              <tr
+                [class.row-selected]="selectedDossier()?.uid === d.uid"
+                (click)="openDetail(d)"
+                style="cursor: pointer"
+              >
+                <td class="font-semibold">{{ d.nomClient || "—" }}</td>
+                <td class="text-muted text-sm">{{ d.idPret }}</td>
+                <td class="text-right text-danger font-semibold">
+                  {{ d.montantImpaye | fcfa }}
+                </td>
+                <td>
+                  <span
+                    class="retard-chip"
+                    [class.retard-severe]="d.joursRetard > 90"
+                  >
+                    {{ d.joursRetard }}{{ "common.days_abbr" | translate }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="cobacClass(d.categorieCobtac)">
+                    {{ d.categorieCobtac || "—" }} · {{ d.tauxProvision }}%
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="phaseClass(d.phase)">
+                    {{ d.phase | statutLabel }}
+                  </span>
+                </td>
+                <td class="text-sm text-muted last-action">
+                  {{
+                    d.dateDerniereAction || d.dateOuverture
+                      | appDate: "dd/MM/yy"
+                  }}
+                </td>
+                <td>
+                  @if (d.clos) {
+                    <span class="badge badge-dark">{{
+                      "rec_creances.status_closed" | translate
+                    }}</span>
+                  } @else {
+                    <span class="badge badge-basse">{{
+                      "rec_creances.status_open" | translate
+                    }}</span>
+                  }
+                </td>
+                <td>
+                  <span
+                    class="material-icons-round text-muted"
+                    style="font-size: 18px; vertical-align: middle"
+                  >
+                    chevron_right
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="9" style="padding: 0">
+                  <app-empty-state
+                    icon="account_balance"
+                    [title]="'rec_creances.empty' | translate"
+                    [ctaLabel]="'rec_creances.new_btn' | translate"
+                  />
+                </td>
+              </tr>
+            }
           }
-        }
-      </tbody>
-    </table>
+        </tbody>
+      </table>
     </div>
 
     @if ((page()?.totalPages ?? 0) > 1) {

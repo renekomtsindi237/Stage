@@ -172,7 +172,11 @@
     span {
       display: block;
       height: 100%;
-      background: linear-gradient(90deg, var(--color-primary), var(--color-accent, #d4a017));
+      background: linear-gradient(
+        90deg,
+        var(--color-primary),
+        var(--color-accent, #d4a017)
+      );
       transition: width 0.3s ease;
     }
   }
@@ -254,4 +258,3 @@
     color: var(--color-text-muted);
   }
 }
-

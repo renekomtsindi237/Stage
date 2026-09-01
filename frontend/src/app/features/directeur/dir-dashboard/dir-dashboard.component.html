@@ -138,7 +138,7 @@
           style="height: 44px; margin-bottom: 8px; border-radius: 8px"
         ></div>
       }
-    } @else if (!(data()?.activiteRecente?.length)) {
+    } @else if (!data()?.activiteRecente?.length) {
       <p class="text-muted" style="font-size: 13px">
         {{ "dir_dashboard.activity_empty" | translate }}
       </p>
