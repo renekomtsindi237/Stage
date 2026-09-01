@@ -1,5 +1,6 @@
 export type Severite = "CRITIQUE" | "HAUTE" | "MOYENNE" | "BASSE";
-export type StatutAlerte = "NON_TRAITEE" | "EN_TRAITEMENT" | "RESOLUE";
+export type StatutAlerte =
+  "NON_TRAITEE" | "EN_TRAITEMENT" | "RESOLUE" | "IGNOREE";
 
 export interface Alerte {
   id: string;
@@ -13,6 +14,12 @@ export interface Alerte {
   probabiliteDefaut?: number;
   createdAt: string;
   traitePar?: string;
+  recommandation?: string;
+  typeAlerte?: string;
+  resolutionNote?: string;
+  joursRetard?: number;
+  scoreMcrs?: number;
+  actionRecommandee?: string;
 }
 
 export interface PageResponse<T> {

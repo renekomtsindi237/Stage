@@ -61,10 +61,14 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(updated));
     }
 
-    @Operation(summary = "Sert l'avatar courant (ou l'image par défaut). Accessible en GET pour les balises <img>.")
-    @GetMapping(value = "/me/avatar", produces = MediaType.IMAGE_PNG_VALUE)
+    @Operation(summary = "Sert l'avatar courant (ou l'image par défaut). Jamais 4xx : PNG de repli si anonyme ou fichier absent.")
+    @GetMapping("/me/avatar")
     public ResponseEntity<byte[]> getMyAvatar(@AuthenticationPrincipal User user) {
-        return userService.serveAvatar(user);
+        try {
+            return userService.serveAvatar(user);
+        } catch (Exception e) {
+            return userService.serveAvatar(null);
+        }
     }
 
     @Operation(summary = "Upload ou remplacement de l'avatar (JPEG/PNG/WEBP/GIF, max 2 Mo)")

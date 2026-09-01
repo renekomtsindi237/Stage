@@ -8,6 +8,7 @@ import cm.imf.pipeline.enums.Role;
 import cm.imf.pipeline.exception.BusinessException;
 import cm.imf.pipeline.exception.ResourceNotFoundException;
 import cm.imf.pipeline.repository.UserRepository;
+import cm.imf.pipeline.util.ImageFiles;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,16 +32,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
-
-    private static final Set<String> ALLOWED_TYPES =
-            Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
 
     private final UserRepository        userRepository;
     private final INotificationService  notificationService;
@@ -133,9 +130,17 @@ public class UserService implements IUserService {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("Fichier manquant", HttpStatus.BAD_REQUEST);
         }
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            throw new BusinessException("Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)",
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new BusinessException("Impossible de lire le fichier", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String contentType = ImageFiles.resolveContentType(file, bytes);
+        if (contentType == null) {
+            throw new BusinessException(
+                    "Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)",
                     HttpStatus.BAD_REQUEST);
         }
         long maxBytes = (long) maxSizeMb * 1024 * 1024;
@@ -144,19 +149,7 @@ public class UserService implements IUserService {
                     HttpStatus.BAD_REQUEST);
         }
 
-        String ext = switch (contentType) {
-            case "image/jpeg" -> ".jpg";
-            case "image/png"  -> ".png";
-            case "image/webp" -> ".webp";
-            default            -> ".gif";
-        };
-
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new BusinessException("Impossible de lire le fichier", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        String ext = ImageFiles.extension(contentType);
 
         String avatarUrl = saveLocalAvatar(bytes, ext);
         log.info("Avatar enregistré sur disque : user={} url={}", user.getId(), avatarUrl);

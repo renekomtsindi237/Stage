@@ -121,6 +121,13 @@ export const routes: Routes = [
               ),
           },
           {
+            path: "alertes/:id",
+            loadComponent: () =>
+              import("./features/directeur/dir-alerte-detail/dir-alerte-detail.component").then(
+                (m) => m.DirAlerteDetailComponent,
+              ),
+          },
+          {
             path: "kpi",
             loadComponent: () =>
               import("./features/directeur/dir-kpi/dir-kpi.component").then(

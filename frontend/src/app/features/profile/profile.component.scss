@@ -167,6 +167,17 @@
   flex-wrap: wrap;
 }
 
+.profile-upload-error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .profile-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

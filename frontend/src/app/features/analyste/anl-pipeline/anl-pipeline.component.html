@@ -33,10 +33,7 @@
       <p class="text-sm text-muted">
         {{ "anl_pipeline.global_status" | translate }}
       </p>
-      <span
-        class="badge badge-running"
-        [class]="'badge-' + statutClass(data()!.statutGlobal)"
-      >
+      <span [class]="'badge badge-' + statutClass(data()!.statutGlobal)">
         <span class="material-icons-round" style="font-size: 12px">circle</span>
         {{ statutLabel(data()!.statutGlobal) | translate }}
       </span>

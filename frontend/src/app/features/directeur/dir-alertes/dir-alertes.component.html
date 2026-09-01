@@ -105,18 +105,13 @@
           </span>
         </div>
       </div>
-      @if (a.statut !== "RESOLUE") {
-        <button
+      @if (a.statut !== "RESOLUE" && a.statut !== "IGNOREE") {
+        <a
           class="btn btn-primary btn-sm alerte-row__action"
-          [disabled]="treating() === a.id"
-          (click)="traiter(a.id)"
+          [routerLink]="['/directeur/alertes', a.id]"
         >
-          {{
-            treating() === a.id
-              ? ("common.loading" | translate)
-              : ("dir_alertes.handle_btn" | translate)
-          }}
-        </button>
+          {{ "dir_alertes.handle_btn" | translate }}
+        </a>
       }
     </div>
   }

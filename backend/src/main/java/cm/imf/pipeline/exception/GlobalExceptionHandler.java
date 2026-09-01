@@ -95,7 +95,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleUnreadableMessage(
             HttpMessageNotReadableException ex, Locale locale) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(msg("error.validation", locale)));
+        Throwable cause = ex.getMostSpecificCause();
+        String detail = cause != null ? cause.getMessage() : null;
+        if (detail != null && detail.contains("inconnu")) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(detail));
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.error(
+                "Valeur de formulaire invalide (type d'action, résultat ou canal de paiement)."));
     }
 
     // === Ressource introuvable ================================================

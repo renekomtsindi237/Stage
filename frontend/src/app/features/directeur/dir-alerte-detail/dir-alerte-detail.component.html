@@ -1,0 +1,150 @@
+<div class="page-header">
+  <div>
+    <a routerLink="/directeur/alertes" class="back-link">
+      <span class="material-icons-round">arrow_back</span>
+      {{ "dir_alertes.back" | translate }}
+    </a>
+    <h2 class="page-title">{{ "dir_alertes.detail_title" | translate }}</h2>
+    <p class="page-subtitle">{{ "dir_alertes.detail_subtitle" | translate }}</p>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card">
+    <div
+      class="skeleton"
+      style="height: 24px; width: 40%; margin-bottom: 16px"
+    ></div>
+    <div class="skeleton" style="height: 120px; margin-bottom: 12px"></div>
+    <div class="skeleton" style="height: 80px"></div>
+  </div>
+} @else if (notFound() || !alerte()) {
+  <div class="card" style="text-align: center; padding: 40px">
+    <span class="material-icons-round" style="font-size: 40px">search_off</span>
+    <p>{{ "dir_alertes.not_found" | translate }}</p>
+    <a routerLink="/directeur/alertes" class="btn btn-primary btn-sm">{{
+      "dir_alertes.back" | translate
+    }}</a>
+  </div>
+} @else {
+  <div class="detail-hero card">
+    <div class="detail-hero__meta">
+      <app-alert-badge [severite]="urgence" />
+      <span
+        class="badge"
+        [class]="'badge-' + (alerte()!.statut ?? '').toLowerCase()"
+        >{{ alerte()!.statut }}</span
+      >
+      <span class="text-muted text-sm">{{
+        alerte()!.createdAt | timeAgo
+      }}</span>
+    </div>
+    <h3 class="detail-hero__title">{{ alerte()!.titre }}</h3>
+    <p class="detail-hero__client">
+      {{ alerte()!.nomClient || alerte()!.clientIdExterne }}
+      <span class="text-muted">· {{ alerte()!.clientIdExterne }}</span>
+      <span class="text-muted">· {{ alerte()!.typeAlerte }}</span>
+    </p>
+  </div>
+
+  <div class="content-grid two-col">
+    <div class="card">
+      <div class="card-header">
+        <h4>{{ "dir_alertes.diag_title" | translate }}</h4>
+      </div>
+      <p class="diag-text">{{ alerte()!.description || alerte()!.titre }}</p>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h4>{{ "dir_alertes.reco_title" | translate }}</h4>
+      </div>
+      <p class="diag-text">
+        {{
+          alerte()!.recommandation ||
+            alerte()!.actionRecommandee ||
+            ("dir_alertes.reco_empty" | translate)
+        }}
+      </p>
+    </div>
+  </div>
+
+  <div class="card portefeuille">
+    <div class="card-header">
+      <h4>{{ "dir_alertes.portfolio_title" | translate }}</h4>
+    </div>
+    <div class="kpi-row">
+      <div>
+        <div class="kpi-label">{{ "dir_alertes.kpi_encours" | translate }}</div>
+        <div class="kpi-value">{{ alerte()!.encours ?? 0 | fcfa }}</div>
+      </div>
+      <div>
+        <div class="kpi-label">{{ "dir_alertes.kpi_retard" | translate }}</div>
+        <div class="kpi-value">{{ alerte()!.joursRetard ?? 0 }} j</div>
+      </div>
+      <div>
+        <div class="kpi-label">{{ "dir_alertes.kpi_mcrs" | translate }}</div>
+        <div class="kpi-value">
+          {{
+            alerte()!.scoreMcrs != null
+              ? (alerte()!.scoreMcrs | number: "1.0-0")
+              : "—"
+          }}
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label">{{ "dir_alertes.kpi_pd90" | translate }}</div>
+        <div class="kpi-value">{{ pd90Label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h4>{{ "dir_alertes.decision_title" | translate }}</h4>
+    </div>
+    <label class="note-label" for="note-decision">{{
+      "dir_alertes.note_label" | translate
+    }}</label>
+    <textarea
+      id="note-decision"
+      class="note-area"
+      rows="4"
+      [disabled]="clos || saving()"
+      [ngModel]="note()"
+      (ngModelChange)="note.set($event)"
+      [placeholder]="'dir_alertes.note_placeholder' | translate"
+    ></textarea>
+
+    @if (!clos) {
+      <div class="actions">
+        @if (alerte()!.statut !== "EN_TRAITEMENT") {
+          <button
+            class="btn btn-outline"
+            [disabled]="saving()"
+            (click)="appliquer('EN_TRAITEMENT')"
+          >
+            {{ "dir_alertes.btn_take" | translate }}
+          </button>
+        }
+        <button
+          class="btn btn-primary"
+          [disabled]="saving()"
+          (click)="appliquer('RESOLUE')"
+        >
+          {{ "dir_alertes.btn_resolve" | translate }}
+        </button>
+        <button
+          class="btn btn-ghost"
+          [disabled]="saving()"
+          (click)="appliquer('IGNOREE')"
+        >
+          {{ "dir_alertes.btn_ignore" | translate }}
+        </button>
+      </div>
+    } @else {
+      <p class="text-muted text-sm">
+        {{ "dir_alertes.closed_hint" | translate }}
+      </p>
+    }
+  </div>
+}

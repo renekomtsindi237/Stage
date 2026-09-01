@@ -2,6 +2,7 @@ package cm.imf.pipeline.controller;
 
 import cm.imf.pipeline.dto.response.ApiResponse;
 import cm.imf.pipeline.dto.response.ChefAgenceDashboardResponse;
+import cm.imf.pipeline.dto.response.ChefAgenceEquipePerformanceResponse;
 import cm.imf.pipeline.dto.response.PageResponse;
 import cm.imf.pipeline.dto.response.UserResponse;
 import cm.imf.pipeline.entity.DossierCredit;
@@ -26,8 +27,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +50,7 @@ public class ChefAgenceController {
     private final ClientInformelRepository clientRepo;
     private final CollecteRepository      collecteRepo;
     private final EcheanceAppRepository   echeanceRepo;
+    private final JdbcTemplate            jdbc;
 
     @Operation(summary = "Tableau de bord du Chef d'Agence")
     @GetMapping("/dashboard")
@@ -124,5 +130,147 @@ public class ChefAgenceController {
                 PageRequest.of(page, size, Sort.by("username")));
 
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(result, UserResponse::from)));
+    }
+
+    @Operation(summary = "Performances de l'équipe (collectes, dossiers) avec évolution vs période précédente")
+    @GetMapping("/equipe/performances")
+    public ResponseEntity<ApiResponse<ChefAgenceEquipePerformanceResponse>> performancesEquipe(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "30") int jours) {
+
+        int period = jours <= 7 ? 7 : jours <= 30 ? 30 : 90;
+        Long imfId = user.getImf().getId();
+        LocalDate today = LocalDate.now();
+        LocalDate fin = today.plusDays(1);
+        LocalDate debut = today.minusDays(period);
+        LocalDate debutPrec = debut.minusDays(period);
+
+        List<Role> roles = List.of(
+                Role.AGENT, Role.AGENT_CREDIT, Role.CAISSIER,
+                Role.AGENT_SAISIE, Role.ANALYSTE_ENGAGEMENTS);
+        List<User> membres = userRepo.findByImfIdAndRoleIn(imfId, roles,
+                PageRequest.of(0, 200, Sort.by("username"))).getContent();
+        if (user.getZoneId() != null && !user.getZoneId().isBlank()) {
+            String zone = user.getZoneId();
+            membres = membres.stream()
+                    .filter(u -> zone.equals(u.getZoneId()))
+                    .toList();
+        }
+
+        Map<Long, long[]> collectesAct = loadCollectes(imfId, debut, fin);
+        Map<Long, long[]> collectesPrec = loadCollectes(imfId, debutPrec, debut);
+        Map<Long, long[]> dossiersAct = loadDossiers(imfId, debut, fin);
+        Map<Long, long[]> dossiersPrec = loadDossiers(imfId, debutPrec, debut);
+
+        List<ChefAgenceEquipePerformanceResponse.MembrePerformance> rows = new ArrayList<>();
+        for (User m : membres) {
+            long[] cAct = collectesAct.getOrDefault(m.getId(), new long[]{0, 0, 0});
+            long[] cPrec = collectesPrec.getOrDefault(m.getId(), new long[]{0, 0, 0});
+            long[] dAct = dossiersAct.getOrDefault(m.getId(), new long[]{0, 0, 0});
+            long[] dPrec = dossiersPrec.getOrDefault(m.getId(), new long[]{0, 0, 0});
+            double evo = (cAct[1] != 0 || cPrec[1] != 0)
+                    ? evolutionPct(cAct[1], cPrec[1])
+                    : evolutionPct(dAct[1], dPrec[1]);
+            String tendance = evo > 5 ? "HAUSSE" : evo < -5 ? "BAISSE" : "STABLE";
+            long soumis = dAct[0];
+            long valides = dAct[1];
+            long rejetes = dAct[2];
+            double taux = soumis > 0 ? Math.round(valides * 10_000.0 / soumis) / 100.0 : 0;
+            rows.add(new ChefAgenceEquipePerformanceResponse.MembrePerformance(
+                    m.getUid() != null ? m.getUid().toString() : null,
+                    m.getUsername(),
+                    m.getRole() != null ? m.getRole().name() : "",
+                    m.getZoneId(),
+                    m.isActif(),
+                    cAct[0],
+                    BigDecimal.valueOf(cAct[1]),
+                    cPrec[0],
+                    BigDecimal.valueOf(cPrec[1]),
+                    evo,
+                    tendance,
+                    soumis,
+                    valides,
+                    rejetes,
+                    taux,
+                    cAct[2]
+            ));
+        }
+        rows.sort((a, b) -> {
+            int cmp = b.collectesMontant().compareTo(a.collectesMontant());
+            if (cmp != 0) return cmp;
+            return Long.compare(b.dossiersValides(), a.dossiersValides());
+        });
+        return ResponseEntity.ok(ApiResponse.ok(
+                new ChefAgenceEquipePerformanceResponse(period, debut, today, rows)));
+    }
+
+    /** [count, montantFcfa, clientsDistincts] */
+    private Map<Long, long[]> loadCollectes(Long imfId, LocalDate from, LocalDate to) {
+        Map<Long, long[]> acc = new HashMap<>();
+        addCollectes(acc, """
+                SELECT agent_id, COUNT(*) nb, COALESCE(SUM(montant_collecte),0) tot,
+                       COUNT(DISTINCT client_id_externe) clients
+                FROM app.collectes_epargne
+                WHERE imf_id = ? AND date_collecte >= ? AND date_collecte < ?
+                  AND statut IN ('CONFIRMEE','SOUMISE')
+                GROUP BY agent_id
+                """, imfId, from, to);
+        addCollectes(acc, """
+                SELECT agent_id, COUNT(*) nb, COALESCE(SUM(montant_collecte),0) tot,
+                       COUNT(DISTINCT client_id) clients
+                FROM app.collectes_terrain
+                WHERE imf_id = ? AND date_collecte >= ? AND date_collecte < ?
+                  AND statut IN ('CONFIRMEE','SOUMISE')
+                GROUP BY agent_id
+                """, imfId, from, to);
+        return acc;
+    }
+
+    private void addCollectes(Map<Long, long[]> acc, String sql, Long imfId, LocalDate from, LocalDate to) {
+        try {
+            jdbc.query(sql, rs -> {
+                long id = rs.getLong("agent_id");
+                long[] cur = acc.getOrDefault(id, new long[]{0, 0, 0});
+                cur[0] += rs.getLong("nb");
+                cur[1] += rs.getBigDecimal("tot") != null ? rs.getBigDecimal("tot").longValue() : 0L;
+                cur[2] += rs.getLong("clients");
+                acc.put(id, cur);
+            }, imfId, from, to);
+        } catch (Exception ignored) {
+            /* table ou colonnes absentes selon l'environnement */
+        }
+    }
+
+    /** [soumis, valides, rejetes] */
+    private Map<Long, long[]> loadDossiers(Long imfId, LocalDate from, LocalDate to) {
+        Map<Long, long[]> acc = new HashMap<>();
+        try {
+            jdbc.query("""
+                    SELECT agent_credit_id,
+                           COUNT(*) soumis,
+                           SUM(CASE WHEN statut IN ('VALIDE','APPROUVE','DEBLOQUE') THEN 1 ELSE 0 END) valides,
+                           SUM(CASE WHEN statut = 'REJETE' THEN 1 ELSE 0 END) rejetes
+                    FROM app.dossiers_credit
+                    WHERE imf_id = ?
+                      AND COALESCE(date_soumission, created_at) >= ?
+                      AND COALESCE(date_soumission, created_at) <  ?
+                    GROUP BY agent_credit_id
+                    """, rs -> {
+                acc.put(rs.getLong("agent_credit_id"), new long[]{
+                        rs.getLong("soumis"),
+                        rs.getLong("valides"),
+                        rs.getLong("rejetes")
+                });
+            }, imfId, from.atStartOfDay(), to.atStartOfDay());
+        } catch (Exception ignored) {
+        }
+        return acc;
+    }
+
+    private static double evolutionPct(long current, long previous) {
+        if (previous == 0) {
+            return current > 0 ? 100.0 : 0.0;
+        }
+        return Math.round((current - previous) * 10_000.0 / previous) / 100.0;
     }
 }

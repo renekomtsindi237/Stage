@@ -10,6 +10,7 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
+import { apiErrorMessage } from "../../../core/http/api-error";
 import { ToastService } from "../../../core/services/toast.service";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 
@@ -50,12 +51,7 @@ const ACTION_TYPES = [
   "RADIATION",
 ];
 
-const CANAUX_PAIEMENT = [
-  "ESPECES",
-  "MTN_MOBILE_MONEY",
-  "ORANGE_MONEY",
-  "VIREMENT",
-];
+const CANAUX_PAIEMENT = ["ESPECES", "MTN", "ORANGE", "VIREMENT"];
 
 @Component({
   selector: "app-rec-actions",
@@ -104,10 +100,7 @@ export class RecActionsComponent implements OnInit {
   }
 
   get isMomo(): boolean {
-    return (
-      this.form.canalPaiement === "MTN_MOBILE_MONEY" ||
-      this.form.canalPaiement === "ORANGE_MONEY"
-    );
+    return this.form.canalPaiement === "MTN" || this.form.canalPaiement === "ORANGE";
   }
 
   ngOnInit() {
@@ -177,12 +170,29 @@ export class RecActionsComponent implements OnInit {
       this.toast.showError("Requis", "Choisir un type d'action.");
       return;
     }
+    if (this.isEncaissement) {
+      const montant = parseFloat(this.form.promesseMontant);
+      if (!Number.isFinite(montant) || montant <= 0) {
+        this.toast.showError(
+          "Requis",
+          "Indiquer le montant encaissé (FCFA).",
+        );
+        return;
+      }
+    }
     this.saving.set(true);
 
     const body: Record<string, unknown> = {
       typeAction: this.form.typeAction,
     };
-    if (this.form.resultat) body["resultat"] = this.form.resultat;
+    const resultat =
+      this.form.resultat ||
+      (this.form.typeAction === "ENCAISSEMENT_TOTAL"
+        ? "PAIEMENT_EFFECTUE"
+        : this.form.typeAction === "ENCAISSEMENT_PARTIEL"
+          ? "PAIEMENT_PARTIEL"
+          : "");
+    if (resultat) body["resultat"] = resultat;
     if (this.form.promesseDate) body["promesseDate"] = this.form.promesseDate;
     if (this.form.promesseMontant)
       body["promesseMontant"] = parseFloat(this.form.promesseMontant);
@@ -210,8 +220,15 @@ export class RecActionsComponent implements OnInit {
           this.success.set(true);
           this.resetForm();
         },
-        error: () => {
-          this.toast.showError("Erreur", "Impossible d'enregistrer l'action.");
+        error: (err: unknown) => {
+          this.toast.showError(
+            "Action non enregistrée",
+            apiErrorMessage(
+              err,
+              "Impossible d'enregistrer l'action. Vérifiez les champs saisis.",
+            ),
+            7000,
+          );
           this.saving.set(false);
         },
       });

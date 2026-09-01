@@ -44,7 +44,8 @@ public record UserResponse(
                 u.getRole(),
                 u.getZoneId(),
                 u.getEmail(),
-                u.getAvatarUrl() != null ? u.getAvatarUrl() : DEFAULT_AVATAR_URL,
+                u.getAvatarUrl() != null && !u.getAvatarUrl().contains("/users/me/avatar")
+                        ? u.getAvatarUrl() : DEFAULT_AVATAR_URL,
                 u.getImf() != null && u.getImf().getUid() != null ? u.getImf().getUid().toString() : null,
                 u.getImf() != null ? u.getImf().getCode() : null,
                 u.getImf() != null ? u.getImf().getNom()  : null,

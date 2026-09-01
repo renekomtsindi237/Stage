@@ -1,5 +1,4 @@
 import { Injectable, OnDestroy, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
 import { Subject, Observable } from "rxjs";
 import { AuthService } from "../auth/auth.service";
 import { environment } from "../../../environments/environment";
@@ -11,16 +10,21 @@ export interface SseEvent {
   payload?: unknown;
 }
 
+/**
+ * Flux SSE. EventSource same-origin + cookie (et token en query en secours).
+ * Reconnexion exponentielle, pause si l'onglet est masqué — évite de spammer
+ * QUIC/HTTP2 quand Cloudflare coupe le flux idle.
+ */
 @Injectable({ providedIn: "root" })
 export class SseService implements OnDestroy {
   private readonly auth = inject(AuthService);
-  private readonly http = inject(HttpClient);
 
   private eventSource: EventSource | null = null;
   readonly events$ = new Subject<SseEvent>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
-  private readonly MAX_RECONNECT = 3;
+  private stopped = false;
+  private visibilityHandler: (() => void) | null = null;
 
   private readonly EVENT_TYPES = [
     "HEARTBEAT",
@@ -37,71 +41,99 @@ export class SseService implements OnDestroy {
   ];
 
   connect(): Observable<SseEvent> {
-    this.disconnect();
-    if (!this.auth.isLoggedIn()) return this.events$.asObservable();
+    this.stopped = false;
+    this.disconnectSocket();
+    this.bindVisibility();
+    this.open();
+    return this.events$.asObservable();
+  }
+
+  private open() {
+    if (this.stopped || !this.auth.isLoggedIn()) return;
+    if (typeof document !== "undefined" && document.hidden) return;
 
     const token = this.auth.getToken();
-    const url = token
-      ? `${environment.apiUrl}/api/v1/sse/stream?token=${encodeURIComponent(token)}`
-      : `${environment.apiUrl}/api/v1/sse/stream`;
-    this.eventSource = new EventSource(url);
+    const base = `${environment.apiUrl}/api/v1/sse/stream`;
+    // Cookie httpOnly same-origin en premier (URL courte). JWT en query
+    // seulement en desktop / API distante, ou après 2 échecs cookie.
+    const needQueryToken =
+      !!environment.apiUrl ||
+      environment.desktop ||
+      this.reconnectAttempts >= 2;
+    const url =
+      needQueryToken && token
+        ? `${base}?token=${encodeURIComponent(token)}`
+        : base;
+    this.eventSource = new EventSource(url, { withCredentials: true });
+
+    this.eventSource.onopen = () => {
+      this.reconnectAttempts = 0;
+    };
 
     this.eventSource.onmessage = (e) => {
       this.reconnectAttempts = 0;
-      try {
-        const event: SseEvent = JSON.parse(e.data);
-        this.events$.next(event);
-      } catch {
-        /* ignore malformed */
-      }
+      this.dispatch(e.data);
     };
 
     this.EVENT_TYPES.forEach((type) => {
       this.eventSource?.addEventListener(type, (e: Event) => {
         this.reconnectAttempts = 0;
-        try {
-          const parsed: SseEvent = JSON.parse((e as MessageEvent).data);
-          this.events$.next({ ...parsed, type });
-        } catch {
-          /* ignore */
-        }
+        this.dispatch((e as MessageEvent).data, type);
       });
     });
 
     this.eventSource.onerror = () => {
-      this.disconnect();
-      this.reconnectAttempts++;
-      if (this.reconnectAttempts >= this.MAX_RECONNECT) {
-        this.reconnectAttempts = 0;
-        this.http
-          .get(`${environment.apiUrl}/api/v1/users/me`, {
-            withCredentials: true,
-          })
-          .subscribe({
-            next: () => {
-              if (this.auth.isLoggedIn()) {
-                this.reconnectTimer = setTimeout(() => this.connect(), 5000);
-              }
-            },
-            error: () => {
-              /* auth interceptor handles logout */
-            },
-          });
-        return;
-      }
-      this.reconnectTimer = setTimeout(() => {
-        if (this.auth.isLoggedIn()) this.connect();
-      }, 5000);
+      this.disconnectSocket();
+      this.scheduleReconnect();
     };
-
-    return this.events$.asObservable();
   }
 
-  disconnect() {
-    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+  private dispatch(raw: string, type?: string) {
+    try {
+      const parsed: SseEvent = JSON.parse(raw);
+      this.events$.next(type ? { ...parsed, type } : parsed);
+    } catch {
+      /* ignore malformed */
+    }
+  }
+
+  private scheduleReconnect() {
+    if (this.stopped || !this.auth.isLoggedIn()) return;
+    this.reconnectAttempts++;
+    const delay = Math.min(30_000, 2000 * 2 ** Math.min(this.reconnectAttempts - 1, 4));
+    this.reconnectTimer = setTimeout(() => this.open(), delay);
+  }
+
+  private bindVisibility() {
+    if (this.visibilityHandler || typeof document === "undefined") return;
+    this.visibilityHandler = () => {
+      if (document.hidden) {
+        this.disconnectSocket();
+      } else if (this.auth.isLoggedIn() && !this.eventSource && !this.stopped) {
+        this.reconnectAttempts = 0;
+        this.open();
+      }
+    };
+    document.addEventListener("visibilitychange", this.visibilityHandler);
+  }
+
+  private disconnectSocket() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
+    }
+  }
+
+  disconnect() {
+    this.stopped = true;
+    this.disconnectSocket();
+    if (this.visibilityHandler && typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", this.visibilityHandler);
+      this.visibilityHandler = null;
     }
   }
 

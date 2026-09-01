@@ -20,13 +20,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  *   - Flutter : http package avec listen() sur le stream SSE
  *
  * Authentification SSE :
- *   Le JWT est passé en query parameter 'token' car EventSource (navigateur)
- *   ne supporte pas les headers personnalisés.
- *   Le JwtAuthenticationFilter reconnaît le paramètre 'token' pour cet endpoint.
+ *   - Angular web same-origin : cookie httpOnly imf_access (EventSource withCredentials)
+ *   - Desktop / mobile : JWT en query 'token' (EventSource n'accepte pas Authorization)
  *
- * Reconnexion automatique :
- *   Le protocole SSE gère la reconnexion côté client (retry: 3000ms par défaut).
- *   Le heartbeat toutes les 15s maintient les connexions actives via les proxies.
+ * Heartbeat toutes les 10 s pour rester sous les idle timeout HTTP/2 et QUIC.
  */
 @Slf4j
 @RestController

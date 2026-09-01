@@ -17,6 +17,7 @@ import cm.imf.pipeline.repository.AgenceRepository;
 import cm.imf.pipeline.repository.ImfRepository;
 import cm.imf.pipeline.repository.UserRepository;
 import cm.imf.pipeline.security.TenantContext;
+import cm.imf.pipeline.util.ImageFiles;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +35,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-// R2StorageService injected via @RequiredArgsConstructor
 
 /**
  * Service d'administration IMF — réservé DSI.
@@ -56,17 +54,13 @@ public class AdminService implements IAdminService {
             Role.DIRECTEUR, Role.RESPONSABLE_RECOUVREMENT, Role.ANALYSTE, Role.AGENT,
             Role.AGENT_CREDIT, Role.CHEF_AGENCE, Role.ANALYSTE_ENGAGEMENTS,
             Role.AGENT_SAISIE, Role.CAISSIER);
-    private static final Set<String>  ALLOWED_IMG_TYPES  =
-            Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
     private static final String       LOGO_SUB           = "imf-logos";
-    private static final String       AVATAR_SUB         = "avatars";
 
     private final UserRepository   userRepository;
     private final AgenceRepository agenceRepository;
     private final ImfRepository    imfRepository;
     private final IUserService     userService;
     private final PasswordEncoder  passwordEncoder;
-    private final R2StorageService r2;
     private final EmailService     emailService;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
@@ -345,52 +339,52 @@ public class AdminService implements IAdminService {
 
     @Transactional
     public ImfResponse uploadImfLogo(MultipartFile file) {
-        validateImageFile(file);
-        String ext      = extFor(file.getContentType());
-        String filename = UUID.randomUUID() + ext;
-        Imf    imf      = requireCurrentImf();
-        String logoUrl;
-        String r2Key    = null;
-
-        if (r2.isAvailable()) {
-            // ── Stockage Cloudflare R2 ──────────────────────────────────────
-            r2Key = LOGO_SUB + "/" + imf.getCode() + "-" + filename;
-            try {
-                r2.upload(r2Key, file.getBytes(), file.getContentType());
-            } catch (IOException e) {
-                throw new BusinessException("Lecture du fichier impossible", HttpStatus.INTERNAL_SERVER_ERROR);
-            } catch (RuntimeException e) {
-                throw new BusinessException("Erreur Cloudflare R2 : " + e.getMessage(), HttpStatus.BAD_GATEWAY);
-            }
-            // Supprimer l'ancien objet R2 si existant
-            if (imf.getLogoR2Key() != null) {
-                r2.delete(imf.getLogoR2Key());
-            }
-            // URL publique directe si bucket public, sinon proxy backend
-            String directUrl = r2.publicUrl(r2Key);
-            logoUrl = directUrl != null ? directUrl : "/api/v1/public/imf/" + imf.getCode() + "/logo";
-            imf.setLogoR2Key(r2Key);
-            log.info("Logo IMF {} uploadé sur R2 (clé: {})", imf.getCode(), r2Key);
-        } else {
-            // ── Fallback : stockage local ───────────────────────────────────
-            try {
-                Path dir = Paths.get(uploadDir, LOGO_SUB);
-                Files.createDirectories(dir);
-                Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                throw new BusinessException("Erreur lors de la sauvegarde du logo", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            // Supprimer l'ancien logo local
-            if (imf.getLogoUrl() != null && imf.getLogoUrl().startsWith("/api/uploads/")) {
-                try {
-                    Files.deleteIfExists(Paths.get(uploadDir, imf.getLogoUrl().substring("/api/uploads/".length())));
-                } catch (IOException ignored) {}
-            }
-            logoUrl = "/api/uploads/" + LOGO_SUB + "/" + filename;
-            log.info("Logo IMF {} sauvegardé localement (R2 non disponible)", imf.getCode());
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("Fichier manquant", HttpStatus.BAD_REQUEST);
+        }
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new BusinessException("Impossible de lire le fichier", HttpStatus.BAD_REQUEST);
+        }
+        String contentType = ImageFiles.resolveContentType(file, bytes);
+        if (contentType == null) {
+            throw new BusinessException(
+                    "Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)",
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (file.getSize() > (long) maxSizeMb * 1024 * 1024) {
+            throw new BusinessException("Fichier trop volumineux (max " + maxSizeMb + " Mo)",
+                    HttpStatus.BAD_REQUEST);
         }
 
+        String ext = ImageFiles.extension(contentType);
+        String filename = UUID.randomUUID() + ext;
+        Imf imf = requireCurrentImf();
+
+        try {
+            Path dir = Paths.get(uploadDir, LOGO_SUB);
+            Files.createDirectories(dir);
+            Files.write(dir.resolve(filename), bytes);
+        } catch (IOException e) {
+            log.error("Sauvegarde logo IMF impossible : {}", e.getMessage());
+            throw new BusinessException("Impossible d'enregistrer le logo sur le serveur",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (imf.getLogoUrl() != null && imf.getLogoUrl().contains("/uploads/")) {
+            int idx = imf.getLogoUrl().indexOf("/uploads/");
+            String relative = imf.getLogoUrl().substring(idx + "/uploads/".length());
+            try {
+                Files.deleteIfExists(Paths.get(uploadDir, relative));
+            } catch (IOException ignored) {}
+        }
+        imf.setLogoR2Key(null);
+        String logoUrl = "/api/v1/uploads/" + LOGO_SUB + "/" + filename;
         imf.setLogoUrl(logoUrl);
+        log.info("Logo IMF {} enregistré localement : {}", imf.getCode(), logoUrl);
+
         Imf saved = imfRepository.save(imf);
         boolean hasDsi = userRepository.existsByImfIdAndRole(saved.getId(), Role.DSI);
         return ImfResponse.of(saved, hasDsi);
@@ -402,25 +396,6 @@ public class AdminService implements IAdminService {
         Long imfId = TenantContext.currentImfId();
         return userRepository.findByUidAndImfId(userUid, imfId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", userUid));
-    }
-
-    private void validateImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty())
-            throw new BusinessException("Fichier manquant", HttpStatus.BAD_REQUEST);
-        String ct = file.getContentType();
-        if (ct == null || !ALLOWED_IMG_TYPES.contains(ct))
-            throw new BusinessException("Type non supporté (JPEG/PNG/WEBP/GIF)", HttpStatus.BAD_REQUEST);
-        if (file.getSize() > (long) maxSizeMb * 1024 * 1024)
-            throw new BusinessException("Fichier trop volumineux (max " + maxSizeMb + " Mo)", HttpStatus.BAD_REQUEST);
-    }
-
-    private String extFor(String ct) {
-        return switch (ct) {
-            case "image/jpeg" -> ".jpg";
-            case "image/png"  -> ".png";
-            case "image/webp" -> ".webp";
-            default           -> ".gif";
-        };
     }
 
     private Imf requireCurrentImf() {

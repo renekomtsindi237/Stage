@@ -36,6 +36,7 @@
             [src]="previewUrl() ?? currentLogoUrl ?? 'assets/bank.png'"
             [class.preview-pending]="previewUrl() && upload().phase !== 'done'"
             alt="Logo IMF"
+            (error)="$any($event.target).src = 'assets/bank.png'"
           />
           @if (previewUrl() && upload().phase === "idle") {
             <button

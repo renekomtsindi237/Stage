@@ -4,8 +4,9 @@ import { AuthService } from "../auth/auth.service";
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const token = inject(AuthService).getToken();
-  if (token) {
-    req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
-  }
+  req = req.clone({
+    withCredentials: true,
+    setHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   return next(req);
 };

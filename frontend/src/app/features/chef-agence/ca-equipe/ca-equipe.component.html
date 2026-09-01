@@ -9,115 +9,222 @@
     </div>
   </div>
 
-  <!-- Recherche -->
-  <div class="search-wrap" style="margin-bottom: 20px">
-    <span class="material-icons-round search-icon">search</span>
-    <input
-      type="text"
-      class="form-control search-input"
-      [placeholder]="'ca_equipe.search_placeholder' | translate"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-    />
+  <div class="equipe-toolbar">
+    <div class="vue-tabs">
+      <button
+        type="button"
+        class="vue-tab"
+        [class.active]="vue() === 'annuaire'"
+        (click)="setVue('annuaire')"
+      >
+        <span class="material-icons-round">badge</span>
+        {{ "ca_equipe.tab_annuaire" | translate }}
+      </button>
+      <button
+        type="button"
+        class="vue-tab"
+        [class.active]="vue() === 'performances'"
+        (click)="setVue('performances')"
+      >
+        <span class="material-icons-round">trending_up</span>
+        {{ "ca_equipe.tab_perf" | translate }}
+      </button>
+    </div>
+
+    <div class="search-wrap">
+      <span class="material-icons-round search-icon">search</span>
+      <input
+        type="text"
+        class="form-control search-input"
+        [placeholder]="'ca_equipe.search_placeholder' | translate"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
   </div>
 
-  <!-- Grille membres -->
-  @if (loading()) {
-    <div class="members-grid">
-      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
-        <div class="member-card skeleton-card">
-          <div class="skeleton avatar-skeleton"></div>
-          <div style="flex: 1">
-            <div
-              class="skeleton"
-              style="height: 14px; width: 60%; margin-bottom: 8px"
-            ></div>
-            <div class="skeleton" style="height: 12px; width: 80%"></div>
+  @if (vue() === "annuaire") {
+    @if (loading()) {
+      <div class="members-grid">
+        @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+          <div class="member-card skeleton-card">
+            <div class="skeleton avatar-skeleton"></div>
+            <div style="flex: 1">
+              <div
+                class="skeleton"
+                style="height: 14px; width: 60%; margin-bottom: 8px"
+              ></div>
+              <div class="skeleton" style="height: 12px; width: 80%"></div>
+            </div>
           </div>
-        </div>
-      }
-    </div>
-  } @else if (members().length === 0) {
-    <div class="empty-state">
-      <span class="material-icons-round">group_off</span>
-      <p>{{ "ca_equipe.empty" | translate }}</p>
-    </div>
-  } @else {
-    <div class="members-grid">
-      @for (m of members(); track m.uid) {
-        <div class="member-card" [class.inactive]="!m.actif">
-          <!-- Avatar -->
-          <div class="avatar">{{ initials(m.username) }}</div>
-
-          <!-- Info -->
-          <div class="member-info">
-            <div class="member-name">{{ m.username }}</div>
-            <div class="member-meta">
-              <span class="badge badge-sm" [ngClass]="roleClass(m.role)">
-                {{ roleLabel(m.role) | translate }}
-              </span>
-              @if (!m.actif) {
-                <span class="badge badge-sm badge-critique">{{
-                  "ca_equipe.inactive" | translate
+        }
+      </div>
+    } @else if (members().length === 0) {
+      <div class="empty-state">
+        <span class="material-icons-round">group_off</span>
+        <p>{{ "ca_equipe.empty" | translate }}</p>
+      </div>
+    } @else {
+      <div class="members-grid">
+        @for (m of members(); track m.uid) {
+          <div class="member-card" [class.inactive]="!m.actif">
+            <div class="avatar">{{ initials(m.username) }}</div>
+            <div class="member-info">
+              <div class="member-name">{{ m.username }}</div>
+              <div class="member-meta">
+                <span class="badge badge-sm" [ngClass]="roleClass(m.role)">
+                  {{ roleLabel(m.role) | translate }}
+                </span>
+                @if (!m.actif) {
+                  <span class="badge badge-sm badge-critique">{{
+                    "ca_equipe.inactive" | translate
+                  }}</span>
+                }
+              </div>
+              @if (m.email) {
+                <div class="member-email">
+                  <span class="material-icons-round" style="font-size: 13px"
+                    >mail</span
+                  >
+                  {{ m.email }}
+                </div>
+              }
+              @if (m.zoneId) {
+                <div class="member-zone">
+                  <span class="material-icons-round" style="font-size: 13px"
+                    >location_on</span
+                  >
+                  {{ "ca_equipe.zone_prefix" | translate }} {{ m.zoneId }}
+                </div>
+              }
+            </div>
+            <div class="member-login">
+              @if (m.lastLogin) {
+                <span class="text-sm text-muted">
+                  {{ "ca_equipe.last_login" | translate }}
+                  {{ m.lastLogin | date: "dd/MM/yy" }}
+                </span>
+              } @else {
+                <span class="text-sm text-muted">{{
+                  "ca_equipe.never" | translate
                 }}</span>
               }
             </div>
-            @if (m.email) {
-              <div class="member-email">
-                <span class="material-icons-round" style="font-size: 13px"
-                  >mail</span
-                >
-                {{ m.email }}
-              </div>
-            }
-            @if (m.zoneId) {
-              <div class="member-zone">
-                <span class="material-icons-round" style="font-size: 13px"
-                  >location_on</span
-                >
-                {{ "ca_equipe.zone_prefix" | translate }} {{ m.zoneId }}
-              </div>
-            }
           </div>
+        }
+      </div>
 
-          <!-- Dernière connexion -->
-          <div class="member-login">
-            @if (m.lastLogin) {
-              <span class="text-sm text-muted">
-                {{ "ca_equipe.last_login" | translate }}
-                {{ m.lastLogin | date: "dd/MM/yy" }}
-              </span>
-            } @else {
-              <span class="text-sm text-muted">{{
-                "ca_equipe.never" | translate
-              }}</span>
-            }
-          </div>
+      @if ((pageData()?.totalPages ?? 0) > 1) {
+        <div class="pagination">
+          <button
+            class="btn btn-ghost btn-sm"
+            [disabled]="currentPage() === 0"
+            (click)="goPage(currentPage() - 1)"
+          >
+            <span class="material-icons-round">chevron_left</span>
+          </button>
+          <span class="text-sm text-muted">
+            {{ "common.page" | translate }} {{ currentPage() + 1 }} /
+            {{ pageData()?.totalPages }}
+          </span>
+          <button
+            class="btn btn-ghost btn-sm"
+            [disabled]="currentPage() + 1 >= (pageData()?.totalPages ?? 0)"
+            (click)="goPage(currentPage() + 1)"
+          >
+            <span class="material-icons-round">chevron_right</span>
+          </button>
         </div>
       }
+    }
+  } @else {
+    <div class="perf-period">
+      <span class="text-sm text-muted">{{
+        "ca_equipe.perf_period" | translate
+      }}</span>
+      @for (n of [7, 30, 90]; track n) {
+        <button
+          type="button"
+          class="period-btn"
+          [class.active]="jours() === n"
+          (click)="setJours(n)"
+        >
+          {{ n }}{{ "ca_equipe.perf_days" | translate }}
+        </button>
+      }
+      <span class="text-sm text-muted perf-hint">{{
+        "ca_equipe.perf_hint" | translate
+      }}</span>
     </div>
 
-    <!-- Pagination -->
-    @if ((pageData()?.totalPages ?? 0) > 1) {
-      <div class="pagination">
-        <button
-          class="btn btn-ghost btn-sm"
-          [disabled]="currentPage() === 0"
-          (click)="goPage(currentPage() - 1)"
-        >
-          <span class="material-icons-round">chevron_left</span>
-        </button>
-        <span class="text-sm text-muted">
-          {{ "common.page" | translate }} {{ currentPage() + 1 }} /
-          {{ pageData()?.totalPages }}
-        </span>
-        <button
-          class="btn btn-ghost btn-sm"
-          [disabled]="currentPage() + 1 >= (pageData()?.totalPages ?? 0)"
-          (click)="goPage(currentPage() + 1)"
-        >
-          <span class="material-icons-round">chevron_right</span>
-        </button>
+    @if (perfLoading()) {
+      <div class="skeleton" style="height: 220px; border-radius: 10px"></div>
+    } @else if (perfFiltered().length === 0) {
+      <div class="empty-state">
+        <span class="material-icons-round">insights</span>
+        <p>{{ "ca_equipe.perf_empty" | translate }}</p>
+      </div>
+    } @else {
+      <div class="perf-list">
+        @for (m of perfFiltered(); track m.uid; let i = $index) {
+          <div class="perf-card" [class.inactive]="!m.actif">
+            <div class="perf-rank">{{ i + 1 }}</div>
+            <div class="avatar">{{ initials(m.username) }}</div>
+            <div class="perf-main">
+              <div class="perf-head">
+                <div>
+                  <div class="member-name">{{ m.username }}</div>
+                  <span class="badge badge-sm" [ngClass]="roleClass(m.role)">
+                    {{ roleLabel(m.role) | translate }}
+                  </span>
+                </div>
+                <span class="evo" [ngClass]="evoClass(m.tendance)">
+                  <span class="material-icons-round">
+                    {{
+                      m.tendance === "HAUSSE"
+                        ? "arrow_upward"
+                        : m.tendance === "BAISSE"
+                          ? "arrow_downward"
+                          : "horizontal_rule"
+                    }}
+                  </span>
+                  {{ m.evolutionPct > 0 ? "+" : ""
+                  }}{{ m.evolutionPct | number: "1.0-1" }}%
+                </span>
+              </div>
+              <div class="perf-bar">
+                <div
+                  class="perf-bar-fill"
+                  [style.width.%]="barPct(m.collectesMontant)"
+                ></div>
+              </div>
+              <div class="perf-metrics">
+                <div>
+                  <span class="k">{{ "ca_equipe.perf_collectes" | translate }}</span>
+                  <span class="v"
+                    >{{ m.collectesCount }} ·
+                    {{ m.collectesMontant | fcfa }}</span
+                  >
+                </div>
+                <div>
+                  <span class="k">{{ "ca_equipe.perf_clients" | translate }}</span>
+                  <span class="v">{{ m.clientsTouches }}</span>
+                </div>
+                <div>
+                  <span class="k">{{ "ca_equipe.perf_dossiers" | translate }}</span>
+                  <span class="v"
+                    >{{ m.dossiersValides }}/{{ m.dossiersSoumis }}
+                    ({{ m.tauxValidation }}%)</span
+                  >
+                </div>
+                <div>
+                  <span class="k">{{ "ca_equipe.perf_rejetes" | translate }}</span>
+                  <span class="v">{{ m.dossiersRejetes }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     }
   }

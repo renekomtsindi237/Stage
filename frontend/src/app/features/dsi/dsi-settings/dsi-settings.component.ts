@@ -14,6 +14,7 @@ import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { apiErrorMessage } from "../../../core/http/api-error";
 import { environment } from "../../../../environments/environment";
 
 interface UploadState {
@@ -72,9 +73,18 @@ export class DsiSettingsComponent implements OnInit {
 
   readonly ACCEPTED_TYPES = [
     "image/jpeg",
+    "image/jpg",
+    "image/pjpeg",
     "image/png",
     "image/webp",
     "image/gif",
+  ];
+  private static readonly ALLOWED_EXT = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".gif",
   ];
   readonly MAX_SIZE_MB = 5;
 
@@ -277,18 +287,11 @@ export class DsiSettingsComponent implements OnInit {
   }
 
   private processFile(file: File) {
-    if (!this.ACCEPTED_TYPES.includes(file.type)) {
-      this.toast.showError(
-        "Format non supporté",
-        "Utilisez JPG, PNG, WebP ou GIF.",
-      );
-      return;
-    }
-    if (file.size > this.MAX_SIZE_MB * 1024 * 1024) {
-      this.toast.showError(
-        "Fichier trop lourd",
-        `Le logo doit faire moins de ${this.MAX_SIZE_MB} Mo.`,
-      );
+    const localError = this.validateImageFile(file);
+    if (localError) {
+      this.upload.set({ progress: 0, phase: "error" });
+      this.toast.showError("Format non supporté", localError);
+      this.cdr.markForCheck();
       return;
     }
 
@@ -338,7 +341,7 @@ export class DsiSettingsComponent implements OnInit {
           this.cdr.markForCheck();
           this.toast.showSuccess(
             "Logo mis à jour",
-            "Votre logo est maintenant stocké sur Cloudflare et visible sur toute la plateforme.",
+            "Le logo de votre IMF est visible sur toute la plateforme.",
           );
           setTimeout(() => {
             this.upload.set({ progress: 0, phase: "idle" });
@@ -346,14 +349,15 @@ export class DsiSettingsComponent implements OnInit {
             this.cdr.markForCheck();
           }, 2000);
         },
-        error: (err) => {
+        error: (err: unknown) => {
           clearInterval(progressInterval);
-          const msg =
-            err?.error?.message ??
-            "Vérifiez le format et la taille du fichier.";
+          const msg = apiErrorMessage(
+            err,
+            "Vérifiez le format et la taille du fichier.",
+          );
           this.upload.set({ progress: 0, phase: "error" });
           this.cdr.markForCheck();
-          this.toast.showError("Échec de l'upload", msg);
+          this.toast.showError("Échec de l'upload", msg, 7000);
         },
       });
   }
@@ -362,5 +366,21 @@ export class DsiSettingsComponent implements OnInit {
     this.previewUrl.set(null);
     this.upload.set({ progress: 0, phase: "idle" });
     this.cdr.markForCheck();
+  }
+
+  private validateImageFile(file: File): string | null {
+    const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+    const name = file.name.toLowerCase();
+    const mimeOk = this.ACCEPTED_TYPES.includes(mime);
+    const extOk = DsiSettingsComponent.ALLOWED_EXT.some((ext) =>
+      name.endsWith(ext),
+    );
+    if (!mimeOk && !extOk) {
+      return "Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)";
+    }
+    if (file.size > this.MAX_SIZE_MB * 1024 * 1024) {
+      return `Fichier trop volumineux (max ${this.MAX_SIZE_MB} Mo)`;
+    }
+    return null;
   }
 }

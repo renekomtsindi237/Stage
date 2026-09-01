@@ -1,5 +1,7 @@
 package cm.imf.pipeline.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
  * Types d'actions enregistrables dans un dossier de recouvrement.
  * Couvre les canaux amiables, informels, formels et judiciaires utilisés au Cameroun.
@@ -42,5 +44,10 @@ public enum TypeActionRecouvrement {
     ACCORD_REECHELONNEMENT,
     /** Cession de la créance à une société de recouvrement (SRC) */
     CESSION_CREANCE,
-    RADIATION
+    RADIATION;
+
+    @JsonCreator
+    public static TypeActionRecouvrement fromJson(String raw) {
+        return RecouvrementEnumCodes.typeAction(raw);
+    }
 }

@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { RouterLink } from "@angular/router";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { Alerte } from "../../../core/models/alerte.model";
@@ -17,12 +18,15 @@ import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
 interface MlAlerteApi {
   id: number | string;
   clientIdExterne?: string;
+  nomClient?: string;
   typeAlerte?: string;
   urgence?: string;
   titre?: string;
   description?: string;
+  recommandation?: string;
   statut?: string;
   createdAt?: string;
+  encours?: number | null;
 }
 
 type Tab = "NON_TRAITEE" | "EN_TRAITEMENT" | "TOUTES";
@@ -38,6 +42,7 @@ type Tab = "NON_TRAITEE" | "EN_TRAITEMENT" | "TOUTES";
     FcfaPipe,
     TimeAgoPipe,
     TranslatePipe,
+    RouterLink,
   ],
   templateUrl: "./dir-alertes.component.html",
   styleUrls: ["./dir-alertes.component.scss"],
@@ -53,7 +58,6 @@ export class DirAlertesComponent implements OnInit {
   moyennes = signal(0);
   search = signal("");
   tab = signal<Tab>("NON_TRAITEE");
-  treating = signal<string | null>(null);
 
   ngOnInit() {
     this.load();
@@ -95,25 +99,12 @@ export class DirAlertesComponent implements OnInit {
       });
   }
 
-  traiter(id: string) {
-    this.treating.set(id);
-    this.api
-      .put(`/api/v1/ml/alertes/${id}/statut?statut=EN_TRAITEMENT`)
-      .subscribe({
-        next: () => {
-          this.treating.set(null);
-          this.load();
-        },
-        error: () => this.treating.set(null),
-      });
-  }
-
   private toAlerte(a: MlAlerteApi): Alerte {
     const sev = (a.urgence ?? "MOYENNE").toUpperCase();
     return {
       id: String(a.id),
       clientId: a.clientIdExterne ?? "",
-      nomClient: a.clientIdExterne ?? "—",
+      nomClient: a.nomClient || a.clientIdExterne || "—",
       agence: a.typeAlerte ?? "",
       severite:
         sev === "CRITIQUE" || sev === "HAUTE" || sev === "BASSE"
@@ -124,9 +115,13 @@ export class DirAlertesComponent implements OnInit {
           ? "EN_TRAITEMENT"
           : a.statut === "RESOLUE"
             ? "RESOLUE"
-            : "NON_TRAITEE",
+            : a.statut === "IGNOREE"
+              ? "IGNOREE"
+              : "NON_TRAITEE",
       message: a.titre ?? a.description ?? "",
-      encours: 0,
+      encours: a.encours ?? 0,
+      recommandation: a.recommandation,
+      typeAlerte: a.typeAlerte,
       createdAt: a.createdAt ?? new Date().toISOString(),
     };
   }

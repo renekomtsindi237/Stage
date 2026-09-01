@@ -10,6 +10,7 @@ import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { AuthService } from "../../core/auth/auth.service";
 import { ToastService } from "../../core/services/toast.service";
+import { apiErrorMessage } from "../../core/http/api-error";
 import { environment } from "../../../environments/environment";
 import { TranslatePipe } from "@ngx-translate/core";
 
@@ -32,8 +33,25 @@ export class ProfileComponent {
   uploading = signal(false);
   uploadingImfLogo = signal(false);
   logoutConfirm = signal(false);
+  photoError = signal<string | null>(null);
+  logoError = signal<string | null>(null);
 
   readonly apiBase = environment.apiUrl;
+  private static readonly ALLOWED_EXT = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".gif",
+  ];
+  private static readonly ALLOWED_MIME = new Set([
+    "image/jpeg",
+    "image/jpg",
+    "image/pjpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ]);
 
   get user() {
     return this.auth.currentUser();
@@ -80,18 +98,12 @@ export class ProfileComponent {
     const file = input.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      this.toast.showError(
-        "Format invalide",
-        "Sélectionnez une image (JPG, PNG, WebP).",
-      );
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      this.toast.showError(
-        "Fichier trop lourd",
-        "La photo doit faire moins de 2 Mo.",
-      );
+    this.photoError.set(null);
+    const localError = this.validateImageFile(file);
+    if (localError) {
+      this.photoError.set(localError);
+      this.toast.showError("Upload impossible", localError);
+      input.value = "";
       return;
     }
 
@@ -99,18 +111,21 @@ export class ProfileComponent {
     this.auth.uploadAvatar(file).subscribe({
       next: () => {
         this.uploading.set(false);
+        this.photoError.set(null);
         this.toast.showSuccess(
           "Photo mise à jour",
           "Votre photo de profil est visible sur toute la plateforme.",
         );
         input.value = "";
       },
-      error: () => {
+      error: (err: unknown) => {
         this.uploading.set(false);
-        this.toast.showError(
-          "Erreur",
+        const msg = apiErrorMessage(
+          err,
           "Impossible de téléverser la photo. Réessayez.",
         );
+        this.photoError.set(msg);
+        this.toast.showError("Upload impossible", msg, 7000);
         input.value = "";
       },
     });
@@ -123,8 +138,11 @@ export class ProfileComponent {
           "Photo supprimée",
           "Votre avatar a été réinitialisé.",
         ),
-      error: () =>
-        this.toast.showError("Erreur", "Impossible de supprimer la photo."),
+      error: (err: unknown) =>
+        this.toast.showError(
+          "Erreur",
+          apiErrorMessage(err, "Impossible de supprimer la photo."),
+        ),
     });
   }
 
@@ -137,18 +155,12 @@ export class ProfileComponent {
     const file = input.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      this.toast.showError(
-        "Format invalide",
-        "Sélectionnez une image (JPG, PNG, WebP).",
-      );
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      this.toast.showError(
-        "Fichier trop lourd",
-        "Le logo doit faire moins de 2 Mo.",
-      );
+    this.logoError.set(null);
+    const localError = this.validateImageFile(file);
+    if (localError) {
+      this.logoError.set(localError);
+      this.toast.showError("Upload impossible", localError);
+      input.value = "";
       return;
     }
 
@@ -170,18 +182,21 @@ export class ProfileComponent {
           const url = res?.data?.logoUrl ?? null;
           this.auth.updateImfLogoUrl(url);
           this.uploadingImfLogo.set(false);
+          this.logoError.set(null);
           this.toast.showSuccess(
             "Logo mis à jour",
             "Le logo de votre IMF est visible sur toute la plateforme.",
           );
           input.value = "";
         },
-        error: () => {
+        error: (err: unknown) => {
           this.uploadingImfLogo.set(false);
-          this.toast.showError(
-            "Erreur",
+          const msg = apiErrorMessage(
+            err,
             "Impossible de téléverser le logo. Réessayez.",
           );
+          this.logoError.set(msg);
+          this.toast.showError("Upload impossible", msg, 7000);
           input.value = "";
         },
       });
@@ -189,5 +204,21 @@ export class ProfileComponent {
 
   logout() {
     this.auth.logout();
+  }
+
+  private validateImageFile(file: File): string | null {
+    const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+    const name = file.name.toLowerCase();
+    const mimeOk = ProfileComponent.ALLOWED_MIME.has(mime);
+    const extOk = ProfileComponent.ALLOWED_EXT.some((ext) =>
+      name.endsWith(ext),
+    );
+    if (!mimeOk && !extOk) {
+      return "Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)";
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return "Fichier trop volumineux (max 5 Mo)";
+    }
+    return null;
   }
 }

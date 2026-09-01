@@ -93,7 +93,7 @@ export class AuthService {
       .pipe(
         map((res) => {
           const data = this.unwrapData<{ avatarUrl?: string }>(res);
-          const url = data?.avatarUrl;
+          const url = this.normalizeAvatarUrl(data?.avatarUrl);
           if (!url) {
             throw new Error("URL avatar absente");
           }
@@ -119,9 +119,15 @@ export class AuthService {
   private _patchAvatarUrl(url: string | null) {
     const user = this.currentUser();
     if (!user) return;
-    const updated: User = { ...user, avatarUrl: url };
+    const updated: User = { ...user, avatarUrl: this.normalizeAvatarUrl(url) };
     localStorage.setItem(USER_KEY, JSON.stringify(updated));
     this.currentUser.set(updated);
+  }
+
+  /** Évite que <img> appelle GET /users/me/avatar (400 sans Bearer). */
+  private normalizeAvatarUrl(url: string | null | undefined): string | null {
+    if (!url || url.includes("/users/me/avatar")) return null;
+    return url;
   }
 
   /** @deprecated utiliser uploadAvatar() */
@@ -197,7 +203,7 @@ export class AuthService {
         if (!user || !me) return;
         const updated: User = {
           ...user,
-          avatarUrl: me.avatarUrl ?? null,
+          avatarUrl: this.normalizeAvatarUrl(me.avatarUrl),
         };
         localStorage.setItem(USER_KEY, JSON.stringify(updated));
         this.currentUser.set(updated);
