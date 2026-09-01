@@ -76,7 +76,7 @@ export class AuthService {
   }
 
   /**
-   * Upload la photo de profil vers le backend (R2 ou local).
+   * Upload la photo de profil vers le disque du backend (/uploads/avatars).
    * Met à jour le signal currentUser avec l'URL retournée.
    */
   uploadAvatar(file: File): Observable<string> {

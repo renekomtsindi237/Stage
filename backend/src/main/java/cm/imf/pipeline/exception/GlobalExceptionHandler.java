@@ -177,6 +177,19 @@ public class GlobalExceptionHandler {
 
     // === Catch-all : toute exception non prévue ================================
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUpload(Exception ex) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.error("Fichier trop volumineux (max 5 Mo)"));
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MultipartException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMultipart(Exception ex) {
+        log.warn("Requête multipart invalide : {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Fichier invalide ou requête multipart incorrecte"));
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

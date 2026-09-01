@@ -20,7 +20,7 @@ export interface User {
   imfNom?: string | null;
   imfLogoUrl?: string | null;
   mustChangePassword?: boolean;
-  /** URL backend de l'avatar (chemin R2 ou local). Null = image par défaut. */
+  /** URL backend de l'avatar (fichier local /uploads/avatars). Null = image par défaut. */
   avatarUrl?: string | null;
   /** @deprecated utiliser avatarUrl */
   avatarDataUrl?: string | null;

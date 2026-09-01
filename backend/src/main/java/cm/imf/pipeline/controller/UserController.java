@@ -61,6 +61,12 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(updated));
     }
 
+    @Operation(summary = "Sert l'avatar courant (ou l'image par défaut). Accessible en GET pour les balises <img>.")
+    @GetMapping(value = "/me/avatar", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getMyAvatar(@AuthenticationPrincipal User user) {
+        return userService.serveAvatar(user);
+    }
+
     @Operation(summary = "Upload ou remplacement de l'avatar (JPEG/PNG/WEBP/GIF, max 2 Mo)")
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<UserResponse>> uploadAvatar(

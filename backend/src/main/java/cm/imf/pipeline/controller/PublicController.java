@@ -125,8 +125,14 @@ public class PublicController {
             headers.setContentLength(data.length);
             return new ResponseEntity<>(data, headers, HttpStatus.OK);
         } catch (IOException e) {
-            log.error("profile.png manquant dans le classpath static/");
-            return ResponseEntity.notFound().build();
+            log.warn("profile.png manquant dans le classpath static/ — fallback PNG minimal");
+            byte[] fallback = java.util.Base64.getDecoder().decode(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            headers.setCacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePublic());
+            headers.setContentLength(fallback.length);
+            return new ResponseEntity<>(fallback, headers, HttpStatus.OK);
         }
     }
 

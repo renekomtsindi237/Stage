@@ -14,17 +14,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -36,22 +41,17 @@ public class UserService implements IUserService {
 
     private static final Set<String> ALLOWED_TYPES =
             Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
-    private static final String AVATAR_PREFIX = "avatars/";
 
     private final UserRepository        userRepository;
     private final INotificationService  notificationService;
     private final PasswordEncoder       passwordEncoder;
     private final OnlineTrackingService onlineTracking;
-    private final R2StorageService      r2;
 
     @Value("${app.upload.dir:/uploads}")
     private String uploadDir;
 
     @Value("${app.upload.max-size-mb:2}")
     private int maxSizeMb;
-
-    @Value("${app.r2.public-url-base:}")
-    private String r2PublicUrlBase;
 
     // ── Lecture ──────────────────────────────────────────────────────────────
 
@@ -158,40 +158,31 @@ public class UserService implements IUserService {
             throw new BusinessException("Impossible de lire le fichier", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        String avatarUrl;
-
-        if (r2.isAvailable()) {
-            // ── Chemin R2 : avatars/{userId}/{uuid}.ext ───────────────────────
-            String key = AVATAR_PREFIX + user.getId() + "/" + UUID.randomUUID() + ext;
-            try {
-                r2.upload(key, bytes, contentType);
-            } catch (RuntimeException e) {
-                throw new BusinessException("Erreur upload Cloudflare R2 : " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            String pub = r2.publicUrl(key);
-            avatarUrl = (pub != null) ? pub : "/api/v1/public/avatar/" + key;
-            log.info("Avatar uploadé vers R2 : user={} key={}", user.getId(), key);
-        } else {
-            // ── Fallback local ────────────────────────────────────────────────
-            String filename = UUID.randomUUID() + ext;
-            try {
-                Path dir = Paths.get(uploadDir, "avatars");
-                Files.createDirectories(dir);
-                Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                throw new BusinessException("Erreur lors de la sauvegarde du fichier",
-                        HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            avatarUrl = "/api/v1/uploads/avatars/" + filename;
-            log.info("Avatar enregistré localement : user={} file={}", user.getId(), filename);
-        }
+        String avatarUrl = saveLocalAvatar(bytes, ext);
+        log.info("Avatar enregistré sur disque : user={} url={}", user.getId(), avatarUrl);
 
         User managed = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", user.getId()));
         deleteOldAvatar(managed.getAvatarUrl());
         managed.setAvatarUrl(avatarUrl);
         return UserResponse.from(userRepository.save(managed));
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> serveAvatar(User user) {
+        try {
+            if (user != null && user.getId() != null) {
+                User managed = userRepository.findById(user.getId()).orElse(null);
+                String url = managed != null ? managed.getAvatarUrl() : null;
+                byte[] data = readAvatarBytes(url);
+                if (data != null && data.length > 0) {
+                    return pngOrDetected(data, url);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Lecture avatar impossible : {}", e.getMessage());
+        }
+        return defaultAvatarResponse();
     }
 
     @Transactional
@@ -229,35 +220,99 @@ public class UserService implements IUserService {
 
     // ── Helpers privés ────────────────────────────────────────────────────────
 
-    /**
-     * Supprime l'ancien avatar (R2 ou local) avant remplacement.
-     * Silencieux si l'URL ne correspond à aucun stockage géré ou est la valeur par défaut.
-     */
+    private String saveLocalAvatar(byte[] bytes, String ext) {
+        String filename = UUID.randomUUID() + ext;
+        try {
+            Path dir = Paths.get(uploadDir, "avatars");
+            Files.createDirectories(dir);
+            Files.write(dir.resolve(filename), bytes);
+        } catch (IOException e) {
+            log.error("Sauvegarde avatar locale impossible ({}): {}", uploadDir, e.getMessage());
+            throw new BusinessException("Erreur lors de la sauvegarde du fichier",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return "/api/v1/uploads/avatars/" + filename;
+    }
+
+    private byte[] readAvatarBytes(String avatarUrl) {
+        if (avatarUrl == null || avatarUrl.isBlank()
+                || avatarUrl.equals(UserResponse.DEFAULT_AVATAR_URL)
+                || avatarUrl.contains("/users/me/avatar")) {
+            return null;
+        }
+        String localPrefix = localAvatarPrefix(avatarUrl);
+        if (localPrefix == null) {
+            return null;
+        }
+        String filename = avatarUrl.substring(localPrefix.length());
+        if (filename.isBlank() || filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            return null;
+        }
+        Path path = Paths.get(uploadDir, "avatars", filename);
+        try {
+            return Files.exists(path) ? Files.readAllBytes(path) : null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static String localAvatarPrefix(String avatarUrl) {
+        if (avatarUrl.startsWith("/api/v1/uploads/avatars/")) {
+            return "/api/v1/uploads/avatars/";
+        }
+        if (avatarUrl.startsWith("/api/uploads/avatars/")) {
+            return "/api/uploads/avatars/";
+        }
+        return null;
+    }
+
+    private ResponseEntity<byte[]> pngOrDetected(byte[] data, String url) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(detectAvatarType(url));
+        headers.setCacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePrivate());
+        headers.setContentLength(data.length);
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    private MediaType detectAvatarType(String url) {
+        if (url == null) return MediaType.IMAGE_PNG;
+        String u = url.toLowerCase();
+        if (u.endsWith(".jpg") || u.endsWith(".jpeg")) return MediaType.IMAGE_JPEG;
+        if (u.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
+        if (u.endsWith(".gif")) return MediaType.IMAGE_GIF;
+        return MediaType.IMAGE_PNG;
+    }
+
+    private ResponseEntity<byte[]> defaultAvatarResponse() {
+        byte[] data;
+        try {
+            ClassPathResource res = new ClassPathResource("static/profile.png");
+            data = res.getInputStream().readAllBytes();
+        } catch (Exception e) {
+            data = MINIMAL_PNG;
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        headers.setCacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePublic());
+        headers.setContentLength(data.length);
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    /** PNG 1×1 transparent — dernier recours si profile.png n'est pas dans le JAR. */
+    private static final byte[] MINIMAL_PNG = java.util.Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+
+    /** Supprime l'ancien fichier local. Ignore les URL R2 héritées et l'image par défaut. */
     private void deleteOldAvatar(String avatarUrl) {
         if (avatarUrl == null || avatarUrl.equals(UserResponse.DEFAULT_AVATAR_URL)) return;
-
-        // R2 : si l'URL commence par la base publique configurée
-        if (r2.isAvailable() && r2PublicUrlBase != null && !r2PublicUrlBase.isBlank()
-                && avatarUrl.startsWith(r2PublicUrlBase.stripTrailing())) {
-            String key = avatarUrl.substring(r2PublicUrlBase.stripTrailing().length() + 1);
-            if (key.startsWith(AVATAR_PREFIX)) {
-                r2.delete(key);
-                return;
-            }
+        String localPrefix = localAvatarPrefix(avatarUrl);
+        if (localPrefix == null) return;
+        String filename = avatarUrl.substring(localPrefix.length());
+        if (filename.isBlank() || filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            return;
         }
-
-        // Local : URL de type /api/v1/uploads/avatars/... ou ancien /api/uploads/avatars/...
-        String localPrefix = null;
-        if (avatarUrl.startsWith("/api/v1/uploads/avatars/")) {
-            localPrefix = "/api/v1/uploads/avatars/";
-        } else if (avatarUrl.startsWith("/api/uploads/avatars/")) {
-            localPrefix = "/api/uploads/avatars/";
-        }
-        if (localPrefix != null) {
-            String filename = avatarUrl.substring(localPrefix.length());
-            try {
-                Files.deleteIfExists(Paths.get(uploadDir, "avatars", filename));
-            } catch (IOException ignored) {}
-        }
+        try {
+            Files.deleteIfExists(Paths.get(uploadDir, "avatars", filename));
+        } catch (IOException ignored) {}
     }
 }

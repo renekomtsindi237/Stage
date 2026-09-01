@@ -75,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         // Priorité 3 : query parameter pour Flutter SSE uniquement
         // (EventSource mobile ne supporte pas les cookies cross-origin)
-        if (request.getRequestURI().contains("/api/sse/")) {
+        if (request.getRequestURI().contains("/sse/")) {
             String tokenParam = request.getParameter("token");
             if (StringUtils.hasText(tokenParam)) return tokenParam;
         }

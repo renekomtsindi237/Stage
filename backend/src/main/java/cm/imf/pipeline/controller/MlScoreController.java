@@ -77,16 +77,16 @@ public class MlScoreController {
 
     @GetMapping("/alertes")
     @PreAuthorize("hasAnyRole('DIRECTEUR','RESPONSABLE_RECOUVREMENT','DSI','ANALYSTE','SUPER_ADMIN')")
-    @Operation(summary = "Alertes prédictives actives de l'IMF (200 dernières)")
+    @Operation(summary = "Alertes prédictives de l'IMF (200 dernières)")
     public List<MlAlerteResponse> getAlertes(
-            @RequestParam(defaultValue = "ACTIVE") String statut) {
+            @RequestParam(required = false) String statut) {
         Long imfId = TenantContext.currentImfId();
         String sql = """
                 SELECT id, client_id_externe, type_alerte, urgence,
                        titre, description, recommandation, statut, created_at
                 FROM ml.alertes_predictives
                 WHERE imf_id = ?
-                  AND statut = ?
+                  AND (? IS NULL OR ? = '' OR statut = ?)
                 ORDER BY
                     CASE urgence
                         WHEN 'CRITIQUE' THEN 1
@@ -97,7 +97,7 @@ public class MlScoreController {
                     created_at DESC
                 LIMIT 200
                 """;
-        return jdbcTemplate.query(sql, (rs, n) -> mapAlerte(rs), imfId, statut);
+        return jdbcTemplate.query(sql, (rs, n) -> mapAlerte(rs), imfId, statut, statut, statut);
     }
 
     @GetMapping("/alertes/{clientExterneId}")
@@ -118,15 +118,15 @@ public class MlScoreController {
     }
 
     @PutMapping("/alertes/{id}/statut")
-    @PreAuthorize("hasAnyRole('RESPONSABLE_RECOUVREMENT','DSI','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DIRECTEUR','RESPONSABLE_RECOUVREMENT','DSI','SUPER_ADMIN')")
     @Operation(summary = "Mise à jour du statut d'une alerte prédictive")
     public ResponseEntity<Void> updateStatutAlerte(
             @PathVariable Long id,
             @RequestParam String statut) {
-        if (!List.of("EN_TRAITEMENT", "RESOLUE", "IGNOREE").contains(statut)) {
+        if (!List.of("ACTIVE", "EN_TRAITEMENT", "RESOLUE", "IGNOREE").contains(statut)) {
             throw new ResponseStatusException(
                     org.springframework.http.HttpStatus.BAD_REQUEST,
-                    "Statut invalide. Valeurs acceptées : EN_TRAITEMENT, RESOLUE, IGNOREE");
+                    "Statut invalide. Valeurs acceptées : ACTIVE, EN_TRAITEMENT, RESOLUE, IGNOREE");
         }
         Long imfId = TenantContext.currentImfId();
         int updated = jdbcTemplate.update("""

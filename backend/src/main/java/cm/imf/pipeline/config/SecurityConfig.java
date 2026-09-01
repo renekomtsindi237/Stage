@@ -90,6 +90,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
                         .requestMatchers("/uploads/**", "/api/v1/uploads/**", "/api/uploads/**").permitAll()
                         .requestMatchers("/public/**", "/api/v1/public/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/me/avatar", "/api/v1/users/me/avatar").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs", "/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         // Endpoint interne pipeline Python — protégé par clé API dans le header

@@ -74,6 +74,12 @@ public interface IUserService {
     UserResponse removeAvatar(User user);
 
     /**
+     * Sert les octets de l'avatar (fichier local ou image par défaut).
+     * Ne lève jamais : fallback PNG si l'utilisateur est anonyme ou le fichier manque.
+     */
+    org.springframework.http.ResponseEntity<byte[]> serveAvatar(User user);
+
+    /**
      * Upload d'avatar pour un utilisateur cible par un administrateur (DSI/SUPER_ADMIN).
      * La vérification de scope (même IMF) est à la charge de l'appelant.
      */

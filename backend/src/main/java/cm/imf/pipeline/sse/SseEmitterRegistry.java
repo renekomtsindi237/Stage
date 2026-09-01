@@ -35,8 +35,8 @@ public class SseEmitterRegistry {
     /** Map username → rôle (pour le broadcast ciblé). */
     private final Map<String, String> userRoles = new ConcurrentHashMap<>();
 
-    /** Timeout SSE = 5 minutes. Le client Angular/Flutter reconnecte automatiquement. */
-    private static final long SSE_TIMEOUT_MS = 5 * 60 * 1000L;
+    /** Timeout SSE = 30 min. Heartbeat 15 s pour rester sous le plafond Cloudflare (100 s). */
+    private static final long SSE_TIMEOUT_MS = 30 * 60 * 1000L;
 
     // ── Enregistrement ────────────────────────────────────────────────────────
 
@@ -126,10 +126,9 @@ public class SseEmitterRegistry {
     // ── Heartbeat ─────────────────────────────────────────────────────────────
 
     /**
-     * Envoie un heartbeat toutes les 30 secondes pour maintenir
-     * les connexions HTTP vivantes (proxies / load balancers).
+     * Heartbeat toutes les 15 s — sous le plafond Cloudflare (~100 s).
      */
-    @Scheduled(fixedDelay = 30_000)
+    @Scheduled(fixedDelay = 15_000)
     public void sendHeartbeat() {
         if (emitters.isEmpty()) return;
         SseEventDto heartbeat = SseEventDto.heartbeat();

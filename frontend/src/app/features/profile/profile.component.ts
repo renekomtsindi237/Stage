@@ -64,7 +64,9 @@ export class ProfileComponent {
   /** URL complète de l'avatar : priorité à l'URL backend, sinon asset local. */
   get avatarSrc(): string {
     const url = this.user?.avatarUrl;
-    if (!url) return "assets/profile.png";
+    if (!url || url.includes("/users/me/avatar")) {
+      return `${this.apiBase}/api/v1/public/default-avatar`;
+    }
     if (url.startsWith("http")) return url;
     return `${this.apiBase}${url}`;
   }

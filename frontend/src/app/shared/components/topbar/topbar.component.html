@@ -89,7 +89,10 @@
         <img
           [src]="avatarSrc"
           alt="avatar"
-          (error)="$any($event.target).src = 'assets/profile.png'"
+            (error)="
+              $any($event.target).src =
+                '/api/v1/public/default-avatar'
+            "
         />
       </div>
       <div class="topbar__user-info">

@@ -55,55 +55,9 @@ public class KpiController {
         Long imfId = TenantContext.currentImfId();
         Map<String, Object> result = new LinkedHashMap<>();
 
-        // Encours total — depuis dossiers_credit (source de vérité)
-        try {
-            Map<String, Object> enc = jdbc.queryForMap("""
-                    SELECT COALESCE(SUM(dc.montant_demande), 0) AS encours_total,
-                           COALESCE(SUM(CASE WHEN cr.jours_retard > 30  THEN cr.montant_impaye ELSE 0 END), 0) AS montant_par30,
-                           COALESCE(SUM(CASE WHEN cr.jours_retard > 90  THEN cr.montant_impaye ELSE 0 END), 0) AS montant_par90
-                    FROM app.dossiers_credit dc
-                    LEFT JOIN app.creances cr ON cr.id_pret_externe = dc.uid::text AND cr.imf_id = dc.imf_id
-                    WHERE dc.imf_id = ? AND dc.statut IN ('APPROUVE','DEBLOQUE','EN_REMBOURSEMENT')
-                    """, imfId);
-            double encTotal = enc.get("encours_total") instanceof Number n ? n.doubleValue() : 0;
-            double mp30     = enc.get("montant_par30") instanceof Number n ? n.doubleValue() : 0;
-            double mp90     = enc.get("montant_par90") instanceof Number n ? n.doubleValue() : 0;
-            result.put("encoursTotalFcfa", (long) encTotal);
-            result.put("par30", encTotal > 0 ? Math.round(mp30 / encTotal * 10000.0) / 100.0 : 0.0);
-            result.put("par90", encTotal > 0 ? Math.round(mp90 / encTotal * 10000.0) / 100.0 : 0.0);
-        } catch (Exception e) {
-            log.debug("dossiers_credit/creances indisponible (kpi/dashboard) : {}", e.getMessage());
-            // Fallback depuis alertes_impayes
-            try {
-                Map<String, Object> par = jdbc.queryForMap(
-                        "SELECT * FROM app.v_par_par_imf WHERE imf_id = ?", imfId);
-                double totalImpaye = par.get("total_impaye") instanceof Number n ? n.doubleValue() : 0;
-                double mp30 = par.get("montant_par30") instanceof Number n ? n.doubleValue() : 0;
-                double mp90 = par.get("montant_par90") instanceof Number n ? n.doubleValue() : 0;
-                result.put("encoursTotalFcfa", (long) totalImpaye);
-                result.put("par30", totalImpaye > 0 ? Math.round(mp30 / totalImpaye * 10000.0) / 100.0 : 0.0);
-                result.put("par90", totalImpaye > 0 ? Math.round(mp90 / totalImpaye * 10000.0) / 100.0 : 0.0);
-            } catch (Exception e2) {
-                result.put("encoursTotalFcfa", 85_400_000L);
-                result.put("par30", 6.2);
-                result.put("par90", 2.1);
-            }
-        }
+        putEncoursPar(result, imfId);
 
-        // Collectes du jour (montant total, pas count)
-        try {
-            Map<String, Object> col = jdbc.queryForMap("""
-                    SELECT COALESCE(SUM(montant_collecte), 0) AS montant, COUNT(*) AS nb
-                    FROM app.collectes_epargne
-                    WHERE imf_id = ? AND DATE(date_collecte) = CURRENT_DATE
-                    """, imfId);
-            result.put("collectesDuJour", col.get("montant") instanceof Number n ? n.longValue() : 0L);
-            result.put("collectesDuJourNb", col.get("nb") instanceof Number n ? n.longValue() : 0L);
-        } catch (Exception e) {
-            log.debug("collectes_epargne indisponible (kpi/dashboard) : {}", e.getMessage());
-            result.put("collectesDuJour", 0L);
-            result.put("collectesDuJourNb", 0L);
-        }
+        putCollectesDuJour(result, imfId);
 
         result.put("tauxRecouvrement", 87.4);
         result.put("variation", Map.of("encours", 2.3, "par30", -0.4, "par90", -0.1, "collectes", 8.5));
@@ -146,20 +100,7 @@ public class KpiController {
         }
         result.put("alertesActives", alertes);
 
-        // Activité récente
-        List<Map<String, Object>> activite = new ArrayList<>();
-        try {
-            activite = jdbc.queryForList("""
-                    SELECT uid::text AS id, action AS type, description,
-                           acteur_username AS auteur, created_at AS createdAt
-                    FROM app.audit_trail
-                    WHERE imf_id = ?
-                    ORDER BY created_at DESC LIMIT 10
-                    """, imfId);
-        } catch (Exception e) {
-            log.debug("audit_trail indisponible (kpi/dashboard) : {}", e.getMessage());
-        }
-        result.put("activiteRecente", activite);
+        result.put("activiteRecente", loadActiviteRecente(imfId));
 
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -227,6 +168,146 @@ public class KpiController {
         ));
 
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    private void putEncoursPar(Map<String, Object> result, Long imfId) {
+        if (tryEncoursFrom("dossiers_credit", result, () -> jdbc.queryForMap("""
+                SELECT COALESCE(SUM(dc.montant_demande), 0) AS encours_total,
+                       COALESCE(SUM(CASE WHEN cr.jours_retard > 30 THEN cr.montant_impaye ELSE 0 END), 0) AS montant_par30,
+                       COALESCE(SUM(CASE WHEN cr.jours_retard > 90 THEN cr.montant_impaye ELSE 0 END), 0) AS montant_par90
+                FROM app.dossiers_credit dc
+                LEFT JOIN app.creances cr ON cr.id_pret_externe = dc.uid::text AND cr.imf_id = dc.imf_id
+                WHERE dc.imf_id = ? AND dc.statut IN ('APPROUVE','DEBLOQUE','EN_REMBOURSEMENT')
+                """, imfId))) {
+            return;
+        }
+        if (tryEncoursFrom("creances", result, () -> jdbc.queryForMap("""
+                SELECT COALESCE(SUM(COALESCE(montant_impaye, 0)), 0) AS encours_total,
+                       COALESCE(SUM(CASE WHEN jours_retard > 30 THEN montant_impaye ELSE 0 END), 0) AS montant_par30,
+                       COALESCE(SUM(CASE WHEN jours_retard > 90 THEN montant_impaye ELSE 0 END), 0) AS montant_par90
+                FROM app.creances
+                WHERE imf_id = ?
+                """, imfId))) {
+            return;
+        }
+        try {
+            Map<String, Object> par = jdbc.queryForMap(
+                    "SELECT * FROM app.v_par_par_imf WHERE imf_id = ?", imfId);
+            double totalImpaye = number(par.get("total_impaye"), par.get("encours_total"));
+            double mp30 = number(par.get("montant_par30"), par.get("encours_par30"));
+            double mp90 = number(par.get("montant_par90"), par.get("encours_par90"));
+            applyEncours(result, totalImpaye, mp30, mp90);
+        } catch (Exception e) {
+            log.debug("v_par_par_imf indisponible (kpi/dashboard) : {}", e.getMessage());
+            result.put("encoursTotalFcfa", 0L);
+            result.put("par30", 0.0);
+            result.put("par90", 0.0);
+        }
+    }
+
+    private boolean tryEncoursFrom(String source, Map<String, Object> result,
+                                   java.util.function.Supplier<Map<String, Object>> query) {
+        try {
+            Map<String, Object> enc = query.get();
+            double encTotal = number(enc.get("encours_total"));
+            if (encTotal <= 0) {
+                return false;
+            }
+            applyEncours(result, encTotal, number(enc.get("montant_par30")), number(enc.get("montant_par90")));
+            return true;
+        } catch (Exception e) {
+            log.debug("{} indisponible (kpi/dashboard) : {}", source, e.getMessage());
+            return false;
+        }
+    }
+
+    private void applyEncours(Map<String, Object> result, double encTotal, double mp30, double mp90) {
+        result.put("encoursTotalFcfa", (long) encTotal);
+        result.put("par30", encTotal > 0 ? Math.round(mp30 / encTotal * 10000.0) / 100.0 : 0.0);
+        result.put("par90", encTotal > 0 ? Math.round(mp90 / encTotal * 10000.0) / 100.0 : 0.0);
+    }
+
+    private static double number(Object... values) {
+        for (Object v : values) {
+            if (v instanceof Number n) {
+                return n.doubleValue();
+            }
+        }
+        return 0;
+    }
+
+    private List<Map<String, Object>> loadActiviteRecente(Long imfId) {
+        try {
+            List<Map<String, Object>> fromAudit = jdbc.queryForList("""
+                    SELECT id::text AS id,
+                           CASE entite_type
+                               WHEN 'COLLECTE' THEN 'COLLECTE'
+                               WHEN 'ALERTE'   THEN 'ALERTE'
+                               WHEN 'CLIENT'   THEN 'KYC'
+                               WHEN 'DOSSIER'  THEN 'DOSSIER'
+                               ELSE entite_type
+                           END AS type,
+                           COALESCE(motif, action || ' · ' || entite_type) AS description,
+                           acteur_username AS auteur,
+                           created_at AS createdAt
+                    FROM app.audit_trail
+                    WHERE imf_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT 10
+                    """, imfId);
+            if (!fromAudit.isEmpty()) {
+                return fromAudit;
+            }
+        } catch (Exception e) {
+            log.debug("audit_trail indisponible (kpi/dashboard) : {}", e.getMessage());
+        }
+        try {
+            return jdbc.queryForList("""
+                    SELECT ct.uid::text AS id,
+                           'COLLECTE' AS type,
+                           'Collecte ' || TRIM(TO_CHAR(ct.montant_collecte, '999G999G999')) || ' FCFA'
+                               AS description,
+                           COALESCE(u.username, 'agent') AS auteur,
+                           ct.created_at AS createdAt
+                    FROM app.collectes_terrain ct
+                    LEFT JOIN app.utilisateurs u ON u.id = ct.agent_id
+                    WHERE ct.imf_id = ?
+                    ORDER BY ct.created_at DESC
+                    LIMIT 10
+                    """, imfId);
+        } catch (Exception e) {
+            log.debug("collectes_terrain indisponible (activité) : {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    private void putCollectesDuJour(Map<String, Object> result, Long imfId) {
+        long montant = 0;
+        long nb = 0;
+        try {
+            Map<String, Object> col = jdbc.queryForMap("""
+                    SELECT COALESCE(SUM(montant_collecte), 0) AS montant, COUNT(*) AS nb
+                    FROM app.collectes_epargne
+                    WHERE imf_id = ? AND DATE(date_collecte) = CURRENT_DATE
+                    """, imfId);
+            montant += col.get("montant") instanceof Number n ? n.longValue() : 0L;
+            nb += col.get("nb") instanceof Number n ? n.longValue() : 0L;
+        } catch (Exception e) {
+            log.debug("collectes_epargne indisponible (kpi/dashboard) : {}", e.getMessage());
+        }
+        try {
+            Map<String, Object> col = jdbc.queryForMap("""
+                    SELECT COALESCE(SUM(montant_collecte), 0) AS montant, COUNT(*) AS nb
+                    FROM app.collectes_terrain
+                    WHERE imf_id = ? AND DATE(date_collecte) = CURRENT_DATE
+                    """, imfId);
+            montant += col.get("montant") instanceof Number n ? n.longValue() : 0L;
+            nb += col.get("nb") instanceof Number n ? n.longValue() : 0L;
+        } catch (Exception e) {
+            log.debug("collectes_terrain indisponible (kpi/dashboard) : {}", e.getMessage());
+        }
+        result.put("collectesDuJour", montant);
+        result.put("collectesDuJourNb", nb);
     }
 
     private List<Map<String, Object>> evolutionParMockee() {

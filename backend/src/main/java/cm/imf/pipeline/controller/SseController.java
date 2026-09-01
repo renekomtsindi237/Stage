@@ -26,7 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  *
  * Reconnexion automatique :
  *   Le protocole SSE gère la reconnexion côté client (retry: 3000ms par défaut).
- *   Le heartbeat toutes les 30s maintient les connexions actives via les proxies.
+ *   Le heartbeat toutes les 15s maintient les connexions actives via les proxies.
  */
 @Slf4j
 @RestController

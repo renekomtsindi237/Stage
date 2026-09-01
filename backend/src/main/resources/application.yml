@@ -31,6 +31,12 @@ spring:
     out-of-order: true
     repair-on-migrate: true   # nettoie les migrations FAILED avant de relancer (PgBouncer safe)
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}

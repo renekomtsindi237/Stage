@@ -52,7 +52,9 @@ export class TopbarComponent implements OnInit {
 
   get avatarSrc(): string {
     const url = this.auth.avatarUrl();
-    if (!url) return "assets/profile.png";
+    if (!url || url.includes("/users/me/avatar")) {
+      return `${environment.apiUrl}/api/v1/public/default-avatar`;
+    }
     if (url.startsWith("http")) return url;
     return `${environment.apiUrl}${url}`;
   }
