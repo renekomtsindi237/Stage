@@ -11,12 +11,13 @@ import { ChartConfiguration } from "chart.js";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { PipelineStatus, MlDrift } from "../../../core/models/analyste.model";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 @Component({
   selector: "app-dir-analytics",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective, TranslatePipe],
+  imports: [CommonModule, BaseChartDirective, TranslatePipe, StatutLabelPipe],
   templateUrl: "./dir-analytics.component.html",
   styleUrls: ["./dir-analytics.component.scss"],
 })

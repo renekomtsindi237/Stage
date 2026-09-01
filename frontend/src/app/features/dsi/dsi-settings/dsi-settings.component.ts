@@ -11,7 +11,7 @@ import {
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { apiErrorMessage } from "../../../core/http/api-error";
@@ -56,6 +56,7 @@ export class DsiSettingsComponent implements OnInit {
   private readonly http = inject(HttpClient);
   readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly fb = inject(FormBuilder);
 
@@ -124,6 +125,16 @@ export class DsiSettingsComponent implements OnInit {
     return this.auth.currentUser()?.imfCode ?? "—";
   }
 
+  get logoConfigured(): boolean {
+    const url = this.currentLogoUrl;
+    return !!url && !url.includes("bank.png");
+  }
+
+  get paymentConfigured(): boolean {
+    const cfg = this.paymentConfig();
+    return !!(cfg?.mtnActif || cfg?.orangeActif);
+  }
+
   ngOnInit() {
     this.loadPaymentConfig();
   }
@@ -156,11 +167,8 @@ export class DsiSettingsComponent implements OnInit {
           });
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.toast.showError(
-            "Erreur",
-            "Impossible de charger la configuration paiement.",
-          );
+        error: (err: unknown) => {
+          this.toast.showApiError(err, "dsi_settings.toast_pay_load_error");
           this.cdr.markForCheck();
         },
       });
@@ -196,15 +204,15 @@ export class DsiSettingsComponent implements OnInit {
             mtnSubscriptionKeyCollection: "",
             mtnSubscriptionKeyDisbursement: "",
           });
-          this.toast.showSuccess("MTN MoMo", "Configuration enregistrée.");
+          this.toast.showI18nSuccess(
+            "dsi_settings.toast_mtn_title",
+            "dsi_settings.toast_mtn_ok",
+          );
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           this.paymentSaving.set(false);
-          this.toast.showError(
-            "Erreur MTN MoMo",
-            err?.error?.message ?? "Erreur lors de la sauvegarde.",
-          );
+          this.toast.showApiError(err, "dsi_settings.toast_mtn_error");
           this.cdr.markForCheck();
         },
       });
@@ -239,15 +247,15 @@ export class DsiSettingsComponent implements OnInit {
             orangeMerchantKey: "",
             orangeClientSecret: "",
           });
-          this.toast.showSuccess("Orange Money", "Configuration enregistrée.");
+          this.toast.showI18nSuccess(
+            "dsi_settings.toast_orange_title",
+            "dsi_settings.toast_orange_ok",
+          );
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           this.paymentSaving.set(false);
-          this.toast.showError(
-            "Erreur Orange Money",
-            err?.error?.message ?? "Erreur lors de la sauvegarde.",
-          );
+          this.toast.showApiError(err, "dsi_settings.toast_orange_error");
           this.cdr.markForCheck();
         },
       });
@@ -290,7 +298,10 @@ export class DsiSettingsComponent implements OnInit {
     const localError = this.validateImageFile(file);
     if (localError) {
       this.upload.set({ progress: 0, phase: "error" });
-      this.toast.showError("Format non supporté", localError);
+      this.toast.showError(
+        this.i18n.instant("dsi_settings.toast_format"),
+        localError,
+      );
       this.cdr.markForCheck();
       return;
     }
@@ -339,9 +350,9 @@ export class DsiSettingsComponent implements OnInit {
           this.auth.updateImfLogoUrl(url);
           this.upload.set({ progress: 100, phase: "done" });
           this.cdr.markForCheck();
-          this.toast.showSuccess(
-            "Logo mis à jour",
-            "Le logo de votre IMF est visible sur toute la plateforme.",
+          this.toast.showI18nSuccess(
+            "profile.toast_logo_ok_title",
+            "profile.toast_logo_ok_body",
           );
           setTimeout(() => {
             this.upload.set({ progress: 0, phase: "idle" });
@@ -353,11 +364,15 @@ export class DsiSettingsComponent implements OnInit {
           clearInterval(progressInterval);
           const msg = apiErrorMessage(
             err,
-            "Vérifiez le format et la taille du fichier.",
+            this.i18n.instant("dsi_settings.toast_upload_hint"),
           );
           this.upload.set({ progress: 0, phase: "error" });
           this.cdr.markForCheck();
-          this.toast.showError("Échec de l'upload", msg, 7000);
+          this.toast.showError(
+            this.i18n.instant("dsi_settings.toast_upload_fail"),
+            msg,
+            7000,
+          );
         },
       });
   }
@@ -376,10 +391,12 @@ export class DsiSettingsComponent implements OnInit {
       name.endsWith(ext),
     );
     if (!mimeOk && !extOk) {
-      return "Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)";
+      return this.i18n.instant("dsi_settings.file_unsupported");
     }
     if (file.size > this.MAX_SIZE_MB * 1024 * 1024) {
-      return `Fichier trop volumineux (max ${this.MAX_SIZE_MB} Mo)`;
+      return this.i18n.instant("dsi_settings.file_too_large", {
+        max: this.MAX_SIZE_MB,
+      });
     }
     return null;
   }

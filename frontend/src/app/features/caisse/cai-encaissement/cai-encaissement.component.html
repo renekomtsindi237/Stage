@@ -3,6 +3,28 @@
     <h2>{{ "caisse.encaissement_title" | translate }}</h2>
   </div>
 
+  @if (receipt()) {
+    <div class="card" style="text-align: center; padding: 32px">
+      <span
+        class="material-icons-round"
+        style="font-size: 48px; color: var(--color-success)"
+        >check_circle</span
+      >
+      <h3>{{ "caisse.receipt_title" | translate }}</h3>
+      <p class="font-semibold" style="font-size: 22px; margin: 8px 0">
+        {{ lastAmount() | number: "1.0-0" }} {{ "common.fcfa" | translate }}
+      </p>
+      <p class="text-muted text-sm">{{ selectedClient()?.nomClient }}</p>
+      <div style="display: flex; gap: 8px; justify-content: center; margin-top: 20px">
+        <button class="btn btn-primary" type="button" (click)="newEncaissement()">
+          {{ "caisse.nouveau_encaissement" | translate }}
+        </button>
+        <a routerLink="/caisse/dashboard" class="btn btn-ghost">{{
+          "caisse.back_dashboard" | translate
+        }}</a>
+      </div>
+    </div>
+  } @else {
   <div class="card">
     <!-- Client -->
     <div class="form-group">
@@ -89,7 +111,19 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 12px; margin-top: 8px">
+      <div style="display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap">
+        @if (confirming()) {
+          <div
+            class="alert"
+            style="flex: 1; min-width: 220px; margin: 0"
+          >
+            {{ "caisse.confirm_amount" | translate }}
+            <strong
+              >{{ form.value.montant | number: "1.0-0" }}
+              {{ "common.fcfa" | translate }}</strong
+            >
+          </div>
+        }
         <button
           type="button"
           class="btn btn-ghost"
@@ -105,6 +139,8 @@
         >
           @if (loading()) {
             <span class="material-icons-round spin">refresh</span>
+          } @else if (confirming()) {
+            {{ "caisse.confirm_submit" | translate }}
           } @else {
             {{ "caisse.save_encaissement" | translate }}
           }
@@ -112,4 +148,5 @@
       </div>
     </form>
   </div>
+  }
 </div>

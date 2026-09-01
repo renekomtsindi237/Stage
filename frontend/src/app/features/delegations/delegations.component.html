@@ -132,7 +132,9 @@
                     <span class="del-card__row-label">{{
                       "del.col_role_delegue" | translate
                     }}</span>
-                    <span class="del-card__row-value">{{ d.roleDelegue }}</span>
+                    <span class="del-card__row-value">{{
+                      d.roleDelegue | statutLabel
+                    }}</span>
                   </div>
                 }
                 @if (d.montantSeuil) {
@@ -234,7 +236,7 @@
                   <td>{{ d.dureeMois }} {{ "common.months" | translate }}</td>
                   <td>
                     <span class="badge" [class]="statutColor(d.statut)">{{
-                      statutLabel(d.statut)
+                      d.statut | statutLabel
                     }}</span>
                   </td>
                   <td class="del-table__date">
@@ -265,7 +267,11 @@
 
 <!-- ── Modal : Réassigner un dossier ── -->
 @if (showReassignModal()) {
-  <div class="modal-backdrop" (click)="closeReassignModal()">
+  <div
+    class="modal-backdrop"
+    (click)="closeReassignModal()"
+    (appEscClose)="closeReassignModal()"
+  >
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
         <h3 class="modal__title">
@@ -282,7 +288,7 @@
           <strong>{{ selectedDossier()!.clientNom }}</strong>
           <span>{{ selectedDossier()!.objetFinancement }}</span>
           <span class="badge" [class]="statutColor(selectedDossier()!.statut)">
-            {{ statutLabel(selectedDossier()!.statut) }}
+            {{ selectedDossier()!.statut | statutLabel }}
           </span>
         </div>
       }
@@ -308,7 +314,9 @@
             <select class="form-control" formControlName="nouvelAgentUid">
               <option value="">{{ "del.select_agent" | translate }}</option>
               @for (a of agents(); track a.uid) {
-                <option [value]="a.uid">{{ a.username }} ({{ a.role }})</option>
+                <option [value]="a.uid">
+                  {{ a.username }} ({{ a.role | statutLabel }})
+                </option>
               }
             </select>
           }
@@ -352,7 +360,11 @@
 
 <!-- ── Modal : Déléguer autorité ── -->
 @if (showAutoriteModal()) {
-  <div class="modal-backdrop" (click)="closeAutoriteModal()">
+  <div
+    class="modal-backdrop"
+    (click)="closeAutoriteModal()"
+    (appEscClose)="closeAutoriteModal()"
+  >
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
         <h3 class="modal__title">
@@ -383,7 +395,9 @@
             <select class="form-control" formControlName="delegataireUid">
               <option value="">{{ "del.select_user" | translate }}</option>
               @for (a of agents(); track a.uid) {
-                <option [value]="a.uid">{{ a.username }} — {{ a.role }}</option>
+                <option [value]="a.uid">
+                  {{ a.username }} — {{ a.role | statutLabel }}
+                </option>
               }
             </select>
           }
@@ -393,7 +407,7 @@
           <label class="form-label">{{ "del.role_label" | translate }}</label>
           <select class="form-control" formControlName="roleDelegue">
             @for (r of rolesAutorites; track r) {
-              <option [value]="r">{{ r }}</option>
+              <option [value]="r">{{ r | statutLabel }}</option>
             }
           </select>
         </div>

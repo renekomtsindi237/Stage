@@ -1,3 +1,4 @@
+@if (!hidden()) {
 <button
   class="chat-fab"
   (click)="toggle()"
@@ -31,6 +32,7 @@
     }
   }
 </button>
+}
 
 @if (open()) {
   <div class="chat-panel">

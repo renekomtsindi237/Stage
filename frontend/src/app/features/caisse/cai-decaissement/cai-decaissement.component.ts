@@ -63,7 +63,9 @@ export class CaiDecaissementComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.toast.showError("Dossier introuvable", `Référence: ${ref}`);
+          this.toast.showI18nError("caisse.toast_not_found", "caisse.toast_not_found_body", {
+            ref,
+          });
           this.searchLoading.set(false);
           this.cdr.markForCheck();
         },
@@ -73,6 +75,7 @@ export class CaiDecaissementComponent implements OnInit {
   submit() {
     const dossier = this.dossierFound();
     if (!dossier || this.form.invalid) return;
+    if (this.submitting()) return;
     this.submitting.set(true);
     this.api
       .post("/api/v1/caisse/decaissements", {
@@ -84,15 +87,16 @@ export class CaiDecaissementComponent implements OnInit {
         next: () => {
           this.submitting.set(false);
           this.confirmed.set(true);
-          this.toast.showSuccess(
-            "Décaissement effectué",
-            `${dossier.montant.toLocaleString()} FCFA versés`,
+          this.toast.showI18nSuccess(
+            "caisse.toast_dec_title",
+            "caisse.toast_dec_body",
+            { amount: dossier.montant.toLocaleString() },
           );
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.submitting.set(false);
-          this.toast.showError("Erreur", "Décaissement impossible.");
+          this.toast.showApiError(err, "caisse.toast_dec_error");
         },
       });
   }

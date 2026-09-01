@@ -7,10 +7,16 @@
         {{ "sai_contrats.contrats" | translate }}
       </p>
     </div>
-    <button class="btn btn-primary" (click)="showModal.set(true)">
-      <span class="material-icons-round">add</span>
-      {{ "sai_contrats.nouveau" | translate }}
-    </button>
+    <div style="display: flex; gap: 8px">
+      <button class="btn btn-ghost" type="button" (click)="exportCsv()">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
+      <button class="btn btn-primary" (click)="showModal.set(true)">
+        <span class="material-icons-round">add</span>
+        {{ "sai_contrats.nouveau" | translate }}
+      </button>
+    </div>
   </div>
 
   <div class="tab-bar">
@@ -20,7 +26,7 @@
         [class.active]="activeTab() === tab"
         (click)="switchTab(tab)"
       >
-        {{ tab }}
+        {{ tab | statutLabel }}
       </button>
     }
   </div>
@@ -32,10 +38,16 @@
           <th>{{ "sai_contrats.col_numero" | translate }}</th>
           <th>{{ "common.name" | translate }}</th>
           <th>{{ "sai_contrats.col_type" | translate }}</th>
-          <th>{{ "common.amount" | translate }}</th>
-          <th>{{ "sai_contrats.col_debut" | translate }}</th>
+          <th (click)="toggleSort('montant')" style="cursor: pointer">
+            {{ "common.amount" | translate }}
+          </th>
+          <th (click)="toggleSort('dateDebut')" style="cursor: pointer">
+            {{ "sai_contrats.col_debut" | translate }}
+          </th>
           <th>{{ "sai_contrats.col_fin" | translate }}</th>
-          <th>{{ "common.status" | translate }}</th>
+          <th (click)="toggleSort('statut')" style="cursor: pointer">
+            {{ "common.status" | translate }}
+          </th>
           <th>{{ "common.actions" | translate }}</th>
         </tr>
       </thead>
@@ -51,7 +63,7 @@
             </tr>
           }
         } @else {
-          @for (c of page()?.content ?? []; track c.uid) {
+          @for (c of sorted(); track c.uid) {
             <tr>
               <td
                 class="font-semibold"
@@ -61,17 +73,19 @@
               </td>
               <td>{{ c.clientPrenom }} {{ c.clientNom }}</td>
               <td>
-                <span class="badge badge-info">{{ c.typeContrat }}</span>
+                <span class="badge badge-info">{{
+                  c.typeContrat | statutLabel
+                }}</span>
               </td>
               <td class="text-right">
                 {{ c.montant | number: "1.0-0" }}
                 {{ "common.fcfa" | translate }}
               </td>
-              <td class="text-sm">{{ c.dateDebut | date: "dd/MM/yyyy" }}</td>
-              <td class="text-sm">{{ c.dateFin | date: "dd/MM/yyyy" }}</td>
+              <td class="text-sm">{{ c.dateDebut | appDate: "dd/MM/yyyy" }}</td>
+              <td class="text-sm">{{ c.dateFin | appDate: "dd/MM/yyyy" }}</td>
               <td>
                 <span class="badge" [ngClass]="statutClass(c.statut)">{{
-                  c.statut
+                  c.statut | statutLabel
                 }}</span>
               </td>
               <td>
@@ -88,12 +102,13 @@
             </tr>
           } @empty {
             <tr>
-              <td
-                colspan="8"
-                class="text-center text-muted"
-                style="padding: 32px"
-              >
-                {{ "common.empty" | translate }}
+              <td colspan="8" style="padding: 0">
+                <app-empty-state
+                  icon="description"
+                  [title]="'common.empty' | translate"
+                  [ctaLabel]="'sai_contrats.nouveau' | translate"
+                  (ctaClick)="showModal.set(true)"
+                />
               </td>
             </tr>
           }
@@ -127,7 +142,11 @@
 </div>
 
 @if (showModal()) {
-  <div class="modal-overlay" (click)="showModal.set(false)">
+  <div
+    class="modal-overlay"
+    (click)="showModal.set(false)"
+    (appEscClose)="showModal.set(false)"
+  >
     <div
       class="modal-card"
       (click)="$event.stopPropagation()"
@@ -153,7 +172,7 @@
           <label>{{ "sai_contrats.col_type" | translate }} *</label>
           <select class="form-select" formControlName="typeContrat">
             @for (t of types; track t) {
-              <option [value]="t">{{ t }}</option>
+              <option [value]="t">{{ t | statutLabel }}</option>
             }
           </select>
         </div>

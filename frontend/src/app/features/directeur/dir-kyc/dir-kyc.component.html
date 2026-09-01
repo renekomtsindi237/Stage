@@ -9,39 +9,48 @@
         </p>
       </div>
       <button class="btn btn-primary btn-sm" (click)="openCreatePanel()">
-        Nouveau dossier KYC
+        {{ "dir_kyc.create_btn" | translate }}
       </button>
     </div>
 
     @if (showCreatePanel()) {
-      <div class="card sub-panel create-panel">
+      <div
+        class="card sub-panel create-panel"
+        (appEscClose)="closeCreatePanel()"
+      >
         <div class="detail-header" style="margin-bottom: 12px">
           <div>
-            <h3 style="margin-bottom: 4px">Création d'un dossier KYC</h3>
+            <h3 style="margin-bottom: 4px">
+              {{ "dir_kyc.create_title" | translate }}
+            </h3>
             <p class="text-muted text-sm">
-              Renseignez les informations d'identité et le niveau demandé.
+              {{ "dir_kyc.create_subtitle" | translate }}
             </p>
           </div>
           <button class="btn btn-ghost btn-sm" (click)="closeCreatePanel()">
-            Fermer
+            {{ "common.close" | translate }}
           </button>
         </div>
 
         @if (createError()) {
           <div class="alert-box alert-critique">
-            <strong>Erreur</strong> {{ createError() }}
+            <strong>{{ "common.error" | translate }}</strong> {{ createError() }}
           </div>
         }
         @if (createSuccess()) {
           <div class="alert-box alert-success">
-            <strong>Succès</strong> {{ createSuccess() }}
+            <strong>{{ "common.success" | translate }}</strong>
+            {{ createSuccess() }}
           </div>
         }
 
         <form [formGroup]="createForm">
           <div class="create-grid">
             <div class="form-field">
-              <label>Client ID <span style="color: red">*</span></label>
+              <label
+                >{{ "dir_kyc.create_client_id" | translate }}
+                <span style="color: red">*</span></label
+              >
               <input
                 class="form-input"
                 type="text"
@@ -49,7 +58,10 @@
               />
             </div>
             <div class="form-field">
-              <label>Nom <span style="color: red">*</span></label>
+              <label
+                >{{ "common.last_name" | translate }}
+                <span style="color: red">*</span></label
+              >
               <input
                 class="form-input"
                 type="text"
@@ -57,7 +69,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Prénom</label>
+              <label>{{ "common.first_name" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -65,7 +77,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Date de naissance</label>
+              <label>{{ "dir_kyc.identity_dob" | translate }}</label>
               <input
                 class="form-input"
                 type="date"
@@ -73,7 +85,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Lieu de naissance</label>
+              <label>{{ "dir_kyc.identity_pob" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -81,7 +93,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Nationalité</label>
+              <label>{{ "dir_kyc.identity_nationality" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -89,7 +101,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Téléphone</label>
+              <label>{{ "dir_kyc.identity_phone" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -97,19 +109,19 @@
               />
             </div>
             <div class="form-field">
-              <label>Email</label>
+              <label>{{ "common.email" | translate }}</label>
               <input class="form-input" type="email" formControlName="email" />
             </div>
             <div class="form-field create-span-2">
-              <label>Adresse</label>
+              <label>{{ "dir_kyc.identity_address" | translate }}</label>
               <input class="form-input" type="text" formControlName="adresse" />
             </div>
             <div class="form-field">
-              <label>Ville</label>
+              <label>{{ "dir_kyc.identity_city" | translate }}</label>
               <input class="form-input" type="text" formControlName="ville" />
             </div>
             <div class="form-field">
-              <label>Profession</label>
+              <label>{{ "dir_kyc.activity_profession" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -117,7 +129,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Employeur</label>
+              <label>{{ "dir_kyc.activity_employer" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -125,7 +137,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Revenu mensuel estimé</label>
+              <label>{{ "dir_kyc.activity_income" | translate }}</label>
               <input
                 class="form-input"
                 type="number"
@@ -134,7 +146,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Type de pièce d'identité</label>
+              <label>{{ "dir_kyc.id_doc_type" | translate }}</label>
               <select class="form-input" formControlName="typePieceIdentite">
                 @for (
                   t of [
@@ -152,7 +164,7 @@
               </select>
             </div>
             <div class="form-field">
-              <label>Numéro de pièce</label>
+              <label>{{ "dir_kyc.id_doc_number" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -160,7 +172,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Date d'émission</label>
+              <label>{{ "dir_kyc.id_doc_issue_date" | translate }}</label>
               <input
                 class="form-input"
                 type="date"
@@ -168,7 +180,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Date d'expiration</label>
+              <label>{{ "dir_kyc.id_doc_expiry" | translate }}</label>
               <input
                 class="form-input"
                 type="date"
@@ -176,7 +188,7 @@
               />
             </div>
             <div class="form-field">
-              <label>Lieu d'émission</label>
+              <label>{{ "dir_kyc.id_doc_issue_place" | translate }}</label>
               <input
                 class="form-input"
                 type="text"
@@ -185,7 +197,8 @@
             </div>
             <div class="form-field">
               <label
-                >Niveau KYC demandé <span style="color: red">*</span></label
+                >{{ "dir_kyc.create_level" | translate }}
+                <span style="color: red">*</span></label
               >
               <select class="form-input" formControlName="niveauDemande">
                 @for (n of niveaux; track n) {
@@ -196,11 +209,11 @@
             <div class="form-field create-span-2">
               <label class="checkbox-row" style="margin-top: 0">
                 <input type="checkbox" formControlName="estPep" />
-                Client PPE
+                {{ "dir_kyc.create_pep" | translate }}
               </label>
             </div>
             <div class="form-field create-span-2">
-              <label>Observations</label>
+              <label>{{ "dir_kyc.observations" | translate }}</label>
               <textarea
                 class="form-input"
                 rows="3"
@@ -215,7 +228,7 @@
               type="button"
               (click)="closeCreatePanel()"
             >
-              Annuler
+              {{ "common.cancel" | translate }}
             </button>
             <button
               class="btn btn-primary btn-sm"
@@ -223,7 +236,11 @@
               [disabled]="createSubmitting() || createForm.invalid"
               (click)="submitCreateDossier()"
             >
-              {{ createSubmitting() ? "Création..." : "Créer le dossier" }}
+              {{
+                createSubmitting()
+                  ? ("common.creating" | translate)
+                  : ("dir_kyc.create_submit" | translate)
+              }}
             </button>
           </div>
         </form>
@@ -232,7 +249,8 @@
 
     @if (createSuccess()) {
       <div class="alert-box alert-success" style="margin-bottom: 16px">
-        <strong>Succès</strong> {{ createSuccess() }}
+        <strong>{{ "common.success" | translate }}</strong>
+        {{ createSuccess() }}
       </div>
     }
 
@@ -340,7 +358,7 @@
                 </td>
                 <td>
                   <span class="badge" [class]="risqueBadge(d.niveauRisque)">{{
-                    d.niveauRisque
+                    d.niveauRisque | statutLabel
                   }}</span>
                 </td>
                 <td class="text-sm text-muted">
@@ -467,7 +485,8 @@
           statutLabel(selected()!.statut)
         }}</span>
         <span class="badge" [class]="risqueBadge(selected()!.niveauRisque)">
-          {{ "dir_kyc.chip_risk" | translate }} {{ selected()!.niveauRisque }}
+          {{ "dir_kyc.chip_risk" | translate }}
+          {{ selected()!.niveauRisque | statutLabel }}
         </span>
         @if (selected()!.estPep) {
           <span class="badge badge-critique">{{
@@ -510,7 +529,10 @@
       @if (exigenceActuelle(); as exigence) {
         <details class="detail-section exigences-niveau" open>
           <summary class="section-title">
-            Exigences {{ niveauLabel(selected()!.niveauDemande) }}
+            {{
+              "dir_kyc.exigences"
+                | translate: { niveau: niveauLabel(selected()!.niveauDemande) }
+            }}
           </summary>
           <p class="text-xs text-muted" style="margin: 4px 0 10px">
             {{ exigence.description }}
@@ -536,7 +558,7 @@
             }
             @if (exigence.exigeMrzValide) {
               <span class="exigence-chip exigence-info">
-                ℹ zone MRZ valide requise sur la pièce d'identité
+                {{ "dir_kyc.mrz_required" | translate }}
               </span>
             }
           </div>
@@ -678,26 +700,33 @@
                   @if (doc.ecartsDetectes && doc.ecartsDetectes.length > 0) {
                     <div class="doc-analyse-ia doc-analyse-ia--ecart">
                       <div class="text-xs font-semibold">
-                        ⚠ Écarts détectés par l'analyse IA — à vérifier
+                        {{ "dir_kyc.ia_ecarts_title" | translate }}
                       </div>
                       @for (ecart of doc.ecartsDetectes; track ecart.champ) {
                         <div class="text-xs">
-                          {{ ecart.champ }} : saisi «{{ ecart.valeurSaisie }}» —
-                          pièce «{{ ecart.valeurDetectee }}»
+                          {{
+                            "dir_kyc.ia_ecart"
+                              | translate
+                                : {
+                                    champ: ecart.champ,
+                                    saisie: ecart.valeurSaisie,
+                                    detectee: ecart.valeurDetectee
+                                  }
+                          }}
                         </div>
                       }
                     </div>
                   } @else if (doc.donneesExtraites) {
                     <div class="doc-analyse-ia doc-analyse-ia--ok">
-                      <span class="text-xs"
-                        >✓ Analyse IA : champs cohérents avec le dossier</span
-                      >
+                      <span class="text-xs">{{
+                        "dir_kyc.ia_ok" | translate
+                      }}</span>
                     </div>
                   } @else if (doc.analyseIaErreur) {
                     <div class="doc-analyse-ia doc-analyse-ia--indispo">
-                      <span class="text-xs text-muted"
-                        >Analyse IA indisponible pour ce document</span
-                      >
+                      <span class="text-xs text-muted">{{
+                        "dir_kyc.ia_unavailable" | translate
+                      }}</span>
                     </div>
                   }
                 </div>
@@ -789,7 +818,10 @@
 
         <!-- Upload panel -->
         @if (showUploadPanel()) {
-          <div class="upload-panel">
+          <div
+            class="upload-panel"
+            (appEscClose)="showUploadPanel.set(false)"
+          >
             <h5 class="text-sm font-semibold" style="margin-bottom: 10px">
               {{ "dir_kyc.upload_title" | translate }}
             </h5>

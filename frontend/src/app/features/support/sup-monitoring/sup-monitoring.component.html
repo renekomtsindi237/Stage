@@ -215,7 +215,7 @@
                 [class.badge-success]="c.statut === 'OK'"
                 [class.badge-danger]="c.statut !== 'OK'"
               >
-                {{ c.statut }}
+                {{ c.statut | statutLabel }}
               </span>
             </div>
           </div>
@@ -330,7 +330,7 @@
                   <span
                     class="badge"
                     [ngClass]="containerStatutClass(c.statut)"
-                    >{{ c.statut }}</span
+                    >{{ c.statut | statutLabel }}</span
                   >
                 </td>
                 <td class="text-sm text-muted">{{ c.uptime }}</td>

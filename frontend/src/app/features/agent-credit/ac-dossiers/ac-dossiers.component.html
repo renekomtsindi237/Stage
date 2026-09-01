@@ -6,10 +6,16 @@
         {{ page()?.totalElements ?? 0 | number }} dossiers
       </p>
     </div>
-    <a class="btn btn-primary" routerLink="/credit/nouveau-dossier">
-      <span class="material-icons-round">add</span>
-      {{ "ac_dossiers.new_btn" | translate }}
-    </a>
+    <div style="display: flex; gap: 8px">
+      <button class="btn btn-ghost" type="button" (click)="exportCsv()">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
+      <a class="btn btn-primary" routerLink="/credit/nouveau-dossier">
+        <span class="material-icons-round">add</span>
+        {{ "ac_dossiers.new_btn" | translate }}
+      </a>
+    </div>
   </div>
 
   <div class="tab-bar">
@@ -19,7 +25,7 @@
         [class.active]="activeTab() === tab"
         (click)="switchTab(tab)"
       >
-        {{ tab }}
+        {{ tab | statutLabel }}
       </button>
     }
   </div>
@@ -30,11 +36,17 @@
         <tr>
           <th>{{ "ac_dossiers.col_reference" | translate }}</th>
           <th>{{ "ac_dossiers.col_client" | translate }}</th>
-          <th class="text-right">{{ "common.amount" | translate }}</th>
+          <th (click)="toggleSort('montant')" style="cursor: pointer">
+            {{ "common.amount" | translate }}
+          </th>
           <th>{{ "ac_dossiers.col_duree" | translate }}</th>
           <th>{{ "ac_dossiers.col_score" | translate }}</th>
-          <th>{{ "common.status" | translate }}</th>
-          <th>{{ "common.date" | translate }}</th>
+          <th (click)="toggleSort('statut')" style="cursor: pointer">
+            {{ "common.status" | translate }}
+          </th>
+          <th (click)="toggleSort('createdAt')" style="cursor: pointer">
+            {{ "common.date" | translate }}
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -49,7 +61,7 @@
             </tr>
           }
         } @else {
-          @for (d of page()?.content ?? []; track d.uid) {
+          @for (d of sorted(); track d.uid) {
             <tr>
               <td class="mono text-sm">{{ d.numeroReference }}</td>
               <td class="font-semibold">
@@ -72,21 +84,22 @@
               </td>
               <td>
                 <span class="badge" [ngClass]="statutClass(d.statut)">{{
-                  d.statut
+                  d.statut | statutLabel
                 }}</span>
               </td>
               <td class="text-sm text-muted">
-                {{ d.createdAt | date: "dd/MM/yy" }}
+                {{ d.createdAt | appDate: "dd/MM/yy" }}
               </td>
             </tr>
           } @empty {
             <tr>
-              <td
-                colspan="7"
-                class="text-center text-muted"
-                style="padding: 32px"
-              >
-                {{ "ac_dossiers.empty" | translate }}
+              <td colspan="7" style="padding: 0">
+                <app-empty-state
+                  icon="folder_open"
+                  [title]="'ac_dossiers.empty' | translate"
+                  [ctaLabel]="'ac_dossiers.new_btn' | translate"
+                  ctaLink="/credit/nouveau-dossier"
+                />
               </td>
             </tr>
           }

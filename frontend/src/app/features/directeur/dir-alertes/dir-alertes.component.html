@@ -70,17 +70,10 @@
     ></div>
   }
 } @else if (!filtered.length) {
-  <div
-    class="card"
-    style="text-align: center; padding: 40px; color: var(--color-text-muted)"
-  >
-    <span
-      class="material-icons-round"
-      style="font-size: 40px; display: block; margin-bottom: 8px"
-      >check_circle</span
-    >
-    {{ "dir_alertes.empty" | translate }}
-  </div>
+  <app-empty-state
+    icon="check_circle"
+    [title]="'dir_alertes.empty' | translate"
+  />
 } @else {
   @for (a of filtered; track a.id) {
     <div class="alerte-row severity-bar" [class]="a.severite.toLowerCase()">
@@ -101,7 +94,7 @@
             class="badge"
             [class]="'badge-' + a.statut.toLowerCase().replace('_', '-')"
           >
-            {{ a.statut.replace("_", " ") }}
+            {{ a.statut | statutLabel }}
           </span>
         </div>
       </div>

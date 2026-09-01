@@ -11,7 +11,7 @@ import { HttpClient } from "@angular/common/http";
 import type { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "../../../core/auth/auth.service";
 import { environment } from "../../../../environments/environment";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: "app-login",
@@ -26,6 +26,7 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
+  private readonly i18n = inject(TranslateService);
 
   loading = signal(false);
   error = signal("");
@@ -63,11 +64,9 @@ export class LoginComponent {
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         if (err.status === 0 || err.status === 504 || err.status === 502) {
-          this.error.set(
-            "Serveur temporairement indisponible. Veuillez réessayer dans quelques instants.",
-          );
+          this.error.set(this.i18n.instant("login.error_server"));
         } else {
-          this.error.set("Adresse introuvable ou compte désactivé.");
+          this.error.set(this.i18n.instant("login.error_unknown"));
         }
       },
     });
@@ -110,8 +109,7 @@ export class LoginComponent {
         error: (err: HttpErrorResponse) => {
           this.supportLoading.set(false);
           this.supportError.set(
-            err?.error?.message ??
-              "Une erreur est survenue. Réessayez plus tard.",
+            err?.error?.message ?? this.i18n.instant("login.support_error"),
           );
         },
       });

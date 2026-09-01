@@ -25,9 +25,9 @@ public interface IRecouvrementService {
     /** Ouvre un dossier de recouvrement pour un prêt en retard. */
     DossierRecouvrementResponse ouvrirDossier(OuvrirDossierRequest request, User currentUser);
 
-    /** Liste paginée des dossiers de l'IMF, avec filtres optionnels (phase, clos). */
+    /** Liste paginée des dossiers de l'IMF, avec filtres optionnels (phase, clos, recherche). */
     PageResponse<DossierRecouvrementResponse> listDossiers(
-            Long imfId, RecouvrementPhase phase, Boolean clos, int page, int size);
+            Long imfId, RecouvrementPhase phase, Boolean clos, int page, int size, String q);
 
     /** Détail d'un dossier par son UID public. */
     DossierRecouvrementResponse getDossier(UUID uid);

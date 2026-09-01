@@ -42,7 +42,7 @@
     <!-- Top créances en retard -->
     <div class="card">
       <div class="card-header">
-        <h4>{{ "rec_dashboard.top_title" | translate }}</h4>
+        <h4>{{ "rec_dashboard.today_title" | translate }}</h4>
         <a
           routerLink="/recouvrement/creances"
           class="text-sm"
@@ -95,12 +95,12 @@
                 </td>
                 <td>
                   <span class="badge" [ngClass]="cobacClass(c.statut)">{{
-                    c.statut
+                    c.statut | statutLabel
                   }}</span>
                 </td>
                 <td>
                   <span class="badge" [ngClass]="phaseClass(c.phase)">
-                    {{ phaseLabels[c.phase] ?? c.phase | translate }}
+                    {{ c.phase | statutLabel }}
                   </span>
                 </td>
                 <td>
@@ -166,7 +166,7 @@
           <div class="phase-row">
             <div class="phase-left">
               <span class="badge" [ngClass]="phaseClass(entry.phase)">
-                {{ phaseLabels[entry.phase] ?? entry.phase | translate }}
+                {{ entry.phase | statutLabel }}
               </span>
             </div>
             <div class="phase-right">

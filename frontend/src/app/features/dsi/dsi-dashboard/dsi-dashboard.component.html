@@ -8,6 +8,40 @@
     </div>
   </div>
 
+  @if (!loading()) {
+    @if (data(); as d) {
+      @if (d.alertesSysteme > 0 || d.violationsOuvertes > 0) {
+      <div
+        class="card"
+        style="margin-bottom: 16px; padding: 12px 16px; display: flex; gap: 10px; align-items: center"
+      >
+        <span class="material-icons-round" style="color: var(--color-danger)"
+          >monitor_heart</span
+        >
+        <div>
+          <strong>{{ "dsi_dashboard.health_warn" | translate }}</strong>
+          <p class="text-sm text-muted" style="margin: 0">
+            {{ "dsi_dashboard.health_warn_body" | translate }}
+          </p>
+        </div>
+        <a routerLink="/dsi/monitoring" class="btn btn-ghost btn-sm" style="margin-left: auto">
+          {{ "dsi_dashboard.nav_monitoring_title" | translate }}
+        </a>
+      </div>
+    } @else {
+      <div
+        class="card"
+        style="margin-bottom: 16px; padding: 12px 16px; display: flex; gap: 10px; align-items: center"
+      >
+        <span class="material-icons-round" style="color: var(--color-success)"
+          >check_circle</span
+        >
+        <span>{{ "dsi_dashboard.health_ok" | translate }}</span>
+      </div>
+      }
+    }
+  }
+
   <!-- ── KPI cards ── -->
   <div class="stats-grid" style="margin-bottom: 24px">
     <app-stat-card

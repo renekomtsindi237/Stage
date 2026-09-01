@@ -38,6 +38,17 @@
     <!-- Language selector dropdown -->
     <app-language-selector />
 
+    <!-- Recherche / palette Ctrl+K -->
+    <button
+      class="topbar__theme-btn"
+      type="button"
+      (click)="palette.show()"
+      [title]="'command_palette.shortcut' | translate"
+      [attr.aria-label]="'command_palette.title' | translate"
+    >
+      <span class="material-icons-round">search</span>
+    </button>
+
     <!-- Thème dark/light -->
     <button
       class="topbar__theme-btn"
@@ -133,7 +144,11 @@
 
 <!-- ── Modale Support ── -->
 @if (showSupportModal()) {
-  <div class="support-overlay" (click)="closeSupportModal()">
+  <div
+    class="support-overlay"
+    (click)="closeSupportModal()"
+    (appEscClose)="closeSupportModal()"
+  >
     <div class="support-modal" (click)="$event.stopPropagation()">
       <div class="support-modal__header">
         <div class="support-modal__header-left">

@@ -83,11 +83,11 @@
               <td>{{ d.montant | fcfa }}</td>
               <td>
                 <span class="badge" [class]="statutClass(d.statut)">{{
-                  d.statut
+                  d.statut | statutLabel
                 }}</span>
               </td>
               <td class="text-sm text-muted">
-                {{ d.createdAt | date: "dd/MM/yyyy" }}
+                {{ d.createdAt | appDate: "dd/MM/yyyy" }}
               </td>
             </tr>
           }

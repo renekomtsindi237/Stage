@@ -39,7 +39,7 @@
           <span class="material-icons-round" style="font-size: 12px"
             >circle</span
           >
-          {{ pipeline()!.statutGlobal }}
+          {{ pipeline()!.statutGlobal | statutLabel }}
         </span>
       </div>
     </div>
@@ -68,7 +68,7 @@
               class="badge ml-auto"
               [class]="'badge-' + statutClass(dag.statut)"
             >
-              {{ dag.statut }}
+              {{ dag.statut | statutLabel }}
             </span>
           </div>
           <div class="dag-metrics">

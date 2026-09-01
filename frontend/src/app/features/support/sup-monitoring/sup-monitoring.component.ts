@@ -11,6 +11,7 @@ import { CommonModule } from "@angular/common";
 import { ApiService } from "../../../core/http/api.service";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ToastService } from "../../../core/services/toast.service";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 import { SseService } from "../../../core/services/sse.service";
 import { Subscription } from "rxjs";
 
@@ -77,7 +78,7 @@ interface LogEntry {
   selector: "app-sup-monitoring",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, StatutLabelPipe],
   templateUrl: "./sup-monitoring.component.html",
   styleUrls: ["./sup-monitoring.component.scss"],
 })
@@ -207,12 +208,16 @@ export class SupMonitoringComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.triggeringDag.set(null);
-          this.toast.showSuccess("DAG déclenché", dagId);
+          this.toast.showI18nSuccess(
+            "sup_monitoring.toast_dag_title",
+            "sup_monitoring.toast_dag_body",
+            { id: dagId },
+          );
           this.loadAll();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.triggeringDag.set(null);
-          this.toast.showError("Erreur", "Impossible de déclencher le DAG.");
+          this.toast.showApiError(err, "sup_monitoring.toast_dag_error");
         },
       });
   }

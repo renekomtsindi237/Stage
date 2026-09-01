@@ -12,7 +12,7 @@ import { AuthService } from "../../core/auth/auth.service";
 import { ToastService } from "../../core/services/toast.service";
 import { apiErrorMessage } from "../../core/http/api-error";
 import { environment } from "../../../environments/environment";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: "app-profile",
@@ -25,6 +25,7 @@ import { TranslatePipe } from "@ngx-translate/core";
 export class ProfileComponent {
   readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(TranslateService);
   private readonly http = inject(HttpClient);
 
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
@@ -102,7 +103,10 @@ export class ProfileComponent {
     const localError = this.validateImageFile(file);
     if (localError) {
       this.photoError.set(localError);
-      this.toast.showError("Upload impossible", localError);
+      this.toast.showError(
+        this.i18n.instant("profile.toast_upload_fail"),
+        localError,
+      );
       input.value = "";
       return;
     }
@@ -112,9 +116,9 @@ export class ProfileComponent {
       next: () => {
         this.uploading.set(false);
         this.photoError.set(null);
-        this.toast.showSuccess(
-          "Photo mise à jour",
-          "Votre photo de profil est visible sur toute la plateforme.",
+        this.toast.showI18nSuccess(
+          "profile.toast_photo_ok_title",
+          "profile.toast_photo_ok_body",
         );
         input.value = "";
       },
@@ -122,10 +126,14 @@ export class ProfileComponent {
         this.uploading.set(false);
         const msg = apiErrorMessage(
           err,
-          "Impossible de téléverser la photo. Réessayez.",
+          this.i18n.instant("profile.toast_photo_error"),
         );
         this.photoError.set(msg);
-        this.toast.showError("Upload impossible", msg, 7000);
+        this.toast.showError(
+          this.i18n.instant("profile.toast_upload_fail"),
+          msg,
+          7000,
+        );
         input.value = "";
       },
     });
@@ -134,15 +142,12 @@ export class ProfileComponent {
   removeAvatar() {
     this.auth.removeAvatar().subscribe({
       next: () =>
-        this.toast.showSuccess(
-          "Photo supprimée",
-          "Votre avatar a été réinitialisé.",
+        this.toast.showI18nSuccess(
+          "profile.toast_photo_del_title",
+          "profile.toast_photo_del_body",
         ),
       error: (err: unknown) =>
-        this.toast.showError(
-          "Erreur",
-          apiErrorMessage(err, "Impossible de supprimer la photo."),
-        ),
+        this.toast.showApiError(err, "profile.toast_photo_del_error"),
     });
   }
 
@@ -159,7 +164,10 @@ export class ProfileComponent {
     const localError = this.validateImageFile(file);
     if (localError) {
       this.logoError.set(localError);
-      this.toast.showError("Upload impossible", localError);
+      this.toast.showError(
+        this.i18n.instant("profile.toast_upload_fail"),
+        localError,
+      );
       input.value = "";
       return;
     }
@@ -183,9 +191,9 @@ export class ProfileComponent {
           this.auth.updateImfLogoUrl(url);
           this.uploadingImfLogo.set(false);
           this.logoError.set(null);
-          this.toast.showSuccess(
-            "Logo mis à jour",
-            "Le logo de votre IMF est visible sur toute la plateforme.",
+          this.toast.showI18nSuccess(
+            "profile.toast_logo_ok_title",
+            "profile.toast_logo_ok_body",
           );
           input.value = "";
         },
@@ -193,10 +201,14 @@ export class ProfileComponent {
           this.uploadingImfLogo.set(false);
           const msg = apiErrorMessage(
             err,
-            "Impossible de téléverser le logo. Réessayez.",
+            this.i18n.instant("profile.toast_logo_error"),
           );
           this.logoError.set(msg);
-          this.toast.showError("Upload impossible", msg, 7000);
+          this.toast.showError(
+            this.i18n.instant("profile.toast_upload_fail"),
+            msg,
+            7000,
+          );
           input.value = "";
         },
       });
@@ -214,10 +226,10 @@ export class ProfileComponent {
       name.endsWith(ext),
     );
     if (!mimeOk && !extOk) {
-      return "Type de fichier non supporté (JPEG, PNG, WEBP, GIF uniquement)";
+      return this.i18n.instant("profile.file_unsupported");
     }
     if (file.size > 5 * 1024 * 1024) {
-      return "Fichier trop volumineux (max 5 Mo)";
+      return this.i18n.instant("profile.file_too_large");
     }
     return null;
   }

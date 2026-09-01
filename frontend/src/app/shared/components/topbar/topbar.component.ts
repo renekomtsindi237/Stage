@@ -18,7 +18,9 @@ import { Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
 import { TranslatePipe } from "@ngx-translate/core";
 import { LanguageService } from "../../../core/services/language.service";
+import { CommandPaletteService } from "../command-palette/command-palette.service";
 import { LanguageSelectorComponent } from "../language-selector/language-selector.component";
+import { EscCloseDirective } from "../../directives/esc-close.directive";
 
 @Component({
   selector: "app-topbar",
@@ -32,6 +34,7 @@ import { LanguageSelectorComponent } from "../language-selector/language-selecto
     ReactiveFormsModule,
     TranslatePipe,
     LanguageSelectorComponent,
+    EscCloseDirective,
   ],
   templateUrl: "./topbar.component.html",
   styleUrls: ["./topbar.component.scss"],
@@ -40,6 +43,7 @@ export class TopbarComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
   readonly langSvc = inject(LanguageService);
+  readonly palette = inject(CommandPaletteService);
   private readonly toast = inject(ToastService);
   private readonly notifSvc = inject(NotificationService);
   private readonly api = inject(ApiService);
@@ -162,17 +166,14 @@ export class TopbarComponent implements OnInit {
         next: () => {
           this.sendingTicket.set(false);
           this.showSupportModal.set(false);
-          this.toast.showSuccess(
-            "Ticket envoyé",
-            "Votre demande a été transmise à l'équipe support.",
+          this.toast.showI18nSuccess(
+            "topbar.toast_ticket_ok_title",
+            "topbar.toast_ticket_ok_body",
           );
         },
-        error: () => {
+        error: (err: unknown) => {
           this.sendingTicket.set(false);
-          this.toast.showError(
-            "Erreur",
-            "Impossible d'envoyer le ticket. Réessayez.",
-          );
+          this.toast.showApiError(err, "topbar.toast_ticket_error");
         },
       });
   }

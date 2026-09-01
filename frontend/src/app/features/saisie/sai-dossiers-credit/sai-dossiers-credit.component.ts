@@ -10,6 +10,10 @@ import { FormsModule } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { TranslatePipe } from "@ngx-translate/core";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
 
 interface DossierRow {
   uid: string;
@@ -50,7 +54,15 @@ interface Page<T> {
   selector: "app-sai-dossiers-credit",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslatePipe,
+    StatutLabelPipe,
+    AppDatePipe,
+    EmptyStateComponent,
+    EscCloseDirective,
+  ],
   templateUrl: "./sai-dossiers-credit.component.html",
   styleUrls: ["./sai-dossiers-credit.component.scss"],
 })
@@ -164,14 +176,13 @@ export class SaiDossiersCreditComponent implements OnInit {
           this.contratAbsent.set(false);
           this.showGenererForm.set(false);
           this.generating.set(false);
-          this.toast.showSuccess(
-            "Contrat généré",
-            `Référence : ${c.referenceContrat}`,
-          );
+          this.toast.showI18nSuccess("sai_dossiers.toast_gen_title", "sai_dossiers.toast_gen_body", {
+            ref: c.referenceContrat,
+          });
         },
-        error: () => {
+        error: (err: unknown) => {
           this.generating.set(false);
-          this.toast.showError("Erreur", "Impossible de générer le contrat.");
+          this.toast.showApiError(err, "sai_dossiers.toast_gen_error");
         },
       });
   }
@@ -185,18 +196,15 @@ export class SaiDossiersCreditComponent implements OnInit {
       .subscribe({
         next: () => {
           this.validating.set(false);
-          this.toast.showSuccess(
-            "Signatures validées",
-            "Le contrat est maintenant actif.",
+          this.toast.showI18nSuccess(
+            "sai_dossiers.toast_sign_title",
+            "sai_dossiers.toast_sign_body",
           );
           this.loadContrat(this.selectedDossier()!.uid);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.validating.set(false);
-          this.toast.showError(
-            "Erreur",
-            "Validation des signatures impossible.",
-          );
+          this.toast.showApiError(err, "sai_dossiers.toast_sign_error");
         },
       });
   }

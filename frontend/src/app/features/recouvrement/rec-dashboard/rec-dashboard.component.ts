@@ -12,6 +12,7 @@ import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 interface CreanceRow {
   id: string;
@@ -31,15 +32,6 @@ interface RecDashboard {
   parPhase: Record<string, number>;
 }
 
-const PHASE_LABELS: Record<string, string> = {
-  RELANCE_AMIABLE: "common.phase_relance_amiable",
-  MEDIATION_AMIABLE: "common.phase_mediation_amiable",
-  MISE_EN_DEMEURE: "common.phase_mise_en_demeure",
-  CONTENTIEUX: "common.phase_contentieux",
-  REECHELONNEMENT: "common.phase_reechelonnement",
-  PERTE: "common.phase_perte",
-};
-
 @Component({
   selector: "app-rec-dashboard",
   standalone: true,
@@ -50,13 +42,13 @@ const PHASE_LABELS: Record<string, string> = {
     StatCardComponent,
     FcfaPipe,
     TranslatePipe,
+    StatutLabelPipe,
   ],
   templateUrl: "./rec-dashboard.component.html",
   styleUrls: ["./rec-dashboard.component.scss"],
 })
 export class RecDashboardComponent implements OnInit {
   private readonly api = inject(ApiService);
-  readonly phaseLabels = PHASE_LABELS;
 
   loading = signal(true);
   data = signal<RecDashboard | null>(null);

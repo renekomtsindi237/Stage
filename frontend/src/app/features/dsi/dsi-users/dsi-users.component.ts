@@ -10,6 +10,10 @@ import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
+import { downloadCsv } from "../../../shared/utils/csv-export";
 
 interface UserRow {
   uid: string;
@@ -33,7 +37,14 @@ interface UserPage {
   selector: "app-dsi-users",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    StatutLabelPipe,
+    EmptyStateComponent,
+    EscCloseDirective,
+  ],
   templateUrl: "./dsi-users.component.html",
   styleUrls: ["./dsi-users.component.scss"],
 })
@@ -109,14 +120,14 @@ export class DsiUsersComponent implements OnInit {
     const call = actif ? this.api.patch(url, {}) : this.api.delete(url);
     call.subscribe({
       next: () => {
-        this.toast.showSuccess(
-          "Succès",
-          `Utilisateur ${actif ? "réactivé" : "désactivé"}.`,
+        this.toast.showI18nSuccess(
+          "common.success",
+          actif ? "dsi_users.toast_toggle_on" : "dsi_users.toast_toggle_off",
         );
         this.load();
       },
-      error: () =>
-        this.toast.showError("Erreur", "Impossible de modifier l'utilisateur."),
+      error: (err: unknown) =>
+        this.toast.showApiError(err, "dsi_users.toast_modify_error"),
     });
   }
 
@@ -138,15 +149,12 @@ export class DsiUsersComponent implements OnInit {
         next: () => {
           this.saving.set(false);
           this.showEditModal.set(false);
-          this.toast.showSuccess("Succès", "Profil mis à jour.");
+          this.toast.showI18nSuccess("common.success", "dsi_users.toast_update");
           this.load();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.saving.set(false);
-          this.toast.showError(
-            "Erreur",
-            "Impossible de mettre à jour le profil.",
-          );
+          this.toast.showApiError(err, "dsi_users.toast_update_error");
         },
       });
   }
@@ -165,18 +173,14 @@ export class DsiUsersComponent implements OnInit {
         next: () => {
           this.deleting.set(false);
           this.showDeleteConfirm.set(false);
-          this.toast.showSuccess(
-            "Supprimé",
-            `${this.selectedUser()!.username} a été supprimé.`,
-          );
+          this.toast.showI18nSuccess("dsi_users.toast_delete_title", "dsi_users.toast_delete_body", {
+            username: this.selectedUser()!.username,
+          });
           this.load();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.deleting.set(false);
-          this.toast.showError(
-            "Erreur",
-            "Impossible de supprimer l'utilisateur.",
-          );
+          this.toast.showApiError(err, "dsi_users.toast_delete_error");
         },
       });
   }
@@ -188,16 +192,15 @@ export class DsiUsersComponent implements OnInit {
       next: () => {
         this.creating.set(false);
         this.showModal.set(false);
-        this.toast.showSuccess(
-          "Utilisateur créé",
-          `${this.createForm.value.username} — un OTP lui sera envoyé à sa première connexion.`,
-        );
+        this.toast.showI18nSuccess("dsi_users.toast_create_title", "dsi_users.toast_create_body", {
+          username: this.createForm.value.username,
+        });
         this.createForm.reset({ role: "AGENT" });
         this.load();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.creating.set(false);
-        this.toast.showError("Erreur", "Impossible de créer l'utilisateur.");
+        this.toast.showApiError(err, "dsi_users.toast_create_error");
       },
     });
   }
@@ -205,5 +208,18 @@ export class DsiUsersComponent implements OnInit {
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
+  }
+
+  exportCsv() {
+    downloadCsv(
+      "utilisateurs",
+      (this.page()?.content ?? []).map((u) => ({
+        username: u.username,
+        email: u.email,
+        role: u.role,
+        agence: u.agenceNom ?? "",
+        actif: u.actif,
+      })),
+    );
   }
 }

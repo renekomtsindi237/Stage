@@ -63,10 +63,32 @@
     </div>
   </div>
 
-  <!-- Dossiers en attente -->
+  @if (declining().length) {
+    <div class="card" style="margin-bottom: 16px; padding: 14px 16px">
+      <h4 style="margin: 0 0 8px">
+        {{ "ca_dashboard.decline_title" | translate }}
+      </h4>
+      <p class="text-sm text-muted" style="margin: 0 0 8px">
+        {{ "ca_dashboard.decline_body" | translate }}
+      </p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        @for (m of declining(); track m.username) {
+          <a
+            routerLink="/chef-agence/equipe"
+            [queryParams]="{ vue: 'performances' }"
+            class="badge badge-haute"
+          >
+            {{ m.username }} · {{ m.evolutionPct | number: "1.0-0" }}%
+          </a>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Dossiers à décider aujourd'hui -->
   <div class="card" style="margin-bottom: 20px">
     <div class="card-header">
-      <h4>{{ "ca_dashboard.pending_title" | translate }}</h4>
+      <h4>{{ "ca_dashboard.today_title" | translate }}</h4>
       <a
         routerLink="/chef-agence/dossiers"
         [queryParams]="{ statut: 'EN_COMITE' }"
@@ -126,7 +148,7 @@
               </td>
               <td class="text-sm text-muted">{{ d.agentNom }}</td>
               <td class="text-sm text-muted">
-                {{ d.dateSoumission | date: "dd/MM/yyyy" }}
+                {{ d.dateSoumission | appDate: "dd/MM/yyyy" }}
               </td>
               <td>
                 <div style="display: flex; gap: 6px">

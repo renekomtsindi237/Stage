@@ -39,6 +39,10 @@
   background: rgba(var(--color-primary-rgb), 0.06);
 }
 
+.sla-overdue td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-danger, #ef4444);
+}
+
 /* ── Layout 2 colonnes tickets + panneau détail ── */
 .tickets-layout {
   display: grid;

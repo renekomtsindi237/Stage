@@ -6,10 +6,16 @@
         {{ page()?.totalElements ?? 0 }} dossier(s)
       </p>
     </div>
-    <button class="btn btn-primary" (click)="openCreate()">
-      <span class="material-icons-round">add</span>
-      {{ "rec_creances.new_btn" | translate }}
-    </button>
+    <div style="display: flex; gap: 8px">
+      <button class="btn btn-ghost" (click)="exportCsv()" type="button">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <span class="material-icons-round">add</span>
+        {{ "rec_creances.new_btn" | translate }}
+      </button>
+    </div>
   </div>
 
   <!-- Filtres -->
@@ -20,7 +26,8 @@
         type="text"
         class="form-control search-input"
         [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
+        (ngModelChange)="onSearchChange($event)"
+        (keydown.enter)="applyFilter()"
         [placeholder]="'rec_creances.search_placeholder' | translate"
       />
     </div>
@@ -34,7 +41,7 @@
         {{ "rec_creances.filter_all_phases" | translate }}
       </option>
       @for (p of phases; track p) {
-        <option [value]="p">{{ phaseLabels[p] ?? p | translate }}</option>
+        <option [value]="p">{{ p | statutLabel }}</option>
       }
     </select>
 
@@ -104,15 +111,11 @@
               </td>
               <td>
                 <span class="badge" [ngClass]="phaseClass(d.phase)">
-                  {{ phaseLabels[d.phase] ?? d.phase | translate }}
+                  {{ d.phase | statutLabel }}
                 </span>
               </td>
               <td class="text-sm text-muted">
-                {{
-                  d.dateDerniereAction
-                    ? (d.dateDerniereAction | date: "dd/MM/yy")
-                    : "—"
-                }}
+                {{ d.dateDerniereAction | appDate: "dd/MM/yy" }}
               </td>
               <td>
                 @if (d.clos) {
@@ -136,12 +139,12 @@
             </tr>
           } @empty {
             <tr>
-              <td
-                colspan="9"
-                class="text-center text-muted"
-                style="padding: 32px"
-              >
-                {{ "rec_creances.empty" | translate }}
+              <td colspan="9" style="padding: 0">
+                <app-empty-state
+                  icon="account_balance"
+                  [title]="'rec_creances.empty' | translate"
+                  [ctaLabel]="'rec_creances.new_btn' | translate"
+                />
               </td>
             </tr>
           }
@@ -221,8 +224,7 @@
         }}</span>
         <span class="badge" [ngClass]="phaseClass(selectedDossier()!.phase)">
           {{
-            phaseLabels[selectedDossier()!.phase] ?? selectedDossier()!.phase
-              | translate
+          {{ selectedDossier()!.phase | statutLabel }}
           }}
         </span>
       </div>
@@ -361,7 +363,7 @@
               {{ "rec_creances.escalade_phase_choose" | translate }}
             </option>
             @for (p of nextPhases(selectedDossier()!.phase); track p) {
-              <option [value]="p">{{ phaseLabels[p] ?? p | translate }}</option>
+              <option [value]="p">{{ p | statutLabel }}</option>
             }
           </select>
         </div>
@@ -710,7 +712,11 @@
      MODAL NOUVEAU DOSSIER
      ══════════════════════════════════════════════════════════════════════════ -->
 @if (showCreate()) {
-  <div class="modal-overlay" (click)="closeCreate()">
+  <div
+    class="modal-overlay"
+    (click)="closeCreate()"
+    (appEscClose)="closeCreate()"
+  >
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
         <h3>{{ "rec_creances.modal_title" | translate }}</h3>

@@ -27,6 +27,25 @@ public interface RecouvrementDossierRepository extends JpaRepository<Recouvremen
 
     Page<RecouvrementDossier> findByImfIdAndPhaseAndClos(Long imfId, RecouvrementPhase phase, boolean clos, Pageable pageable);
 
+    @Query("""
+            SELECT d FROM RecouvrementDossier d
+            WHERE d.imfId = :imfId
+              AND (:phase IS NULL OR d.phase = :phase)
+              AND (:clos IS NULL OR d.clos = :clos)
+              AND (
+                    LOWER(COALESCE(d.nomClient, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                 OR LOWER(d.idPret) LIKE LOWER(CONCAT('%', :q, '%'))
+                 OR LOWER(COALESCE(d.telephoneCaution, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                 OR LOWER(COALESCE(d.nomCaution, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+              )
+            """)
+    Page<RecouvrementDossier> search(
+            @Param("imfId") Long imfId,
+            @Param("phase") RecouvrementPhase phase,
+            @Param("clos") Boolean clos,
+            @Param("q") String q,
+            Pageable pageable);
+
     @Query("SELECT d FROM RecouvrementDossier d WHERE d.imfId = :imfId AND d.idPret = :idPret AND d.clos = false")
     Optional<RecouvrementDossier> findDossierActif(@Param("imfId") Long imfId, @Param("idPret") String idPret);
 

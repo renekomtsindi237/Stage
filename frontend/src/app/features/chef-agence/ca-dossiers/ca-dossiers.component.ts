@@ -9,10 +9,11 @@ import {
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
-import { TranslatePipe, TranslateService } from "@ngx-translate/core";
+import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
 
 interface DossierRow {
   uid: string;
@@ -79,14 +80,19 @@ const STATUT_TABS = [
   selector: "app-ca-dossiers",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, FcfaPipe, TranslatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FcfaPipe,
+    TranslatePipe,
+    EscCloseDirective,
+  ],
   templateUrl: "./ca-dossiers.component.html",
   styleUrls: ["./ca-dossiers.component.scss"],
 })
 export class CaDossiersComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
-  private readonly translate = inject(TranslateService);
   private readonly route = inject(ActivatedRoute);
 
   readonly tabs = STATUT_TABS;
@@ -182,24 +188,19 @@ export class CaDossiersComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.toast.showSuccess(
-            this.translate.instant("ca_dossiers.toast_validate_title"),
-            this.translate.instant(
-              decision === "VALIDE"
-                ? "ca_dossiers.toast_validate_body"
-                : "ca_dossiers.toast_reject_body",
-            ),
+          this.toast.showI18nSuccess(
+            "ca_dossiers.toast_validate_title",
+            decision === "VALIDE"
+              ? "ca_dossiers.toast_validate_body"
+              : "ca_dossiers.toast_reject_body",
           );
           this.validating.set(false);
           this.showMotif.set(false);
           this.selected.set(null);
           this.load();
         },
-        error: () => {
-          this.toast.showError(
-            this.translate.instant("common.error"),
-            this.translate.instant("ca_dossiers.toast_error_body"),
-          );
+        error: (err: unknown) => {
+          this.toast.showApiError(err, "ca_dossiers.toast_error_body");
           this.validating.set(false);
         },
       });
@@ -238,20 +239,17 @@ export class CaDossiersComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.toast.showSuccess(
-            this.translate.instant("ca_dossiers.toast_reassign_title"),
-            this.translate.instant("ca_dossiers.toast_reassign_body"),
+          this.toast.showI18nSuccess(
+            "ca_dossiers.toast_reassign_title",
+            "ca_dossiers.toast_reassign_body",
           );
           this.reassigning.set(false);
           this.showReassign.set(false);
           this.selected.set(null);
           this.load();
         },
-        error: () => {
-          this.toast.showError(
-            this.translate.instant("common.error"),
-            this.translate.instant("ca_dossiers.toast_reassign_error"),
-          );
+        error: (err: unknown) => {
+          this.toast.showApiError(err, "ca_dossiers.toast_reassign_error");
           this.reassigning.set(false);
         },
       });

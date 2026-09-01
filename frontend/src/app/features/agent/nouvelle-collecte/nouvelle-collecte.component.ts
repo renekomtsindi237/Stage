@@ -8,8 +8,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ApiService } from "../../../core/http/api.service";
+import { apiErrorMessage } from "../../../core/http/api-error";
 import { Client } from "../../../core/models/client.model";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: "app-nouvelle-collecte",
@@ -23,6 +24,7 @@ export class NouvelleCollecteComponent {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(TranslateService);
 
   loading = signal(false);
   saved = signal(false);
@@ -61,6 +63,7 @@ export class NouvelleCollecteComponent {
 
   submit() {
     if (!this.selectedClient() || this.form.invalid) return;
+    if (this.loading()) return;
     this.loading.set(true);
     this.error.set("");
     const payload = {
@@ -75,9 +78,11 @@ export class NouvelleCollecteComponent {
         this.saved.set(true);
         setTimeout(() => this.router.navigate(["/agent"]), 1500);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.loading.set(false);
-        this.error.set("Erreur lors de l'enregistrement.");
+        this.error.set(
+          apiErrorMessage(err, this.i18n.instant("collecte.error_save")),
+        );
       },
     });
   }

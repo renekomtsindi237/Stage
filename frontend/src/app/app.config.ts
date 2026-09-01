@@ -1,4 +1,8 @@
-import { ApplicationConfig, provideZoneChangeDetection } from "@angular/core";
+import {
+  ApplicationConfig,
+  LOCALE_ID,
+  provideZoneChangeDetection,
+} from "@angular/core";
 import {
   provideRouter,
   withComponentInputBinding,
@@ -19,6 +23,7 @@ Chart.register(...registerables);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: LOCALE_ID, useValue: "fr-FR" },
     provideZoneChangeDetection({ eventCoalescing: true }),
     environment.useHash
       ? provideRouter(routes, withHashLocation(), withComponentInputBinding())

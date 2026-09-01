@@ -10,6 +10,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { TranslatePipe } from "@ngx-translate/core";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 export interface Ticket {
   id: number;
@@ -38,7 +39,7 @@ interface TicketPage {
   selector: "app-sup-tickets",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, StatutLabelPipe],
   templateUrl: "./sup-tickets.component.html",
   styleUrls: ["./sup-tickets.component.scss"],
 })
@@ -102,11 +103,15 @@ export class SupTicketsComponent implements OnInit {
       .patch(`/api/v1/support/tickets/${id}`, { statut: "EN_COURS" })
       .subscribe({
         next: () => {
-          this.toast.showSuccess("Ticket pris en charge", "Statut mis à jour.");
+          this.toast.showI18nSuccess(
+            "sup_tickets.toast_take_title",
+            "sup_tickets.toast_take_body",
+          );
           this.load();
           this.selected.set(null);
         },
-        error: () => this.toast.showError("Erreur", "Mise à jour impossible."),
+        error: (err: unknown) =>
+          this.toast.showApiError(err, "sup_tickets.toast_update_error"),
       });
   }
 
@@ -122,17 +127,17 @@ export class SupTicketsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.submittingResponse.set(false);
-          this.toast.showSuccess(
-            "Réponse envoyée",
-            "L'utilisateur a été notifié.",
+          this.toast.showI18nSuccess(
+            "sup_tickets.toast_reply_title",
+            "sup_tickets.toast_reply_body",
           );
           this.responseForm.reset();
           this.selected.set(null);
           this.load();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.submittingResponse.set(false);
-          this.toast.showError("Erreur", "Impossible d'envoyer la réponse.");
+          this.toast.showApiError(err, "sup_tickets.toast_reply_error");
         },
       });
   }
@@ -142,11 +147,12 @@ export class SupTicketsComponent implements OnInit {
       .patch(`/api/v1/support/tickets/${id}`, { statut: "FERME" })
       .subscribe({
         next: () => {
-          this.toast.showSuccess("Ticket fermé", "");
+          this.toast.showI18nSuccess("sup_tickets.toast_close_title", "sup_tickets.toast_take_body");
           this.selected.set(null);
           this.load();
         },
-        error: () => this.toast.showError("Erreur", "Mise à jour impossible."),
+        error: (err: unknown) =>
+          this.toast.showApiError(err, "sup_tickets.toast_update_error"),
       });
   }
 
@@ -182,5 +188,15 @@ export class SupTicketsComponent implements OnInit {
         FERME: "badge-secondary",
       }[s] ?? ""
     );
+  }
+
+  isSlaOverdue(t: Ticket): boolean {
+    if (t.statut === "RESOLU" || t.statut === "FERME") return false;
+    const created = new Date(t.createdAt).getTime();
+    if (!Number.isFinite(created)) return false;
+    const hours = (Date.now() - created) / 36e5;
+    if (t.priorite === "CRITIQUE") return hours > 4;
+    if (t.priorite === "HAUTE") return hours > 8;
+    return hours > 24;
   }
 }

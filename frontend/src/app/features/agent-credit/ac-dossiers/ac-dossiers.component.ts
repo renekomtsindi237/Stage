@@ -9,6 +9,11 @@ import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { downloadCsv } from "../../../shared/utils/csv-export";
+import { sortRows } from "../../../shared/utils/sort-rows";
 
 interface DossierCredit {
   uid: string;
@@ -41,7 +46,14 @@ interface DossierPage {
   selector: "app-ac-dossiers",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslatePipe,
+    StatutLabelPipe,
+    AppDatePipe,
+    EmptyStateComponent,
+  ],
   templateUrl: "./ac-dossiers.component.html",
   styleUrls: ["./ac-dossiers.component.scss"],
 })
@@ -52,6 +64,8 @@ export class AcDossiersComponent implements OnInit {
   page = signal<DossierPage | null>(null);
   currentPage = signal(0);
   activeTab = signal<string>("TOUS");
+  sortKey = signal("createdAt");
+  sortDir = signal<"asc" | "desc">("desc");
 
   readonly tabs = [
     "TOUS",
@@ -94,6 +108,37 @@ export class AcDossiersComponent implements OnInit {
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
+  }
+
+  toggleSort(key: string) {
+    if (this.sortKey() === key) {
+      this.sortDir.update((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      this.sortKey.set(key);
+      this.sortDir.set("asc");
+    }
+  }
+
+  sorted(): DossierCredit[] {
+    return sortRows(
+      this.page()?.content ?? [],
+      this.sortKey(),
+      this.sortDir(),
+    );
+  }
+
+  exportCsv() {
+    downloadCsv(
+      "dossiers-credit",
+      this.sorted().map((d) => ({
+        reference: d.numeroReference,
+        client: `${d.clientPrenom} ${d.clientNom}`,
+        montant: d.montant,
+        duree: d.duree,
+        statut: d.statut,
+        date: d.createdAt,
+      })),
+    );
   }
 
   statutClass(s: string) {

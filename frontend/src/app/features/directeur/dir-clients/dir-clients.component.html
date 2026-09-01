@@ -341,7 +341,7 @@
           <dl class="detail-dl">
             <div>
               <dt>{{ "dir_clients.col_statut" | translate }}</dt>
-              <dd>{{ d.kyc.statut }}</dd>
+              <dd>{{ d.kyc.statut | statutLabel }}</dd>
             </div>
             <div>
               <dt>{{ "dir_clients.kyc_level" | translate }}</dt>
@@ -385,7 +385,7 @@
               <li>
                 <p class="font-semibold">{{ cr.idPret }}</p>
                 <p class="text-sm text-muted">
-                  {{ cr.statut }} · {{ cr.joursRetard ?? 0 }} j ·
+                  {{ cr.statut | statutLabel }} · {{ cr.joursRetard ?? 0 }} j ·
                   {{ cr.montantImpaye | fcfa }}
                 </p>
               </li>

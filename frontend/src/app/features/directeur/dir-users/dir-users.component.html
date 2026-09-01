@@ -65,6 +65,10 @@
           {{ "dir_users.import_users_btn" | translate }}
         }
       </button>
+      <button class="btn btn-ghost" type="button" (click)="exportCsv()">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
       <button class="btn btn-primary" (click)="showModal.set(true)">
         <span class="material-icons-round">person_add</span>
         {{ "dir_users.add_btn" | translate }}
@@ -127,7 +131,7 @@
               <td class="font-semibold">{{ u.username }}</td>
               <td class="text-sm text-muted">{{ u.email }}</td>
               <td>
-                <span class="badge badge-info">{{ u.role }}</span>
+                <span class="badge badge-info">{{ u.role | statutLabel }}</span>
               </td>
               <td>
                 <span
@@ -156,6 +160,17 @@
                     u.actif ? "block" : "check_circle"
                   }}</span>
                 </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="padding: 0">
+                <app-empty-state
+                  icon="group"
+                  [title]="'common.empty' | translate"
+                  [ctaLabel]="'dir_users.add_btn' | translate"
+                  (ctaClick)="showModal.set(true)"
+                />
               </td>
             </tr>
           }
@@ -188,7 +203,11 @@
 </div>
 
 @if (showModal()) {
-  <div class="modal-overlay" (click)="showModal.set(false)">
+  <div
+    class="modal-overlay"
+    (click)="showModal.set(false)"
+    (appEscClose)="showModal.set(false)"
+  >
     <div
       class="modal-card"
       (click)="$event.stopPropagation()"
@@ -225,7 +244,7 @@
           <label>{{ "dir_users.modal_role" | translate }} *</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
-              <option [value]="r">{{ r }}</option>
+              <option [value]="r">{{ r | statutLabel }}</option>
             }
           </select>
         </div>

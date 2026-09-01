@@ -8,7 +8,13 @@ import {
 import { CommonModule } from "@angular/common";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
+import { apiErrorMessage } from "../../../core/http/api-error";
 import { ToastService } from "../../../core/services/toast.service";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { downloadCsv } from "../../../shared/utils/csv-export";
+import { sortRows } from "../../../shared/utils/sort-rows";
 
 interface Alerte {
   uid: string;
@@ -31,7 +37,13 @@ interface AlertePage {
   selector: "app-rec-alertes",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    TranslatePipe,
+    StatutLabelPipe,
+    AppDatePipe,
+    EmptyStateComponent,
+  ],
   templateUrl: "./rec-alertes.component.html",
   styleUrls: ["./rec-alertes.component.scss"],
 })
@@ -44,6 +56,8 @@ export class RecAlertesComponent implements OnInit {
   page = signal<AlertePage | null>(null);
   currentPage = signal(0);
   activeTab = signal<string>("ACTIVE");
+  sortKey = signal("dateGeneration");
+  sortDir = signal<"asc" | "desc">("desc");
 
   readonly tabs: { label: string; value: string }[] = [
     { label: "rec_alertes.tab_active", value: "ACTIVE" },
@@ -85,10 +99,13 @@ export class RecAlertesComponent implements OnInit {
           );
           this.load();
         },
-        error: () =>
+        error: (err: unknown) =>
           this.toast.showError(
             this.translate.instant("common.error"),
-            this.translate.instant("rec_alertes.toast_error"),
+            apiErrorMessage(
+              err,
+              this.translate.instant("rec_alertes.toast_error"),
+            ),
           ),
       });
   }
@@ -104,10 +121,13 @@ export class RecAlertesComponent implements OnInit {
           );
           this.load();
         },
-        error: () =>
+        error: (err: unknown) =>
           this.toast.showError(
             this.translate.instant("common.error"),
-            this.translate.instant("rec_alertes.toast_error"),
+            apiErrorMessage(
+              err,
+              this.translate.instant("rec_alertes.toast_error"),
+            ),
           ),
       });
   }
@@ -123,6 +143,32 @@ export class RecAlertesComponent implements OnInit {
     this.load();
   }
 
+  toggleSort(key: string) {
+    if (this.sortKey() === key) {
+      this.sortDir.update((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      this.sortKey.set(key);
+      this.sortDir.set("desc");
+    }
+  }
+
+  sorted(): Alerte[] {
+    return sortRows(this.page()?.content ?? [], this.sortKey(), this.sortDir());
+  }
+
+  exportCsv() {
+    downloadCsv(
+      "alertes-recouvrement",
+      this.sorted().map((a) => ({
+        pret: a.idPret,
+        montant: a.montantEnRetard,
+        jours: a.joursRetard,
+        statut: a.statutAlerte,
+        date: a.dateGeneration,
+      })),
+    );
+  }
+
   statutClass(s: string): string {
     const m: Record<string, string> = {
       ACTIVE: "badge-danger",
@@ -133,18 +179,6 @@ export class RecAlertesComponent implements OnInit {
       CLOTUREE: "badge-success",
     };
     return m[s] ?? "";
-  }
-
-  statutLabel(s: string): string {
-    const m: Record<string, string> = {
-      ACTIVE: "rec_alertes.statut_active",
-      NON_TRAITEE: "rec_alertes.statut_non_traitee",
-      ESCALADEE: "rec_alertes.statut_escaladee",
-      EN_TRAITEMENT: "rec_alertes.statut_en_traitement",
-      RESOLUE: "rec_alertes.statut_resolue",
-      CLOTUREE: "rec_alertes.statut_cloturee",
-    };
-    return m[s] ?? s;
   }
 
   retardClass(jours: number): string {

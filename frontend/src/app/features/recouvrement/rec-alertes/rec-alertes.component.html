@@ -7,10 +7,16 @@
         {{ "rec_alertes.count_suffix" | translate }}
       </p>
     </div>
-    <button class="btn btn-ghost" (click)="load()">
-      <span class="material-icons-round">refresh</span>
-      {{ "rec_alertes.refresh_btn" | translate }}
-    </button>
+    <div style="display: flex; gap: 8px">
+      <button class="btn btn-ghost" type="button" (click)="exportCsv()">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
+      <button class="btn btn-ghost" (click)="load()">
+        <span class="material-icons-round">refresh</span>
+        {{ "rec_alertes.refresh_btn" | translate }}
+      </button>
+    </div>
   </div>
 
   <div class="tab-bar">
@@ -30,12 +36,18 @@
       <thead>
         <tr>
           <th>{{ "rec_alertes.col_ref" | translate }}</th>
-          <th class="text-right">
+          <th (click)="toggleSort('montantEnRetard')" style="cursor: pointer">
             {{ "rec_alertes.col_montant" | translate }}
           </th>
-          <th>{{ "rec_alertes.col_jours" | translate }}</th>
-          <th>{{ "rec_alertes.col_statut" | translate }}</th>
-          <th>{{ "rec_alertes.col_date" | translate }}</th>
+          <th (click)="toggleSort('joursRetard')" style="cursor: pointer">
+            {{ "rec_alertes.col_jours" | translate }}
+          </th>
+          <th (click)="toggleSort('statutAlerte')" style="cursor: pointer">
+            {{ "rec_alertes.col_statut" | translate }}
+          </th>
+          <th (click)="toggleSort('dateGeneration')" style="cursor: pointer">
+            {{ "rec_alertes.col_date" | translate }}
+          </th>
           <th>{{ "rec_alertes.col_actions" | translate }}</th>
         </tr>
       </thead>
@@ -51,7 +63,7 @@
             </tr>
           }
         } @else {
-          @for (a of page()?.content ?? []; track a.uid) {
+          @for (a of sorted(); track a.uid) {
             <tr>
               <td class="font-semibold">{{ a.idPret }}</td>
               <td class="text-right text-danger font-semibold">
@@ -65,11 +77,11 @@
               </td>
               <td>
                 <span class="badge" [ngClass]="statutClass(a.statutAlerte)">
-                  {{ statutLabel(a.statutAlerte) | translate }}
+                  {{ a.statutAlerte | statutLabel }}
                 </span>
               </td>
               <td class="text-sm text-muted">
-                {{ a.dateGeneration | date: "dd/MM/yy" }}
+                {{ a.dateGeneration | appDate: "dd/MM/yy" }}
               </td>
               <td>
                 @if (
@@ -105,12 +117,11 @@
             </tr>
           } @empty {
             <tr>
-              <td
-                colspan="6"
-                class="text-center text-muted"
-                style="padding: 32px"
-              >
-                {{ "rec_alertes.empty" | translate }}
+              <td colspan="6" style="padding: 0">
+                <app-empty-state
+                  icon="notifications_none"
+                  [title]="'rec_alertes.empty' | translate"
+                />
               </td>
             </tr>
           }

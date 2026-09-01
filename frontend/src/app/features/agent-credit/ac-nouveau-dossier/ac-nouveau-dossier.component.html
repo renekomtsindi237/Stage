@@ -3,6 +3,12 @@
     <h2>{{ "ac_nouveau.title" | translate }}</h2>
   </div>
 
+  @if (draftRestored()) {
+    <p class="text-sm text-muted" style="margin-bottom: 12px">
+      {{ "ac_nouveau.draft_restored" | translate }}
+    </p>
+  }
+
   <!-- Steps indicator -->
   <div class="steps">
     @for (s of [1, 2, 3, 4]; track s) {
@@ -50,6 +56,9 @@
                   {{ c.idClient }} ·
                   {{ "ac_nouveau.step1_encours" | translate }}:
                   {{ c.encours | number }} FCFA
+                  @if (c.telephoneClient) {
+                    · {{ c.telephoneClient }}
+                  }
                 </p>
               </div>
             }

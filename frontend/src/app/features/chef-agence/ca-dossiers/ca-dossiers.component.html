@@ -293,7 +293,11 @@
 
 <!-- ── Modal réassignation ──────────────────────────────────────────────── -->
 @if (showReassign()) {
-  <div class="modal-overlay" (click)="closeReassign()">
+  <div
+    class="modal-overlay"
+    (click)="closeReassign()"
+    (appEscClose)="closeReassign()"
+  >
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
         <h3>{{ "ca_dossiers.reassign_title" | translate }}</h3>

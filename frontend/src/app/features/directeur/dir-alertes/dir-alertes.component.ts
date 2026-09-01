@@ -14,6 +14,8 @@ import { Alerte } from "../../../core/models/alerte.model";
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
 
 interface MlAlerteApi {
   id: number | string;
@@ -43,6 +45,8 @@ type Tab = "NON_TRAITEE" | "EN_TRAITEMENT" | "TOUTES";
     TimeAgoPipe,
     TranslatePipe,
     RouterLink,
+    StatutLabelPipe,
+    EmptyStateComponent,
   ],
   templateUrl: "./dir-alertes.component.html",
   styleUrls: ["./dir-alertes.component.scss"],

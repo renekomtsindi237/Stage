@@ -4,14 +4,21 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
+  HostListener,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { RouterLink } from "@angular/router";
+import { RouterLink, ActivatedRoute, Router } from "@angular/router";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
+import { apiErrorMessage } from "../../../core/http/api-error";
 import { ToastService } from "../../../core/services/toast.service";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
+import { downloadCsv } from "../../../shared/utils/csv-export";
 
 interface DossierRow {
   uid: string;
@@ -98,7 +105,17 @@ const GARANTIE_LABELS: Record<string, string> = {
   selector: "app-rec-creances",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, FcfaPipe, TranslatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    FcfaPipe,
+    TranslatePipe,
+    StatutLabelPipe,
+    AppDatePipe,
+    EmptyStateComponent,
+    EscCloseDirective,
+  ],
   templateUrl: "./rec-creances.component.html",
   styleUrls: ["./rec-creances.component.scss"],
 })
@@ -106,6 +123,9 @@ export class RecCreancesComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly phases = PHASES;
   readonly phaseLabels = PHASE_LABELS;
@@ -166,7 +186,17 @@ export class RecCreancesComponent implements OnInit {
   };
 
   ngOnInit() {
+    const qp = this.route.snapshot.queryParamMap;
+    this.filterPhase.set(qp.get("phase") ?? "");
+    this.searchQuery.set(qp.get("q") ?? "");
+    this.filterClos.set(qp.get("clos") === "true");
     this.load();
+  }
+
+  @HostListener("document:keydown.escape")
+  onEsc() {
+    if (this.showCreate()) this.closeCreate();
+    else if (this.selectedDossier()) this.closeDetail();
   }
 
   load() {
@@ -177,6 +207,8 @@ export class RecCreancesComponent implements OnInit {
       clos: this.filterClos(),
     };
     if (this.filterPhase()) params["phase"] = this.filterPhase();
+    const q = this.searchQuery().trim();
+    if (q) params["q"] = q;
 
     this.api
       .get<Page<DossierRow>>("/api/v1/recouvrement/dossiers", params)
@@ -185,24 +217,52 @@ export class RecCreancesComponent implements OnInit {
           this.page.set(p);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: (err: unknown) => {
+          this.toast.showError(
+            this.translate.instant("common.error"),
+            apiErrorMessage(err),
+          );
+          this.loading.set(false);
+        },
       });
   }
 
   get filteredContent(): DossierRow[] {
-    const q = this.searchQuery().trim().toLowerCase();
-    const content = this.page()?.content ?? [];
-    if (!q) return content;
-    return content.filter(
-      (d) =>
-        d.nomClient?.toLowerCase().includes(q) ||
-        d.idPret?.toLowerCase().includes(q),
-    );
+    return this.page()?.content ?? [];
+  }
+
+  onSearchChange(q: string) {
+    this.searchQuery.set(q);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.applyFilter(), 350);
   }
 
   applyFilter() {
     this.currentPage.set(0);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        phase: this.filterPhase() || null,
+        q: this.searchQuery().trim() || null,
+        clos: this.filterClos() ? true : null,
+      },
+      queryParamsHandling: "merge",
+    });
     this.load();
+  }
+
+  exportCsv() {
+    const rows = this.filteredContent.map((d) => ({
+      client: d.nomClient,
+      pret: d.idPret,
+      montant: d.montantImpaye,
+      retard: d.joursRetard,
+      cobac: d.categorieCobtac,
+      phase: d.phase,
+      derniereAction: d.dateDerniereAction,
+      clos: d.clos,
+    }));
+    downloadCsv("creances", rows);
   }
 
   goPage(n: number) {
@@ -325,10 +385,13 @@ export class RecCreancesComponent implements OnInit {
         this.closeCreate();
         this.load();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.toast.showError(
           this.translate.instant("common.error"),
-          this.translate.instant("rec_creances.toast_create_error"),
+          apiErrorMessage(
+            err,
+            this.translate.instant("rec_creances.toast_create_error"),
+          ),
         );
         this.saving.set(false);
       },
@@ -373,10 +436,13 @@ export class RecCreancesComponent implements OnInit {
           this.closeDetail();
           this.load();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.toast.showError(
             this.translate.instant("common.error"),
-            this.translate.instant("rec_creances.toast_escalade_error"),
+            apiErrorMessage(
+              err,
+              this.translate.instant("rec_creances.toast_escalade_error"),
+            ),
           );
           this.escalading.set(false);
         },
@@ -412,10 +478,13 @@ export class RecCreancesComponent implements OnInit {
           this.closeDetail();
           this.load();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.toast.showError(
             this.translate.instant("common.error"),
-            this.translate.instant("rec_creances.toast_cloture_error"),
+            apiErrorMessage(
+              err,
+              this.translate.instant("rec_creances.toast_cloture_error"),
+            ),
           );
           this.closing.set(false);
         },
@@ -477,10 +546,13 @@ export class RecCreancesComponent implements OnInit {
           this.showAccordForm.set(false);
           this.loadAccords(d.uid);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.toast.showError(
             this.translate.instant("common.error"),
-            this.translate.instant("rec_creances.toast_accord_error"),
+            apiErrorMessage(
+              err,
+              this.translate.instant("rec_creances.toast_accord_error"),
+            ),
           );
           this.accordSaving.set(false);
         },

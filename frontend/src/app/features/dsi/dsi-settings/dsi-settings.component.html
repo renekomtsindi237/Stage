@@ -11,6 +11,27 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom: 16px; padding: 14px 16px">
+    <p class="text-sm" style="margin: 0 0 8px; font-weight: 600">
+      {{ "dsi_settings.wizard_title" | translate }}
+    </p>
+    <ol style="margin: 0; padding-left: 18px; font-size: 13px">
+      <li>
+        {{ "dsi_settings.wizard_logo" | translate }}
+        @if (logoConfigured) {
+          <span class="badge badge-basse">OK</span>
+        }
+      </li>
+      <li>
+        {{ "dsi_settings.wizard_pay" | translate }}
+        @if (paymentConfigured) {
+          <span class="badge badge-basse">OK</span>
+        }
+      </li>
+      <li>{{ "dsi_settings.wizard_done" | translate }}</li>
+    </ol>
+  </div>
+
   <!-- Logo section -->
   <div class="settings-card">
     <div class="card-section-header">

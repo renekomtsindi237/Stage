@@ -44,7 +44,7 @@
                 class="badge"
                 [ngClass]="phaseClass(selectedDossier()!.phase)"
               >
-                {{ selectedDossier()!.phase }}
+                {{ selectedDossier()!.phase | statutLabel }}
               </span>
               <span class="text-sm text-danger font-semibold">
                 {{ selectedDossier()!.montantImpaye | fcfa }}
@@ -75,6 +75,7 @@
               class="form-control search-input"
               [ngModel]="searchQuery()"
               (ngModelChange)="searchQuery.set($event); searchDossiers()"
+              (keydown.enter)="searchDossiers()"
               [placeholder]="'rec_actions.step1_search' | translate"
             />
           </div>
@@ -89,7 +90,7 @@
                     [ngClass]="phaseClass(d.phase)"
                     style="float: right"
                   >
-                    {{ d.phase }}
+                    {{ d.phase | statutLabel }}
                   </span>
                 </li>
               }
@@ -341,6 +342,38 @@
           </button>
         </div>
       </div>
+
+      @if (timeline().length || timelineLoading()) {
+        <div class="step-card timeline-card">
+          <div class="step-header">
+            <span class="step-num">·</span>
+            <h4>{{ "rec_actions.timeline_title" | translate }}</h4>
+          </div>
+          @if (timelineLoading()) {
+            <p class="text-muted text-sm">
+              {{ "common.loading" | translate }}
+            </p>
+          } @else {
+            <ul class="timeline">
+              @for (a of timeline(); track a.uid) {
+                <li>
+                  <span class="font-semibold">{{
+                    a.typeAction | statutLabel
+                  }}</span>
+                  @if (a.resultat) {
+                    <span class="text-muted text-sm">
+                      · {{ a.resultat | statutLabel }}</span
+                    >
+                  }
+                  <span class="timeline-date">{{
+                    a.dateAction | appDate: "dd/MM/yyyy HH:mm"
+                  }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
     }
 
     <!-- Dossier clôturé -->
@@ -363,10 +396,15 @@
           {{ "rec_actions.success_body" | translate }}
           {{ selectedDossier()!.nomClient }}.
         </p>
-        <div style="display: flex; gap: 8px; margin-top: 16px">
+        <div style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; justify-content: center">
           <button class="btn btn-primary" (click)="success.set(false)">
             {{ "rec_actions.success_add_more" | translate }}
           </button>
+          @if (nextDossierUid()) {
+            <button class="btn btn-ghost" (click)="openNext()">
+              {{ "rec_actions.success_next" | translate }}
+            </button>
+          }
           <a routerLink="/recouvrement/creances" class="btn btn-ghost">
             {{ "rec_actions.success_back" | translate }}
           </a>

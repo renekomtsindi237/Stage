@@ -10,12 +10,13 @@ import { ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { AuditEntry, PagedResult } from "../../../core/models/platform.model";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 @Component({
   selector: "app-platform-audit",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, StatutLabelPipe],
   templateUrl: "./platform-audit.component.html",
   styleUrls: ["./platform-audit.component.scss"],
 })

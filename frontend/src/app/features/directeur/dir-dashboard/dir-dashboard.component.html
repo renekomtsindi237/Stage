@@ -5,6 +5,36 @@
   </div>
 </div>
 
+@if (!loading() && data()) {
+  <div class="card" style="margin-bottom: 16px; padding: 16px 20px">
+    <h4 style="margin: 0 0 10px">{{ "dir_dashboard.questions_title" | translate }}</h4>
+    <ol class="dir-questions" style="margin: 0; padding-left: 18px; font-size: 14px">
+      <li>
+        {{ "dir_dashboard.q1" | translate }}
+        <strong>{{ data()!.par30 | number: "1.1-1" }}%</strong>
+      </li>
+      <li>
+        {{ "dir_dashboard.q2" | translate }}
+        <strong>{{ data()!.alertesActives?.length ?? 0 }}</strong>
+      </li>
+      <li>
+        {{ "dir_dashboard.q3" | translate }}
+        <strong>{{ data()!.collectesDuJour | fcfa }}</strong>
+      </li>
+    </ol>
+  </div>
+}
+
+@if (!loading() && kpisEmpty) {
+  <app-empty-state
+    icon="insights"
+    [title]="'dir_dashboard.kpi_empty_title' | translate"
+    [hint]="'dir_dashboard.kpi_empty_hint' | translate"
+    [ctaLabel]="'dir_dashboard.alertes_see_all' | translate"
+    ctaLink="/directeur/alertes"
+  />
+}
+
 <!-- KPI Cards -->
 <div class="stats-grid">
   <app-stat-card

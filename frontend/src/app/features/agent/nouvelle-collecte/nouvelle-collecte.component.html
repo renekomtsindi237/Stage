@@ -41,6 +41,9 @@
                   {{ c.idClient }} · {{ "collecte.solde" | translate }}:
                   {{ c.encours | number: "1.0-0" }}
                   {{ "common.fcfa" | translate }}
+                  @if (c.telephoneClient) {
+                    · {{ c.telephoneClient }}
+                  }
                 </p>
               </div>
             }

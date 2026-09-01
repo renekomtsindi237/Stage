@@ -152,6 +152,7 @@
   font-weight: 500;
   color: var(--color-text);
   transition: box-shadow 0.15s;
+  min-height: 96px;
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -160,6 +161,19 @@
   .material-icons-round {
     font-size: 28px;
     color: var(--color-primary);
+  }
+
+  &--primary {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: transparent;
+    padding: 28px 16px;
+    font-size: 15px;
+
+    .material-icons-round {
+      color: #fff;
+      font-size: 36px;
+    }
   }
 }
 

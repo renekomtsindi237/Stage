@@ -27,7 +27,9 @@
       <p class="text-sm text-muted">
         {{ "anl_pipeline.last_run" | translate }}
       </p>
-      <p class="font-semibold text-lg">{{ data()!.derniereExecution }}</p>
+      <p class="font-semibold text-lg">
+        {{ data()!.derniereExecution | appDate }}
+      </p>
     </div>
     <div class="ml-auto text-right">
       <p class="text-sm text-muted">
@@ -95,7 +97,14 @@
         </div>
 
         <div class="dag-card__footer">
-          <span class="text-muted text-sm">{{ dag.derniereExec ?? "" }}</span>
+          <span class="text-muted text-sm">{{
+            dag.derniereExec | appDate
+          }}</span>
+          @if (dag.statut === "FAILED") {
+            <p class="text-sm" style="color: var(--color-danger); margin: 8px 0 0; width: 100%">
+              {{ "anl_pipeline.failed_hint" | translate }}
+            </p>
+          }
           @if (dag.logUrl) {
             <a
               [href]="dag.logUrl"
@@ -103,8 +112,12 @@
               class="btn btn-ghost btn-sm"
               >{{ "anl_pipeline.dag_logs" | translate }}</a
             >
+          } @else if (dag.statut === "FAILED") {
+            <span class="text-sm text-muted">{{
+              "anl_pipeline.failed_no_logs" | translate
+            }}</span>
           } @else {
-            <button class="btn btn-ghost btn-sm">
+            <button class="btn btn-ghost btn-sm" type="button" disabled>
               {{ "anl_pipeline.dag_logs" | translate }}
             </button>
           }

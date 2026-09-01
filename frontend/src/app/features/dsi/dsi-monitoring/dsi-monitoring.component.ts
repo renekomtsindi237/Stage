@@ -10,6 +10,8 @@ import { CommonModule } from "@angular/common";
 import { TranslatePipe } from "@ngx-translate/core";
 
 import { ApiService } from "../../../core/http/api.service";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
 
 interface ImfHealth {
   usersActifs: number;
@@ -33,7 +35,7 @@ interface RecentLogin {
   selector: "app-dsi-monitoring",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, StatutLabelPipe, AppDatePipe],
   templateUrl: "./dsi-monitoring.component.html",
   styleUrls: ["./dsi-monitoring.component.scss"],
 })

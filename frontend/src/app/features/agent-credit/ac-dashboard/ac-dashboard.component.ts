@@ -11,6 +11,8 @@ import { ApiService } from "../../../core/http/api.service";
 import { StatCardComponent } from "../../../shared/components/stat-card/stat-card.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { TranslatePipe } from "@ngx-translate/core";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
 
 interface DossierItem {
   uid: string;
@@ -39,6 +41,8 @@ interface AcDashboard {
     StatCardComponent,
     FcfaPipe,
     TranslatePipe,
+    StatutLabelPipe,
+    AppDatePipe,
   ],
   templateUrl: "./ac-dashboard.component.html",
   styleUrls: ["./ac-dashboard.component.scss"],

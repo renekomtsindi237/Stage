@@ -17,7 +17,7 @@
         [class.btn-ghost]="filterStatut() !== s"
         (click)="changeFilter(s)"
       >
-        {{ s }}
+        {{ s | statutLabel }}
       </button>
     }
   </div>
@@ -31,9 +31,10 @@
         }}</span>
       </div>
     } @else if (!page()?.content?.length) {
-      <div class="empty-row">
-        <span class="text-muted text-sm">{{ "common.empty" | translate }}</span>
-      </div>
+      <app-empty-state
+        icon="folder_open"
+        [title]="'common.empty' | translate"
+      />
     } @else {
       <table class="data-table">
         <thead>
@@ -65,12 +66,12 @@
               <td class="text-sm">{{ d.objetFinancement }}</td>
               <td>
                 <span class="badge" [ngClass]="statutClass(d.statut)">{{
-                  d.statut
+                  d.statut | statutLabel
                 }}</span>
               </td>
               <td class="text-sm text-muted">
                 {{
-                  d.dateDecision ? (d.dateDecision | date: "dd/MM/yyyy") : "—"
+                  d.dateDecision ? (d.dateDecision | appDate: "dd/MM/yyyy") : "—"
                 }}
               </td>
             </tr>
@@ -113,7 +114,11 @@
 
 <!-- Panneau de détail -->
 @if (selectedDossier()) {
-  <div class="detail-overlay" (click)="closeDetail()"></div>
+  <div
+    class="detail-overlay"
+    (click)="closeDetail()"
+    (appEscClose)="closeDetail()"
+  ></div>
   <div class="detail-panel">
     <div class="panel-header">
       <div>
@@ -150,7 +155,7 @@
         <span
           class="badge"
           [ngClass]="statutClass(selectedDossier()!.statut)"
-          >{{ selectedDossier()!.statut }}</span
+          >{{ selectedDossier()!.statut | statutLabel }}</span>
         >
       </div>
     </div>

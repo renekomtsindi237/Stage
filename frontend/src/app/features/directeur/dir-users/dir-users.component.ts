@@ -9,9 +9,13 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
+import { downloadCsv } from "../../../shared/utils/csv-export";
 
 interface UserRow {
   uid: string;
@@ -38,7 +42,14 @@ interface ImportResult {
   selector: "app-dir-users",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    StatutLabelPipe,
+    EmptyStateComponent,
+    EscCloseDirective,
+  ],
   templateUrl: "./dir-users.component.html",
   styleUrls: ["./dir-users.component.scss"],
 })
@@ -46,6 +57,7 @@ export class DirUsersComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly fb = inject(FormBuilder);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(TranslateService);
 
   @ViewChild("fileAgents") fileAgentsRef!: ElementRef<HTMLInputElement>;
   @ViewChild("fileUsers") fileUsersRef!: ElementRef<HTMLInputElement>;
@@ -104,15 +116,15 @@ export class DirUsersComponent implements OnInit {
         this.creating.set(false);
         this.showModal.set(false);
         this.toast.showSuccess(
-          "Utilisateur créé",
+          this.i18n.instant("dir_users.toast_create_title"),
           `${this.createForm.value.prenom} ${this.createForm.value.nom}`,
         );
         this.createForm.reset({ role: "AGENT" });
         this.load();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.creating.set(false);
-        this.toast.showError("Erreur", "Impossible de créer l'utilisateur.");
+        this.toast.showApiError(err, "dir_users.toast_create_error");
       },
     });
   }
@@ -123,19 +135,32 @@ export class DirUsersComponent implements OnInit {
       : `/api/v1/directeur/users/${uid}`;
     (actif ? this.api.patch(url, {}) : this.api.delete(url)).subscribe({
       next: () => {
-        this.toast.showSuccess(
-          "Succès",
-          `Utilisateur ${actif ? "réactivé" : "désactivé"}.`,
+        this.toast.showI18nSuccess(
+          "common.success",
+          actif ? "dir_users.toast_toggle_on" : "dir_users.toast_toggle_off",
         );
         this.load();
       },
-      error: () => this.toast.showError("Erreur", "Action impossible."),
+      error: (err: unknown) =>
+        this.toast.showApiError(err, "dir_users.toast_action_error"),
     });
   }
 
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
+  }
+
+  exportCsv() {
+    downloadCsv(
+      "utilisateurs",
+      (this.page()?.content ?? []).map((u) => ({
+        username: u.username,
+        email: u.email,
+        role: u.role,
+        actif: u.actif,
+      })),
+    );
   }
 
   templateAgentsUrl(): string {

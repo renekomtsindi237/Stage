@@ -561,7 +561,11 @@
 
 <!-- ── Modale création IMF ── -->
 @if (showCreate()) {
-  <div class="modal-overlay" (click)="closeCreate()">
+  <div
+    class="modal-overlay"
+    (click)="closeCreate()"
+    (appEscClose)="closeCreate()"
+  >
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
         <h3>{{ "platform_imfs.modal_title" | translate }}</h3>

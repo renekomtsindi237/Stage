@@ -8,10 +8,12 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../core/http/api.service";
 import { AuthService } from "../../core/auth/auth.service";
 import { ToastService } from "../../core/services/toast.service";
+import { EscCloseDirective } from "../../shared/directives/esc-close.directive";
+import { StatutLabelPipe } from "../../shared/pipes/statut-label.pipe";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +67,13 @@ interface AgentUser {
   selector: "app-delegations",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    EscCloseDirective,
+    StatutLabelPipe,
+  ],
   templateUrl: "./delegations.component.html",
   styleUrls: ["./delegations.component.scss"],
 })
@@ -74,6 +82,7 @@ export class DelegationsComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly i18n = inject(TranslateService);
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   activeTab = signal<"dossiers" | "delegations">("delegations");
@@ -139,23 +148,10 @@ export class DelegationsComponent implements OnInit {
     return map[s] ?? "badge--neutral";
   }
 
-  statutLabel(s: string): string {
-    const map: Record<string, string> = {
-      INSTRUCTION: "Instruction",
-      EN_ANALYSE: "En analyse",
-      COMITE: "Comité",
-      ACCORDE: "Accordé",
-      DECAISSE: "Décaissé",
-      REFUSE: "Refusé",
-      SOLDE: "Soldé",
-    };
-    return map[s] ?? s;
-  }
-
   typeLabel(t: string): string {
     return t === "REASSIGNATION_DOSSIER"
-      ? "Réassignation"
-      : "Délégation autorité";
+      ? this.i18n.instant("del.type_reassign")
+      : this.i18n.instant("del.type_autorite");
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -261,19 +257,18 @@ export class DelegationsComponent implements OnInit {
       }>(`/api/v1/delegations/reassigner-dossier/${dossier.uid}`, body)
       .subscribe({
         next: () => {
-          this.toast.showSuccess(
-            "Dossier réassigné",
-            `Dossier de ${dossier.clientNom} réassigné avec succès.`,
+          this.toast.showI18nSuccess(
+            "del.toast_reassign_title",
+            "del.toast_reassign_body",
+            { client: dossier.clientNom },
           );
           this.submitting.set(false);
           this.closeReassignModal();
           this.loadDelegations();
           this.loadDossiers();
         },
-        error: (err) => {
-          const msg =
-            err?.error?.message ?? "Impossible de réassigner ce dossier.";
-          this.toast.showError("Erreur", msg);
+        error: (err: unknown) => {
+          this.toast.showApiError(err, "del.toast_reassign_error");
           this.submitting.set(false);
         },
       });
@@ -308,18 +303,16 @@ export class DelegationsComponent implements OnInit {
       .post<{ data: Delegation }>("/api/v1/delegations/deleguer-autorite", body)
       .subscribe({
         next: () => {
-          this.toast.showSuccess(
-            "Délégation créée",
-            "La délégation d'autorité a été enregistrée.",
+          this.toast.showI18nSuccess(
+            "del.toast_create_title",
+            "del.toast_create_body",
           );
           this.submitting.set(false);
           this.closeAutoriteModal();
           this.loadDelegations();
         },
-        error: (err) => {
-          const msg =
-            err?.error?.message ?? "Impossible de créer la délégation.";
-          this.toast.showError("Erreur", msg);
+        error: (err: unknown) => {
+          this.toast.showApiError(err, "del.toast_create_error");
           this.submitting.set(false);
         },
       });
@@ -330,7 +323,10 @@ export class DelegationsComponent implements OnInit {
   revoquer(delegation: Delegation) {
     if (
       !confirm(
-        `Révoquer cette délégation ?\n\nType : ${this.typeLabel(delegation.typeDelegation)}\nMotif : ${delegation.motif ?? "—"}`,
+        this.i18n.instant("del.confirm_revoke", {
+          type: this.typeLabel(delegation.typeDelegation),
+          motif: delegation.motif ?? "—",
+        }),
       )
     )
       return;
@@ -339,16 +335,14 @@ export class DelegationsComponent implements OnInit {
       .delete<{ data: null }>(`/api/v1/delegations/${delegation.uid}/revoquer`)
       .subscribe({
         next: () => {
-          this.toast.showSuccess(
-            "Délégation révoquée",
-            "La délégation a été désactivée.",
+          this.toast.showI18nSuccess(
+            "del.toast_revoke_title",
+            "del.toast_revoke_body",
           );
           this.loadDelegations();
         },
-        error: (err) => {
-          const msg =
-            err?.error?.message ?? "Impossible de révoquer cette délégation.";
-          this.toast.showError("Erreur", msg);
+        error: (err: unknown) => {
+          this.toast.showApiError(err, "del.toast_revoke_error");
         },
       });
   }

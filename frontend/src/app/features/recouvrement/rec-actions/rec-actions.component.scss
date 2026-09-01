@@ -161,3 +161,27 @@
 .text-danger {
   color: var(--color-danger);
 }
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.timeline li {
+  font-size: 13px;
+  padding: 8px 10px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+}
+.timeline-date {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}

@@ -7,10 +7,16 @@
         {{ "dsi_users.users_suffix" | translate }}
       </p>
     </div>
-    <button class="btn btn-primary" (click)="showModal.set(true)">
-      <span class="material-icons-round">person_add</span>
-      {{ "dsi_users.create_btn" | translate }}
-    </button>
+    <div style="display: flex; gap: 8px">
+      <button class="btn btn-ghost" type="button" (click)="exportCsv()">
+        <span class="material-icons-round">download</span>
+        {{ "common.export" | translate }}
+      </button>
+      <button class="btn btn-primary" (click)="showModal.set(true)">
+        <span class="material-icons-round">person_add</span>
+        {{ "dsi_users.create_btn" | translate }}
+      </button>
+    </div>
   </div>
 
   <!-- Role filter -->
@@ -23,7 +29,7 @@
     >
       <option value="">{{ "dsi_users.filter_all" | translate }}</option>
       @for (r of roles; track r) {
-        <option [value]="r">{{ r }}</option>
+        <option [value]="r">{{ r | statutLabel }}</option>
       }
     </select>
   </div>
@@ -57,7 +63,7 @@
               <td class="font-semibold">{{ u.username }}</td>
               <td class="text-sm text-muted">{{ u.email }}</td>
               <td>
-                <span class="badge badge-info">{{ u.role }}</span>
+                <span class="badge badge-info">{{ u.role | statutLabel }}</span>
               </td>
               <td class="text-sm">{{ u.agenceNom ?? "—" }}</td>
               <td>
@@ -103,6 +109,17 @@
                 </button>
               </td>
             </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" style="padding: 0">
+                <app-empty-state
+                  icon="group"
+                  [title]="'common.empty' | translate"
+                  [ctaLabel]="'dsi_users.create_btn' | translate"
+                  (ctaClick)="showModal.set(true)"
+                />
+              </td>
+            </tr>
           }
         }
       </tbody>
@@ -135,7 +152,11 @@
 
 <!-- Create modal -->
 @if (showModal()) {
-  <div class="modal-overlay" (click)="showModal.set(false)">
+  <div
+    class="modal-overlay"
+    (click)="showModal.set(false)"
+    (appEscClose)="showModal.set(false)"
+  >
     <div
       class="modal-card"
       (click)="$event.stopPropagation()"
@@ -174,7 +195,7 @@
           <label>{{ "dsi_users.modal_role" | translate }} *</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
-              <option [value]="r">{{ r }}</option>
+              <option [value]="r">{{ r | statutLabel }}</option>
             }
           </select>
         </div>
@@ -202,7 +223,11 @@
 
 <!-- Edit modal -->
 @if (showEditModal()) {
-  <div class="modal-overlay" (click)="showEditModal.set(false)">
+  <div
+    class="modal-overlay"
+    (click)="showEditModal.set(false)"
+    (appEscClose)="showEditModal.set(false)"
+  >
     <div
       class="modal-card"
       (click)="$event.stopPropagation()"
@@ -232,7 +257,7 @@
           <label>{{ "dsi_users.modal_edit_role" | translate }}</label>
           <select class="form-select" formControlName="role">
             @for (r of roles; track r) {
-              <option [value]="r">{{ r }}</option>
+              <option [value]="r">{{ r | statutLabel }}</option>
             }
           </select>
         </div>
@@ -268,7 +293,11 @@
 
 <!-- Delete confirm modal -->
 @if (showDeleteConfirm()) {
-  <div class="modal-overlay" (click)="showDeleteConfirm.set(false)">
+  <div
+    class="modal-overlay"
+    (click)="showDeleteConfirm.set(false)"
+    (appEscClose)="showDeleteConfirm.set(false)"
+  >
     <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>{{ "dsi_users.modal_delete_title" | translate }}</h3>

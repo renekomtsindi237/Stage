@@ -10,6 +10,12 @@ import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { TranslatePipe } from "@ngx-translate/core";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
+import { downloadCsv } from "../../../shared/utils/csv-export";
+import { sortRows } from "../../../shared/utils/sort-rows";
 
 interface Contrat {
   uid: string;
@@ -35,7 +41,15 @@ interface ContratPage {
   selector: "app-sai-contrats",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    StatutLabelPipe,
+    AppDatePipe,
+    EmptyStateComponent,
+    EscCloseDirective,
+  ],
   templateUrl: "./sai-contrats.component.html",
   styleUrls: ["./sai-contrats.component.scss"],
 })
@@ -50,6 +64,8 @@ export class SaiContratsComponent implements OnInit {
   showModal = signal(false);
   submitting = signal(false);
   activeTab = signal<string>("BROUILLON");
+  sortKey = signal("dateDebut");
+  sortDir = signal<"asc" | "desc">("desc");
 
   createForm = this.fb.group({
     clientId: ["", Validators.required],
@@ -92,16 +108,16 @@ export class SaiContratsComponent implements OnInit {
       next: () => {
         this.submitting.set(false);
         this.showModal.set(false);
-        this.toast.showSuccess(
-          "Contrat créé",
-          "Brouillon enregistré avec succès",
+        this.toast.showI18nSuccess(
+          "sai_contrats.toast_create_title",
+          "sai_contrats.toast_create_body",
         );
         this.createForm.reset({ typeContrat: "CREDIT", montant: 0 });
         this.load();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.submitting.set(false);
-        this.toast.showError("Erreur", "Impossible de créer le contrat.");
+        this.toast.showApiError(err, "sai_contrats.toast_create_error");
       },
     });
   }
@@ -109,10 +125,14 @@ export class SaiContratsComponent implements OnInit {
   soumettre(uid: string) {
     this.api.patch(`/api/v1/contrats/${uid}/soumettre`, {}).subscribe({
       next: () => {
-        this.toast.showSuccess("Soumis", "Contrat soumis pour validation.");
+        this.toast.showI18nSuccess(
+          "sai_contrats.toast_submit_title",
+          "sai_contrats.toast_submit_body",
+        );
         this.load();
       },
-      error: () => this.toast.showError("Erreur", "Soumission impossible."),
+      error: (err: unknown) =>
+        this.toast.showApiError(err, "sai_contrats.toast_submit_error"),
     });
   }
 
@@ -124,6 +144,32 @@ export class SaiContratsComponent implements OnInit {
   goPage(n: number) {
     this.currentPage.set(n);
     this.load();
+  }
+
+  toggleSort(key: string) {
+    if (this.sortKey() === key) {
+      this.sortDir.update((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      this.sortKey.set(key);
+      this.sortDir.set("asc");
+    }
+  }
+
+  sorted(): Contrat[] {
+    return sortRows(this.page()?.content ?? [], this.sortKey(), this.sortDir());
+  }
+
+  exportCsv() {
+    downloadCsv(
+      "contrats",
+      this.sorted().map((c) => ({
+        numero: c.numeroContrat,
+        client: `${c.clientPrenom} ${c.clientNom}`,
+        type: c.typeContrat,
+        montant: c.montant,
+        statut: c.statut,
+      })),
+    );
   }
 
   statutClass(s: string) {

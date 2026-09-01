@@ -258,7 +258,7 @@ class RecouvrementServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of()));
 
         PageResponse<DossierRecouvrementResponse> result =
-                recouvrementService.listDossiers(1L, null, null, 0, 20);
+                recouvrementService.listDossiers(1L, null, null, 0, 20, null);
 
         assertThat(result.content()).isEmpty();
         assertThat(result.totalElements()).isZero();
@@ -271,9 +271,21 @@ class RecouvrementServiceImplTest {
                 eq(1L), eq(RecouvrementPhase.CONTENTIEUX), eq(false), any()))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        recouvrementService.listDossiers(1L, RecouvrementPhase.CONTENTIEUX, false, 0, 20);
+        recouvrementService.listDossiers(1L, RecouvrementPhase.CONTENTIEUX, false, 0, 20, null);
 
         verify(dossierRepo).findByImfIdAndPhaseAndClos(
                 eq(1L), eq(RecouvrementPhase.CONTENTIEUX), eq(false), any());
+    }
+
+    @Test
+    @DisplayName("listDossiers → q non vide utilise search (nom / id prêt / téléphone)")
+    void list_avec_q_utilise_search() {
+        when(dossierRepo.search(eq(1L), isNull(), isNull(), eq("dupont"), any()))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        recouvrementService.listDossiers(1L, null, null, 0, 20, "  dupont  ");
+
+        verify(dossierRepo).search(eq(1L), isNull(), isNull(), eq("dupont"), any());
+        verify(dossierRepo, never()).findByImfId(anyLong(), any());
     }
 }

@@ -10,7 +10,7 @@ import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: "app-login-admin",
@@ -25,6 +25,7 @@ export class LoginAdminComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(TranslateService);
 
   loading = signal(false);
   error = signal("");
@@ -50,15 +51,14 @@ export class LoginAdminComponent {
     this.auth.login(email!, motDePasse!).subscribe({
       next: () => {
         this.loading.set(false);
-        this.toast.showSuccess(
-          "Connexion réussie",
-          `Bienvenue, ${this.auth.fullName()} !`,
-        );
+        this.toast.showI18nSuccess("toast.welcome_title", "toast.welcome_body", {
+          name: this.auth.fullName(),
+        });
         this.router.navigate([this.auth.defaultRouteForRole()]);
       },
       error: () => {
         this.loading.set(false);
-        this.error.set("Email ou mot de passe incorrect.");
+        this.error.set(this.i18n.instant("login_admin.error_invalid"));
       },
     });
   }

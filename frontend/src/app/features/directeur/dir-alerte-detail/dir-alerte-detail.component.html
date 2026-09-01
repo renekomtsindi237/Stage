@@ -33,7 +33,7 @@
       <span
         class="badge"
         [class]="'badge-' + (alerte()!.statut ?? '').toLowerCase()"
-        >{{ alerte()!.statut }}</span
+        >{{ alerte()!.statut | statutLabel }}</span
       >
       <span class="text-muted text-sm">{{
         alerte()!.createdAt | timeAgo

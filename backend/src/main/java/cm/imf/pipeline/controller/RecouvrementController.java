@@ -139,17 +139,18 @@ public class RecouvrementController {
                 .body(ApiResponse.ok("Dossier ouvert.", recouvrementService.ouvrirDossier(request, user)));
     }
 
-    @Operation(summary = "Liste paginée des dossiers (filtres : phase, clos)")
+    @Operation(summary = "Liste paginée des dossiers (filtres : phase, clos, q)")
     @GetMapping("/dossiers")
     public ResponseEntity<ApiResponse<PageResponse<DossierRecouvrementResponse>>> listDossiers(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) RecouvrementPhase phase,
             @RequestParam(required = false) Boolean clos,
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "20") int size) {
         requireTenant(user);
         return ResponseEntity.ok(ApiResponse.ok(
-                recouvrementService.listDossiers(user.getImf().getId(), phase, clos, page, size)));
+                recouvrementService.listDossiers(user.getImf().getId(), phase, clos, page, size, q)));
     }
 
     @Operation(summary = "Détail d'un dossier")

@@ -15,6 +15,9 @@
         {{ "anl_drift.alert_body" | translate }} {{ data()!.seuilCritique }}.
         {{ "anl_drift.alert_retrain" | translate }}
       </p>
+      <p class="alert-body" style="margin-top: 6px">
+        {{ "anl_drift.next_step" | translate }}
+      </p>
     </div>
   </div>
 }
@@ -48,7 +51,7 @@
           "anl_drift.psi_last_train" | translate
         }}</span>
         <span class="font-semibold">{{
-          data()?.dernierEntrainement ?? "—"
+          data()?.dernierEntrainement | date: "dd/MM/yyyy HH:mm"
         }}</span>
       </div>
     </div>

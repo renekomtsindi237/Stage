@@ -15,7 +15,7 @@ import {
   FormBuilder,
   Validators,
 } from "@angular/forms";
-import { TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import {
   KycDossier,
@@ -25,6 +25,9 @@ import {
   ResultatVerif,
 } from "../../../core/models/client.model";
 import { environment } from "../../../../environments/environment";
+import { apiErrorMessage } from "../../../core/http/api-error";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 // ── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -76,39 +79,27 @@ const DOCS_PAR_NIVEAU: Record<NiveauKyc, string[]> = {
   NIVEAU_3: ["DECLARATION_SOURCE_FONDS", "ATTESTATION_PPE", "AUTRE"],
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  CNI_RECTO: "CNI — Recto",
-  CNI_VERSO: "CNI — Verso",
-  PASSEPORT: "Passeport",
-  PERMIS_CONDUIRE: "Permis de conduire",
-  CARTE_SEJOUR: "Carte de séjour",
-  PHOTO_BIOMETRIQUE: "Photo biométrique",
-  JUSTIFICATIF_DOMICILE: "Just. domicile",
-  CERTIFICAT_RESIDENCE: "Certificat résidence",
-  CONTRAT_BAIL: "Contrat de bail",
-  FICHE_PAIE: "Fiche de paie",
-  CONTRAT_TRAVAIL: "Contrat de travail",
-  DECLARATION_ACTIVITE: "Décl. activité",
-  REGISTRE_COMMERCE: "RCCM",
-  EXTRAIT_BANCAIRE: "Extrait bancaire",
-  DECLARATION_SOURCE_FONDS: "Décl. origine fonds",
-  ATTESTATION_PPE: "Attestation PPE",
-  AUTRE: "Autre document",
-};
-
 // ── Composant ────────────────────────────────────────────────────────────────
 
 @Component({
   selector: "app-dir-kyc",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    EscCloseDirective,
+    StatutLabelPipe,
+  ],
   templateUrl: "./dir-kyc.component.html",
   styleUrls: ["./dir-kyc.component.scss"],
 })
 export class DirKycComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly fb = inject(FormBuilder);
+  private readonly i18n = inject(TranslateService);
 
   @ViewChild("fileInput") fileInputRef!: ElementRef<HTMLInputElement>;
 
@@ -340,13 +331,13 @@ export class DirKycComponent implements OnInit {
           const dossier = r.data ?? (r as unknown as KycDossier);
           this.selected.set(dossier);
           this.createSubmitting.set(false);
-          this.createSuccess.set("Dossier KYC créé avec succès.");
+          this.createSuccess.set(this.i18n.instant("dir_kyc.create_success"));
           this.closeCreatePanel();
           this.load(0);
         },
-        error: (err: { error?: { message?: string } }) => {
+        error: (err: unknown) => {
           this.createError.set(
-            err?.error?.message ?? "Impossible de créer le dossier KYC.",
+            apiErrorMessage(err, this.i18n.instant("dir_kyc.create_error")),
           );
           this.createSubmitting.set(false);
         },
@@ -455,8 +446,10 @@ export class DirKycComponent implements OnInit {
           this.uploadNomFichier.set("");
           this.loadDocuments(d.uid);
         },
-        error: (err: { error?: { message?: string } }) => {
-          this.uploadError.set(err?.error?.message ?? "Erreur lors de l'envoi");
+        error: (err: unknown) => {
+          this.uploadError.set(
+            apiErrorMessage(err, this.i18n.instant("dir_kyc.upload_error")),
+          );
           this.uploadSubmitting.set(false);
         },
       });
@@ -515,7 +508,9 @@ export class DirKycComponent implements OnInit {
 
   // ── Helpers UI ──────────────────────────────────────────────────────────────
   typeDocLabel(t: string): string {
-    return TYPE_LABEL[t] ?? t;
+    const key = `dir_kyc.doc_${t}`;
+    const translated = this.i18n.instant(key);
+    return translated !== key ? translated : t;
   }
 
   docsDisponibles(): string[] {
@@ -551,15 +546,9 @@ export class DirKycComponent implements OnInit {
   }
 
   champLabel(champ: string): string {
-    const labels: Record<string, string> = {
-      nom: "Nom",
-      prenom: "Prénom",
-      dateNaissance: "Date de naissance",
-      numeroPiece: "Numéro de pièce",
-      dateExpirationPiece: "Date d'expiration",
-      lieuNaissance: "Lieu de naissance",
-    };
-    return labels[champ] ?? champ;
+    const key = `dir_kyc.champ_${champ}`;
+    const translated = this.i18n.instant(key);
+    return translated !== key ? translated : champ;
   }
 
   statutBadge(s: StatutKyc): string {
@@ -577,11 +566,7 @@ export class DirKycComponent implements OnInit {
   }
 
   niveauLabel(n: NiveauKyc): string {
-    return {
-      NIVEAU_1: "Niveau 1 — Identité de base",
-      NIVEAU_2: "Niveau 2 — Identité renforcée",
-      NIVEAU_3: "Niveau 3 — Diligence renforcée",
-    }[n];
+    return this.i18n.instant(`dir_kyc.niveau_${n}`);
   }
 
   niveauShort(n: NiveauKyc): string {
@@ -589,17 +574,9 @@ export class DirKycComponent implements OnInit {
   }
 
   statutLabel(s: StatutKyc): string {
-    const m: Record<string, string> = {
-      EN_ATTENTE: "En attente",
-      DOCUMENTS_SOUMIS: "Docs soumis",
-      EN_COURS_VERIFICATION: "En vérification",
-      COMPLEMENT_REQUIS: "Complément requis",
-      APPROUVE: "Approuvé",
-      REJETE: "Rejeté",
-      EXPIRE: "Expiré",
-      SUSPENDU: "Suspendu",
-    };
-    return m[s] ?? s;
+    const key = `dir_kyc.statut_${s}`;
+    const translated = this.i18n.instant(key);
+    return translated !== key ? translated : s;
   }
 
   niveauStep(n: NiveauKyc): "done" | "active" | "pending" {

@@ -90,11 +90,11 @@
           </p>
           <p class="text-xs text-muted">
             {{ "dsi_monitoring.status_last_sync" | translate }}
-            {{ imfHealth()!.derniereSync | date: "dd/MM/yyyy HH:mm" }}
+            {{ imfHealth()!.derniereSync | appDate: "dd/MM/yyyy HH:mm" }}
           </p>
         </div>
         <span class="badge" [ngClass]="statutClass(imfHealth()!.statut)">{{
-          imfHealth()!.statut
+          imfHealth()!.statut | statutLabel
         }}</span>
       </div>
 
@@ -162,7 +162,9 @@
             <tr>
               <td class="font-semibold">{{ login.utilisateur }}</td>
               <td>
-                <span class="badge badge-info">{{ login.role }}</span>
+                <span class="badge badge-info">{{
+                  login.role | statutLabel
+                }}</span>
               </td>
               <td class="text-sm text-muted">
                 {{ login.heure | date: "HH:mm:ss" }}

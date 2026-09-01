@@ -14,6 +14,7 @@ import { ToastService } from "../../../core/services/toast.service";
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 interface MlAlerteDetail {
   id: number | string;
@@ -46,6 +47,7 @@ interface MlAlerteDetail {
     AlertBadgeComponent,
     FcfaPipe,
     TimeAgoPipe,
+    StatutLabelPipe,
   ],
   templateUrl: "./dir-alerte-detail.component.html",
   styleUrls: ["./dir-alerte-detail.component.scss"],
@@ -110,9 +112,9 @@ export class DirAlerteDetailComponent implements OnInit {
       (statut === "RESOLUE" || statut === "IGNOREE") &&
       this.note().trim().length < 8
     ) {
-      this.toast.showError(
-        "Note requise",
-        "Indiquez une note de décision (8 caractères minimum).",
+      this.toast.showI18nError(
+        "dir_alertes.toast_note_title",
+        "dir_alertes.toast_note_body",
       );
       return;
     }
@@ -127,23 +129,20 @@ export class DirAlerteDetailComponent implements OnInit {
           this.alerte.set(updated);
           this.note.set(updated.resolutionNote ?? this.note());
           this.saving.set(false);
-          const msg =
+          const msgKey =
             statut === "EN_TRAITEMENT"
-              ? "Alerte prise en charge."
+              ? "dir_alertes.toast_taken"
               : statut === "RESOLUE"
-                ? "Alerte marquée résolue."
-                : "Alerte ignorée.";
-          this.toast.showSuccess("Traitement enregistré", msg);
+                ? "dir_alertes.toast_resolved"
+                : "dir_alertes.toast_ignored";
+          this.toast.showI18nSuccess("dir_alertes.toast_ok_title", msgKey);
           if (statut !== "EN_TRAITEMENT") {
             this.router.navigate(["/directeur/alertes"]);
           }
         },
-        error: () => {
+        error: (err: unknown) => {
           this.saving.set(false);
-          this.toast.showError(
-            "Échec",
-            "Impossible d'enregistrer le traitement.",
-          );
+          this.toast.showApiError(err, "dir_alertes.toast_fail_body");
         },
       });
   }

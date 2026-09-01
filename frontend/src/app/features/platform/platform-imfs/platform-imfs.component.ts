@@ -12,12 +12,13 @@ import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { ImfDetail } from "../../../core/models/platform.model";
+import { EscCloseDirective } from "../../../shared/directives/esc-close.directive";
 
 @Component({
   selector: "app-platform-imfs",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, EscCloseDirective],
   templateUrl: "./platform-imfs.component.html",
   styleUrls: ["./platform-imfs.component.scss"],
 })
@@ -211,17 +212,14 @@ export class PlatformImfsComponent implements OnInit {
         this.showCreate.set(false);
         this.imfs.update((list) => [imf, ...list]);
         this.select(imf);
-        this.toast.showSuccess(
-          "IMF créée",
-          "L'institution a été enregistrée avec succès.",
+        this.toast.showI18nSuccess(
+          "platform_imfs.toast_create_title",
+          "platform_imfs.toast_create_body",
         );
       },
-      error: (err) => {
+      error: (err: unknown) => {
         this.submitting.set(false);
-        this.toast.showError(
-          "Erreur",
-          err?.error?.message ?? "Erreur lors de la création",
-        );
+        this.toast.showApiError(err, "platform_imfs.toast_create_error");
       },
     });
   }
@@ -234,13 +232,15 @@ export class PlatformImfsComponent implements OnInit {
       next: (updated) => {
         this.updateInList(updated);
         this.selected.set(updated);
-        this.toast.showSuccess(
-          "IMF mise à jour",
-          `L'institution a été ${updated.actif ? "activée" : "désactivée"}.`,
+        this.toast.showI18nSuccess(
+          "platform_imfs.toast_update_title",
+          updated.actif
+            ? "platform_imfs.toast_update_on"
+            : "platform_imfs.toast_update_off",
         );
       },
-      error: () =>
-        this.toast.showError("Erreur", "Impossible de mettre à jour l'IMF."),
+      error: (err: unknown) =>
+        this.toast.showApiError(err, "platform_imfs.toast_update_error"),
     });
   }
 
@@ -259,13 +259,13 @@ export class PlatformImfsComponent implements OnInit {
         this.imfs.update((list) => list.filter((i) => i.uid !== imf.uid));
         this.selected.set(null);
         this.showDeleteConfirm.set(false);
-        this.toast.showSuccess(
-          "IMF supprimée",
-          "L'institution a été supprimée définitivement.",
+        this.toast.showI18nSuccess(
+          "platform_imfs.toast_delete_title",
+          "platform_imfs.toast_delete_body",
         );
       },
-      error: () =>
-        this.toast.showError("Erreur", "Impossible de supprimer l'IMF."),
+      error: (err: unknown) =>
+        this.toast.showApiError(err, "platform_imfs.toast_delete_error"),
     });
   }
 
@@ -298,17 +298,14 @@ export class PlatformImfsComponent implements OnInit {
           this.updateInList(updated);
           this.selected.set(updated);
           this.showDsiForm.set(false);
-          this.toast.showSuccess(
-            "Compte DSI créé",
-            "Un email OTP a été envoyé au DSI.",
+          this.toast.showI18nSuccess(
+            "platform_imfs.toast_dsi_create_title",
+            "platform_imfs.toast_dsi_create_body",
           );
         },
-        error: (err) => {
+        error: (err: unknown) => {
           this.submitting.set(false);
-          this.toast.showError(
-            "Erreur",
-            err?.error?.message ?? "Erreur lors de la création du DSI",
-          );
+          this.toast.showApiError(err, "platform_imfs.toast_dsi_create_error");
         },
       });
   }
@@ -342,17 +339,14 @@ export class PlatformImfsComponent implements OnInit {
           this.updateInList(updated);
           this.selected.set(updated);
           this.showDsiEditForm.set(false);
-          this.toast.showSuccess(
-            "DSI mis à jour",
-            "Les informations du compte DSI ont été modifiées.",
+          this.toast.showI18nSuccess(
+            "platform_imfs.toast_dsi_update_title",
+            "platform_imfs.toast_dsi_update_body",
           );
         },
-        error: (err) => {
+        error: (err: unknown) => {
           this.submitting.set(false);
-          this.toast.showError(
-            "Erreur",
-            err?.error?.message ?? "Erreur lors de la mise à jour du DSI",
-          );
+          this.toast.showApiError(err, "platform_imfs.toast_dsi_update_error");
         },
       });
   }
@@ -366,13 +360,13 @@ export class PlatformImfsComponent implements OnInit {
         next: (updated) => {
           this.updateInList(updated);
           this.selected.set(updated);
-          this.toast.showWarning(
-            "DSI suspendu",
-            "Le compte DSI a été désactivé.",
+          this.toast.showI18nWarning(
+            "platform_imfs.toast_dsi_suspend_title",
+            "platform_imfs.toast_dsi_suspend_body",
           );
         },
-        error: () =>
-          this.toast.showError("Erreur", "Impossible de suspendre le DSI."),
+        error: (err: unknown) =>
+          this.toast.showApiError(err, "platform_imfs.toast_dsi_suspend_error"),
       });
   }
 
@@ -393,13 +387,13 @@ export class PlatformImfsComponent implements OnInit {
           this.updateInList(updated);
           this.selected.set(updated);
           this.showDsiDeleteConfirm.set(false);
-          this.toast.showSuccess(
-            "DSI supprimé",
-            "Le compte DSI a été supprimé. Vous pouvez en créer un nouveau.",
+          this.toast.showI18nSuccess(
+            "platform_imfs.toast_dsi_delete_title",
+            "platform_imfs.toast_dsi_delete_body",
           );
         },
-        error: () =>
-          this.toast.showError("Erreur", "Impossible de supprimer le DSI."),
+        error: (err: unknown) =>
+          this.toast.showApiError(err, "platform_imfs.toast_dsi_delete_error"),
       });
   }
 

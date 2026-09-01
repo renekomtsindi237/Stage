@@ -1,5 +1,7 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
+import { TranslateService } from "@ngx-translate/core";
+import { apiErrorMessage } from "../http/api-error";
 
 export interface ToastState {
   type: "success" | "error" | "login" | "logout" | "warning" | "info";
@@ -12,6 +14,8 @@ export interface ToastState {
 
 @Injectable({ providedIn: "root" })
 export class ToastService {
+  private readonly i18n = inject(TranslateService);
+
   private state$ = new BehaviorSubject<ToastState>({
     type: "success",
     title: "",
@@ -38,13 +42,64 @@ export class ToastService {
     this.emit("info", title, message, duration);
   }
 
+  showI18nSuccess(
+    titleKey: string,
+    messageKey: string,
+    params?: Record<string, unknown>,
+    duration = 2500,
+  ) {
+    this.showSuccess(
+      this.i18n.instant(titleKey, params),
+      this.i18n.instant(messageKey, params),
+      duration,
+    );
+  }
+
+  showI18nError(
+    titleKey: string,
+    messageKey: string,
+    params?: Record<string, unknown>,
+    duration = 4000,
+  ) {
+    this.showError(
+      this.i18n.instant(titleKey, params),
+      this.i18n.instant(messageKey, params),
+      duration,
+    );
+  }
+
+  showI18nWarning(
+    titleKey: string,
+    messageKey: string,
+    params?: Record<string, unknown>,
+    duration = 3000,
+  ) {
+    this.showWarning(
+      this.i18n.instant(titleKey, params),
+      this.i18n.instant(messageKey, params),
+      duration,
+    );
+  }
+
+  showApiError(
+    err: unknown,
+    fallbackKey = "common.unexpected_error",
+    duration = 4000,
+  ) {
+    this.showError(
+      this.i18n.instant("common.error"),
+      apiErrorMessage(err, this.i18n.instant(fallbackKey)),
+      duration,
+    );
+  }
+
   showLogin(username: string, isSuperAdmin = false, duration = 2500) {
-    const message = isSuperAdmin
-      ? "Bienvenue sur la plateforme MicroRecouv !"
-      : "Redirection vers votre espace…";
+    const message = this.i18n.instant(
+      isSuperAdmin ? "toast.login_body_admin" : "toast.login_body",
+    );
     this.state$.next({
       type: "login",
-      title: "Connexion réussie !",
+      title: this.i18n.instant("toast.login_title"),
       message,
       show: true,
       username,
@@ -56,8 +111,10 @@ export class ToastService {
   showLogout(username?: string, duration = 2500) {
     this.state$.next({
       type: "logout",
-      title: "Déconnexion réussie",
-      message: username ? `À bientôt, ${username} !` : "À bientôt !",
+      title: this.i18n.instant("toast.logout_title"),
+      message: username
+        ? this.i18n.instant("toast.logout_body_named", { name: username })
+        : this.i18n.instant("toast.logout_body"),
       show: true,
       username,
       duration,

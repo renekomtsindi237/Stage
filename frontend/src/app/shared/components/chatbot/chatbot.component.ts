@@ -7,13 +7,27 @@ import {
   AfterViewChecked,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  HostListener,
+  DestroyRef,
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { NavigationEnd, Router } from "@angular/router";
+import { filter } from "rxjs/operators";
 import { ApiService } from "../../../core/http/api.service";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ChatMarkdownPipe } from "../../pipes/chat-markdown.pipe";
 import { TranslatePipe } from "@ngx-translate/core";
+
+const HIDE_FAB_PATHS = [
+  "/credit/nouveau-dossier",
+  "/recouvrement/actions",
+  "/caisse/encaissement",
+  "/caisse/decaissement",
+  "/dsi/settings",
+  "/agent/collecte",
+];
 
 interface Message {
   role: "user" | "assistant";
@@ -68,6 +82,11 @@ export class ChatbotComponent implements AfterViewChecked {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Masqué sur les formulaires pour ne pas recouvrir les CTA. */
+  hidden = signal(false);
 
   @ViewChild("messagesEnd") private messagesEnd!: ElementRef;
 
@@ -77,9 +96,32 @@ export class ChatbotComponent implements AfterViewChecked {
   loading = signal(false);
   showSuggestions = signal(true);
 
+  constructor() {
+    this.syncHidden(this.router.url);
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((e) => this.syncHidden(e.urlAfterRedirects));
+  }
+
+  private syncHidden(url: string) {
+    const hide = HIDE_FAB_PATHS.some((p) => url.includes(p));
+    this.hidden.set(hide);
+    if (hide && this.open()) {
+      this.open.set(false);
+    }
+  }
+
   get suggestions(): string[] {
     const role = this.auth.role() ?? "default";
     return SUGGESTIONS[role] ?? SUGGESTIONS["default"];
+  }
+
+  @HostListener("document:keydown.escape")
+  onEsc() {
+    if (this.open()) this.open.set(false);
   }
 
   get welcomeContent(): string {

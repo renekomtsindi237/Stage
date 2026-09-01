@@ -15,6 +15,7 @@ import { ApiService } from "../../../core/http/api.service";
 import { Client, ClientDossier } from "../../../core/models/client.model";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
+import { StatutLabelPipe } from "../../../shared/pipes/statut-label.pipe";
 
 interface ClientPage {
   content: Client[];
@@ -42,6 +43,7 @@ interface ImportResult {
     FcfaPipe,
     AlertBadgeComponent,
     TranslatePipe,
+    StatutLabelPipe,
   ],
   templateUrl: "./dir-clients.component.html",
   styleUrls: ["./dir-clients.component.scss"],

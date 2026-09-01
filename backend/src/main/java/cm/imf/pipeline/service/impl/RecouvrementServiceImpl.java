@@ -107,7 +107,7 @@ public class RecouvrementServiceImpl implements IRecouvrementService {
 
     @Override
     public PageResponse<DossierRecouvrementResponse> listDossiers(
-            Long imfId, RecouvrementPhase phase, Boolean clos, int page, int size) {
+            Long imfId, RecouvrementPhase phase, Boolean clos, int page, int size, String q) {
 
         // Priorité MCRS d'abord (1 faible → 5 critique, écrite par le pipeline via
         // maj_priorites_dossiers_recouvrement) ; joursRetard en repli/départage
@@ -118,7 +118,10 @@ public class RecouvrementServiceImpl implements IRecouvrementService {
         PageRequest pageable = PageRequest.of(page, size, sort);
         Page<RecouvrementDossier> result;
 
-        if (phase != null && clos != null) {
+        String needle = sanitizeSearch(q);
+        if (needle != null) {
+            result = dossierRepo.search(imfId, phase, clos, needle, pageable);
+        } else if (phase != null && clos != null) {
             result = dossierRepo.findByImfIdAndPhaseAndClos(imfId, phase, clos, pageable);
         } else if (phase != null) {
             result = dossierRepo.findByImfIdAndPhase(imfId, phase, pageable);
@@ -129,6 +132,14 @@ public class RecouvrementServiceImpl implements IRecouvrementService {
         }
 
         return PageResponse.from(result, DossierRecouvrementResponse::from);
+    }
+
+    /** Évite les jokers SQL et borne la longueur — ne change rien si q est vide. */
+    static String sanitizeSearch(String q) {
+        if (q == null) return null;
+        String t = q.trim().replace("%", "").replace("_", "");
+        if (t.isEmpty()) return null;
+        return t.length() > 80 ? t.substring(0, 80) : t;
     }
 
     // ── Détail d'un dossier ───────────────────────────────────────────────────

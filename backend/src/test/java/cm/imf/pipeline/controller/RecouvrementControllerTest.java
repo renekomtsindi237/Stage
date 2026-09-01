@@ -158,7 +158,7 @@ class RecouvrementControllerTest {
         void list_par_phase_retourne_200() throws Exception {
             PageResponse<DossierRecouvrementResponse> page =
                     PageResponse.of(List.of(dossierResponse(RecouvrementPhase.CONTENTIEUX)), 0, 20, 1L);
-            when(recouvrementService.listDossiers(anyLong(), any(), any(), anyInt(), anyInt()))
+            when(recouvrementService.listDossiers(anyLong(), any(), any(), anyInt(), anyInt(), any()))
                     .thenReturn(page);
 
             mockMvc.perform(get("/api/v1/recouvrement/dossiers")
@@ -172,7 +172,7 @@ class RecouvrementControllerTest {
         @Test
         @DisplayName("→ 200 liste vide si aucun dossier en cours")
         void list_vide_retourne_200() throws Exception {
-            when(recouvrementService.listDossiers(anyLong(), isNull(), isNull(), anyInt(), anyInt()))
+            when(recouvrementService.listDossiers(anyLong(), isNull(), isNull(), anyInt(), anyInt(), any()))
                     .thenReturn(PageResponse.of(List.of(), 0, 20, 0L));
 
             mockMvc.perform(get("/api/v1/recouvrement/dossiers").with(TestHelper.asRr()))

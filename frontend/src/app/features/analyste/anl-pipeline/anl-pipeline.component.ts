@@ -8,13 +8,14 @@ import {
 import { CommonModule } from "@angular/common";
 import { TranslatePipe } from "@ngx-translate/core";
 import { ApiService } from "../../../core/http/api.service";
+import { AppDatePipe } from "../../../shared/pipes/app-date.pipe";
 import { PipelineStatus, DagStatus } from "../../../core/models/analyste.model";
 
 @Component({
   selector: "app-anl-pipeline",
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, AppDatePipe],
   templateUrl: "./anl-pipeline.component.html",
   styleUrls: ["./anl-pipeline.component.scss"],
 })

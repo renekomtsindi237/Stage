@@ -28,17 +28,23 @@
 
   <!-- Navigation -->
   <nav class="sidebar__nav">
-    @for (item of menuItems; track item.route) {
-      <a
-        class="sidebar__item"
-        [routerLink]="item.route"
-        routerLinkActive="sidebar__item--active"
-      >
-        <span class="material-icons-round sidebar__item-icon">{{
-          item.icon
-        }}</span>
-        <span class="sidebar__item-label">{{ item.label | translate }}</span>
-      </a>
+    @for (group of menuGroups; track group.label ?? "root") {
+      @if (group.label) {
+        <div class="sidebar__group">{{ group.label | translate }}</div>
+      }
+      @for (item of group.items; track item.route) {
+        <a
+          class="sidebar__item"
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__item--active"
+          [routerLinkActiveOptions]="{ exact: item.exact === true }"
+        >
+          <span class="material-icons-round sidebar__item-icon">{{
+            item.icon
+          }}</span>
+          <span class="sidebar__item-label">{{ item.label | translate }}</span>
+        </a>
+      }
     }
   </nav>
 

@@ -16,6 +16,7 @@ import { StatCardComponent } from "../../../shared/components/stat-card/stat-car
 import { AlertBadgeComponent } from "../../../shared/components/alert-badge/alert-badge.component";
 import { FcfaPipe } from "../../../shared/pipes/fcfa.pipe";
 import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
+import { EmptyStateComponent } from "../../../shared/components/empty-state/empty-state.component";
 
 @Component({
   selector: "app-dir-dashboard",
@@ -30,6 +31,7 @@ import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
     FcfaPipe,
     TimeAgoPipe,
     TranslatePipe,
+    EmptyStateComponent,
   ],
   templateUrl: "./dir-dashboard.component.html",
   styleUrls: ["./dir-dashboard.component.scss"],
@@ -90,6 +92,18 @@ export class DirDashboardComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  get kpisEmpty(): boolean {
+    const d = this.data();
+    if (!d) return false;
+    return (
+      !d.encoursTotalFcfa &&
+      !d.par30 &&
+      !d.par90 &&
+      !d.collectesDuJour &&
+      !(d.alertesActives?.length)
+    );
   }
 
   private buildChart(d: KpiDashboard) {
