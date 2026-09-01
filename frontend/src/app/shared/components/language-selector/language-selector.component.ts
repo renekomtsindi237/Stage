@@ -128,11 +128,11 @@ const LANGUAGES = [
         &:hover {
           background: var(--color-bg);
         }
+      }
 
-        &--active {
-          font-weight: 700;
-          color: var(--color-primary);
-        }
+      .lang-sel__item--active {
+        font-weight: 700;
+        color: var(--color-primary);
       }
 
       .lang-sel__item-label {

@@ -268,8 +268,7 @@
                 "rec_creances.caution_type" | translate
               }}</span>
               <span>{{
-                garantieLabels[selectedDossier()!.typeGarantie!] ??
-                  selectedDossier()!.typeGarantie | translate
+                garantieLabelKey(selectedDossier()!.typeGarantie) | translate
               }}</span>
             </div>
           }

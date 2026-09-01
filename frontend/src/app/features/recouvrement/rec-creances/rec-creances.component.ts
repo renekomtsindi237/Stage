@@ -129,7 +129,11 @@ export class RecCreancesComponent implements OnInit {
 
   readonly phases = PHASES;
   readonly phaseLabels = PHASE_LABELS;
-  readonly garantieLabels = GARANTIE_LABELS;
+
+  garantieLabelKey(type: string | null | undefined): string {
+    if (!type) return "";
+    return GARANTIE_LABELS[type] ?? type;
+  }
 
   // ── List state ─────────────────────────────────────────────────────────────
   loading = signal(true);
