@@ -6,7 +6,7 @@
           class="topbar__imf-logo"
           [src]="auth.imfLogoUrl() ?? 'assets/bank.png'"
           alt="Logo IMF"
-          (error)="$any($event.target).src = 'assets/bank.png'"
+          (error)="onImgFallback($event, 'assets/bank.png')"
         />
       }
       <div class="topbar__institution">
@@ -71,7 +71,7 @@
       [attr.aria-label]="'topbar.notif_aria' | translate"
     >
       <span class="material-icons-round">notifications</span>
-      @if ((unreadCount$ | async) ?? 0; as count) {
+      @if (unreadCount$ | async; as count) {
         @if (count > 0) {
           <span class="topbar__notif-badge">{{
             count > 99 ? "99+" : count
@@ -100,7 +100,7 @@
         <img
           [src]="avatarSrc"
           alt="avatar"
-          (error)="$any($event.target).src = '/api/v1/public/default-avatar'"
+          (error)="onImgFallback($event, defaultAvatar)"
         />
       </div>
       <div class="topbar__user-info">

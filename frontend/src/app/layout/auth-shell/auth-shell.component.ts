@@ -19,7 +19,7 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
       </div>
       <div class="auth-logo-wrap">
         <img
-          src="assets/logo.png"
+          src="assets/brand-v2.png"
           alt="MicroRecouv"
           class="auth-logo-img"
           width="160"
@@ -66,9 +66,9 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
           background: var(--color-surface);
           color: var(--color-primary);
         }
-        .material-icons-round {
-          font-size: 18px;
-        }
+      }
+      .auth-back .material-icons-round {
+        font-size: 18px;
       }
       .auth-logo-wrap {
         margin-bottom: 32px;

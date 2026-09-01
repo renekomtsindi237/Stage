@@ -43,6 +43,13 @@ export class SidebarComponent {
     return this.auth.currentUser()?.imfLogoUrl ?? "assets/bank.png";
   }
 
+  onImfLogoError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img.dataset["fb"] === "1") return;
+    img.dataset["fb"] = "1";
+    img.src = "assets/bank.png";
+  }
+
   get isAgent(): boolean {
     return this.auth.role() === "AGENT";
   }

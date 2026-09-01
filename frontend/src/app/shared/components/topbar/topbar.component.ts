@@ -57,10 +57,19 @@ export class TopbarComponent implements OnInit {
   get avatarSrc(): string {
     const url = this.auth.avatarUrl();
     if (!url || url.includes("/users/me/avatar")) {
-      return `${environment.apiUrl}/api/v1/public/default-avatar`;
+      return this.defaultAvatar;
     }
     if (url.startsWith("http")) return url;
     return `${environment.apiUrl}${url}`;
+  }
+
+  readonly defaultAvatar = `${environment.apiUrl}/api/v1/public/default-avatar`;
+
+  onImgFallback(event: Event, fallback: string) {
+    const img = event.target as HTMLImageElement;
+    if (img.dataset["fb"] === "1") return;
+    img.dataset["fb"] = "1";
+    img.src = fallback;
   }
 
   unreadCount$!: Observable<number>;

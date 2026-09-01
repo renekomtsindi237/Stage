@@ -3,7 +3,7 @@
   <div class="sidebar__brand">
     <div class="sidebar__logo-wrap">
       <img
-        src="assets/logo.png"
+        src="assets/brand-v2.png"
         alt="MicroRecouv"
         class="sidebar__logo-img"
         width="120"
@@ -17,7 +17,7 @@
           class="sidebar__imf-logo"
           [src]="imfLogoSrc"
           alt="Logo IMF"
-          (error)="$any($event.target).src = 'assets/bank.png'"
+          (error)="onImfLogoError($event)"
         />
         <span class="sidebar__institution">{{ institutionLabel }}</span>
       </div>
@@ -28,7 +28,7 @@
 
   <!-- Navigation -->
   <nav class="sidebar__nav">
-    @for (group of menuGroups; track group.label ?? "root") {
+    @for (group of menuGroups; track $index) {
       @if (group.label) {
         <div class="sidebar__group">{{ group.label | translate }}</div>
       }
